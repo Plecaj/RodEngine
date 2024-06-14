@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sandbox", "Sandbox\Sandbox.vcxproj", "{5FC9A32A-A3E0-4D16-BF87-D58E4ABD16FC}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RodEngine", "RodEngine\RodEngine.vcxproj", "{06255D91-FBB3-42E4-907E-6CF94D9AFEB9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{06255D91-FBB3-42E4-907E-6CF94D9AFEB9}.Debug|x64.ActiveCfg = Debug|x64
+		{06255D91-FBB3-42E4-907E-6CF94D9AFEB9}.Debug|x64.Build.0 = Debug|x64
+		{06255D91-FBB3-42E4-907E-6CF94D9AFEB9}.Release|x64.ActiveCfg = Release|x64
+		{06255D91-FBB3-42E4-907E-6CF94D9AFEB9}.Release|x64.Build.0 = Release|x64
+		{5FC9A32A-A3E0-4D16-BF87-D58E4ABD16FC}.Debug|x64.ActiveCfg = Debug|x64
+		{5FC9A32A-A3E0-4D16-BF87-D58E4ABD16FC}.Debug|x64.Build.0 = Debug|x64
+		{5FC9A32A-A3E0-4D16-BF87-D58E4ABD16FC}.Release|x64.ActiveCfg = Release|x64
+		{5FC9A32A-A3E0-4D16-BF87-D58E4ABD16FC}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {535550EA-399D-4ED6-A5D1-ECFDA0036B13}
+	EndGlobalSection
+EndGlobal

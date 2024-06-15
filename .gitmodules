@@ -1,0 +1,3 @@
+[submodule "RodEngine/vendor/spdlog"]
+	path = RodEngine/vendor/spdlog
+	url = https://github.com/gabime/spdlog

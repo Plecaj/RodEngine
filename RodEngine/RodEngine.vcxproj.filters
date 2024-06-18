@@ -4,6 +4,9 @@
     <Filter Include="Rod">
       <UniqueIdentifier>{6A1E880B-D627-887C-5FA3-9E7CCBAB937C}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Rod\Events">
+      <UniqueIdentifier>{0E2F3218-FAE6-7365-63EE-4CC14FC50E56}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Rod.h" />
@@ -15,6 +18,18 @@
     </ClInclude>
     <ClInclude Include="src\Rod\EntryPoint.h">
       <Filter>Rod</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Events\ApplicationEvent.h">
+      <Filter>Rod\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Events\Event.h">
+      <Filter>Rod\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Events\KeyEvent.h">
+      <Filter>Rod\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Events\MouseEvent.h">
+      <Filter>Rod\Events</Filter>
     </ClInclude>
     <ClInclude Include="src\Rod\Log.h">
       <Filter>Rod</Filter>

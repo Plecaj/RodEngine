@@ -15,7 +15,6 @@ namespace Rod {
 
 	// To be defined in CLIENT
 	Application* CreateApplication();
-		
 }
 
 

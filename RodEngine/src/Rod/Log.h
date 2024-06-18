@@ -3,7 +3,11 @@
 #include <memory>
 
 #include "Core.h"
-#include "spdlog/spdlog.h"
+#include <spdlog/spdlog.h>
+//----------------------------
+#include <spdlog/fmt/ostr.h>
+// Logging event types isnt working, do not use until templete will be provided
+//----------------------------
 
 namespace Rod {
 
@@ -29,8 +33,8 @@ namespace Rod {
 #define RD_CORE_FATAL(...)     ::Rod::Log::GetCoreLogger()->critical(__VA_ARGS__)
 
 //Client log macros
-#define RD_ERROR(...)          ::Rod::Log::GetClientLogger()->error(__VA_ARGS__)
-#define RD_WARN(...)           ::Rod::Log::GetClientLogger()->warn(__VA_ARGS__)
-#define RD_INFO(...)	       ::Rod::Log::GetClientLogger()->info(__VA_ARGS__)
-#define RD_ACE(...)            ::Rod::Log::GetClientLogger()->trace(__VA_ARGS__)
-#define RD_TAL(...)            ::Rod::Log::GetClientLogger()->critical(__VA_ARGS__)
+#define RD_ERROR(...)            ::Rod::Log::GetClientLogger()->error(__VA_ARGS__)
+#define RD_WARN(...)             ::Rod::Log::GetClientLogger()->warn(__VA_ARGS__)
+#define RD_INFO(...)	         ::Rod::Log::GetClientLogger()->info(__VA_ARGS__)
+#define RD_TRACE(...)            ::Rod::Log::GetClientLogger()->trace(__VA_ARGS__)
+#define RD_FATAL(...)            ::Rod::Log::GetClientLogger()->critical(__VA_ARGS__)

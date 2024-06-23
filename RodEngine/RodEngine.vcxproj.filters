@@ -34,6 +34,7 @@
     <ClInclude Include="src\Rod\Log.h">
       <Filter>Rod</Filter>
     </ClInclude>
+    <ClInclude Include="src\rdpch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Rod\Application.cpp">
@@ -42,5 +43,6 @@
     <ClCompile Include="src\Rod\Log.cpp">
       <Filter>Rod</Filter>
     </ClCompile>
+    <ClCompile Include="src\rdpch.cpp" />
   </ItemGroup>
 </Project>

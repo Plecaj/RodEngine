@@ -10,4 +10,4 @@
 	#error Rod only supports Windows.
 #endif
 
-#define BIT(x) (x << 1)
+#define BIT(x) (1 << (x))

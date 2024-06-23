@@ -1,8 +1,5 @@
 #pragma once
 
-#include "Log.h"
-#include <iostream>
-
 #ifdef RD_PLATFORM_WINDOWS
 
 extern Rod::Application* Rod::CreateApplication();
@@ -17,7 +14,6 @@ int main(int argc, char** argv)
 	app->Run();
 	delete app;
 
-	std::cin.get();
 }
 
 #endif

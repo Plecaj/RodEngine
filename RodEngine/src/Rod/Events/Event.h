@@ -1,10 +1,8 @@
 #pragma once
 
+#include "rdpch.h"
+
 #include "Rod/Core.h"
-
-#include <sstream>
-#include <functional>
-
 
 namespace Rod {
 

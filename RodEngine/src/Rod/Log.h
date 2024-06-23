@@ -6,7 +6,7 @@
 #include <spdlog/spdlog.h>
 //----------------------------
 #include <spdlog/fmt/ostr.h>
-// Logging event types isnt working, do not use until templete will be provided
+//RD_INFO("{}", e.ToString()); - example of logging user defined data types
 //----------------------------
 
 namespace Rod {

@@ -5,6 +5,7 @@
 #include <sstream>
 #include <functional>
 
+
 namespace Rod {
 
 	enum class EventType

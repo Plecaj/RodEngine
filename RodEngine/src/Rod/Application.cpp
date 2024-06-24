@@ -1,32 +1,42 @@
 #include "rdpch.h"
 
 #include "Application.h"
-#include "Rod/Events/ApplicationEvent.h"
 #include "Log.h"
 
 namespace Rod {
 	
+#define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
 	Application::Application() 
 	{
+		m_Window = std::unique_ptr<Window>(Window::Create());
+		m_Window->SetEventCallback(BIND_EVENT_FN(OnEvent));
 	}
 
 	Application::~Application()
 	{
 	}
 
+	void Application::OnEvent(Event& e)
+	{
+		EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(OnWindowClose));
+
+
+		RD_CORE_TRACE("{}", e.ToString());
+	}
+
 	void Application::Run() 
 	{
-		WindowResizeEvent e(1280, 720);
-		if (e.IsInCategory(EventCategoryApplication)) 
+		while (m_Running) 
 		{
-			RD_INFO("{}", e.ToString());
-		}
-		if (e.IsInCategory(EventCategoryInput))
-		{
-			RD_INFO("{}", e.ToString());
-		}
+			m_Window->OnUpdate();
+		};
+	}
 
-		while (true) {};
+	bool Application::OnWindowClose(WindowCloseEvent& e)
+	{
+		m_Running = false;
+		return true;
 	}
 
 }

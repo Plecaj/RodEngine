@@ -1,3 +1,5 @@
+-- TODO: setup runtime library setting here for GLFW and Engine so there is no need to do this everytime in vs when we generate project with premake
+
 workspace "RodEngine"
 	architecture "x64"
 
@@ -9,6 +11,12 @@ workspace "RodEngine"
 	}
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+
+-- Include directories relative to root folder (solution directory)
+IncludeDir = {}
+IncludeDir["GLFW"] = "RodEngine/vendor/GLFW/include"
+
+include "RodEngine/vendor/GLFW"
 
 project "RodEngine"
 	location "RodEngine"
@@ -30,7 +38,14 @@ project "RodEngine"
 	includedirs
 	{	
 		"%{prj.name}/src",
-		"%{prj.name}/vendor/spdlog/include"
+		"%{prj.name}/vendor/spdlog/include",
+		"%{IncludeDir.GLFW}"
+	}
+	
+	links
+	{
+		"GLFW",
+		"opengl32.lib"
 	}
 
 	filter "system:windows"

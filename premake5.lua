@@ -1,5 +1,3 @@
--- TODO: setup runtime library setting here for GLFW and Engine so there is no need to do this everytime in vs when we generate project with premake
-
 workspace "RodEngine"
 	architecture "x64"
 
@@ -66,14 +64,17 @@ project "RodEngine"
 
 	filter "configurations:Debug"
 		defines "RD_DEBUG"
+		buildoptions "/MDd"
 		symbols "On"
 
 	filter "configurations:Release"
 		defines "RD_RELEASE"
+		buildoptions "/MD"
 		optimize "On"
 
 	filter "configurations:Dist"
-		defines "RD_DIST"
+		defines "RD_DIST"		
+		buildoptions "/MD"
 		optimize "On"
 
 project "Sandbox"
@@ -114,12 +115,15 @@ project "Sandbox"
 
 	filter "configurations:Debug"
 		defines "RD_DEBUG"
+		buildoptions "/MDd"
 		symbols "On"
 
 	filter "configurations:Release"
 		defines "RD_RELEASE"
+		buildoptions "/MD"
 		optimize "On"
 
 	filter "configurations:Dist"
 		defines "RD_DIST"
+		buildoptions "/MD"
 		optimize "On"

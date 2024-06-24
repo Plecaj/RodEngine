@@ -41,4 +41,5 @@ namespace Rod {
 
 		static Window* Create(const WindowProps& props = WindowProps());
 	};
+
 }

@@ -83,7 +83,8 @@
       <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalOptions>/MDd %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
@@ -109,7 +110,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalOptions>/MD %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
@@ -136,7 +138,8 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalOptions>/MD %(AdditionalOptions)</AdditionalOptions>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
@@ -161,6 +164,8 @@
     <ClInclude Include="src\Rod\Events\Event.h" />
     <ClInclude Include="src\Rod\Events\KeyEvent.h" />
     <ClInclude Include="src\Rod\Events\MouseEvent.h" />
+    <ClInclude Include="src\Rod\Layer.h" />
+    <ClInclude Include="src\Rod\LayerStack.h" />
     <ClInclude Include="src\Rod\Log.h" />
     <ClInclude Include="src\Rod\Window.h" />
     <ClInclude Include="src\rdpch.h" />
@@ -168,6 +173,8 @@
   <ItemGroup>
     <ClCompile Include="src\Platform\WindowsWindow.cpp" />
     <ClCompile Include="src\Rod\Application.cpp" />
+    <ClCompile Include="src\Rod\Layer.cpp" />
+    <ClCompile Include="src\Rod\LayerStack.cpp" />
     <ClCompile Include="src\Rod\Log.cpp" />
     <ClCompile Include="src\rdpch.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>

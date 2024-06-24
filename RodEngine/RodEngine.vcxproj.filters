@@ -37,6 +37,12 @@
     <ClInclude Include="src\Rod\Events\MouseEvent.h">
       <Filter>Rod\Events</Filter>
     </ClInclude>
+    <ClInclude Include="src\Rod\Layer.h">
+      <Filter>Rod</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\LayerStack.h">
+      <Filter>Rod</Filter>
+    </ClInclude>
     <ClInclude Include="src\Rod\Log.h">
       <Filter>Rod</Filter>
     </ClInclude>
@@ -50,6 +56,12 @@
       <Filter>Platform</Filter>
     </ClCompile>
     <ClCompile Include="src\Rod\Application.cpp">
+      <Filter>Rod</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\Layer.cpp">
+      <Filter>Rod</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\LayerStack.cpp">
       <Filter>Rod</Filter>
     </ClCompile>
     <ClCompile Include="src\Rod\Log.cpp">

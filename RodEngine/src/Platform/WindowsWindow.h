@@ -1,6 +1,5 @@
 #pragma once
 
-#include "rdpch.h"
 #include "Rod/Window.h"
 
 #include <GLFW/glfw3.h>

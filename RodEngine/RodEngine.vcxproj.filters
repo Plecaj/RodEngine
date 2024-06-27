@@ -4,14 +4,23 @@
     <Filter Include="Platform">
       <UniqueIdentifier>{2AC788B4-1694-E3BF-3FAD-D1672BD9184E}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Platform\OpenGL">
+      <UniqueIdentifier>{1E7D2C1D-8A08-9AE1-9319-1DD6FF23F6E1}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Rod">
       <UniqueIdentifier>{6A1E880B-D627-887C-5FA3-9E7CCBAB937C}</UniqueIdentifier>
     </Filter>
     <Filter Include="Rod\Events">
       <UniqueIdentifier>{0E2F3218-FAE6-7365-63EE-4CC14FC50E56}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Rod\ImGui">
+      <UniqueIdentifier>{143B4C37-80A5-00AE-C9E3-B153358DDE02}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Platform\OpenGL\ImGuiOpenGLRenderer.h">
+      <Filter>Platform\OpenGL</Filter>
+    </ClInclude>
     <ClInclude Include="src\Platform\WindowsWindow.h">
       <Filter>Platform</Filter>
     </ClInclude>
@@ -37,6 +46,9 @@
     <ClInclude Include="src\Rod\Events\MouseEvent.h">
       <Filter>Rod\Events</Filter>
     </ClInclude>
+    <ClInclude Include="src\Rod\ImGui\ImGuiLayer.h">
+      <Filter>Rod\ImGui</Filter>
+    </ClInclude>
     <ClInclude Include="src\Rod\Layer.h">
       <Filter>Rod</Filter>
     </ClInclude>
@@ -52,11 +64,17 @@
     <ClInclude Include="src\rdpch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Platform\OpenGL\ImGuiOpenGLRenderer.cpp">
+      <Filter>Platform\OpenGL</Filter>
+    </ClCompile>
     <ClCompile Include="src\Platform\WindowsWindow.cpp">
       <Filter>Platform</Filter>
     </ClCompile>
     <ClCompile Include="src\Rod\Application.cpp">
       <Filter>Rod</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\ImGui\ImGuiLayer.cpp">
+      <Filter>Rod\ImGui</Filter>
     </ClCompile>
     <ClCompile Include="src\Rod\Layer.cpp">
       <Filter>Rod</Filter>

@@ -276,8 +276,6 @@ namespace Rod{
 
 		return false;
 	}
-	//IM_ASSERT((io.KeysDown[n] == false || IsKeyDown((ImGuiKey)n)) 
-	// && "Backend needs to either only use io.AddKeyEvent(), either only fill legacy io.KeysDown[] + io.KeyMap[]. Not both!");
 
 	bool ImGuiLayer::OnWindowResizeEvent(WindowResizeEvent& e)
 	{

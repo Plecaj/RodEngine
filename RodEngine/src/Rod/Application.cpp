@@ -2,8 +2,9 @@
 
 #include "Application.h"
 #include "Log.h"
+#include "Input.h"
 
-#include "glad/glad.h"
+#include <glad/glad.h>
 
 namespace Rod {
 
@@ -56,6 +57,8 @@ namespace Rod {
 				glClear(GL_COLOR_BUFFER_BIT);
 				layer->OnUpdate();
 			}
+			auto [x, y] = Input::GetMousePosition();
+			RD_CORE_TRACE("{0}, {1}", x, y);
 
 			m_Window->OnUpdate();
 		};

@@ -10,7 +10,7 @@ public:
 
 	void OnUpdate() override
 	{
-		RD_INFO("ExampleLayer::Update");
+
 	}
 	
 	void OnEvent(Rod::Event& event) override

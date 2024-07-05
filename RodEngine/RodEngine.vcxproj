@@ -168,9 +168,11 @@
     <ClInclude Include="src\Rod\Events\KeyEvent.h" />
     <ClInclude Include="src\Rod\Events\MouseEvent.h" />
     <ClInclude Include="src\Rod\ImGui\ImGuiLayer.h" />
+    <ClInclude Include="src\Rod\KeyCodes.h" />
     <ClInclude Include="src\Rod\Layer.h" />
     <ClInclude Include="src\Rod\LayerStack.h" />
     <ClInclude Include="src\Rod\Log.h" />
+    <ClInclude Include="src\Rod\MouseButtonCodes.h" />
     <ClInclude Include="src\Rod\Window.h" />
     <ClInclude Include="src\rdpch.h" />
   </ItemGroup>

@@ -1,8 +1,9 @@
 #include "rdpch.h"
 #include "WindowsInput.h"
-
 #include "Rod/Application.h"
+
 #include <GLFW/glfw3.h>
+
 namespace Rod {
 
 	Input* Input::s_Instance = new WindowsInput();

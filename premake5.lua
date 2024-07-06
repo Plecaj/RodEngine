@@ -16,6 +16,7 @@ IncludeDir = {}
 IncludeDir["GLFW"] = "RodEngine/vendor/GLFW/include"
 IncludeDir["Glad"] = "RodEngine/vendor/Glad/include"
 IncludeDir["ImGui"] = "RodEngine/vendor/imgui"
+IncludeDir["glm"] = "RodEngine/vendor/glm"
 
 include "RodEngine/vendor/GLFW"
 include "RodEngine/vendor/Glad"
@@ -25,6 +26,7 @@ project "RodEngine"
 	location "RodEngine"
 	kind "SharedLib"
 	language "C++"
+	staticruntime "off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -35,20 +37,23 @@ project "RodEngine"
 	files
 	{
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp"
+		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/vendor/glm/glm/**.hpp",
+		"%{prj.name}/vendor/glm/glm/**.inl"
 	}
 
 	includedirs
-	{	
+	{
 		"%{prj.name}/src",
 		"%{prj.name}/vendor/spdlog/include",
 		"%{IncludeDir.GLFW}",
 		"%{IncludeDir.Glad}",
-		"%{IncludeDir.ImGui}"
+		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.glm}"
 	}
-	
-	links
-	{
+
+	links 
+	{ 
 		"GLFW",
 		"Glad",
 		"ImGui",
@@ -57,9 +62,7 @@ project "RodEngine"
 
 	filter "system:windows"
 		cppdialect "C++17"
-		staticruntime "On"
 		systemversion "latest"
-		
 		defines
 		{
 			"RD_PLATFORM_WINDOWS",
@@ -74,27 +77,27 @@ project "RodEngine"
 
 	filter "configurations:Debug"
 		defines "RD_DEBUG"
-		buildoptions "/MDd"
+		runtime "Debug"
 		symbols "On"
 
 	filter "configurations:Release"
 		defines "RD_RELEASE"
-		buildoptions "/MD"
+		runtime "Release"
 		optimize "On"
 
 	filter "configurations:Dist"
-		defines "RD_DIST"		
-		buildoptions "/MD"
+		defines "RD_DIST"
+		runtime "Release"
 		optimize "On"
 
 project "Sandbox"
 	location "Sandbox"
 	kind "ConsoleApp"
 	language "C++"
+	staticruntime "off"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-
 
 	files
 	{
@@ -105,7 +108,8 @@ project "Sandbox"
 	includedirs
 	{
 		"RodEngine/vendor/spdlog/include",
-		"RodEngine/src"
+		"RodEngine/src",
+		"%{IncludeDir.glm}"
 	}
 
 	links
@@ -115,25 +119,24 @@ project "Sandbox"
 
 	filter "system:windows"
 		cppdialect "C++17"
-		staticruntime "On"
 		systemversion "latest"
-		
+
 		defines
 		{
-			"RD_PLATFORM_WINDOWS",
+			"RD_PLATFORM_WINDOWS"
 		}
 
 	filter "configurations:Debug"
 		defines "RD_DEBUG"
-		buildoptions "/MDd"
+		runtime "Debug"
 		symbols "On"
 
 	filter "configurations:Release"
 		defines "RD_RELEASE"
-		buildoptions "/MD"
+		runtime "Release"
 		optimize "On"
 
 	filter "configurations:Dist"
 		defines "RD_DIST"
-		buildoptions "/MD"
+		runtime "Release"
 		optimize "On"

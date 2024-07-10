@@ -8,7 +8,7 @@
 
 #include <GLFW/glfw3.h>
 
-//ImGui Examples->Docking crashes!
+//ImGui Examples->Docking crashes, should be fixed soon
 
 namespace Rod{
 

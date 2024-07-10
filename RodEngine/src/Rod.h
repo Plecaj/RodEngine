@@ -8,7 +8,7 @@
 #include "Rod/KeyCodes.h"
 #include "Rod/MouseButtonCodes.h"
 
-#include "Rod/ImGui/ImGuiLayer.h";
+#include "Rod/ImGui/ImGuiLayer.h"
 
 #include "Rod/EntryPoint.h"
 

@@ -1,14 +1,16 @@
 #include "rdpch.h"
 #include "ImGuiLayer.h"
 
+#include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 
 #include "Rod/Application.h"
 
 #include <GLFW/glfw3.h>
+#include <glad/glad.h>
 
-//ImGui Examples->Docking crashes, should be fixed soon
+//ImGui Examples->Dockspace crashes, should be fixed soon
 
 namespace Rod{
 
@@ -73,7 +75,7 @@ namespace Rod{
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		Application& app = Application::Get();
-		io.DisplaySize = ImVec2(app.GetWindow().GetWidth(), app.GetWindow().GetHeight());
+		io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

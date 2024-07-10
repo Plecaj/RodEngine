@@ -1,5 +1,7 @@
 #include <Rod.h>
 
+#include "imgui.h"
+
 class ExampleLayer : public Rod::Layer
 {
 public:
@@ -11,6 +13,13 @@ public:
 	void OnUpdate() override
 	{
 
+	}
+
+	virtual void OnImGuiRender() override
+	{
+		ImGui::Begin("Test");
+		ImGui::Text("Hello World");
+		ImGui::End();
 	}
 	
 	void OnEvent(Rod::Event& event) override

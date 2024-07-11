@@ -10,8 +10,6 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
-//ImGui Examples->Dockspace crashes, should be fixed soon
-
 namespace Rod{
 
 	ImGuiLayer::ImGuiLayer()

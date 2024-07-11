@@ -1358,9 +1358,6 @@
     <ClCompile Include="src\Rod\Application.cpp">
       <Filter>src\Rod</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rod\ImGui\ImGuiBuild.cpp">
-      <Filter>src\Rod\ImGui</Filter>
-    </ClCompile>
     <ClCompile Include="src\Rod\ImGui\ImGuiLayer.cpp">
       <Filter>src\Rod\ImGui</Filter>
     </ClCompile>
@@ -1376,5 +1373,6 @@
     <ClCompile Include="src\rdpch.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Rod\ImGui\ImGuiBuild.cpp" />
   </ItemGroup>
 </Project>

@@ -29,7 +29,7 @@ namespace Rod {
 
 	void Application::PushLayer(Layer* layer)
 	{
-		RD_CORE_INFO("Pushing overlay: {0}", layer->GetName());
+		RD_CORE_INFO("Pushing layer: {0}", layer->GetName());
 		m_LayerStack.PushLayer(layer);
 		layer->OnAttach();
 	}
@@ -68,8 +68,9 @@ namespace Rod {
 			m_ImGuiLayer->Begin();
 			for (Layer* layer : m_LayerStack)
 			{
-				m_ImGuiLayer->OnImGuiRender();
+				layer->OnImGuiRender();
 			}
+
 			m_ImGuiLayer->End();
 
 			m_Window->OnUpdate();

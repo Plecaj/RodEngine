@@ -70,7 +70,6 @@ namespace Rod {
 			{
 				layer->OnImGuiRender();
 			}
-
 			m_ImGuiLayer->End();
 
 			m_Window->OnUpdate();

@@ -23,8 +23,7 @@ public:
 	}
 	
 	void OnEvent(Rod::Event& event) override
-	{
-		RD_TRACE("{}", event.ToString());
+	{	
 	}
 
 };

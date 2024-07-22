@@ -15,7 +15,7 @@
 
 namespace Rod {
 
-	class ROD_API Application
+	class Application
 	{
 	public:
 		Application();

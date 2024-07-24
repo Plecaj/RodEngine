@@ -11,27 +11,6 @@ namespace Rod {
 
 	Application* Application::s_Instance = nullptr;
 
-	static uint32_t ShaderDataTypeToOpenGLBaseType(ShaderDataType type)
-	{
-		switch (type)
-		{
-			case Rod::ShaderDataType::Float:  return GL_FLOAT;
-			case Rod::ShaderDataType::Float2: return GL_FLOAT;
-			case Rod::ShaderDataType::Float3: return GL_FLOAT;
-			case Rod::ShaderDataType::Float4: return GL_FLOAT;
-			case Rod::ShaderDataType::Mat3:   return GL_FLOAT;
-			case Rod::ShaderDataType::Mat4:   return GL_FLOAT;
-			case Rod::ShaderDataType::Int:    return GL_INT; 
-			case Rod::ShaderDataType::Int2:   return GL_INT;
-			case Rod::ShaderDataType::Int3:   return GL_INT; 
-			case Rod::ShaderDataType::Int4:   return GL_INT;
-			case Rod::ShaderDataType::Bool:   return GL_BOOL;
-		}
-
-		RD_CORE_ASSERT(false, "Unknown ShaderDataType");
-		return 0;
-	}
-
 	Application::Application() 
 	{
 		RD_CORE_ASSERT(!s_Instance, "Application already exists!")
@@ -43,9 +22,7 @@ namespace Rod {
 		m_ImGuiLayer = new ImGuiLayer;
 		PushOverlay(m_ImGuiLayer);
 		
-		// Triangle
-		glGenVertexArrays(1, &m_VertexArray);
-		glBindVertexArray(m_VertexArray);
+		m_VertexArray.reset(VertexArray::Create());
 
 		float vertices[3 * 7] = {
 			-0.5f, -0.5f, 0.0f, 0.8f, 0.2f, 0.8f, 1.0f,
@@ -54,27 +31,16 @@ namespace Rod {
 		};
 		m_VertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
 
-		{
-			BufferLayout layout = {
-				{ ShaderDataType::Float3, "a_Position"},
-				{ ShaderDataType::Float4, "a_Color"}
-			};
-
-			m_VertexBuffer->SetBufferLayout(layout);
-		}
-
-		const auto& layout = m_VertexBuffer->GetLayout();
-		uint32_t index = 0;
-		for(const auto& element : layout)
-		{
-			glEnableVertexAttribArray(index);
-			glVertexAttribPointer(index, element.GetComponentCount(), ShaderDataTypeToOpenGLBaseType(element.Type), element.Normalized ? GL_TRUE : GL_FALSE, layout.GetStride(), (const void*) element.Offset);
-			index++;
-		}
-
+		BufferLayout layout = {
+			{ ShaderDataType::Float3, "a_Position"},
+			{ ShaderDataType::Float4, "a_Color"}
+		};
+		m_VertexBuffer->SetBufferLayout(layout);
+		m_VertexArray->AddVertexBuffer(m_VertexBuffer);
 
 		uint32_t indices[3] = { 0, 1, 2 };
-		m_IndexBuffer.reset(IndexBuffer::Create(indices, 3));
+		m_IndexBuffer.reset(IndexBuffer::Create(indices, sizeof(indices) / sizeof(uint32_t)));
+		m_VertexArray->SetIndexBuffer(m_IndexBuffer);
 
 		std::string vertexSrc = R"(
 			#version 330 core
@@ -149,7 +115,7 @@ namespace Rod {
 			glClear(GL_COLOR_BUFFER_BIT);
 
 			m_Shader->Bind();
-			glBindVertexArray(m_VertexArray);
+			m_VertexArray->Bind();
 			glDrawElements(GL_TRIANGLES, m_IndexBuffer->GetCount() , GL_UNSIGNED_INT, nullptr);
 
 			for (Layer* layer : m_LayerStack)

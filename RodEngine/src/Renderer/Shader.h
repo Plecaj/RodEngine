@@ -7,13 +7,19 @@ namespace Rod {
 	class Shader
 	{
 	public:
-		Shader(const std::string& vertexSrc, const std::string& fragmentSrc);
-		~Shader();
+		enum class API
+		{
+			None = 0, OpenGL = 1
+		};
+	public:
+		static Shader* Create(const std::string& vertexSrc, const std::string& fragmentSrc);
 
-		void Bind() const;
-		void Unbind() const;
+		virtual void Bind() const = 0;
+		virtual void Unbind() const = 0;
+
+		static API GetAPI() { return s_API; };
 	private:
-		uint32_t m_RendererID;
+		static API s_API;
 	};
 
 

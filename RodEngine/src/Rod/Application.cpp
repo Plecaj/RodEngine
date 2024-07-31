@@ -6,21 +6,24 @@
 
 #include "Renderer/Renderer.h"
 
+#include "KeyCodes.h"
+
 namespace Rod {
 
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application() 
+	Application::Application()
+		: m_Camera(-1.6f, 1.6f, -0.9f, 0.9f)
 	{
 		RD_CORE_ASSERT(!s_Instance, "Application already exists!")
-		s_Instance = this;
+			s_Instance = this;
 
 		m_Window = std::unique_ptr<Window>(Window::Create());
 		m_Window->SetEventCallback(RD_BIND_EVENT_FN(Application::OnEvent));
 
 		m_ImGuiLayer = new ImGuiLayer;
 		PushOverlay(m_ImGuiLayer);
-		
+
 		m_VertexArray.reset(VertexArray::Create());
 
 		float vertices[3 * 7] = {
@@ -47,12 +50,14 @@ namespace Rod {
 			layout(location = 0) in vec3 a_Position;
 			layout(location = 1) in vec4 a_Color;
 
+			uniform mat4 u_ViewProjection;
+
 			out vec4 v_Color;
 
 			void main()
 			{
 				v_Color = a_Color;
-				gl_Position = vec4(a_Position, 1.0);
+				gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
 			}
 
 		)";
@@ -70,7 +75,7 @@ namespace Rod {
 			}
 
 		)";
-		
+
 		m_Shader.reset(Shader::Create(vertexSrc, fragmentSrc));
 	}
 
@@ -96,26 +101,26 @@ namespace Rod {
 	{
 		EventDispatcher dispatcher(e);
 		dispatcher.Dispatch<WindowCloseEvent>(RD_BIND_EVENT_FN(Application::OnWindowClose));
+		dispatcher.Dispatch<KeyPressedEvent>(RD_BIND_EVENT_FN(Application::OnKeyPressed));
 
 		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
 		{
 			(*--it)->OnEvent(e);
 			if (e.Handled)
-				break;		
+				break;
 		}
 	}
 
-	void Application::Run() 
+	void Application::Run()
 	{
-		while (m_Running) 
+		while (m_Running)
 		{
 			RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 			RenderCommand::Clear();
 
-			Renderer::BeginScene();
+			Renderer::BeginScene(m_Camera);
 
-			m_Shader->Bind();
-			Renderer::Submit(m_VertexArray);
+			Renderer::Submit(m_Shader, m_VertexArray);
 
 			Renderer::EndScene();
 
@@ -139,6 +144,31 @@ namespace Rod {
 	{
 		m_Running = false;
 		return true;
+	}
+
+	bool Application::OnKeyPressed(KeyPressedEvent& e)
+	{
+		switch (e.GetKeyCode())
+		{
+			case Key::A:
+				m_Camera.SetPosition({ m_Camera.GetPosition() - glm::vec3(0.01f, 0.0f, 0.0f) });
+				break;
+			case Key::D:
+				m_Camera.SetPosition({ m_Camera.GetPosition() + glm::vec3(0.01f, 0.0f, 0.0f) });
+				break;
+			case Key::W:
+				m_Camera.SetPosition({ m_Camera.GetPosition() + glm::vec3(0.0, 0.01f, 0.0f) });
+				break;
+			case Key::S:
+				m_Camera.SetPosition({ m_Camera.GetPosition() - glm::vec3(0.0f, 0.01f, 0.0f) });
+			case Key::Q:
+				m_Camera.SetRotation(m_Camera.GetRotation() - 0.5f);
+				break;
+			case Key::E:
+				m_Camera.SetRotation(m_Camera.GetRotation() + 0.5f);
+				break;
+		}
+		return false;
 	}
 
 }

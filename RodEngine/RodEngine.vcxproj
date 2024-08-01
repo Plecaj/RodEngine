@@ -161,6 +161,7 @@
     <ClInclude Include="src\Rod.h" />
     <ClInclude Include="src\Rod\Application.h" />
     <ClInclude Include="src\Rod\Core.h" />
+    <ClInclude Include="src\Rod\Core\Timestep.h" />
     <ClInclude Include="src\Rod\EntryPoint.h" />
     <ClInclude Include="src\Rod\Events\ApplicationEvent.h" />
     <ClInclude Include="src\Rod\Events\Event.h" />

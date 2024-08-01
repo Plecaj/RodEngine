@@ -4,6 +4,8 @@
 #include "Log.h"
 #include "Input.h"
 
+#include <GLFW/glfw3.h>
+
 namespace Rod {
 
 	Application* Application::s_Instance = nullptr;
@@ -15,6 +17,7 @@ namespace Rod {
 
 		m_Window = std::unique_ptr<Window>(Window::Create());
 		m_Window->SetEventCallback(RD_BIND_EVENT_FN(Application::OnEvent));
+		m_Window->SetVSync(false);
 
 		m_ImGuiLayer = new ImGuiLayer;
 		PushOverlay(m_ImGuiLayer);
@@ -55,9 +58,13 @@ namespace Rod {
 	{
 		while (m_Running)
 		{
+			float time = (float)glfwGetTime();  //TODO: Platform::GetTime()
+			Timestep timestep = time - m_LastFrameTime;
+			m_LastFrameTime = time;
+
 			for (Layer* layer : m_LayerStack)
 			{
-				layer->OnUpdate();
+				layer->OnUpdate(timestep);
 			}
 
 			m_ImGuiLayer->Begin();

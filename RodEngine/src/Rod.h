@@ -4,6 +4,8 @@
 #include "Rod/Layer.h"
 #include "Rod/Log.h"
 
+#include "Rod/Core/Timestep.h"
+
 #include "Rod/Input.h"
 #include "Rod/KeyCodes.h"
 #include "Rod/MouseButtonCodes.h"

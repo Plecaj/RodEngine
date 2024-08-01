@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Rod/Core.h"
+#include "Rod/Core/Timestep.h"
 #include "Rod/Events/Event.h"
 
 namespace Rod {
@@ -13,7 +14,7 @@ namespace Rod {
 
 		virtual void OnAttach() {};
 		virtual void OnDetach() {};
-		virtual void OnUpdate() {};
+		virtual void OnUpdate(Timestep ts) {};
 		virtual void OnImGuiRender() {};
 		virtual void OnEvent(Event& event) {};
 

@@ -6,7 +6,7 @@ class ExampleLayer : public Rod::Layer
 {
 public:
 	ExampleLayer()
-		: Layer("Example"), m_Camera(-1.6f, 1.6f, -0.9f, 0.9f)
+		: Layer("Example"), m_Camera(-1.6f, 1.6f, -0.9f, 0.9f), m_CameraPosition(0.0f, 0.0f, 0.0f)
 	{
 		m_VertexArray.reset(Rod::VertexArray::Create());
 
@@ -63,10 +63,29 @@ public:
 		m_Shader.reset(Rod::Shader::Create(vertexSrc, fragmentSrc));
 	}
 
-	void OnUpdate() override
+	void OnUpdate(Rod::Timestep ts) override
 	{
+
+		if (Rod::Input::IsKeyPressed(Rod::Key::A))
+			m_CameraPosition.x -= m_CameraSpeed * ts;
+		else if (Rod::Input::IsKeyPressed(Rod::Key::D))
+			m_CameraPosition.x += m_CameraSpeed * ts;
+
+		if (Rod::Input::IsKeyPressed(Rod::Key::W))
+			m_CameraPosition.y += m_CameraSpeed * ts;
+		else if (Rod::Input::IsKeyPressed(Rod::Key::S))
+			m_CameraPosition.y -= m_CameraSpeed * ts;
+
+		if (Rod::Input::IsKeyPressed(Rod::Key::Q))
+			m_CameraRotation -= m_CameraRotationSpeed * ts;
+		else if (Rod::Input::IsKeyPressed(Rod::Key::E))
+			m_CameraRotation += m_CameraRotationSpeed * ts;
+
 		Rod::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 		Rod::RenderCommand::Clear();
+
+		m_Camera.SetPosition(m_CameraPosition);
+		m_Camera.SetRotation(m_CameraRotation);
 
 		Rod::Renderer::BeginScene(m_Camera);
 
@@ -81,33 +100,6 @@ public:
 	
 	void OnEvent(Rod::Event& event) override
 	{	
-		Rod::EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<Rod::KeyPressedEvent>(RD_BIND_EVENT_FN(ExampleLayer::OnKeyPressed));
-	}
-
-	bool OnKeyPressed(Rod::KeyPressedEvent& e)
-	{
-		switch (e.GetKeyCode())
-		{
-		case Rod::Key::A:
-			m_Camera.SetPosition({ m_Camera.GetPosition() - glm::vec3(0.01f, 0.0f, 0.0f) });
-			break;
-		case Rod::Key::D:
-			m_Camera.SetPosition({ m_Camera.GetPosition() + glm::vec3(0.01f, 0.0f, 0.0f) });
-			break;
-		case Rod::Key::W:
-			m_Camera.SetPosition({ m_Camera.GetPosition() + glm::vec3(0.0, 0.01f, 0.0f) });
-			break;
-		case Rod::Key::S:
-			m_Camera.SetPosition({ m_Camera.GetPosition() - glm::vec3(0.0f, 0.01f, 0.0f) });
-		case Rod::Key::Q:
-			m_Camera.SetRotation(m_Camera.GetRotation() - 0.5f);
-			break;
-		case Rod::Key::E:
-			m_Camera.SetRotation(m_Camera.GetRotation() + 0.5f);
-			break;
-		}
-		return false;
 	}
 private:
 	std::shared_ptr<Rod::Shader> m_Shader;
@@ -116,6 +108,10 @@ private:
 	std::shared_ptr<Rod::IndexBuffer> m_IndexBuffer;
 
 	Rod::OrthographicCamera m_Camera;
+	glm::vec3 m_CameraPosition;
+	float m_CameraRotation = 0.0f;
+	float m_CameraRotationSpeed = 17.5f;
+	float m_CameraSpeed = 0.75f;
 };
 
 class Sandbox : public Rod::Application

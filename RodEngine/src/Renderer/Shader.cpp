@@ -9,7 +9,7 @@ namespace Rod {
 
 	Shader* Shader::Create(const std::string& vertexSrc, const std::string& fragmentSrc)
 	{
-		switch(Shader::GetAPI())
+		switch(RendererAPI::GetAPI())
 		{
 			case RendererAPI::API::OpenGL: return new OpenGLShader(vertexSrc, fragmentSrc);
 			case RendererAPI::API::None:  

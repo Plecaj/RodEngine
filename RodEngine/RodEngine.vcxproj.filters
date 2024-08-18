@@ -19,6 +19,9 @@
     <Filter Include="src\Rod">
       <UniqueIdentifier>{01AB2FA9-6D8A-AE44-76A2-391BE20015A6}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Rod\Core">
+      <UniqueIdentifier>{F9D780A6-E53A-104B-8EC0-48017A02DCCD}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Rod\Events">
       <UniqueIdentifier>{C5CB384F-B199-2C55-9A2D-9D7B869A08BA}</UniqueIdentifier>
     </Filter>
@@ -54,6 +57,12 @@
     <ClInclude Include="src\Platform\OpenGL\OpenGLContext.h">
       <Filter>src\Platform\OpenGL</Filter>
     </ClInclude>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLRendererAPI.h">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Platform\OpenGL\OpenGLShader.h">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClInclude>
     <ClInclude Include="src\Platform\OpenGL\OpenGLVertexArray.h">
       <Filter>src\Platform\OpenGL</Filter>
     </ClInclude>
@@ -64,6 +73,9 @@
       <Filter>src\Platform\Windows</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\Buffer.h">
+      <Filter>src\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Renderer\Camera.h">
       <Filter>src\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Renderer\GraphicsContext.h">
@@ -92,6 +104,9 @@
     </ClInclude>
     <ClInclude Include="src\Rod\Core.h">
       <Filter>src\Rod</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Core\Timestep.h">
+      <Filter>src\Rod\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Rod\EntryPoint.h">
       <Filter>src\Rod</Filter>
@@ -1383,16 +1398,18 @@
     <ClInclude Include="vendor\glm\glm\vector_relational.hpp">
       <Filter>vendor\glm\glm</Filter>
     </ClInclude>
-    <ClInclude Include="src\Platform\OpenGL\OpenGLRendererAPI.h" />
-    <ClInclude Include="src\Platform\OpenGL\OpenGLShader.h" />
-    <ClInclude Include="src\Renderer\Camera.h" />
-    <ClInclude Include="src\Rod\Core\Timestep.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">
       <Filter>src\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\OpenGL\OpenGLContext.cpp">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLRendererAPI.cpp">
+      <Filter>src\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Platform\OpenGL\OpenGLShader.cpp">
       <Filter>src\Platform\OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="src\Platform\OpenGL\OpenGLVertexArray.cpp">
@@ -1405,6 +1422,9 @@
       <Filter>src\Platform\Windows</Filter>
     </ClCompile>
     <ClCompile Include="src\Renderer\Buffer.cpp">
+      <Filter>src\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Renderer\Camera.cpp">
       <Filter>src\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Renderer\RenderCommand.cpp">
@@ -1443,8 +1463,5 @@
     <ClCompile Include="src\rdpch.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\Platform\OpenGL\OpenGLRendererAPI.cpp" />
-    <ClCompile Include="src\Platform\OpenGL\OpenGLShader.cpp" />
-    <ClCompile Include="src\Renderer\Camera.cpp" />
   </ItemGroup>
 </Project>

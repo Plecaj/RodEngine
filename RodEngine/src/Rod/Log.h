@@ -2,10 +2,8 @@
 
 #include "Core.h"
 #include "spdlog/spdlog.h"
-//----------------------------
+
 #include "spdlog/fmt/ostr.h"
-//RD_INFO("{}", e.ToString()); - example of logging user defined data types
-//----------------------------
 
 namespace Rod {
 

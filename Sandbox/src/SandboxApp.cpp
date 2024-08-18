@@ -24,7 +24,7 @@ public:
 			-0.5f,  0.5f, 0.0f
 		};
 
-		std::shared_ptr<Rod::VertexBuffer> squareVB;
+		Rod::Ref<Rod::VertexBuffer> squareVB;
 		squareVB.reset(Rod::VertexBuffer::Create(squareVertices, sizeof(squareVertices)));
 		squareVB->SetBufferLayout({
 			{ Rod::ShaderDataType::Float3, "a_Position" }
@@ -32,7 +32,7 @@ public:
 		m_SquareVA->AddVertexBuffer(squareVB);
 
 		uint32_t squareIndices[6] = { 0, 1, 2, 2, 3, 0 };
-		std::shared_ptr<Rod::IndexBuffer> squareIB;
+		Rod::Ref<Rod::IndexBuffer> squareIB;
 		squareIB.reset(Rod::IndexBuffer::Create(squareIndices, sizeof(squareIndices) / sizeof(uint32_t)));
 		m_SquareVA->SetIndexBuffer(squareIB);
 
@@ -127,8 +127,8 @@ public:
 	}
 
 private:
-	std::shared_ptr<Rod::Shader> m_FlatColorShader;
-	std::shared_ptr<Rod::VertexArray> m_SquareVA;
+	Rod::Ref<Rod::Shader> m_FlatColorShader;
+	Rod::Ref<Rod::VertexArray> m_SquareVA;
 
 	Rod::OrthographicCamera m_Camera;
 	glm::vec3 m_CameraPosition;

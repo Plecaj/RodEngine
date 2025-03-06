@@ -1,12 +1,6 @@
 [submodule "RodEngine/vendor/spdlog"]
 	path = RodEngine/vendor/spdlog
 	url = https://github.com/gabime/spdlog
-[submodule "RodEngine/vendor/GLFW"]
-	path = RodEngine/vendor/GLFW
-	url = https://github.com/TheCherno/glfw
-[submodule "RodEngine/vendor/imgui"]
-	path = RodEngine/vendor/imgui
-	url = https://github.com/TheCherno/imgui
 [submodule "RodEngine/vendor/glm"]
 	path = RodEngine/vendor/glm
 	url = https://github.com/g-truc/glm

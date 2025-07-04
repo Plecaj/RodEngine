@@ -6,7 +6,17 @@
 #include <Glad/glad.h>
 
 namespace Rod {
-
+	Shader* Shader::Create(const std::string& filepath)
+	{
+		switch (RendererAPI::GetAPI())
+		{
+		case RendererAPI::API::OpenGL: return new OpenGLShader(filepath);
+		case RendererAPI::API::None:
+			return nullptr;
+			RD_CORE_ASSERT(false, "None API is not supported");
+		}
+		return nullptr;
+	}
 	Shader* Shader::Create(const std::string& vertexSrc, const std::string& fragmentSrc)
 	{
 		switch(RendererAPI::GetAPI())

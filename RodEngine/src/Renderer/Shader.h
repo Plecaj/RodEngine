@@ -10,6 +10,7 @@ namespace Rod {
 	class Shader
 	{
 	public:
+		static Shader* Create(const std::string& filepath);
 		static Shader* Create(const std::string& vertexSrc, const std::string& fragmentSrc);
 		virtual ~Shader() = default;
 

@@ -72,40 +72,7 @@ public:
 
 		m_FlatColorShader.reset(Rod::Shader::Create(flatColorShaderVertexSrc, flatColorShaderFragmentSrc));
 
-		std::string textureShaderVertexSrc = R"(
-			#version 330 core
-			
-			layout(location = 0) in vec3 a_Position;
-			layout(location = 1) in vec2 a_TextCoord;
-
-			uniform mat4 u_ViewProjection;
-			uniform mat4 u_Transform;
-
-			out vec2 v_TextCoord;
-
-			void main()
-			{
-				v_TextCoord = a_TextCoord;
-				gl_Position = u_ViewProjection * u_Transform * vec4(a_Position, 1.0);	
-			}
-		)";
-
-		std::string textureShaderFragmentSrc = R"(
-			#version 330 core
-			
-			layout(location = 0) out vec4 color;
-
-			in vec2 v_TextCoord;
-
-			uniform sampler2D u_Texture;
-
-			void main()
-			{
-				color = texture(u_Texture, v_TextCoord);
-			}
-		)";
-
-		m_TextureShader.reset(Rod::Shader::Create(textureShaderVertexSrc, textureShaderFragmentSrc));
+		m_TextureShader.reset(Rod::Shader::Create("assets/shaders/Texture.glsl"));
 
 		m_Background = Rod::Texture2D::Create("assets/textures/test.png");
 		m_Arrow = Rod::Texture2D::Create("assets/textures/upper.png");

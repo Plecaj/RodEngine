@@ -1,5 +1,6 @@
 #include "rdpch.h"
 
+#include "Renderer/Renderer.h"
 #include "Application.h"
 #include "Log.h"
 #include "Input.h"
@@ -19,8 +20,11 @@ namespace Rod {
 		m_Window->SetEventCallback(RD_BIND_EVENT_FN(Application::OnEvent));
 		m_Window->SetVSync(false);
 
+		Renderer::Init();
+
 		m_ImGuiLayer = new ImGuiLayer;
 		PushOverlay(m_ImGuiLayer);
+
 	}
 
 	Application::~Application()

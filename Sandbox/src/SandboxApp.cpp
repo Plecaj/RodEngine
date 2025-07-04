@@ -74,8 +74,8 @@ public:
 
 		m_TextureShader.reset(Rod::Shader::Create("assets/shaders/Texture.glsl"));
 
-		m_Background = Rod::Texture2D::Create("assets/textures/test.png");
-		m_Arrow = Rod::Texture2D::Create("assets/textures/upper.png");
+		m_Background = Rod::Texture2D::Create("assets/textures/background.png");
+		m_Front = Rod::Texture2D::Create("assets/textures/test.png");
 
 		std::dynamic_pointer_cast<Rod::OpenGLShader>(m_TextureShader)->Bind();
 		std::dynamic_pointer_cast<Rod::OpenGLShader>(m_TextureShader)->UploadUniformInt("u_Texture", 0);
@@ -122,7 +122,8 @@ public:
 			}
 		}
 		m_Background->Bind();
-		m_Arrow->Bind();
+		Rod::Renderer::Submit(m_TextureShader, m_SquareVA, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
+		m_Front->Bind();
 		Rod::Renderer::Submit(m_TextureShader, m_SquareVA, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
 
 		Rod::Renderer::EndScene();
@@ -142,7 +143,7 @@ public:
 private:
 	Rod::Ref<Rod::Shader> m_FlatColorShader, m_TextureShader;
 	Rod::Ref<Rod::VertexArray> m_SquareVA;
-	Rod::Ref<Rod::Texture2D> m_Background, m_Arrow;
+	Rod::Ref<Rod::Texture2D> m_Background, m_Front;
 
 	Rod::OrthographicCamera m_Camera;
 	glm::vec3 m_CameraPosition;

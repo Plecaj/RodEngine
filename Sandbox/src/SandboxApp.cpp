@@ -1,4 +1,4 @@
-	#include <Rod.h>
+#include <Rod.h>
 
 // Temp
 #include "Platform/OpenGL/OpenGLShader.h"
@@ -70,15 +70,15 @@ public:
 			}
 		)";
 
-		m_FlatColorShader.reset(Rod::Shader::Create(flatColorShaderVertexSrc, flatColorShaderFragmentSrc));
+		m_FlatColorShader = Rod::Shader::Create("Flat Shader", flatColorShaderVertexSrc, flatColorShaderFragmentSrc);
 
-		m_TextureShader.reset(Rod::Shader::Create("assets/shaders/Texture.glsl"));
+		auto textureShader = m_ShaderLibrary.Load("assets/shaders/Texture.glsl");
 
 		m_Background = Rod::Texture2D::Create("assets/textures/background.png");
 		m_Front = Rod::Texture2D::Create("assets/textures/test.png");
 
-		std::dynamic_pointer_cast<Rod::OpenGLShader>(m_TextureShader)->Bind();
-		std::dynamic_pointer_cast<Rod::OpenGLShader>(m_TextureShader)->UploadUniformInt("u_Texture", 0);
+		std::dynamic_pointer_cast<Rod::OpenGLShader>(textureShader)->Bind();
+		std::dynamic_pointer_cast<Rod::OpenGLShader>(textureShader)->UploadUniformInt("u_Texture", 0);
 	}
 
 	void OnUpdate(Rod::Timestep ts) override
@@ -121,10 +121,12 @@ public:
 				Rod::Renderer::Submit(m_FlatColorShader, m_SquareVA, transform);
 			}
 		}
+		auto textureShader = m_ShaderLibrary.Get("Texture");
+
 		m_Background->Bind();
-		Rod::Renderer::Submit(m_TextureShader, m_SquareVA, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
+		Rod::Renderer::Submit(textureShader, m_SquareVA, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
 		m_Front->Bind();
-		Rod::Renderer::Submit(m_TextureShader, m_SquareVA, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
+		Rod::Renderer::Submit(textureShader, m_SquareVA, glm::scale(glm::mat4(1.0f), glm::vec3(1.5f)));
 
 		Rod::Renderer::EndScene();
 	}
@@ -141,7 +143,8 @@ public:
 	}
 
 private:
-	Rod::Ref<Rod::Shader> m_FlatColorShader, m_TextureShader;
+	Rod::ShaderLibrary m_ShaderLibrary;
+	Rod::Ref<Rod::Shader> m_FlatColorShader;
 	Rod::Ref<Rod::VertexArray> m_SquareVA;
 	Rod::Ref<Rod::Texture2D> m_Background, m_Front;
 

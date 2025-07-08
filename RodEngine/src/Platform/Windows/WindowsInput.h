@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Rod/Input.h"
+#include "Rod/Core/Input.h"
 
 namespace Rod{
 

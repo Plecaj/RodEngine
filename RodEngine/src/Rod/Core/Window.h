@@ -2,7 +2,6 @@
 
 #include "rdpch.h"
 
-#include "Rod/Core.h"
 #include "Rod/Events/Event.h"
 
 namespace Rod {
@@ -21,8 +20,7 @@ namespace Rod {
 		}
 	};
 
-	// Interfaec representing a desktop system based Window
-	class ROD_API Window
+	class Window
 	{
 	public:
 		using EventCallbackFn = std::function<void(Event&)>;
@@ -34,7 +32,6 @@ namespace Rod {
 		virtual unsigned int GetWidth() const = 0;
 		virtual unsigned int GetHeight() const = 0;
 
-		//Window attributes
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
 		virtual void SetVSync(bool enabled) = 0;
 		virtual bool IsVSync() const = 0;

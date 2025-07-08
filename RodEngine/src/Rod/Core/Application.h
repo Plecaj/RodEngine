@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Rod/Core.h"
+#include "Rod/Core/Core.h"
 
-#include "Rod/Window.h"
-#include "Rod/LayerStack.h"
+#include "Rod/Core/Window.h"
+#include "Rod/Core/LayerStack.h"
 #include "Rod/Events/Event.h"
 #include "Rod/Events/ApplicationEvent.h"
 

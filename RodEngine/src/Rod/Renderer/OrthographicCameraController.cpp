@@ -1,8 +1,8 @@
 #include "rdpch.h"
 #include "OrthographicCameraController.h"
 
-#include "Rod/Input.h"
-#include "Rod/KeyCodes.h"
+#include "Rod/Core/Input.h"
+#include "Rod/Core/KeyCodes.h"
 
 namespace Rod {
 

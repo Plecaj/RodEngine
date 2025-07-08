@@ -1,13 +1,12 @@
 #pragma once
 
-#include "Rod/Core.h"
 #include "Layer.h"
 
 #include <vector>
 
 namespace Rod {
 
-	class ROD_API LayerStack
+	class LayerStack
 	{
 	public:
 		LayerStack();

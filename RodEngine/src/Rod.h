@@ -1,15 +1,15 @@
 #pragma once
 
-#include "Rod/Application.h"
-#include "Rod/Layer.h"
-#include "Rod/Log.h"
+#include "Rod/Core/Application.h"
+#include "Rod/Core/Layer.h"
+#include "Rod/Core/Log.h"
 
 #include "Rod/Core/Timestep.h"
 
-#include "Rod/Input.h"
-#include "Rod/KeyCodes.h"
-#include "Rod/MouseButtonCodes.h"
-#include "Rod/OrthographicCameraController.h"
+#include "Rod/Core/Input.h"
+#include "Rod/Core/KeyCodes.h"
+#include "Rod/Core/MouseButtonCodes.h"
+#include "Rod/Renderer/OrthographicCameraController.h"
 
 #include "Rod/ImGui/ImGuiLayer.h"
 
@@ -25,5 +25,5 @@
 #include "Rod/Renderer/Camera.h"
 //-------------------------------------
 
-#include "Rod/EntryPoint.h"
+#include "Rod/Core/EntryPoint.h"
 

@@ -13,9 +13,6 @@
     <Filter Include="src\Platform\Windows">
       <UniqueIdentifier>{5B054582-4794-CE4B-F0B2-E246DC20DFF1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\Renderer">
-      <UniqueIdentifier>{73D1DFBF-5F34-6F64-08BA-A71AF4FB3AE7}</UniqueIdentifier>
-    </Filter>
     <Filter Include="src\Rod">
       <UniqueIdentifier>{01AB2FA9-6D8A-AE44-76A2-391BE20015A6}</UniqueIdentifier>
     </Filter>
@@ -27,6 +24,9 @@
     </Filter>
     <Filter Include="src\Rod\ImGui">
       <UniqueIdentifier>{EB9C0677-575D-82AD-2098-CB2A8C17C789}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Rod\Renderer">
+      <UniqueIdentifier>{C7DF95F7-B3D8-B449-DC0A-9ACEC8629455}</UniqueIdentifier>
     </Filter>
     <Filter Include="vendor">
       <UniqueIdentifier>{B3738122-9F15-ACF8-88D0-BF4C74113349}</UniqueIdentifier>
@@ -78,47 +78,41 @@
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h">
       <Filter>src\Platform\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rod\Renderer\Buffer.h">
-      <Filter>src\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rod\Renderer\Camera.h">
-      <Filter>src\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rod\Renderer\GraphicsContext.h">
-      <Filter>src\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rod\Renderer\RenderCommand.h">
-      <Filter>src\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rod\Renderer\Renderer.h">
-      <Filter>src\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rod\Renderer\RendererAPI.h">
-      <Filter>src\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rod\Renderer\Shader.h">
-      <Filter>src\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rod\Renderer\Texture.h">
-      <Filter>src\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rod\Renderer\VertexArray.h">
-      <Filter>src\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="src\Rod.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rod\Application.h">
-      <Filter>src\Rod</Filter>
+    <ClInclude Include="src\Rod\Core\Application.h">
+      <Filter>src\Rod\Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rod\Core.h">
-      <Filter>src\Rod</Filter>
+    <ClInclude Include="src\Rod\Core\Core.h">
+      <Filter>src\Rod\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Core\EntryPoint.h">
+      <Filter>src\Rod\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Core\Input.h">
+      <Filter>src\Rod\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Core\KeyCodes.h">
+      <Filter>src\Rod\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Core\Layer.h">
+      <Filter>src\Rod\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Core\LayerStack.h">
+      <Filter>src\Rod\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Core\Log.h">
+      <Filter>src\Rod\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Core\MouseButtonCodes.h">
+      <Filter>src\Rod\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Rod\Core\Timestep.h">
       <Filter>src\Rod\Core</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rod\EntryPoint.h">
-      <Filter>src\Rod</Filter>
+    <ClInclude Include="src\Rod\Core\Window.h">
+      <Filter>src\Rod\Core</Filter>
     </ClInclude>
     <ClInclude Include="src\Rod\Events\ApplicationEvent.h">
       <Filter>src\Rod\Events</Filter>
@@ -135,26 +129,35 @@
     <ClInclude Include="src\Rod\ImGui\ImGuiLayer.h">
       <Filter>src\Rod\ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rod\Input.h">
-      <Filter>src\Rod</Filter>
+    <ClInclude Include="src\Rod\Renderer\Buffer.h">
+      <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rod\KeyCodes.h">
-      <Filter>src\Rod</Filter>
+    <ClInclude Include="src\Rod\Renderer\Camera.h">
+      <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rod\Layer.h">
-      <Filter>src\Rod</Filter>
+    <ClInclude Include="src\Rod\Renderer\GraphicsContext.h">
+      <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rod\LayerStack.h">
-      <Filter>src\Rod</Filter>
+    <ClInclude Include="src\Rod\Renderer\OrthographicCameraController.h">
+      <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rod\Log.h">
-      <Filter>src\Rod</Filter>
+    <ClInclude Include="src\Rod\Renderer\RenderCommand.h">
+      <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rod\MouseButtonCodes.h">
-      <Filter>src\Rod</Filter>
+    <ClInclude Include="src\Rod\Renderer\Renderer.h">
+      <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rod\Window.h">
-      <Filter>src\Rod</Filter>
+    <ClInclude Include="src\Rod\Renderer\RendererAPI.h">
+      <Filter>src\Rod\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Renderer\Shader.h">
+      <Filter>src\Rod\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Renderer\Texture.h">
+      <Filter>src\Rod\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Renderer\VertexArray.h">
+      <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\rdpch.h">
       <Filter>src</Filter>
@@ -1410,7 +1413,6 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rod\OrthographicCameraController.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">
@@ -1437,32 +1439,17 @@
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp">
       <Filter>src\Platform\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rod\Renderer\Buffer.cpp">
-      <Filter>src\Renderer</Filter>
+    <ClCompile Include="src\Rod\Core\Application.cpp">
+      <Filter>src\Rod\Core</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rod\Renderer\Camera.cpp">
-      <Filter>src\Renderer</Filter>
+    <ClCompile Include="src\Rod\Core\Layer.cpp">
+      <Filter>src\Rod\Core</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rod\Renderer\RenderCommand.cpp">
-      <Filter>src\Renderer</Filter>
+    <ClCompile Include="src\Rod\Core\LayerStack.cpp">
+      <Filter>src\Rod\Core</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rod\Renderer\Renderer.cpp">
-      <Filter>src\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rod\Renderer\RendererAPI.cpp">
-      <Filter>src\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rod\Renderer\Shader.cpp">
-      <Filter>src\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rod\Renderer\Texture.cpp">
-      <Filter>src\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rod\Renderer\VertexArray.cpp">
-      <Filter>src\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rod\Application.cpp">
-      <Filter>src\Rod</Filter>
+    <ClCompile Include="src\Rod\Core\Log.cpp">
+      <Filter>src\Rod\Core</Filter>
     </ClCompile>
     <ClCompile Include="src\Rod\ImGui\ImGuiBuild.cpp">
       <Filter>src\Rod\ImGui</Filter>
@@ -1470,14 +1457,32 @@
     <ClCompile Include="src\Rod\ImGui\ImGuiLayer.cpp">
       <Filter>src\Rod\ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rod\Layer.cpp">
-      <Filter>src\Rod</Filter>
+    <ClCompile Include="src\Rod\Renderer\Buffer.cpp">
+      <Filter>src\Rod\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rod\LayerStack.cpp">
-      <Filter>src\Rod</Filter>
+    <ClCompile Include="src\Rod\Renderer\Camera.cpp">
+      <Filter>src\Rod\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rod\Log.cpp">
-      <Filter>src\Rod</Filter>
+    <ClCompile Include="src\Rod\Renderer\OrthographicCameraController.cpp">
+      <Filter>src\Rod\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\Renderer\RenderCommand.cpp">
+      <Filter>src\Rod\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\Renderer\Renderer.cpp">
+      <Filter>src\Rod\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\Renderer\RendererAPI.cpp">
+      <Filter>src\Rod\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\Renderer\Shader.cpp">
+      <Filter>src\Rod\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\Renderer\Texture.cpp">
+      <Filter>src\Rod\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\Renderer\VertexArray.cpp">
+      <Filter>src\Rod\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\rdpch.cpp">
       <Filter>src</Filter>
@@ -1485,6 +1490,5 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rod\OrthographicCameraController.cpp" />
   </ItemGroup>
 </Project>

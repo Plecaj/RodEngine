@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "Rod/Core.h"
+#include "Rod/Core/Core.h"
 
 namespace Rod {
 

@@ -1,12 +1,11 @@
 #pragma once
 
-#include "Rod/Core.h"
 #include "Rod/Core/Timestep.h"
 #include "Rod/Events/Event.h"
 
 namespace Rod {
 
-	class ROD_API Layer
+	class Layer
 	{
 	public:
 		Layer(const std::string& name = "Layer");

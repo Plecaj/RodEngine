@@ -41,7 +41,7 @@ namespace Rod {
 		{
 		}
 
-		BufferElement() {};
+		BufferElement() :Name({}), Type(ShaderDataType::None), Size(0), Offset(0), Normalized(false) {};
 
 		uint32_t GetComponentCount() const
 		{

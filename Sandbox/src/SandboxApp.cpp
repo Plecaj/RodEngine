@@ -13,7 +13,7 @@ class ExampleLayer : public Rod::Layer
 {
 public:
 	ExampleLayer()
-		: Layer("Example"), m_Camera(-1.6f, 1.6f, -0.9f, 0.9f), m_CameraPosition(0.0f), m_SquarePosition(0.0f)
+		: Layer("Example"), m_CameraController(1280.0f / 720.0f)
 	{
 		m_SquareVA.reset(Rod::VertexArray::Create());
 
@@ -83,30 +83,12 @@ public:
 
 	void OnUpdate(Rod::Timestep ts) override
 	{
-		// --- Camera Movement --------------------------------
-
-		if (Rod::Input::IsKeyPressed(Rod::Key::A))
-			m_CameraPosition.x -= m_CameraMoveSpeed * ts;
-		else if (Rod::Input::IsKeyPressed(Rod::Key::D))
-			m_CameraPosition.x += m_CameraMoveSpeed * ts;
-
-		if (Rod::Input::IsKeyPressed(Rod::Key::W))
-			m_CameraPosition.y += m_CameraMoveSpeed * ts;
-		else if (Rod::Input::IsKeyPressed(Rod::Key::S))
-			m_CameraPosition.y -= m_CameraMoveSpeed * ts;
-
-		if (Rod::Input::IsKeyPressed(Rod::Key::Q))
-			m_CameraRotation -= m_CameraRotationSpeed * ts;
-		else if (Rod::Input::IsKeyPressed(Rod::Key::E))
-			m_CameraRotation += m_CameraRotationSpeed * ts;
+		m_CameraController.OnUpdate(ts);
 
 		Rod::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 		Rod::RenderCommand::Clear();
 
-		m_Camera.SetPosition(m_CameraPosition);
-		m_Camera.SetRotation(m_CameraRotation);
-
-		Rod::Renderer::BeginScene(m_Camera);
+		Rod::Renderer::BeginScene(m_CameraController.GetCamera());
 
 		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(0.1f));
 
@@ -140,6 +122,7 @@ public:
 	
 	void OnEvent(Rod::Event& event) override
 	{	
+		m_CameraController.OnEvent(event);
 	}
 
 private:
@@ -148,12 +131,7 @@ private:
 	Rod::Ref<Rod::VertexArray> m_SquareVA;
 	Rod::Ref<Rod::Texture2D> m_Background, m_Front;
 
-	Rod::OrthographicCamera m_Camera;
-	glm::vec3 m_CameraPosition;
-	float m_CameraMoveSpeed = 0.75f;
-
-	float m_CameraRotation = 0.0f;
-	float m_CameraRotationSpeed = 17.5f;
+	Rod::OrthographicCameraController m_CameraController;
 
 	glm::vec3 m_SquarePosition;
 	float m_SquareMoveSpeed = 0.75f;

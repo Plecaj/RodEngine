@@ -78,31 +78,31 @@
     <ClInclude Include="src\Platform\Windows\WindowsWindow.h">
       <Filter>src\Platform\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="src\Renderer\Buffer.h">
+    <ClInclude Include="src\Rod\Renderer\Buffer.h">
       <Filter>src\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Renderer\Camera.h">
+    <ClInclude Include="src\Rod\Renderer\Camera.h">
       <Filter>src\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Renderer\GraphicsContext.h">
+    <ClInclude Include="src\Rod\Renderer\GraphicsContext.h">
       <Filter>src\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Renderer\RenderCommand.h">
+    <ClInclude Include="src\Rod\Renderer\RenderCommand.h">
       <Filter>src\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Renderer\Renderer.h">
+    <ClInclude Include="src\Rod\Renderer\Renderer.h">
       <Filter>src\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Renderer\RendererAPI.h">
+    <ClInclude Include="src\Rod\Renderer\RendererAPI.h">
       <Filter>src\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Renderer\Shader.h">
+    <ClInclude Include="src\Rod\Renderer\Shader.h">
       <Filter>src\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Renderer\Texture.h">
+    <ClInclude Include="src\Rod\Renderer\Texture.h">
       <Filter>src\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Renderer\VertexArray.h">
+    <ClInclude Include="src\Rod\Renderer\VertexArray.h">
       <Filter>src\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Rod.h">
@@ -1410,6 +1410,7 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
+    <ClInclude Include="src\Rod\OrthographicCameraController.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Platform\OpenGL\OpenGLBuffer.cpp">
@@ -1436,28 +1437,28 @@
     <ClCompile Include="src\Platform\Windows\WindowsWindow.cpp">
       <Filter>src\Platform\Windows</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\Buffer.cpp">
+    <ClCompile Include="src\Rod\Renderer\Buffer.cpp">
       <Filter>src\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\Camera.cpp">
+    <ClCompile Include="src\Rod\Renderer\Camera.cpp">
       <Filter>src\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\RenderCommand.cpp">
+    <ClCompile Include="src\Rod\Renderer\RenderCommand.cpp">
       <Filter>src\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\Renderer.cpp">
+    <ClCompile Include="src\Rod\Renderer\Renderer.cpp">
       <Filter>src\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\RendererAPI.cpp">
+    <ClCompile Include="src\Rod\Renderer\RendererAPI.cpp">
       <Filter>src\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\Shader.cpp">
+    <ClCompile Include="src\Rod\Renderer\Shader.cpp">
       <Filter>src\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\Texture.cpp">
+    <ClCompile Include="src\Rod\Renderer\Texture.cpp">
       <Filter>src\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Renderer\VertexArray.cpp">
+    <ClCompile Include="src\Rod\Renderer\VertexArray.cpp">
       <Filter>src\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Rod\Application.cpp">
@@ -1484,5 +1485,6 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
+    <ClCompile Include="src\Rod\OrthographicCameraController.cpp" />
   </ItemGroup>
 </Project>

@@ -25,5 +25,3 @@
 #include "Rod/Renderer/Camera.h"
 //-------------------------------------
 
-#include "Rod/Core/EntryPoint.h"
-

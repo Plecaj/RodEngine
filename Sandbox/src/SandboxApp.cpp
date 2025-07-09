@@ -1,4 +1,5 @@
 #include <Rod.h>
+#include "Rod/Core/EntryPoint.h"
 
 // Temp
 #include "Platform/OpenGL/OpenGLShader.h"
@@ -8,14 +9,16 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-																			
+								
+#include "Sandbox2D.h"
+
 class ExampleLayer : public Rod::Layer
 {
 public:
 	ExampleLayer()
 		: Layer("Example"), m_CameraController(1280.0f / 720.0f, true)
 	{
-		m_SquareVA.reset(Rod::VertexArray::Create());
+		m_SquareVA = Rod::VertexArray::Create();
 
 		float squareVertices[5 * 4] = {
 			-0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
@@ -25,7 +28,7 @@ public:
 		};
 
 		Rod::Ref<Rod::VertexBuffer> squareVB;
-		squareVB.reset(Rod::VertexBuffer::Create(squareVertices, sizeof(squareVertices)));
+		squareVB = Rod::VertexBuffer::Create(squareVertices, sizeof(squareVertices));
 		squareVB->SetBufferLayout({
 			{ Rod::ShaderDataType::Float3, "a_Position" },
 			{ Rod::ShaderDataType::Float2, "a_TextCoord"},
@@ -34,7 +37,7 @@ public:
 
 		uint32_t squareIndices[6] = { 0, 1, 2, 2, 3, 0 };
 		Rod::Ref<Rod::IndexBuffer> squareIB;
-		squareIB.reset(Rod::IndexBuffer::Create(squareIndices, sizeof(squareIndices) / sizeof(uint32_t)));
+		squareIB = Rod::IndexBuffer::Create(squareIndices, sizeof(squareIndices) / sizeof(uint32_t));
 		m_SquareVA->SetIndexBuffer(squareIB);
 
 		std::string flatColorShaderVertexSrc = R"(
@@ -144,7 +147,8 @@ class Sandbox : public Rod::Application
 public:
 	Sandbox() 
 	{
-		PushLayer(new ExampleLayer());
+		//PushLayer(new ExampleLayer());
+		PushLayer(new Sandbox2D());
 	}
 
 	~Sandbox() 

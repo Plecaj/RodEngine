@@ -18,5 +18,12 @@ private:
 	
 	Rod::Ref<Rod::Texture2D> m_Texture;
 
+	struct ProfileResult
+	{
+		const char* Name;
+		float Time;
+	};
+	std::vector<ProfileResult> m_ProfileResuilts;
+
 	glm::vec4 m_SquareColor = { 0.2f, 0.3f, 0.8f, 1.0f };
 };

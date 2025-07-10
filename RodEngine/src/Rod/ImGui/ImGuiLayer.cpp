@@ -86,11 +86,4 @@ namespace Rod{
 			glfwMakeContextCurrent(backup_current_context);
 		}
 	}
-
-	void ImGuiLayer::OnImGuiRender()
-	{
-		static bool show = false;
-		ImGui::ShowDemoWindow(&show);
-	}
-
 }

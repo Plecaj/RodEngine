@@ -2,7 +2,7 @@
 #include "Texture.h"
 #include "Renderer.h"
 
-#include "Platform/OpenGL/OpenGLTexture.h"
+#include "Rod/Platform/OpenGL/OpenGLTexture.h"
 
 namespace Rod {
 	Ref<Texture2D> Rod::Texture2D::Create(const std::string& path)

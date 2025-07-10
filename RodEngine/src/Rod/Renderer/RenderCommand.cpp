@@ -1,7 +1,7 @@
 #include "rdpch.h"
 #include "RenderCommand.h"
 
-#include "Platform/OpenGL/OpenGLRendererAPI.h"
+#include "Rod/Platform/OpenGL/OpenGLRendererAPI.h"
 
 namespace Rod {
 

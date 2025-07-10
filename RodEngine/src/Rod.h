@@ -15,6 +15,8 @@
 
 //------Renderer-----------------------
 #include "Rod/Renderer/Renderer.h"
+#include "Rod/Renderer/Renderer2D.h"
+
 #include "Rod/Renderer/RenderCommand.h"
 
 #include "Rod/Renderer/Buffer.h"

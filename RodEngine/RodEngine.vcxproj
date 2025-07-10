@@ -143,6 +143,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Rod\Debug\Instrumentator.h" />
     <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLBuffer.h" />
     <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLContext.h" />
     <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLRendererAPI.h" />

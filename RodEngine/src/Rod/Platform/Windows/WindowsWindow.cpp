@@ -6,7 +6,7 @@
 #include "Rod/Events/ApplicationEvent.h"
 #include "Rod/Events/MouseEvent.h"
 
-#include "Platform/OpenGL/OpenGLContext.h"
+#include "Rod/Platform/OpenGL/OpenGLContext.h"
 
 namespace Rod {
 

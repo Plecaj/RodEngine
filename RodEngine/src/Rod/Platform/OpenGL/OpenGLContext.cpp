@@ -11,6 +11,8 @@ namespace Rod {
 
 	void OpenGLContext::Init()
 	{
+		RD_PROFILE_FUNCTION();
+
 		glfwMakeContextCurrent(m_windowHandle);
 		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		RD_CORE_ASSERT(status, "Failed to initialize Glad!");
@@ -23,6 +25,8 @@ namespace Rod {
 
 	void OpenGLContext::SwapBuffers()
 	{
+		RD_PROFILE_FUNCTION();
+
 		glfwSwapBuffers(m_windowHandle);
 	}
 

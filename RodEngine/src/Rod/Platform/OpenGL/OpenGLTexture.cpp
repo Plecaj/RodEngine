@@ -8,6 +8,8 @@ namespace Rod {
 	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height)
 		:m_Width(width), m_Height(height)
 	{
+		RD_PROFILE_FUNCTION();
+
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		m_InternalFormat = GL_RGBA8;
 		m_DataFormat = GL_RGBA;
@@ -21,9 +23,15 @@ namespace Rod {
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
 		: m_Path(path)
 	{
+		RD_PROFILE_FUNCTION();
+
 		int width, height, channels;
 		stbi_set_flip_vertically_on_load(1);
-		stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+		stbi_uc* data = nullptr;
+		{
+			RD_PROFILE_SCOPE("stbi_load - OpenGLTexture2D::OpenGLTexture2D(const std::string& path)");
+			data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+		}
 		RD_CORE_ASSERT(data, "Failed to load image");
 		m_Width = width;
 		m_Height = height;
@@ -55,11 +63,15 @@ namespace Rod {
 
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{
+		RD_PROFILE_FUNCTION();
+		
 		glDeleteTextures(1, &m_RendererID);
 	}
 
 	void OpenGLTexture2D::SetData(void* data, uint32_t size)
 	{
+		RD_PROFILE_FUNCTION();
+		
 		uint32_t bytesPerPixel = m_DataFormat == GL_RGBA ? 4 : 3;
 		RD_CORE_ASSERT(size == m_Width * m_Height * bytesPerPixel, "Data must be entire texture");
 		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
@@ -67,6 +79,8 @@ namespace Rod {
 
 	void OpenGLTexture2D::Bind(uint32_t slot) const
 	{
+		RD_PROFILE_FUNCTION();
+
 		glBindTextureUnit(0, m_RendererID + slot);
 	}
 }

@@ -34,6 +34,8 @@ namespace Rod {
 
 	void WindowsWindow::Init(const WindowProps& props)
 	{
+		RD_PROFILE_FUNCTION();
+
 		m_Data.Title = props.Title;
 		m_Data.Width = props.Width;
 		m_Data.Height = props.Height;
@@ -43,6 +45,7 @@ namespace Rod {
 		if (!s_GLFWInitialized)
 		{
 			// TODO: glfwTerminate on system shutdown
+			RD_PROFILE_SCOPE("glfw init");
 			int succes = glfwInit();
 			RD_CORE_ASSERT(succes, "Could not initialize GLFW!");
 			glfwSetErrorCallback(GLFWErrorCallback);
@@ -50,7 +53,10 @@ namespace Rod {
 			s_GLFWInitialized = true;
 		}
 
-		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
+		{
+			RD_PROFILE_SCOPE("glfw create window");
+			m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
+		}
 
 		m_Context = new OpenGLContext(m_Window);
 		m_Context->Init();
@@ -154,17 +160,23 @@ namespace Rod {
 
 	void WindowsWindow::Shutdown()
 	{
+		RD_PROFILE_FUNCTION();
+
 		glfwDestroyWindow(m_Window);
 	}
 
 	void WindowsWindow::OnUpdate()
 	{
+		RD_PROFILE_FUNCTION();
+
 		glfwPollEvents();
 		m_Context->SwapBuffers();
 	}
 
 	void WindowsWindow::SetVSync(bool enabled)
 	{
+		RD_PROFILE_FUNCTION();
+
 		if (enabled)
 			glfwSwapInterval(1);
 		else

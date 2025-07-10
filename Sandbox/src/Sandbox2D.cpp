@@ -15,20 +15,19 @@ Sandbox2D::Sandbox2D()
 
 void Sandbox2D::OnAttach()
 {
+	RD_PROFILE_FUNCTION();
+
 	m_Texture = Rod::Texture2D::Create("assets/textures/test.png");
 }
 
 void Sandbox2D::OnDetach()
 {
+	RD_PROFILE_FUNCTION();
 }
 
 void Sandbox2D::OnUpdate(Rod::Timestep ts)
 {
-	RD_PROFILE_FUNCTION();
-	{
-		RD_PROFILE_SCOPE("CameraController::OnUpdate");
-		m_CameraController.OnUpdate(ts);
-	}
+	m_CameraController.OnUpdate(ts);
 
 	{
 		RD_PROFILE_SCOPE("Render prep");

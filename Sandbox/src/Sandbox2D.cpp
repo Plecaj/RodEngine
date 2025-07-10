@@ -13,6 +13,7 @@ Sandbox2D::Sandbox2D()
 
 void Sandbox2D::OnAttach()
 {
+	m_Texture = Rod::Texture2D::Create("assets/textures/test.png");
 }
 
 void Sandbox2D::OnDetach()
@@ -29,7 +30,7 @@ void Sandbox2D::OnUpdate(Rod::Timestep ts)
 	Rod::Renderer2D::BeginScene(m_CameraController.GetCamera());
 
 	Rod::Renderer2D::DrawQuad({ -1.0f, 0.0f }, { 0.5f, 0.5f }, { 0.8f, 0.2f, 0.3f, 1.0f }, 30.0f);
-	Rod::Renderer2D::DrawQuad({ 0.5f, -0.5f }, { 0.75f, 0.75f }, { 0.2f, 0.2f, 0.8f, 1.0f });
+	Rod::Renderer2D::DrawQuad({ 0.5f, -0.5f }, { 0.75f, 0.75f }, m_Texture);
 
 	Rod::Renderer::EndScene();
 }

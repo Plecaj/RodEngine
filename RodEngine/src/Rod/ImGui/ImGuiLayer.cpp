@@ -81,7 +81,6 @@ namespace Rod{
 		ImGui::End();
 	}
 
-
 	void ImGuiLayer::Begin()
 	{
 		RD_PROFILE_FUNCTION();

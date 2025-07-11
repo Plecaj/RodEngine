@@ -81,7 +81,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
     <Link>
@@ -105,7 +105,7 @@
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
     <Link>
@@ -130,7 +130,7 @@
       <MinimalRebuild>false</MinimalRebuild>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <ExternalWarningLevel>Level3</ExternalWarningLevel>
     </ClCompile>
     <Link>
@@ -143,15 +143,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\Rod\Debug\Instrumentator.h" />
-    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLBuffer.h" />
-    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLContext.h" />
-    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLRendererAPI.h" />
-    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLShader.h" />
-    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLTexture.h" />
-    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLVertexArray.h" />
-    <ClInclude Include="src\Rod\Platform\Windows\WindowsInput.h" />
-    <ClInclude Include="src\Rod\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\Rod.h" />
     <ClInclude Include="src\Rod\Core\Application.h" />
     <ClInclude Include="src\Rod\Core\Core.h" />
@@ -164,11 +155,20 @@
     <ClInclude Include="src\Rod\Core\MouseButtonCodes.h" />
     <ClInclude Include="src\Rod\Core\Timestep.h" />
     <ClInclude Include="src\Rod\Core\Window.h" />
+    <ClInclude Include="src\Rod\Debug\Instrumentator.h" />
     <ClInclude Include="src\Rod\Events\ApplicationEvent.h" />
     <ClInclude Include="src\Rod\Events\Event.h" />
     <ClInclude Include="src\Rod\Events\KeyEvent.h" />
     <ClInclude Include="src\Rod\Events\MouseEvent.h" />
     <ClInclude Include="src\Rod\ImGui\ImGuiLayer.h" />
+    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLBuffer.h" />
+    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLContext.h" />
+    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLRendererAPI.h" />
+    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLShader.h" />
+    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLTexture.h" />
+    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLVertexArray.h" />
+    <ClInclude Include="src\Rod\Platform\Windows\WindowsInput.h" />
+    <ClInclude Include="src\Rod\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\Rod\Renderer\Buffer.h" />
     <ClInclude Include="src\Rod\Renderer\Camera.h" />
     <ClInclude Include="src\Rod\Renderer\GraphicsContext.h" />
@@ -600,6 +600,12 @@
     <ClInclude Include="vendor\stb_image\stb_image.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Rod\Core\Application.cpp" />
+    <ClCompile Include="src\Rod\Core\Layer.cpp" />
+    <ClCompile Include="src\Rod\Core\LayerStack.cpp" />
+    <ClCompile Include="src\Rod\Core\Log.cpp" />
+    <ClCompile Include="src\Rod\ImGui\ImGuiBuild.cpp" />
+    <ClCompile Include="src\Rod\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLRendererAPI.cpp" />
@@ -608,12 +614,6 @@
     <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLVertexArray.cpp" />
     <ClCompile Include="src\Rod\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Rod\Platform\Windows\WindowsWindow.cpp" />
-    <ClCompile Include="src\Rod\Core\Application.cpp" />
-    <ClCompile Include="src\Rod\Core\Layer.cpp" />
-    <ClCompile Include="src\Rod\Core\LayerStack.cpp" />
-    <ClCompile Include="src\Rod\Core\Log.cpp" />
-    <ClCompile Include="src\Rod\ImGui\ImGuiBuild.cpp" />
-    <ClCompile Include="src\Rod\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="src\Rod\Renderer\Buffer.cpp" />
     <ClCompile Include="src\Rod\Renderer\Camera.cpp" />
     <ClCompile Include="src\Rod\Renderer\OrthographicCameraController.cpp" />

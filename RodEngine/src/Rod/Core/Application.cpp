@@ -7,8 +7,9 @@
 
 #include <GLFW/glfw3.h>
 
-namespace Rod {
 
+namespace Rod {
+		
 	Application* Application::s_Instance = nullptr;
 
 	Application::Application()

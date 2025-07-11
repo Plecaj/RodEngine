@@ -4,26 +4,29 @@
     <Filter Include="src">
       <UniqueIdentifier>{2DAB880B-99B4-887C-2230-9F7C8E38947C}</UniqueIdentifier>
     </Filter>
-    <Filter Include="src\Platform">
-      <UniqueIdentifier>{21CA02E5-0D2D-9289-B6B2-CA3FA2F45D0C}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Platform\OpenGL">
-      <UniqueIdentifier>{35A49437-A105-7245-2A73-B8F796D3A804}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="src\Platform\Windows">
-      <UniqueIdentifier>{5B054582-4794-CE4B-F0B2-E246DC20DFF1}</UniqueIdentifier>
-    </Filter>
     <Filter Include="src\Rod">
       <UniqueIdentifier>{01AB2FA9-6D8A-AE44-76A2-391BE20015A6}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\Rod\Core">
       <UniqueIdentifier>{F9D780A6-E53A-104B-8EC0-48017A02DCCD}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Rod\Debug">
+      <UniqueIdentifier>{3732A876-A3F2-23AD-6C2D-6D2AD8AC6889}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\Rod\Events">
       <UniqueIdentifier>{C5CB384F-B199-2C55-9A2D-9D7B869A08BA}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\Rod\ImGui">
       <UniqueIdentifier>{EB9C0677-575D-82AD-2098-CB2A8C17C789}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Rod\Platform">
+      <UniqueIdentifier>{75D8B81C-61D1-D76E-8A03-BDF3765BB77A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Rod\Platform\OpenGL">
+      <UniqueIdentifier>{09CCC805-7503-119D-7E0D-75C0EAC33796}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Rod\Platform\Windows">
+      <UniqueIdentifier>{AF27FE16-9B4C-4D97-C497-3227B01B4CB5}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\Rod\Renderer">
       <UniqueIdentifier>{C7DF95F7-B3D8-B449-DC0A-9ACEC8629455}</UniqueIdentifier>
@@ -54,30 +57,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLBuffer.h">
-      <Filter>src\Platform\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLContext.h">
-      <Filter>src\Platform\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLRendererAPI.h">
-      <Filter>src\Platform\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLShader.h">
-      <Filter>src\Platform\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLTexture.h">
-      <Filter>src\Platform\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLVertexArray.h">
-      <Filter>src\Platform\OpenGL</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rod\Platform\Windows\WindowsInput.h">
-      <Filter>src\Platform\Windows</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rod\Platform\Windows\WindowsWindow.h">
-      <Filter>src\Platform\Windows</Filter>
-    </ClInclude>
     <ClInclude Include="src\Rod.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -114,6 +93,9 @@
     <ClInclude Include="src\Rod\Core\Window.h">
       <Filter>src\Rod\Core</Filter>
     </ClInclude>
+    <ClInclude Include="src\Rod\Debug\Instrumentator.h">
+      <Filter>src\Rod\Debug</Filter>
+    </ClInclude>
     <ClInclude Include="src\Rod\Events\ApplicationEvent.h">
       <Filter>src\Rod\Events</Filter>
     </ClInclude>
@@ -128,6 +110,30 @@
     </ClInclude>
     <ClInclude Include="src\Rod\ImGui\ImGuiLayer.h">
       <Filter>src\Rod\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLBuffer.h">
+      <Filter>src\Rod\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLContext.h">
+      <Filter>src\Rod\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLRendererAPI.h">
+      <Filter>src\Rod\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLShader.h">
+      <Filter>src\Rod\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLTexture.h">
+      <Filter>src\Rod\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLVertexArray.h">
+      <Filter>src\Rod\Platform\OpenGL</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Platform\Windows\WindowsInput.h">
+      <Filter>src\Rod\Platform\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Platform\Windows\WindowsWindow.h">
+      <Filter>src\Rod\Platform\Windows</Filter>
     </ClInclude>
     <ClInclude Include="src\Rod\Renderer\Buffer.h">
       <Filter>src\Rod\Renderer</Filter>
@@ -145,6 +151,9 @@
       <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Rod\Renderer\Renderer.h">
+      <Filter>src\Rod\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Renderer\Renderer2D.h">
       <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Rod\Renderer\RendererAPI.h">
@@ -1413,34 +1422,8 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rod\Renderer\Renderer2D.h" />
-    <ClInclude Include="src\Rod\Debug\Instrumentator.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLBuffer.cpp">
-      <Filter>src\Platform\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLContext.cpp">
-      <Filter>src\Platform\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLRendererAPI.cpp">
-      <Filter>src\Platform\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLShader.cpp">
-      <Filter>src\Platform\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLTexture.cpp">
-      <Filter>src\Platform\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLVertexArray.cpp">
-      <Filter>src\Platform\OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rod\Platform\Windows\WindowsInput.cpp">
-      <Filter>src\Platform\Windows</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rod\Platform\Windows\WindowsWindow.cpp">
-      <Filter>src\Platform\Windows</Filter>
-    </ClCompile>
     <ClCompile Include="src\Rod\Core\Application.cpp">
       <Filter>src\Rod\Core</Filter>
     </ClCompile>
@@ -1459,6 +1442,30 @@
     <ClCompile Include="src\Rod\ImGui\ImGuiLayer.cpp">
       <Filter>src\Rod\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLBuffer.cpp">
+      <Filter>src\Rod\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLContext.cpp">
+      <Filter>src\Rod\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLRendererAPI.cpp">
+      <Filter>src\Rod\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLShader.cpp">
+      <Filter>src\Rod\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLTexture.cpp">
+      <Filter>src\Rod\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLVertexArray.cpp">
+      <Filter>src\Rod\Platform\OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\Platform\Windows\WindowsInput.cpp">
+      <Filter>src\Rod\Platform\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\Platform\Windows\WindowsWindow.cpp">
+      <Filter>src\Rod\Platform\Windows</Filter>
+    </ClCompile>
     <ClCompile Include="src\Rod\Renderer\Buffer.cpp">
       <Filter>src\Rod\Renderer</Filter>
     </ClCompile>
@@ -1472,6 +1479,9 @@
       <Filter>src\Rod\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Rod\Renderer\Renderer.cpp">
+      <Filter>src\Rod\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\Renderer\Renderer2D.cpp">
       <Filter>src\Rod\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Rod\Renderer\RendererAPI.cpp">
@@ -1492,6 +1502,5 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rod\Renderer\Renderer2D.cpp" />
   </ItemGroup>
 </Project>

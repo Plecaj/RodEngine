@@ -15,10 +15,9 @@ int main(int argc, char** argv)
 	auto app = Rod::CreateApplication();
 	RD_PROFILE_END_SESSION();
 
-	RD_PROFILE_BEGIN_SESSION("Runtime", "RodProfile-Runtime.json");
 	app->Run();
-	RD_PROFILE_END_SESSION();
 
+	RD_PROFILE_END_SESSION();
 	RD_PROFILE_BEGIN_SESSION("Shutdown", "RodProfile-Shutdown.json");
 	delete app;
 	RD_PROFILE_END_SESSION();

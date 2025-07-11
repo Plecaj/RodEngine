@@ -10,6 +10,8 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
+static bool profiling = false;
+
 namespace Rod{
 
 	ImGuiLayer::ImGuiLayer()
@@ -63,6 +65,20 @@ namespace Rod{
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
+	}
+
+	void ImGuiLayer::OnImGuiRender()
+	{
+		ImGui::Begin("Engine Tools");
+		if (!profiling && ImGui::Button("Start Profiling")) {
+			profiling = true;
+			RD_PROFILE_BEGIN_SESSION("Runtime", "RodProfile-Runtime.json");
+		}
+		if (profiling && ImGui::Button("Stop Profiling")) {
+			profiling = false;
+			RD_PROFILE_END_SESSION();
+		}
+		ImGui::End();
 	}
 
 

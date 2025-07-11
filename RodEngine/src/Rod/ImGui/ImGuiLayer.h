@@ -17,6 +17,8 @@ namespace Rod {
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
 
+		virtual void ImGuiLayer::OnImGuiRender() override;
+
 		void Begin();
 		void End();
 

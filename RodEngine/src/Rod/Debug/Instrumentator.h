@@ -27,6 +27,7 @@ namespace Rod
         InstrumentationSession* m_CurrentSession;
         std::ofstream m_OutputStream;
         int m_ProfileCount;
+        bool m_Enabled = false;
     public:
         Instrumentor()
             : m_CurrentSession(nullptr), m_ProfileCount(0)
@@ -35,6 +36,7 @@ namespace Rod
 
         void BeginSession(const std::string& name, const std::string& filepath = "results.json")
         {
+            m_Enabled = true;
             m_OutputStream.open(filepath);
             WriteHeader();
             m_CurrentSession = new InstrumentationSession{ name };
@@ -42,6 +44,7 @@ namespace Rod
 
         void EndSession()
         {
+            m_Enabled = false;
             WriteFooter();
             m_OutputStream.close();
             delete m_CurrentSession;
@@ -51,6 +54,9 @@ namespace Rod
 
         void WriteProfile(const ProfileResult& result)
         {
+            if (!m_Enabled || !m_CurrentSession)
+                return;
+
             if (m_ProfileCount++ > 0)
                 m_OutputStream << ",";
 
@@ -121,7 +127,9 @@ namespace Rod
         std::chrono::time_point<std::chrono::high_resolution_clock> m_StartTimepoint;
         bool m_Stopped;
     };
+
 }
+
 
 #define RD_PROFILE 1
 #if RD_PROFILE

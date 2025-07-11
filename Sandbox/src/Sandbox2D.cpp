@@ -39,8 +39,9 @@ void Sandbox2D::OnUpdate(Rod::Timestep ts)
 		RD_PROFILE_SCOPE("Render draw");
 		Rod::Renderer2D::BeginScene(m_CameraController.GetCamera());
 
-		Rod::Renderer2D::DrawQuad({ -1.0f, 0.0f }, { 0.5f, 0.5f }, { 0.8f, 0.2f, 0.3f, 1.0f }, 30.0f);
+		Rod::Renderer2D::DrawQuad({ -1.0f, 0.0f }, { 0.5f, 0.5f }, { 0.8f, 0.2f, 0.3f, 1.0f });
 		Rod::Renderer2D::DrawQuad({ 0.5f, -0.5f }, { 0.75f, 0.75f }, m_Texture);
+		Rod::Renderer2D::DrawRotatedQuad({ 1.0f, 0.0f }, { 0.25f, 0.25f }, glm::radians(45.0f), { 0.1f, 0.1f, 0.8f, 1.0f });
 
 		Rod::Renderer::EndScene();
 	}

@@ -70,7 +70,6 @@ namespace Rod {
 
 	void OpenGLTexture2D::SetData(void* data, uint32_t size)
 	{
-		RD_PROFILE_FUNCTION();
 		
 		uint32_t bytesPerPixel = m_DataFormat == GL_RGBA ? 4 : 3;
 		RD_CORE_ASSERT(size == m_Width * m_Height * bytesPerPixel, "Data must be entire texture");

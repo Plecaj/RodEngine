@@ -5,6 +5,4 @@ bin-int/
 
 # Files 
 *.user
-Sandbox/RodProfile-Startup.json 
-Sandbox/RodProfile-Runtime.json
-Sandbox/RodProfile-Shutdown.json 
+Sandbox/RodProfile-*.json

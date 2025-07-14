@@ -80,6 +80,6 @@ namespace Rod {
 	{
 		RD_PROFILE_FUNCTION();
 
-		glBindTextureUnit(0, m_RendererID + slot);
+		glBindTextureUnit(0 + slot, m_RendererID);
 	}
 }

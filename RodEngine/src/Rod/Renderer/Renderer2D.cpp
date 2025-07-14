@@ -41,6 +41,8 @@ namespace Rod {
 
         glm::vec4 QuadVertexPositions[4];
 
+        Renderer2D::Statistics Stats;
+
         Renderer2DData()    : MaxTexturesSlots(Renderer::GetMaxTextureSlots()), TextureSlots(MaxTexturesSlots){}
     };
 
@@ -221,6 +223,8 @@ namespace Rod {
         s_Data->QuadVertexBufferPtr++;
 
         s_Data->QuadIndexCount += 6;
+
+        s_Data->Stats.QuadCount++;
     }
 
     void Renderer2D::DrawQuad(const glm::vec2& position, const glm::vec2& size, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
@@ -287,6 +291,8 @@ namespace Rod {
         s_Data->QuadVertexBufferPtr++;
 
         s_Data->QuadIndexCount += 6;
+
+        s_Data->Stats.QuadCount++;
     }
 
     void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, const float radiansRotation, const glm::vec4& color)
@@ -339,6 +345,8 @@ namespace Rod {
         s_Data->QuadVertexBufferPtr++;
 
         s_Data->QuadIndexCount += 6;
+
+        s_Data->Stats.QuadCount++;
     }
 
     void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, const float radiansRotation, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
@@ -406,6 +414,19 @@ namespace Rod {
         s_Data->QuadVertexBufferPtr++;
 
         s_Data->QuadIndexCount += 6;
+
+        s_Data->Stats.QuadCount++;
+    }
+
+
+    void Renderer2D::ResetStats()
+    {
+        memset(&s_Data->Stats, 0, sizeof(Statistics));
+    }
+
+    Renderer2D::Statistics Renderer2D::GetStats()
+    {
+        return s_Data->Stats;
     }
 
     void Renderer2D::BeginBatch()
@@ -433,5 +454,6 @@ namespace Rod {
             s_Data->TextureSlots[i]->Bind(i);
 
         RenderCommand::DrawIndexed(s_Data->QuadVertexArray, s_Data->QuadIndexCount);
+        s_Data->Stats.DrawCalls++;
     }
 }

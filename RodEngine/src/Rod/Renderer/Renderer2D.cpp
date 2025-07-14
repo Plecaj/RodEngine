@@ -17,6 +17,7 @@ namespace Rod {
         glm::vec4 Color;
         glm::vec2 TexCoord;
         float TexIdx;
+        float TilingFactor;
     };
 
     struct Renderer2DData 
@@ -38,6 +39,8 @@ namespace Rod {
         std::vector<Ref<Texture2D>> TextureSlots;
         uint32_t TextureSlotIndex = 1; // 0 = white texture
 
+        glm::vec4 QuadVertexPositions[4];
+
         Renderer2DData()    : MaxTexturesSlots(Renderer::GetMaxTextureSlots()), TextureSlots(MaxTexturesSlots){}
     };
 
@@ -55,18 +58,21 @@ namespace Rod {
         layout(location = 1) in vec4 a_Color;
         layout(location = 2) in vec2 a_TexCoord;
         layout(location = 3) in float a_TexIdx;
+        layout(location = 4) in float a_TilingFactor;
 
         uniform mat4 u_ViewProjection;
 
         out vec4 v_Color;
         out vec2 v_TexCoord;
         out float v_TexIdx;
+        out float v_TilingFactor;
 
         void main()
         {
             v_Color = a_Color;
             v_TexCoord = a_TexCoord;
             v_TexIdx = a_TexIdx;
+            v_TilingFactor = a_TilingFactor;
             gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
         }
         )";
@@ -79,12 +85,13 @@ namespace Rod {
         in vec4 v_Color;
         in vec2 v_TexCoord;
         in float v_TexIdx;
+        in float v_TilingFactor;
 
         uniform sampler2D u_Textures[)" + std::to_string(s_Data->MaxTexturesSlots) + R"(];
 
         void main()
         {
-            color = texture(u_Textures[int(v_TexIdx)], v_TexCoord) * v_Color;
+            color = texture(u_Textures[int(v_TexIdx)], v_TexCoord * v_TilingFactor) * v_Color;
         }
         )";
 
@@ -105,6 +112,7 @@ namespace Rod {
             { ShaderDataType::Float4, "a_Color"},
             { ShaderDataType::Float2, "a_TexCoord" },
             { ShaderDataType::Float, "a_TexIdx"},
+            { ShaderDataType::Float, "a_TilingFactor"}
             });
         s_Data->QuadVertexArray->AddVertexBuffer(s_Data->QuadVertexBuffer);
 
@@ -132,6 +140,11 @@ namespace Rod {
         s_Data->WhiteTexture->SetData(&whiteTextureData, sizeof(whiteTextureData));
 
         s_Data->TextureSlots[0] = s_Data->WhiteTexture;
+
+        s_Data->QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
+        s_Data->QuadVertexPositions[1] = { 0.5f, -0.5f, 0.0f, 1.0f };
+        s_Data->QuadVertexPositions[2] = { 0.5f, 0.5f, 0.0f, 1.0f };
+        s_Data->QuadVertexPositions[3] = { -0.5f, 0.5f, 0.0f, 1.0f };
     }
 
     void Renderer2D::Shutdown()
@@ -166,36 +179,45 @@ namespace Rod {
 
     void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color)
     {
+        RD_PROFILE_FUNCTION();
         if (s_Data->QuadIndexCount + 6 > s_Data->MAX_INDICES_COUNT) {
             EndBatch();
             Flush();
             BeginBatch();
         }
 
+        glm::mat4 transform =
+            glm::translate(glm::mat4(1.0f), position)
+            * glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
+
         float whiteTextureIndex = 0.0f;
 
-        s_Data->QuadVertexBufferPtr->Position = position;
+        s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[0];
         s_Data->QuadVertexBufferPtr->Color = color;
         s_Data->QuadVertexBufferPtr->TexCoord = { 0.0f, 0.0f };
         s_Data->QuadVertexBufferPtr->TexIdx = whiteTextureIndex;
+        s_Data->QuadVertexBufferPtr->TilingFactor = 1.0f;
         s_Data->QuadVertexBufferPtr++;
 
-        s_Data->QuadVertexBufferPtr->Position = { position.x + size.x, position.y, position.z };
+        s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[1];
         s_Data->QuadVertexBufferPtr->Color = color;
         s_Data->QuadVertexBufferPtr->TexCoord = { 1.0f, 0.0f };
         s_Data->QuadVertexBufferPtr->TexIdx = whiteTextureIndex;
+        s_Data->QuadVertexBufferPtr->TilingFactor = 1.0f;
         s_Data->QuadVertexBufferPtr++;
 
-        s_Data->QuadVertexBufferPtr->Position = { position.x + size.x, position.y + size.y, position.z };
+        s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[2];
         s_Data->QuadVertexBufferPtr->Color = color;
         s_Data->QuadVertexBufferPtr->TexCoord = { 1.0f, 1.0f };
         s_Data->QuadVertexBufferPtr->TexIdx = whiteTextureIndex;
+        s_Data->QuadVertexBufferPtr->TilingFactor = 1.0f;
         s_Data->QuadVertexBufferPtr++;
 
-        s_Data->QuadVertexBufferPtr->Position = { position.x, position.y + size.y, position.z };
+        s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[3];
         s_Data->QuadVertexBufferPtr->Color = color;
         s_Data->QuadVertexBufferPtr->TexCoord = { 0.0f, 1.0f };
         s_Data->QuadVertexBufferPtr->TexIdx = whiteTextureIndex;
+        s_Data->QuadVertexBufferPtr->TilingFactor = 1.0f;
         s_Data->QuadVertexBufferPtr++;
 
         s_Data->QuadIndexCount += 6;
@@ -208,13 +230,14 @@ namespace Rod {
 
     void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
     {
+        RD_PROFILE_FUNCTION();
         if ((s_Data->QuadIndexCount + 6 > s_Data->MAX_INDICES_COUNT) || s_Data->TextureSlotIndex + 1 >= s_Data->MaxTexturesSlots) {
             EndBatch();
             Flush();
             BeginBatch();
         }
     
-        float textureIndex = 0;
+        float textureIndex = 0.0f;
         for (uint32_t i = 1; i < s_Data->TextureSlotIndex; i++) 
         {
             if (*s_Data->TextureSlots[i].get() == *texture.get())
@@ -231,34 +254,41 @@ namespace Rod {
             s_Data->TextureSlotIndex++;
         }
 
-        s_Data->QuadVertexBufferPtr->Position = position;
+        glm::mat4 transform =
+            glm::translate(glm::mat4(1.0f), position)
+            * glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
+
+        s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[0];
         s_Data->QuadVertexBufferPtr->Color = tintColor;
         s_Data->QuadVertexBufferPtr->TexCoord = { 0.0f, 0.0f };
         s_Data->QuadVertexBufferPtr->TexIdx = textureIndex;
+        s_Data->QuadVertexBufferPtr->TilingFactor = tilingFactor;
         s_Data->QuadVertexBufferPtr++;
 
-        s_Data->QuadVertexBufferPtr->Position = { position.x + size.x, position.y, position.z };
+        s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[1];
         s_Data->QuadVertexBufferPtr->Color = tintColor;
         s_Data->QuadVertexBufferPtr->TexCoord = { 1.0f, 0.0f };
         s_Data->QuadVertexBufferPtr->TexIdx = textureIndex;
+        s_Data->QuadVertexBufferPtr->TilingFactor = tilingFactor;
         s_Data->QuadVertexBufferPtr++;
 
-        s_Data->QuadVertexBufferPtr->Position = { position.x + size.x, position.y + size.y, position.z };
+        s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[2];
         s_Data->QuadVertexBufferPtr->Color = tintColor;
         s_Data->QuadVertexBufferPtr->TexCoord = { 1.0f, 1.0f };
         s_Data->QuadVertexBufferPtr->TexIdx = textureIndex;
+        s_Data->QuadVertexBufferPtr->TilingFactor = tilingFactor;
         s_Data->QuadVertexBufferPtr++;
 
-        s_Data->QuadVertexBufferPtr->Position = { position.x, position.y + size.y, position.z };
+        s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[3];
         s_Data->QuadVertexBufferPtr->Color = tintColor;
         s_Data->QuadVertexBufferPtr->TexCoord = { 0.0f, 1.0f };
         s_Data->QuadVertexBufferPtr->TexIdx = textureIndex;
+        s_Data->QuadVertexBufferPtr->TilingFactor = tilingFactor;
         s_Data->QuadVertexBufferPtr++;
 
         s_Data->QuadIndexCount += 6;
     }
 
-    // Rotated ones arent supported for now!
     void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, const float radiansRotation, const glm::vec4& color)
     {
         DrawRotatedQuad({ position.x, position.y, 0.0f }, size, radiansRotation, color);
@@ -267,16 +297,48 @@ namespace Rod {
     void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, const float radiansRotation, const glm::vec4& color)
     {
         RD_PROFILE_FUNCTION();
+        if (s_Data->QuadIndexCount + 6 > s_Data->MAX_INDICES_COUNT) {
+            EndBatch();
+            Flush();
+            BeginBatch();
+        }
 
-        s_Data->TextureShader->SetFloat4("u_Color", color);
-        s_Data->TextureShader->SetFloat("u_TilingFactor", 1.0f);
-        glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::rotate(glm::mat4(1.0f), radiansRotation, glm::vec3(0.0f, 0.0f, 1.0f)) * glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
-        s_Data->WhiteTexture->Bind();
+        float whiteTextureIndex = 0.0f;
 
-        s_Data->TextureShader->SetMat4("u_Transform", transform);
+        glm::mat4 transform =
+            glm::translate(glm::mat4(1.0f), position)
+            * glm::rotate(glm::mat4(1.0f), radiansRotation, { 0.0f, 0.0f, 1.0f })
+            * glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
 
-        s_Data->QuadVertexArray->Bind();
-        RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
+        s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[0];
+        s_Data->QuadVertexBufferPtr->Color = color;
+        s_Data->QuadVertexBufferPtr->TexCoord = { 0.0f, 0.0f };
+        s_Data->QuadVertexBufferPtr->TexIdx = whiteTextureIndex;
+        s_Data->QuadVertexBufferPtr->TilingFactor = 1.0f;
+        s_Data->QuadVertexBufferPtr++;
+
+        s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[1];
+        s_Data->QuadVertexBufferPtr->Color = color;
+        s_Data->QuadVertexBufferPtr->TexCoord = { 1.0f, 0.0f };
+        s_Data->QuadVertexBufferPtr->TexIdx = whiteTextureIndex;
+        s_Data->QuadVertexBufferPtr->TilingFactor = 1.0f;
+        s_Data->QuadVertexBufferPtr++;
+
+        s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[2];
+        s_Data->QuadVertexBufferPtr->Color = color;
+        s_Data->QuadVertexBufferPtr->TexCoord = { 1.0f, 1.0f };
+        s_Data->QuadVertexBufferPtr->TexIdx = whiteTextureIndex;
+        s_Data->QuadVertexBufferPtr->TilingFactor = 1.0f;
+        s_Data->QuadVertexBufferPtr++;
+
+        s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[3];
+        s_Data->QuadVertexBufferPtr->Color = color;
+        s_Data->QuadVertexBufferPtr->TexCoord = { 0.0f, 1.0f };
+        s_Data->QuadVertexBufferPtr->TexIdx = whiteTextureIndex;
+        s_Data->QuadVertexBufferPtr->TilingFactor = 1.0f;
+        s_Data->QuadVertexBufferPtr++;
+
+        s_Data->QuadIndexCount += 6;
     }
 
     void Renderer2D::DrawRotatedQuad(const glm::vec2& position, const glm::vec2& size, const float radiansRotation, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
@@ -287,16 +349,63 @@ namespace Rod {
     void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, const float radiansRotation, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
     {
         RD_PROFILE_FUNCTION();
+        if ((s_Data->QuadIndexCount + 6 > s_Data->MAX_INDICES_COUNT) || s_Data->TextureSlotIndex + 1 >= s_Data->MaxTexturesSlots) {
+            EndBatch();
+            Flush();
+            BeginBatch();
+        }
 
-        s_Data->TextureShader->SetFloat4("u_Color", tintColor);
-        s_Data->TextureShader->SetFloat("u_TilingFactor", tilingFactor);
-        glm::mat4 transform = glm::translate(glm::mat4(1.0f), position) * glm::rotate(glm::mat4(1.0f), radiansRotation, glm::vec3(0.0f, 0.0f, 1.0f)) * glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
-        s_Data->TextureShader->SetMat4("u_Transform", transform);
+        float textureIndex = 0.0f;
+        for (uint32_t i = 1; i < s_Data->TextureSlotIndex; i++)
+        {
+            if (*s_Data->TextureSlots[i].get() == *texture.get())
+            {
+                textureIndex = (float)i;
+                break;
+            }
+        }
 
-        texture->Bind();
+        if (textureIndex == 0)
+        {
+            textureIndex = (float)s_Data->TextureSlotIndex;
+            s_Data->TextureSlots[s_Data->TextureSlotIndex] = texture;
+            s_Data->TextureSlotIndex++;
+        }
 
-        s_Data->QuadVertexArray->Bind();
-        RenderCommand::DrawIndexed(s_Data->QuadVertexArray);
+        glm::mat4 transform =
+            glm::translate(glm::mat4(1.0f), position)
+            * glm::rotate(glm::mat4(1.0f), radiansRotation, { 0.0f, 0.0f, 1.0f })
+            * glm::scale(glm::mat4(1.0f), { size.x, size.y, 1.0f });
+
+        s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[0];
+        s_Data->QuadVertexBufferPtr->Color = tintColor;
+        s_Data->QuadVertexBufferPtr->TexCoord = { 0.0f, 0.0f };
+        s_Data->QuadVertexBufferPtr->TexIdx = textureIndex;
+        s_Data->QuadVertexBufferPtr->TilingFactor = tilingFactor;
+        s_Data->QuadVertexBufferPtr++;
+
+        s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[1];
+        s_Data->QuadVertexBufferPtr->Color = tintColor;
+        s_Data->QuadVertexBufferPtr->TexCoord = { 1.0f, 0.0f };
+        s_Data->QuadVertexBufferPtr->TexIdx = textureIndex;
+        s_Data->QuadVertexBufferPtr->TilingFactor = tilingFactor;
+        s_Data->QuadVertexBufferPtr++;
+
+        s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[2];
+        s_Data->QuadVertexBufferPtr->Color = tintColor;
+        s_Data->QuadVertexBufferPtr->TexCoord = { 1.0f, 1.0f };
+        s_Data->QuadVertexBufferPtr->TexIdx = textureIndex;
+        s_Data->QuadVertexBufferPtr->TilingFactor = tilingFactor;
+        s_Data->QuadVertexBufferPtr++;
+
+        s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[3];
+        s_Data->QuadVertexBufferPtr->Color = tintColor;
+        s_Data->QuadVertexBufferPtr->TexCoord = { 0.0f, 1.0f };
+        s_Data->QuadVertexBufferPtr->TexIdx = textureIndex;
+        s_Data->QuadVertexBufferPtr->TilingFactor = tilingFactor;
+        s_Data->QuadVertexBufferPtr++;
+
+        s_Data->QuadIndexCount += 6;
     }
 
     void Renderer2D::BeginBatch()
@@ -323,7 +432,6 @@ namespace Rod {
         for (uint32_t i = 0; i < s_Data->TextureSlotIndex; i++) 
             s_Data->TextureSlots[i]->Bind(i);
 
-        //s_Data->QuadVertexArray->Bind();
         RenderCommand::DrawIndexed(s_Data->QuadVertexArray, s_Data->QuadIndexCount);
     }
 }

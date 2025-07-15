@@ -160,6 +160,8 @@ namespace Rod {
     {
         RD_PROFILE_FUNCTION();
 
+        s_Data->Stats.DrawCalls = 0;
+
         s_Data->TextureShader->Bind();
         s_Data->TextureShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
 
@@ -417,7 +419,6 @@ namespace Rod {
 
         s_Data->Stats.QuadCount++;
     }
-
 
     void Renderer2D::ResetStats()
     {

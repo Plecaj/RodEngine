@@ -9,22 +9,26 @@
 ## 🛠 Tech Stack
 
 - **Language:** C++  
-- **Rendering:** OpenGL  (Vulcan/DirectX support planned)
+- **Rendering:** OpenGL 
 - **Windowing & Input:** GLFW  
-- **OpenGL Function Loader:** Glad  
 - **Math Library:** GLM  
 - **GUI:** ImGui  
 - **Logging:** spdlog  
 - **Image Loading:** stb_image  
 - **Build System:** Premake5  
-- **Platform:** Windows (Linux/macOS support planned)
+- **Platform:** Windows 
 
 ## 🎯 Goals
 
-- Learn and implement modern engine architecture  
-- Build a flexible and modular codebase  
-- Support both 2D and 3D rendering  
-- Develop custom tools, scripting, and physics in later stages
+- Both 2D and 3D rendering
+- Support for other rendering API's
+- Support other platforms - such as linux, mobile
+- Built-in scene editor - GUI
+- Audio playback control
+- Scripting
+- Physics system
+
+
 
 ## 🙏 Credits
 

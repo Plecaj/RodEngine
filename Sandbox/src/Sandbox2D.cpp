@@ -18,6 +18,10 @@ void Sandbox2D::OnAttach()
 	RD_PROFILE_FUNCTION();
 
 	m_Texture = Rod::Texture2D::Create("assets/textures/test.png");
+	m_SpriteSheet = Rod::Texture2D::Create("assets/game/textures/RPGpack_sheet_2X.png");
+
+	m_TextureStairs = Rod::SubTexture2D::CreateFromCoords(m_SpriteSheet, { 7, 6 }, { 128, 128 });
+	m_TextureTree = Rod::SubTexture2D::CreateFromCoords(m_SpriteSheet, { 2, 1 }, { 128, 128 }, { 1, 2 });
 
 	m_Particle.ColorBegin = { 254 / 255.0f, 212 / 255.0f, 123 / 255.0f, 1.0f };
 	m_Particle.ColorEnd = { 254 / 255.0f, 109 / 255.0f, 41 / 255.0f, 1.0f };
@@ -41,6 +45,7 @@ void Sandbox2D::OnUpdate(Rod::Timestep ts)
 	Rod::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 	Rod::RenderCommand::Clear();
 
+#if 0
 	Rod::Renderer2D::BeginScene(m_CameraController.GetCamera());
 
 	Rod::Renderer2D::DrawQuad({ 1.0f, 0.0f }, { 0.5f, 0.5f }, { 0.2f, 0.2f, 0.8f, 1.0f });
@@ -51,7 +56,7 @@ void Sandbox2D::OnUpdate(Rod::Timestep ts)
 	Rod::Renderer2D::DrawRotatedQuad({ 0.25f, 0.25f, 1.0f }, { 0.1f, 0.1f }, glm::radians(-45.0f), m_Texture);
 
 	Rod::Renderer2D::EndScene();
-
+#endif
 	if (Rod::Input::IsMouseButtonPressed(Rod::Mouse::Button0))
 	{
 		auto [x, y] = Rod::Input::GetMousePosition();
@@ -69,6 +74,11 @@ void Sandbox2D::OnUpdate(Rod::Timestep ts)
 
 	m_ParticleSystem.OnUpdate(ts);
 	m_ParticleSystem.OnRender(m_CameraController.GetCamera());
+
+	Rod::Renderer2D::BeginScene(m_CameraController.GetCamera());
+	Rod::Renderer2D::DrawQuad({ 0.0f, 0.0f, 0.5f }, { 1.0f, 1.0f }, m_TextureStairs);
+	Rod::Renderer2D::DrawQuad({ -1.0f, 0.0f, 0.5f }, { 1.0f, 2.0f }, m_TextureTree);
+	Rod::Renderer2D::EndScene();
 }
 
 void Sandbox2D::OnImGuiRender()

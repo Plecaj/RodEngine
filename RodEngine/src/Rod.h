@@ -22,6 +22,7 @@
 #include "Rod/Renderer/Buffer.h"
 #include "Rod/Renderer/Shader.h"
 #include "Rod/Renderer/Texture.h"
+#include "Rod/Renderer/SubTexture2D.h"
 #include "Rod/Renderer/VertexArray.h"
 
 #include "Rod/Renderer/Camera.h"

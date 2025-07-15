@@ -178,6 +178,7 @@
     <ClInclude Include="src\Rod\Renderer\Renderer2D.h" />
     <ClInclude Include="src\Rod\Renderer\RendererAPI.h" />
     <ClInclude Include="src\Rod\Renderer\Shader.h" />
+    <ClInclude Include="src\Rod\Renderer\SubTexture2D.h" />
     <ClInclude Include="src\Rod\Renderer\Texture.h" />
     <ClInclude Include="src\Rod\Renderer\VertexArray.h" />
     <ClInclude Include="src\rdpch.h" />
@@ -622,6 +623,7 @@
     <ClCompile Include="src\Rod\Renderer\Renderer2D.cpp" />
     <ClCompile Include="src\Rod\Renderer\RendererAPI.cpp" />
     <ClCompile Include="src\Rod\Renderer\Shader.cpp" />
+    <ClCompile Include="src\Rod\Renderer\SubTexture2D.cpp" />
     <ClCompile Include="src\Rod\Renderer\Texture.cpp" />
     <ClCompile Include="src\Rod\Renderer\VertexArray.cpp" />
     <ClCompile Include="src\rdpch.cpp">

@@ -19,6 +19,8 @@ private:
 	Rod::OrthographicCameraController m_CameraController;
 	
 	Rod::Ref<Rod::Texture2D> m_Texture;
+	Rod::Ref<Rod::Texture2D> m_SpriteSheet;
+	Rod::Ref<Rod::SubTexture2D> m_TextureStairs, m_TextureTree;
 
 	ParticleProps m_Particle;
 	ParticleSystem m_ParticleSystem;

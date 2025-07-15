@@ -10,7 +10,7 @@ namespace Rod {
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None: RD_CORE_ASSERT(false, "RendererAPI::None is currently not supported"); return nullptr;
-		case RendererAPI::API::OpenGL: return std::make_shared<OpenGLTexture2D>(width, height);
+		case RendererAPI::API::OpenGL: return CreateRef<OpenGLTexture2D>(width, height);
 		}
 
 		RD_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -22,7 +22,7 @@ namespace Rod {
 		switch (Renderer::GetAPI())
 		{
 		case RendererAPI::API::None: RD_CORE_ASSERT(false, "RendererAPI::None is currently not supported"); return nullptr;
-		case RendererAPI::API::OpenGL: return std::make_shared<OpenGLTexture2D>(path);
+		case RendererAPI::API::OpenGL: return CreateRef<OpenGLTexture2D>(path);
 		}
 
 		RD_CORE_ASSERT(false, "Unknown RendererAPI");

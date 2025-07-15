@@ -20,7 +20,7 @@ private:
 	
 	Rod::Ref<Rod::Texture2D> m_Texture;
 	Rod::Ref<Rod::Texture2D> m_SpriteSheet;
-	Rod::Ref<Rod::SubTexture2D> m_TextureStairs, m_TextureTree;
+	Rod::Ref<Rod::SubTexture2D> m_TextureStairs, m_TextureTree, m_TextureFance;
 
 	ParticleProps m_Particle;
 	ParticleSystem m_ParticleSystem;

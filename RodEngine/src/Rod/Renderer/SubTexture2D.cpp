@@ -20,7 +20,7 @@ namespace Rod {
 		glm::vec2 min = { (coords.x * cellSize.x) / sheetWidth, (coords.y * cellSize.y) / sheetHeight };
 		glm::vec2 max = { ((coords.x + spriteSize.x) * cellSize.x) / sheetWidth, ((coords.y + spriteSize.y) * cellSize.y) / sheetHeight };
 
-		return std::make_shared<SubTexture2D>(texture, min, max);
+		return CreateRef<SubTexture2D>(texture, min, max);
 	}
 
 }

@@ -16,7 +16,7 @@ namespace Rod {
 	class Application
 	{
 	public:
-		Application();
+		Application(const std::string& name = "Rod App");
 		virtual ~Application();
 
 		void Run();

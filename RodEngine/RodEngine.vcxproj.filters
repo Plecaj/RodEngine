@@ -117,6 +117,9 @@
     <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLContext.h">
       <Filter>src\Rod\Platform\OpenGL</Filter>
     </ClInclude>
+    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLFrameBuffer.h">
+      <Filter>src\Rod\Platform\OpenGL</Filter>
+    </ClInclude>
     <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLRendererAPI.h">
       <Filter>src\Rod\Platform\OpenGL</Filter>
     </ClInclude>
@@ -141,6 +144,9 @@
     <ClInclude Include="src\Rod\Renderer\Camera.h">
       <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
+    <ClInclude Include="src\Rod\Renderer\FrameBuffer.h">
+      <Filter>src\Rod\Renderer</Filter>
+    </ClInclude>
     <ClInclude Include="src\Rod\Renderer\GraphicsContext.h">
       <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
@@ -160,6 +166,9 @@
       <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Rod\Renderer\Shader.h">
+      <Filter>src\Rod\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Renderer\SubTexture2D.h">
       <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Rod\Renderer\Texture.h">
@@ -1422,9 +1431,6 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rod\Renderer\SubTexture2D.h" />
-    <ClInclude Include="src\Rod\Renderer\FrameBuffer.h" />
-    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLFrameBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Rod\Core\Application.cpp">
@@ -1451,6 +1457,9 @@
     <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLContext.cpp">
       <Filter>src\Rod\Platform\OpenGL</Filter>
     </ClCompile>
+    <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLFrameBuffer.cpp">
+      <Filter>src\Rod\Platform\OpenGL</Filter>
+    </ClCompile>
     <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLRendererAPI.cpp">
       <Filter>src\Rod\Platform\OpenGL</Filter>
     </ClCompile>
@@ -1475,6 +1484,9 @@
     <ClCompile Include="src\Rod\Renderer\Camera.cpp">
       <Filter>src\Rod\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\Rod\Renderer\FrameBuffer.cpp">
+      <Filter>src\Rod\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\Rod\Renderer\OrthographicCameraController.cpp">
       <Filter>src\Rod\Renderer</Filter>
     </ClCompile>
@@ -1493,6 +1505,9 @@
     <ClCompile Include="src\Rod\Renderer\Shader.cpp">
       <Filter>src\Rod\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\Rod\Renderer\SubTexture2D.cpp">
+      <Filter>src\Rod\Renderer</Filter>
+    </ClCompile>
     <ClCompile Include="src\Rod\Renderer\Texture.cpp">
       <Filter>src\Rod\Renderer</Filter>
     </ClCompile>
@@ -1505,8 +1520,5 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rod\Renderer\SubTexture2D.cpp" />
-    <ClCompile Include="src\Rod\Renderer\FrameBuffer.cpp" />
-    <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLFrameBuffer.cpp" />
   </ItemGroup>
 </Project>

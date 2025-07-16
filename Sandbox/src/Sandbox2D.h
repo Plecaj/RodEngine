@@ -19,9 +19,12 @@ private:
 	Rod::OrthographicCameraController m_CameraController;
 	
 	Rod::Ref<Rod::Texture2D> m_Texture;
-	Rod::Ref<Rod::Texture2D> m_SpriteSheet;
-	Rod::Ref<Rod::SubTexture2D> m_TextureStairs, m_TextureTree, m_TextureFance;
 
 	ParticleProps m_Particle;
 	ParticleSystem m_ParticleSystem;
+
+	Rod::Ref<Rod::Texture2D> m_SpriteSheet;
+	Rod::Ref<Rod::SubTexture2D> m_TextureBarrel;
+	uint32_t m_MapWidth, m_MapHeight;
+	std::unordered_map<char, Rod::Ref<Rod::SubTexture2D>> m_TextureMap;
 };

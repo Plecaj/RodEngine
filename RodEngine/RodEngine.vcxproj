@@ -163,6 +163,7 @@
     <ClInclude Include="src\Rod\ImGui\ImGuiLayer.h" />
     <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLBuffer.h" />
     <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLContext.h" />
+    <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLFrameBuffer.h" />
     <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLRendererAPI.h" />
     <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLShader.h" />
     <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLTexture.h" />
@@ -171,6 +172,7 @@
     <ClInclude Include="src\Rod\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\Rod\Renderer\Buffer.h" />
     <ClInclude Include="src\Rod\Renderer\Camera.h" />
+    <ClInclude Include="src\Rod\Renderer\FrameBuffer.h" />
     <ClInclude Include="src\Rod\Renderer\GraphicsContext.h" />
     <ClInclude Include="src\Rod\Renderer\OrthographicCameraController.h" />
     <ClInclude Include="src\Rod\Renderer\RenderCommand.h" />
@@ -609,6 +611,7 @@
     <ClCompile Include="src\Rod\ImGui\ImGuiLayer.cpp" />
     <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLContext.cpp" />
+    <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLFrameBuffer.cpp" />
     <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLRendererAPI.cpp" />
     <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLShader.cpp" />
     <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLTexture.cpp" />
@@ -617,6 +620,7 @@
     <ClCompile Include="src\Rod\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\Rod\Renderer\Buffer.cpp" />
     <ClCompile Include="src\Rod\Renderer\Camera.cpp" />
+    <ClCompile Include="src\Rod\Renderer\FrameBuffer.cpp" />
     <ClCompile Include="src\Rod\Renderer\OrthographicCameraController.cpp" />
     <ClCompile Include="src\Rod\Renderer\RenderCommand.cpp" />
     <ClCompile Include="src\Rod\Renderer\Renderer.cpp" />

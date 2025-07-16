@@ -33,6 +33,11 @@ void Sandbox2D::OnAttach()
 {
 	RD_PROFILE_FUNCTION();
 
+	Rod::FrameBufferSpecification fbSpec;
+	fbSpec.Width = 1280;
+	fbSpec.Height = 720;
+	m_Framebuffer = Rod::FrameBuffer::Create(fbSpec);
+
 	m_Texture = Rod::Texture2D::Create("assets/textures/test.png");
 	m_SpriteSheet = Rod::Texture2D::Create("assets/game/textures/RPGpack_sheet_2X.png");
 
@@ -52,7 +57,7 @@ void Sandbox2D::OnAttach()
 	m_Particle.VelocityVariation = { 3.0f, 1.0f };
 	m_Particle.Position = { 0.0f, 0.0f };
 
-	m_CameraController.SetZoomLevel(5.0f);
+	m_CameraController.SetZoomLevel(7.0f);
 }
 
 void Sandbox2D::OnDetach()
@@ -64,6 +69,7 @@ void Sandbox2D::OnUpdate(Rod::Timestep ts)
 {
 	m_CameraController.OnUpdate(ts);
 
+	m_Framebuffer->Bind();
 	Rod::Renderer2D::ResetStats();
 	Rod::RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 	Rod::RenderCommand::Clear();
@@ -118,6 +124,7 @@ void Sandbox2D::OnUpdate(Rod::Timestep ts)
 	}
 
 	Rod::Renderer2D::EndScene();
+	m_Framebuffer->Unbind();
 }
 
 void Sandbox2D::OnImGuiRender()
@@ -193,13 +200,11 @@ void Sandbox2D::OnImGuiRender()
 	ImGui::Text("	Quad Count: %d", stats.QuadCount);
 
 
-	uint32_t textureID = m_Texture->GetRendererID();
-	ImVec2 textureSize(128.0f, 128.0f);
+	uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
+	ImVec2 textureSize(1280.0f, 720.0f);
 	ImGui::Image((uint64_t)textureID, textureSize, {0.0f, 1.0f}, {1.0f, 0.0f});
 
 	ImGui::End();
-
-	Rod::Renderer2D::ResetStats();
 
     ImGui::End();
 }

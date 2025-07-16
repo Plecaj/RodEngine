@@ -20,6 +20,7 @@
 #include "Rod/Renderer/RenderCommand.h"
 
 #include "Rod/Renderer/Buffer.h"
+#include "Rod/Renderer/FrameBuffer.h"
 #include "Rod/Renderer/Shader.h"
 #include "Rod/Renderer/Texture.h"
 #include "Rod/Renderer/SubTexture2D.h"

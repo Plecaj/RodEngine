@@ -17,6 +17,7 @@ public:
 	void OnEvent(Rod::Event& event) override;
 private:
 	Rod::OrthographicCameraController m_CameraController;
+	Rod::Ref<Rod::FrameBuffer> m_Framebuffer;
 	
 	Rod::Ref<Rod::Texture2D> m_Texture;
 

@@ -79,6 +79,9 @@ namespace Rod{
 			RD_PROFILE_END_SESSION();
 		}
 		ImGui::End();
+
+		static bool show = true;
+		ImGui::ShowDemoWindow(&show);
 	}
 
 	void ImGuiLayer::Begin()

@@ -28,6 +28,8 @@ namespace Rod {
 
 		inline Window& GetWindow() { return *m_Window; };
 
+		void Close();
+
 		static inline Application& Get() { return *s_Instance; };
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);

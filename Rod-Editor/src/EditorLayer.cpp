@@ -113,8 +113,6 @@ namespace Rod {
 		static bool opt_padding = false;
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
-		// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
-		// because it would be confusing to have two docking targets within each others.
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
 		if (opt_fullscreen)
 		{
@@ -132,16 +130,9 @@ namespace Rod {
 			dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
 		}
 
-		// When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
-		// and handle the pass-thru hole, so we ask Begin() to not render a background.
 		if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
 			window_flags |= ImGuiWindowFlags_NoBackground;
 
-		// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
-		// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
-		// all active windows docked into it will lose their parent and become undocked.
-		// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
-		// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
 		if (!opt_padding)
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 		ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
@@ -178,13 +169,6 @@ namespace Rod {
 		ImGui::Text("	Quad Count: %d", stats.QuadCount);
 
 
-		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
-		ImVec2 textureSize(1280.0f, 720.0f);
-		ImGui::Image((uint64_t)textureID, textureSize, { 0.0f, 1.0f }, { 1.0f, 0.0f });
-
-		ImGui::End();
-
-		ImGui::Begin("Engine Tools");
 		if (!m_Profiling && ImGui::Button("Start Profiling")) {
 			m_Profiling = true;
 			RD_PROFILE_BEGIN_SESSION("Runtime", "RodProfile-Runtime.json");
@@ -193,7 +177,24 @@ namespace Rod {
 			m_Profiling = false;
 			RD_PROFILE_END_SESSION();
 		}
+
 		ImGui::End();
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+		ImGui::Begin("Viewport");
+
+		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
+		ImVec2 viewPortPanelSize = ImGui::GetContentRegionAvail();
+		if (m_ViewportSize != *((glm::vec2*)&viewPortPanelSize))
+		{
+			m_ViewportSize = { viewPortPanelSize.x, viewPortPanelSize.y };
+			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		}
+
+		ImGui::Image((uint64_t)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, { 0.0f, 1.0f }, { 1.0f, 0.0f });
+
+		ImGui::End();
+		ImGui::PopStyleVar();
 
 		ImGui::End();
 	}

@@ -31,7 +31,7 @@ namespace Rod{
 		const OrthographicCameraBounds& GetBounds() const { return m_Bounds; }
 
 		float GetZoomLevel() { return m_ZoomLevel; }
-		void SetZoomLevel(float level) { m_ZoomLevel = level; CalculateView(); }
+		void SetZoomLevel(float level) { m_ZoomLevel = level; m_CameraTranslationSpeed = m_ZoomLevel;  CalculateView(); }
 	private:
 		void CalculateView();
 

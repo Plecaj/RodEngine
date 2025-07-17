@@ -168,7 +168,6 @@
     <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLShader.h" />
     <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLTexture.h" />
     <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLVertexArray.h" />
-    <ClInclude Include="src\Rod\Platform\Windows\WindowsInput.h" />
     <ClInclude Include="src\Rod\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\Rod\Renderer\Buffer.h" />
     <ClInclude Include="src\Rod\Renderer\Camera.h" />

@@ -79,8 +79,7 @@ namespace Rod {
         }
         )";
 
-        std::string fragmentShaderSrc = R"(
-        #version 330 core
+        std::string fragmentShaderSrc = R"(#version 330 core
 
         layout(location = 0) out vec4 color;
 
@@ -93,7 +92,21 @@ namespace Rod {
 
         void main()
         {
-            color = texture(u_Textures[int(v_TexIdx)], v_TexCoord * v_TilingFactor) * v_Color;
+            vec4 texColor = vec4(1.0);
+            int idx = int(v_TexIdx);
+            switch(idx)
+            {
+        )";
+
+        for (int i = 0; i < s_Data->MaxTexturesSlots; ++i)
+        {
+            fragmentShaderSrc += "        case " + std::to_string(i) + ": texColor = texture(u_Textures[" + std::to_string(i) + "], v_TexCoord * v_TilingFactor); break;\n";
+        }
+
+        fragmentShaderSrc += R"(        default: texColor = vec4(1.0); break;
+        }
+
+            color = texColor * v_Color;
         }
         )";
 

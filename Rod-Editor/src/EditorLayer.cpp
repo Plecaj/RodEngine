@@ -61,7 +61,8 @@ namespace Rod {
 
 	void EditorLayer::OnUpdate(Rod::Timestep ts)
 	{
-		m_CameraController.OnUpdate(ts);
+		if(m_ViewportFocused)
+			m_CameraController.OnUpdate(ts);
 
 		m_Framebuffer->Bind();
 		Rod::Renderer2D::ResetStats();
@@ -182,6 +183,9 @@ namespace Rod {
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::Begin("Viewport");
+		m_ViewportFocused = ImGui::IsWindowFocused();
+		m_ViewportHovered = ImGui::IsWindowHovered();
+		Application::Get().GetImGuiLayer()->SetBlockEvents(!m_ViewportFocused || !m_ViewportHovered);
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
 		ImVec2 viewPortPanelSize = ImGui::GetContentRegionAvail();

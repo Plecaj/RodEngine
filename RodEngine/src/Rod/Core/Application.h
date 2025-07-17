@@ -30,6 +30,8 @@ namespace Rod {
 
 		void Close();
 
+		ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; };
+
 		static inline Application& Get() { return *s_Instance; };
 	private:
 		bool OnWindowClose(WindowCloseEvent& e);

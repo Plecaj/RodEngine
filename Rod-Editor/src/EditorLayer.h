@@ -26,6 +26,7 @@ namespace Rod {
 		uint32_t m_MapWidth, m_MapHeight;
 		std::unordered_map<char, Ref<SubTexture2D>> m_TextureMap;
 
+		bool m_ViewportFocused, m_ViewportHovered = false;
 		glm::vec2 m_ViewportSize;
 
 		bool m_Profiling = false;

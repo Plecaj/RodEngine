@@ -16,15 +16,13 @@ namespace Rod {
 		virtual void OnImGuiRender() override;
 		void OnEvent(Event& event) override;
 	private:
+		Ref<Scene> m_ActiveScene;
+		entt::entity m_Square;
+
 		OrthographicCameraController m_CameraController;
 		Ref<FrameBuffer> m_Framebuffer;
 
 		Ref<Texture2D> m_Texture;
-
-		Ref<Texture2D> m_SpriteSheet;
-		Ref<SubTexture2D> m_TextureBarrel;
-		uint32_t m_MapWidth, m_MapHeight;
-		std::unordered_map<char, Ref<SubTexture2D>> m_TextureMap;
 
 		bool m_ViewportFocused, m_ViewportHovered = false;
 		glm::vec2 m_ViewportSize;

@@ -15,6 +15,7 @@
 
 #include "Rod/Scene/Scene.h"
 #include "Rod/Scene/Components.h"
+#include "Rod/Scene/Entity.h"
 
 //------Renderer-----------------------
 #include "Rod/Renderer/Renderer.h"

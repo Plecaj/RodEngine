@@ -28,10 +28,9 @@ namespace Rod {
 		m_Texture = Texture2D::Create("assets/textures/test.png");
 
 		m_ActiveScene = CreateRef<Scene>();
-		m_Square = m_ActiveScene->CreateEntity();
-		m_ActiveScene->Reg().emplace<TransformComponent>(m_Square);
-		m_ActiveScene->Reg().emplace<SpriteRendererComponent>(m_Square, glm::vec4{ 0.0f, 1.0f, 0.0f, 1.0f });
 
+		m_Square = m_ActiveScene->CreateEntity("Square");
+		m_Square.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f, 1.0f, 0.0f, 1.0f });
 	}
 
 	void EditorLayer::OnDetach()
@@ -123,8 +122,15 @@ namespace Rod {
 		ImGui::Text("	Draw calls: %d", stats.DrawCalls);
 		ImGui::Text("	Quad Count: %d", stats.QuadCount);
 
-		ImGui::ColorEdit4("Square color", glm::value_ptr(m_ActiveScene->Reg().get<SpriteRendererComponent>(m_Square).Color));
+		if (m_Square)
+		{
+			ImGui::Separator();
+			ImGui::Text("%s", m_Square.GetComponent<TagComponent>().Tag.c_str());
 
+			ImGui::ColorEdit4("Square color", glm::value_ptr(m_Square.GetComponent<SpriteRendererComponent>().Color));
+			ImGui::Separator();
+		}
+		
 		if (!m_Profiling && ImGui::Button("Start Profiling")) {
 			m_Profiling = true;
 			RD_PROFILE_BEGIN_SESSION("Runtime", "RodProfile-Runtime.json");

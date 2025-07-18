@@ -7,21 +7,21 @@
 
 namespace Rod {
 
+	class Entity;
+
 	class Scene
 	{
 	public:
 		Scene();
 		~Scene();
 
-		// Temp data type, should use Rod::Entity
-		entt::entity CreateEntity();
-
-		// very temp
-		entt::registry& Reg() { return m_Registry; }
+		Entity CreateEntity(const std::string& name = "");
 
 		void OnUpdate(Timestep& ts);
 	private:
 		entt::registry m_Registry;
+
+		friend class Entity;
 	};
 
 }

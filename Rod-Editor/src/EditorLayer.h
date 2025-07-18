@@ -17,7 +17,7 @@ namespace Rod {
 		void OnEvent(Event& event) override;
 	private:
 		Ref<Scene> m_ActiveScene;
-		entt::entity m_Square;
+		Entity m_Square;
 
 		OrthographicCameraController m_CameraController;
 		Ref<FrameBuffer> m_Framebuffer;

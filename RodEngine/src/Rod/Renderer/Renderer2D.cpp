@@ -240,7 +240,7 @@ namespace Rod {
     void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
     {
         RD_PROFILE_FUNCTION();
-        if ((s_Data->QuadIndexCount + 6 > s_Data->MAX_INDICES_COUNT) || s_Data->TextureSlotIndex + 1 >= s_Data->MaxTexturesSlots) {
+        if ((s_Data->QuadIndexCount + 6 > s_Data->MAX_INDICES_COUNT)) {
             EndBatch();
             Flush();
             BeginBatch();
@@ -264,11 +264,16 @@ namespace Rod {
             }
         }
 
-        if (textureIndex == 0) 
+        if (textureIndex == 0 && s_Data->TextureSlotIndex < s_Data->MaxTexturesSlots - 1)
         {
             textureIndex = (float)s_Data->TextureSlotIndex;
             s_Data->TextureSlots[s_Data->TextureSlotIndex] = texture;
             s_Data->TextureSlotIndex++;
+        }
+        else if (textureIndex == 0) {
+            EndBatch();
+            Flush();
+            BeginBatch();
         }
 
         glm::mat4 transform =
@@ -297,7 +302,7 @@ namespace Rod {
     void Renderer2D::DrawQuad(const glm::vec3& position, const glm::vec2& size, const Ref<SubTexture2D>& subTexture, float tilingFactor, const glm::vec4& tintColor)
     {
         RD_PROFILE_FUNCTION();
-        if ((s_Data->QuadIndexCount + 6 > s_Data->MAX_INDICES_COUNT) || s_Data->TextureSlotIndex + 1 >= s_Data->MaxTexturesSlots) {
+        if ((s_Data->QuadIndexCount + 6 > s_Data->MAX_INDICES_COUNT)) {
             EndBatch();
             Flush();
             BeginBatch();
@@ -317,11 +322,16 @@ namespace Rod {
             }
         }
 
-        if (textureIndex == 0)
+        if (textureIndex == 0 && s_Data->TextureSlotIndex < s_Data->MaxTexturesSlots - 1)
         {
             textureIndex = (float)s_Data->TextureSlotIndex;
             s_Data->TextureSlots[s_Data->TextureSlotIndex] = texture;
             s_Data->TextureSlotIndex++;
+        }
+        else if(textureIndex == 0){
+            EndBatch();
+            Flush();
+            BeginBatch();
         }
 
         glm::mat4 transform =
@@ -395,7 +405,7 @@ namespace Rod {
     void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, const float radiansRotation, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
     {
         RD_PROFILE_FUNCTION();
-        if ((s_Data->QuadIndexCount + 6 > s_Data->MAX_INDICES_COUNT) || s_Data->TextureSlotIndex + 1 >= s_Data->MaxTexturesSlots) {
+        if ((s_Data->QuadIndexCount + 6 > s_Data->MAX_INDICES_COUNT)) {
             EndBatch();
             Flush();
             BeginBatch();
@@ -419,11 +429,16 @@ namespace Rod {
             }
         }
 
-        if (textureIndex == 0)
+        if (textureIndex == 0 && s_Data->TextureSlotIndex < s_Data->MaxTexturesSlots - 1)
         {
             textureIndex = (float)s_Data->TextureSlotIndex;
             s_Data->TextureSlots[s_Data->TextureSlotIndex] = texture;
             s_Data->TextureSlotIndex++;
+        }
+        else if (textureIndex == 0) {
+            EndBatch();
+            Flush();
+            BeginBatch();
         }
 
         glm::mat4 transform =
@@ -453,7 +468,7 @@ namespace Rod {
     void Renderer2D::DrawRotatedQuad(const glm::vec3& position, const glm::vec2& size, const float radiansRotation, const Ref<SubTexture2D>& subTexture, float tilingFactor, const glm::vec4& tintColor)
     {
         RD_PROFILE_FUNCTION();
-        if ((s_Data->QuadIndexCount + 6 > s_Data->MAX_INDICES_COUNT) || s_Data->TextureSlotIndex + 1 >= s_Data->MaxTexturesSlots) {
+        if ((s_Data->QuadIndexCount + 6 > s_Data->MAX_INDICES_COUNT)) {
             EndBatch();
             Flush();
             BeginBatch();
@@ -473,11 +488,16 @@ namespace Rod {
             }
         }
 
-        if (textureIndex == 0)
+        if (textureIndex == 0 && s_Data->TextureSlotIndex < s_Data->MaxTexturesSlots - 1)
         {
             textureIndex = (float)s_Data->TextureSlotIndex;
             s_Data->TextureSlots[s_Data->TextureSlotIndex] = texture;
             s_Data->TextureSlotIndex++;
+        }
+        else if (textureIndex == 0) {
+            EndBatch();
+            Flush();
+            BeginBatch();
         }
 
         glm::mat4 transform =

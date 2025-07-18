@@ -18,6 +18,7 @@ IncludeDir["Glad"] = "RodEngine/vendor/Glad/include"
 IncludeDir["ImGui"] = "RodEngine/vendor/imgui"
 IncludeDir["glm"] = "RodEngine/vendor/glm"
 IncludeDir["stb_image"] = "RodEngine/vendor/stb_image"
+IncludeDir["entt"] = "RodEngine/vendor/entt"
 
 include "RodEngine/vendor/GLFW"
 include "RodEngine/vendor/Glad"
@@ -42,6 +43,7 @@ project "RodEngine"
 		"%{prj.name}/src/**.cpp",
 		"%{prj.name}/vendor/stb_image/stb_image.h",
 		"%{prj.name}/vendor/stb_image/stb_image.cpp",
+		"%{prj.name}/vendor/entt/entt.hpp",
 		"%{prj.name}/vendor/glm/glm/**.hpp",
 		"%{prj.name}/vendor/glm/glm/**.inl"
 	}
@@ -59,7 +61,8 @@ project "RodEngine"
 		"%{IncludeDir.Glad}",
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",
-		"%{IncludeDir.stb_image}"
+		"%{IncludeDir.stb_image}",
+		"%{IncludeDir.entt}"
 	}
 
 	links 
@@ -116,7 +119,8 @@ project "Rod-Editor"
 		"RodEngine/vendor/spdlog/include",
 		"RodEngine/src",
 		"%{IncludeDir.glm}",
-		"%{IncludeDir.ImGui}"
+		"%{IncludeDir.ImGui}",
+		"%{IncludeDir.entt}"
 	}
 
 	links

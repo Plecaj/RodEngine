@@ -28,7 +28,7 @@ namespace Rod {
 		Ref<Texture2D> m_Texture;
 
 		bool m_ViewportFocused, m_ViewportHovered = false;
-		glm::vec2 m_ViewportSize;
+		glm::vec2 m_ViewportSize, m_PendingViewportSize;
 
 		bool m_Profiling = false;
 	};

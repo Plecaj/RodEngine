@@ -33,10 +33,10 @@ namespace Rod {
 		m_Square.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f, 1.0f, 0.0f, 1.0f });
 
 		m_CameraEntity = m_ActiveScene->CreateEntity("Camera");
-		m_CameraEntity.AddComponent<CameraComponent>(glm::ortho(-16.0f, 16.0f, -9.0f, 9.0f, -1.0f, 1.0f));
+		m_CameraEntity.AddComponent<CameraComponent>();
 
 		m_SecondCameraEntity = m_ActiveScene->CreateEntity("Clip-Space Camera");
-		auto& cc = m_SecondCameraEntity.AddComponent<CameraComponent>(glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f));
+		auto& cc = m_SecondCameraEntity.AddComponent<CameraComponent>();
 		cc.Priamry = false;
 	}
 
@@ -47,6 +47,13 @@ namespace Rod {
 
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
+		if (m_ViewportSize != m_PendingViewportSize)
+		{
+			m_ViewportSize = m_PendingViewportSize;
+			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		}
+
 		if(m_ViewportFocused)
 			m_CameraController.OnUpdate(ts);
 
@@ -133,14 +140,25 @@ namespace Rod {
 			ImGui::Separator();
 		}
 
-		ImGui::DragFloat3("Camera transform", glm::value_ptr(m_CameraEntity.GetComponent<TransformComponent>().Transform[3]));
+		ImGui::DragFloat3("First camera transform", glm::value_ptr(m_CameraEntity.GetComponent<TransformComponent>().Transform[3]));
+		ImGui::Separator();
 
 		if (ImGui::Checkbox("Camera A", &m_PrimaryCamera))
 		{
 			m_SecondCameraEntity.GetComponent<CameraComponent>().Priamry = !m_PrimaryCamera;
 			m_CameraEntity.GetComponent<CameraComponent>().Priamry = m_PrimaryCamera;
 		}
+		ImGui::Separator();
 
+		{
+			auto& camera = m_SecondCameraEntity.GetComponent<CameraComponent>().Camera;
+			float orthoSize = camera.GetOrthographicSize();
+			if (ImGui::DragFloat("Second camera ortho size", &orthoSize))
+			{
+				camera.SetOrthographicSize(orthoSize);
+			};
+		}
+		ImGui::Separator();
 		
 		if (!m_Profiling && ImGui::Button("Start Profiling")) {
 			m_Profiling = true;
@@ -161,11 +179,7 @@ namespace Rod {
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
 		ImVec2 viewPortPanelSize = ImGui::GetContentRegionAvail();
-		if (m_ViewportSize != *((glm::vec2*)&viewPortPanelSize))
-		{
-			m_ViewportSize = { viewPortPanelSize.x, viewPortPanelSize.y };
-			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		}
+		m_PendingViewportSize = { viewPortPanelSize.x, viewPortPanelSize.y };
 
 		ImGui::Image((uint64_t)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, { 0.0f, 1.0f }, { 1.0f, 0.0f });
 

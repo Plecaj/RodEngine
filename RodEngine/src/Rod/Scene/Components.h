@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-#include "Rod/Renderer/Camera.h"
+#include "Rod/Scene/SceneCamera.h"
 
 namespace Rod {
 
@@ -41,13 +41,12 @@ namespace Rod {
 
 	struct CameraComponent
 	{
-		Rod::Camera Camera;
+		SceneCamera Camera;
 		bool Priamry = true;  // TODO: Should be on scene
+		bool FixedAspectRatio = false;
 
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;
-		CameraComponent(const glm::mat4& projection)
-			:Camera(projection) {}
 	};
 
 }

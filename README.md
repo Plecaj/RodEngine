@@ -8,15 +8,16 @@
 
 ## 🛠 Tech Stack
 
-- **Language:** C++  
+- **Platform:** Windows
+- **Language:** C++
+- **Build System:** Premake5  
 - **Rendering:** OpenGL 
 - **Windowing & Input:** GLFW  
 - **Math Library:** GLM  
-- **GUI:** ImGui  
+- **GUI:** ImGui
+- **ECS library:** entt 
 - **Logging:** spdlog  
 - **Image Loading:** stb_image  
-- **Build System:** Premake5  
-- **Platform:** Windows 
 
 ## 🎯 Goals
 
@@ -27,6 +28,7 @@
 - Audio playback control
 - Scripting
 - Physics system
+- Using Rod ECS library not external one
 
 
 

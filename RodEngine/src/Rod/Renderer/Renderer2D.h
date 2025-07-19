@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Camera.h"
+#include "Rod/Renderer/OrthographicCamera.h"
+#include "Rod/Renderer/Camera.h"
 #include "Texture.h"
 #include "SubTexture2D.h"
 
@@ -11,7 +12,8 @@ namespace Rod {
 		static void Init();
 		static void Shutdown();
 
-		static void BeginScene(const OrthographicCamera& camera);
+		static void BeginScene(const Camera& camera, const glm::mat4& transform);
+		static void BeginScene(const OrthographicCamera& camera); // TODO: Remove
 		static void EndScene();
 
 		static void DrawQuad(const glm::vec2& position, const glm::vec2& size, const glm::vec4& color);

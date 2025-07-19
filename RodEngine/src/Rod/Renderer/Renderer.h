@@ -2,7 +2,7 @@
 
 #include "RenderCommand.h"
 
-#include "Camera.h"
+#include "Rod/Renderer/OrthographicCamera.h"
 #include "Shader.h"
 
 namespace Rod {

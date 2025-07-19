@@ -2,6 +2,8 @@
 
 #include <glm/glm.hpp>
 
+#include "Rod/Renderer/Camera.h"
+
 namespace Rod {
 
 	struct TagComponent
@@ -35,6 +37,17 @@ namespace Rod {
 		SpriteRendererComponent(const SpriteRendererComponent&) = default;
 		SpriteRendererComponent(const glm::vec4& color)
 			:Color(color) {}
+	};
+
+	struct CameraComponent
+	{
+		Rod::Camera Camera;
+		bool Priamry = true;  // TODO: Should be on scene
+
+		CameraComponent() = default;
+		CameraComponent(const CameraComponent&) = default;
+		CameraComponent(const glm::mat4& projection)
+			:Camera(projection) {}
 	};
 
 }

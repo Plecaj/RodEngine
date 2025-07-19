@@ -171,6 +171,7 @@
     <ClInclude Include="src\Rod\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\Rod\Renderer\Buffer.h" />
     <ClInclude Include="src\Rod\Renderer\Camera.h" />
+    <ClInclude Include="src\Rod\Renderer\OrthographicCamera.h" />
     <ClInclude Include="src\Rod\Renderer\FrameBuffer.h" />
     <ClInclude Include="src\Rod\Renderer\GraphicsContext.h" />
     <ClInclude Include="src\Rod\Renderer\OrthographicCameraController.h" />
@@ -622,7 +623,7 @@
     <ClCompile Include="src\Rod\Platform\Windows\WindowsInput.cpp" />
     <ClCompile Include="src\Rod\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\Rod\Renderer\Buffer.cpp" />
-    <ClCompile Include="src\Rod\Renderer\Camera.cpp" />
+    <ClCompile Include="src\Rod\Renderer\OrthographicCamera.cpp" />
     <ClCompile Include="src\Rod\Renderer\FrameBuffer.cpp" />
     <ClCompile Include="src\Rod\Renderer\OrthographicCameraController.cpp" />
     <ClCompile Include="src\Rod\Renderer\RenderCommand.cpp" />

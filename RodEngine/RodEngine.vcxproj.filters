@@ -141,7 +141,7 @@
     <ClInclude Include="src\Rod\Renderer\Buffer.h">
       <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rod\Renderer\Camera.h">
+    <ClInclude Include="src\Rod\Renderer\OrthographicCamera.h">
       <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Rod\Renderer\FrameBuffer.h">
@@ -1437,6 +1437,7 @@
     <ClInclude Include="src\Rod\Scene\Scene.h" />
     <ClInclude Include="src\Rod\Scene\Components.h" />
     <ClInclude Include="src\Rod\Scene\Entity.h" />
+    <ClInclude Include="src\Rod\Renderer\Camera.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Rod\Core\Application.cpp">
@@ -1487,7 +1488,7 @@
     <ClCompile Include="src\Rod\Renderer\Buffer.cpp">
       <Filter>src\Rod\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rod\Renderer\Camera.cpp">
+    <ClCompile Include="src\Rod\Renderer\OrthographicCamera.cpp">
       <Filter>src\Rod\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Rod\Renderer\FrameBuffer.cpp">

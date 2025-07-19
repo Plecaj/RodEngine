@@ -18,6 +18,9 @@ namespace Rod {
 	private:
 		Ref<Scene> m_ActiveScene;
 		Entity m_Square;
+		Entity m_CameraEntity, m_SecondCameraEntity;
+
+		bool m_PrimaryCamera = true;
 
 		OrthographicCameraController m_CameraController;
 		Ref<FrameBuffer> m_Framebuffer;

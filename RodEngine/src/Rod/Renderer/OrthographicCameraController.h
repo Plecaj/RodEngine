@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Rod/Renderer/Camera.h"
+#include "Rod/Renderer/OrthographicCamera.h"
 #include "Rod/Core/Timestep.h"
 
 #include "Rod/Events/ApplicationEvent.h"

@@ -30,6 +30,6 @@
 #include "Rod/Renderer/SubTexture2D.h"
 #include "Rod/Renderer/VertexArray.h"
 
-#include "Rod/Renderer/Camera.h"
+#include "Rod/Renderer/OrthographicCamera.h"
 //-------------------------------------
 

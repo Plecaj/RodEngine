@@ -31,6 +31,26 @@ namespace Rod {
 
 	void Scene::OnUpdate(Timestep& ts)
 	{
+		Camera* mainCamera = nullptr;
+		glm::mat4* cameraTransform;
+		{
+			auto group = m_Registry.group<CameraComponent>(entt::get<TransformComponent>);
+			for (auto entity : group) {
+				auto [transform, camera] = group.get<TransformComponent, CameraComponent>(entity);
+
+				if (camera.Priamry)
+				{
+					mainCamera = &camera.Camera;
+					cameraTransform = &transform.Transform;
+					break;
+				}
+			}
+		}
+
+		if (!mainCamera) return;
+
+		Renderer2D::BeginScene(mainCamera->GetProjection(), *cameraTransform);
+
 		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
 		for(auto entity : group)
 		{
@@ -38,5 +58,7 @@ namespace Rod {
 
 			Renderer2D::DrawQuad(transform, sprite.Color);
 		}
+
+		Renderer2D::EndScene();
 	}
 }

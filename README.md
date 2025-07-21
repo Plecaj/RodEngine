@@ -26,7 +26,7 @@
 - Support other platforms - such as linux, mobile
 - Built-in scene editor - GUI
 - Audio playback control
-- Scripting
+- C# Scripting
 - Physics system
 - Using Rod ECS library not external one
 

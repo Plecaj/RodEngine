@@ -31,6 +31,23 @@ namespace Rod {
 
 	void Scene::OnUpdate(Timestep& ts)
 	{
+		// Update scripts - TODO: move to Scene::OnScenePlay
+		// TODO: also should be calling Instance->OnDetroy on scene stop
+		{
+			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& ncs)
+			{
+				if (!ncs.Instance)
+				{
+					ncs.Instance = ncs.InstantiateScript();
+					ncs.Instance->m_Entity = Entity{ entity, this };
+					ncs.Instance->OnCreate();
+				}
+
+				ncs.Instance->OnUpdate(ts);
+			});
+		}
+
+		// Render 2D
 		Camera* mainCamera = nullptr;
 		glm::mat4* cameraTransform;
 		{

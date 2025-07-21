@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 
 #include "Rod/Scene/SceneCamera.h"
+#include "ScriptableEntity.h"
 
 namespace Rod {
 
@@ -47,6 +48,22 @@ namespace Rod {
 
 		CameraComponent() = default;
 		CameraComponent(const CameraComponent&) = default;
+	};
+
+	struct NativeScriptComponent
+	{
+
+		ScriptableEntity* Instance = nullptr;
+
+		ScriptableEntity* (*InstantiateScript)();
+		void (*DestroyScript)(NativeScriptComponent*);
+
+		template<typename T>
+		void Bind()
+		{
+			InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
+			DestroyScript = [](NativeScriptComponent* nsc) {delete nsc->Instance; nsc->Instance = nullptr; };
+		}
 	};
 
 }

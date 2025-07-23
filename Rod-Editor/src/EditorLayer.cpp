@@ -171,24 +171,12 @@ namespace Rod {
 			ImGui::Separator();
 		}
 
-		ImGui::DragFloat3("First camera transform", glm::value_ptr(m_CameraEntity.GetComponent<TransformComponent>().Transform[3]));
-		ImGui::Separator();
-
 		if (ImGui::Checkbox("Camera A", &m_PrimaryCamera))
 		{
 			m_SecondCameraEntity.GetComponent<CameraComponent>().Priamry = !m_PrimaryCamera;
 			m_CameraEntity.GetComponent<CameraComponent>().Priamry = m_PrimaryCamera;
 		}
-		ImGui::Separator();
 
-		{
-			auto& camera = m_SecondCameraEntity.GetComponent<CameraComponent>().Camera;
-			float orthoSize = camera.GetOrthographicSize();
-			if (ImGui::DragFloat("Second camera ortho size", &orthoSize))
-			{
-				camera.SetOrthographicSize(orthoSize);
-			};
-		}
 		ImGui::Separator();
 		
 		if (!m_Profiling && ImGui::Button("Start Profiling")) {

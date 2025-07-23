@@ -8,7 +8,6 @@
 
 #include <chrono>
 
-
 namespace Rod {
 
 	EditorLayer::EditorLayer()
@@ -66,6 +65,8 @@ namespace Rod {
 
 		m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 		m_SecondCameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 	}
 
 	void EditorLayer::OnDetach()
@@ -151,6 +152,8 @@ namespace Rod {
 
 			ImGui::EndMenuBar();
 		}
+
+		m_SceneHierarchyPanel.OnImGuiRender();
 
 		ImGui::Begin("Settings");
 

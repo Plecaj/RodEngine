@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Rod.h"
+#include "Panels/SceneHierarchyPanel.h"
 
 namespace Rod {
 
@@ -31,6 +32,9 @@ namespace Rod {
 		glm::vec2 m_ViewportSize, m_PendingViewportSize;
 
 		bool m_Profiling = false;
+
+		// Panels
+		SceneHierarchyPanel	m_SceneHierarchyPanel;
 	};
 
 }

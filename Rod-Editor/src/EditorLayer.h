@@ -18,7 +18,6 @@ namespace Rod {
 		void OnEvent(Event& event) override;
 	private:
 		Ref<Scene> m_ActiveScene;
-		Entity m_Square;
 		Entity m_CameraEntity, m_SecondCameraEntity;
 
 		bool m_PrimaryCamera = true;

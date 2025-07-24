@@ -31,6 +31,9 @@ namespace Rod {
 		m_Square = m_ActiveScene->CreateEntity("Square");
 		m_Square.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f, 1.0f, 0.0f, 1.0f });
 
+		auto otherSquare = m_ActiveScene->CreateEntity("Second Square");
+		otherSquare.AddComponent<SpriteRendererComponent>(glm::vec4{ 1.0f, 0.0f, 0.0f, 1.0f });
+
 		m_CameraEntity = m_ActiveScene->CreateEntity("Camera");
 		m_CameraEntity.AddComponent<CameraComponent>();
 

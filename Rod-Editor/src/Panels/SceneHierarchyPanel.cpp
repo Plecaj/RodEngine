@@ -174,16 +174,19 @@ namespace Rod {
 			ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 4.0f, 4.0f });
 			float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * 2.0f;
 			ImGui::Separator();
-			bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), treeNodeFlags, name.c_str());
+			auto typeHash = typeid(T).hash_code();
+			bool open = ImGui::TreeNodeEx((void*)typeHash, treeNodeFlags, name.c_str());
 			ImGui::PopStyleVar();
 			ImGui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
-			if (ImGui::Button("+", ImVec2{ lineHeight , lineHeight }))
+			std::string popupId = "ComponentSettings" + std::to_string(typeHash);
+			std::string buttonId = "+##" + std::to_string(typeid(T).hash_code());
+			if (ImGui::Button(buttonId.c_str(), ImVec2{ lineHeight , lineHeight }))
 			{
-				ImGui::OpenPopup("ComponentSettings");
+				ImGui::OpenPopup(popupId.c_str());
 			}
 
 			bool removeComponent = false;
-			if (ImGui::BeginPopup("ComponentSettings"))
+			if (ImGui::BeginPopup(popupId.c_str()))
 			{
 				if (ImGui::MenuItem("Remove Component"))
 				{

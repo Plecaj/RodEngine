@@ -34,10 +34,10 @@ namespace Rod {
 		auto otherSquare = m_ActiveScene->CreateEntity("Second Square");
 		otherSquare.AddComponent<SpriteRendererComponent>(glm::vec4{ 1.0f, 0.0f, 0.0f, 1.0f });
 
-		m_CameraEntity = m_ActiveScene->CreateEntity("Camera");
+		m_CameraEntity = m_ActiveScene->CreateEntity("Camera A");
 		m_CameraEntity.AddComponent<CameraComponent>();
 
-		m_SecondCameraEntity = m_ActiveScene->CreateEntity("Clip-Space Camera");
+		m_SecondCameraEntity = m_ActiveScene->CreateEntity("Camera B");
 		auto& cc = m_SecondCameraEntity.AddComponent<CameraComponent>();
 		cc.Priamry = false;
 
@@ -158,27 +158,12 @@ namespace Rod {
 
 		m_SceneHierarchyPanel.OnImGuiRender();
 
-		ImGui::Begin("Settings");
+		ImGui::Begin("Stats");
 
 		auto stats = Renderer2D::GetStats();
 		ImGui::Text("Renderer Stats 2D:");
 		ImGui::Text("	Draw calls: %d", stats.DrawCalls);
 		ImGui::Text("	Quad Count: %d", stats.QuadCount);
-
-		if (m_Square)
-		{
-			ImGui::Separator();
-			ImGui::Text("%s", m_Square.GetComponent<TagComponent>().Tag.c_str());
-
-			ImGui::ColorEdit4("Square color", glm::value_ptr(m_Square.GetComponent<SpriteRendererComponent>().Color));
-			ImGui::Separator();
-		}
-
-		if (ImGui::Checkbox("Camera A", &m_PrimaryCamera))
-		{
-			m_SecondCameraEntity.GetComponent<CameraComponent>().Priamry = !m_PrimaryCamera;
-			m_CameraEntity.GetComponent<CameraComponent>().Priamry = m_PrimaryCamera;
-		}
 
 		ImGui::Separator();
 		

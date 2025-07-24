@@ -23,7 +23,7 @@ namespace Rod {
 		//===========================
 		void SetPerspective(float verticalFOV, float nearClip, float farClip);
 
-		float GetPerspectiveVertivalFOV() const { return m_PerspectiveFOV; }
+		float GetPerspectiveVerticalFOV() const { return m_PerspectiveFOV; }
 		void SetPerspectiveVerticalFOV(float fov) { m_PerspectiveFOV = fov; RecalculateProjection(); }
 
 		float GetPerspectiveNearClip() const { return m_PerspectiveNear; }

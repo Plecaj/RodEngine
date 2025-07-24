@@ -54,7 +54,7 @@ namespace Rod {
 	struct CameraComponent
 	{
 		SceneCamera Camera;
-		bool Priamry = true;  // TODO: Should be on scene
+		bool Primary = true;  // TODO: Should be on scene
 		bool FixedAspectRatio = false;
 
 		CameraComponent() = default;

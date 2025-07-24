@@ -39,7 +39,7 @@ namespace Rod {
 
 		m_SecondCameraEntity = m_ActiveScene->CreateEntity("Camera B");
 		auto& cc = m_SecondCameraEntity.AddComponent<CameraComponent>();
-		cc.Priamry = false;
+		cc.Primary = false;
 
 		class CameraController : public ScriptableEntity
 		{
@@ -138,11 +138,15 @@ namespace Rod {
 
 		// Submit the DockSpace
 		ImGuiIO& io = ImGui::GetIO();
+		ImGuiStyle& style = ImGui::GetStyle();
+		style.WindowMinSize.x = 370.0f;
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 		}
+
+		style.WindowMinSize.x = 32.0f;
 
 		if (ImGui::BeginMenuBar())
 		{

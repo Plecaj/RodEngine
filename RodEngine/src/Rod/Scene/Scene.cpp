@@ -60,7 +60,7 @@ namespace Rod {
 			for (auto entity : group) {
 				auto [transform, camera] = group.get<TransformComponent, CameraComponent>(entity);
 
-				if (camera.Priamry)
+				if (camera.Primary)
 				{
 					mainCamera = &camera.Camera;
 					cameraTransform = transform.GetTransform();

@@ -158,6 +158,9 @@ namespace Rod {
 				if (ImGui::MenuItem("Open...", "Ctrl+O"))
 					OpenScene();
 
+				if (ImGui::MenuItem("Save", "Ctrl+S"))
+					SaveScene();
+
 				if (ImGui::MenuItem("Save as...", "Ctrl+Shift+S"))
 					SaveSceneAs();
 
@@ -248,6 +251,9 @@ namespace Rod {
 				if (controlPressed && shiftPressed)
 					SaveSceneAs();
 
+				else if (controlPressed)
+					SaveScene();
+
 				break;
 			}
 		}
@@ -272,9 +278,19 @@ namespace Rod {
 		}
 	}
 
+	void EditorLayer::SaveScene()
+	{
+		if (m_SceneOutputFilepath.empty())
+			SaveSceneAs();
+
+		SceneSerializer serializer(m_ActiveScene);
+		serializer.SerializeText(m_SceneOutputFilepath);
+	}
+
 	void EditorLayer::SaveSceneAs()
 	{
 		std::string filepath = FileDialogs::SaveFile("Rod Scene (*.rod)\0*.rod\0");
+		m_SceneOutputFilepath = filepath;
 		if (!filepath.empty())
 		{
 			SceneSerializer serializer(m_ActiveScene);

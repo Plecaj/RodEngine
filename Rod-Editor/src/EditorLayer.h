@@ -21,6 +21,7 @@ namespace Rod {
 
 		void NewScene();
 		void OpenScene();
+		void SaveScene();
 		void SaveSceneAs();
 	private:
 		Ref<Scene> m_ActiveScene;
@@ -37,6 +38,8 @@ namespace Rod {
 		glm::vec2 m_ViewportSize, m_PendingViewportSize;
 
 		bool m_Profiling = false;
+
+		std::string m_SceneOutputFilepath = std::string();
 
 		// Panels
 		SceneHierarchyPanel	m_SceneHierarchyPanel;

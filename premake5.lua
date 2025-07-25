@@ -19,10 +19,14 @@ IncludeDir["ImGui"] = "RodEngine/vendor/imgui"
 IncludeDir["glm"] = "RodEngine/vendor/glm"
 IncludeDir["stb_image"] = "RodEngine/vendor/stb_image"
 IncludeDir["entt"] = "RodEngine/vendor/entt"
+IncludeDir["yaml_cpp"] = "RodEngine/vendor/yaml-cpp/include"
 
-include "RodEngine/vendor/GLFW"
-include "RodEngine/vendor/Glad"
-include "RodEngine/vendor/imgui"
+group "Dependencies"
+	include "RodEngine/vendor/GLFW"
+	include "RodEngine/vendor/Glad"
+	include "RodEngine/vendor/imgui"
+	include "RodEngine/vendor/yaml-cpp"
+group ""
 
 project "RodEngine"
 	location "RodEngine"
@@ -62,7 +66,8 @@ project "RodEngine"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.stb_image}",
-		"%{IncludeDir.entt}"
+		"%{IncludeDir.entt}",
+		"%{IncludeDir.yaml_cpp}"
 	}
 
 	links 
@@ -70,6 +75,7 @@ project "RodEngine"
 		"GLFW",
 		"Glad",
 		"ImGui",
+		"yaml-cpp",
 		"opengl32.lib"
 	}
 
@@ -79,7 +85,8 @@ project "RodEngine"
 		{
 			"RD_PLATFORM_WINDOWS",
 			"RD_BUILD_DLL",
-			"GLFW_INCLUDE_NONE"
+			"GLFW_INCLUDE_NONE",
+			"YAML_CPP_STATIC_DEFINE"
 		}
 
 	filter "configurations:Debug"

@@ -4,9 +4,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "Rod/Platform/OpenGL/OpenGLShader.h"
-
 #include <chrono>
+
+#include "Rod/Utils/PlatformUtils.h"
 
 namespace Rod {
 
@@ -152,6 +152,15 @@ namespace Rod {
 		{
 			if (ImGui::BeginMenu("File"))
 			{
+				if (ImGui::MenuItem("New", "Ctrl+N"))
+					NewScene();
+
+				if (ImGui::MenuItem("Open...", "Ctrl+O"))
+					OpenScene();
+
+				if (ImGui::MenuItem("Save as...", "Ctrl+Shift+S"))
+					SaveSceneAs();
+
 				if (ImGui::MenuItem("Exit")) { Application::Get().Close(); }
 				ImGui::EndMenu();
 			}
@@ -202,6 +211,75 @@ namespace Rod {
 	void EditorLayer::OnEvent(Event& event)
 	{
 		m_CameraController.OnEvent(event);
+
+		EventDispatcher dispatcher(event);
+		dispatcher.Dispatch<KeyPressedEvent>(RD_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
+	}
+
+	bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)
+	{
+		// Shortcuts
+		if (e.IsRepeat())
+			return false;
+
+		bool controlPressed = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
+		bool shiftPressed = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+
+		switch (e.GetKeyCode())
+		{
+			case Key::N:
+			{
+				if (controlPressed)
+					NewScene();
+
+				break;
+			}
+
+			case Key::O:
+			{
+				if (controlPressed)
+					OpenScene();
+
+				break;
+			}
+
+			case Key::S:
+			{
+				if (controlPressed && shiftPressed)
+					SaveSceneAs();
+
+				break;
+			}
+		}
+	}
+
+	void EditorLayer::NewScene()
+	{
+		m_ActiveScene = CreateRef<Scene>();
+		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+	}
+
+	void EditorLayer::OpenScene()
+	{
+		std::string filepath = FileDialogs::OpenFile("Rod Scene (*.rod)\0*.rod\0");
+		if (!filepath.empty())
+		{
+			NewScene();
+
+			SceneSerializer serializer(m_ActiveScene);
+			serializer.DeserializeText(filepath);
+		}
+	}
+
+	void EditorLayer::SaveSceneAs()
+	{
+		std::string filepath = FileDialogs::SaveFile("Rod Scene (*.rod)\0*.rod\0");
+		if (!filepath.empty())
+		{
+			SceneSerializer serializer(m_ActiveScene);
+			serializer.SerializeText(filepath);
+		}
 	}
 
 }

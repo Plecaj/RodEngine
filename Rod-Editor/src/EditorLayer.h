@@ -17,6 +17,12 @@ namespace Rod {
 		virtual void OnImGuiRender() override;
 		void OnEvent(Event& event) override;
 	private:
+		bool OnKeyPressed(KeyPressedEvent& e);
+
+		void NewScene();
+		void OpenScene();
+		void SaveSceneAs();
+	private:
 		Ref<Scene> m_ActiveScene;
 		Entity m_CameraEntity, m_SecondCameraEntity;
 

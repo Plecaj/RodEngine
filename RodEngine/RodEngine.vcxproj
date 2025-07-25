@@ -76,8 +76,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>rdpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RD_PLATFORM_WINDOWS;RD_BUILD_DLL;GLFW_INCLUDE_NONE;RD_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Glad\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RD_PLATFORM_WINDOWS;RD_BUILD_DLL;GLFW_INCLUDE_NONE;YAML_CPP_STATIC_DEFINE;RD_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Glad\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt;vendor\yaml-cpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -97,8 +97,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>rdpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RD_PLATFORM_WINDOWS;RD_BUILD_DLL;GLFW_INCLUDE_NONE;RD_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Glad\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RD_PLATFORM_WINDOWS;RD_BUILD_DLL;GLFW_INCLUDE_NONE;YAML_CPP_STATIC_DEFINE;RD_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Glad\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt;vendor\yaml-cpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -122,8 +122,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>rdpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RD_PLATFORM_WINDOWS;RD_BUILD_DLL;GLFW_INCLUDE_NONE;RD_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Glad\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RD_PLATFORM_WINDOWS;RD_BUILD_DLL;GLFW_INCLUDE_NONE;YAML_CPP_STATIC_DEFINE;RD_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Glad\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt;vendor\yaml-cpp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -171,9 +171,9 @@
     <ClInclude Include="src\Rod\Platform\Windows\WindowsWindow.h" />
     <ClInclude Include="src\Rod\Renderer\Buffer.h" />
     <ClInclude Include="src\Rod\Renderer\Camera.h" />
-    <ClInclude Include="src\Rod\Renderer\OrthographicCamera.h" />
     <ClInclude Include="src\Rod\Renderer\FrameBuffer.h" />
     <ClInclude Include="src\Rod\Renderer\GraphicsContext.h" />
+    <ClInclude Include="src\Rod\Renderer\OrthographicCamera.h" />
     <ClInclude Include="src\Rod\Renderer\OrthographicCameraController.h" />
     <ClInclude Include="src\Rod\Renderer\RenderCommand.h" />
     <ClInclude Include="src\Rod\Renderer\Renderer.h" />
@@ -183,12 +183,14 @@
     <ClInclude Include="src\Rod\Renderer\SubTexture2D.h" />
     <ClInclude Include="src\Rod\Renderer\Texture.h" />
     <ClInclude Include="src\Rod\Renderer\VertexArray.h" />
-    <ClInclude Include="src\rdpch.h" />
     <ClInclude Include="src\Rod\Scene\Components.h" />
     <ClInclude Include="src\Rod\Scene\Entity.h" />
     <ClInclude Include="src\Rod\Scene\Scene.h" />
     <ClInclude Include="src\Rod\Scene\SceneCamera.h" />
+    <ClInclude Include="src\Rod\Scene\SceneSerializer.h" />
     <ClInclude Include="src\Rod\Scene\ScriptableEntity.h" />
+    <ClInclude Include="src\Rod\Utils\PlatformUtils.h" />
+    <ClInclude Include="src\rdpch.h" />
     <ClInclude Include="vendor\entt\entt.hpp" />
     <ClInclude Include="vendor\glm\glm\common.hpp" />
     <ClInclude Include="vendor\glm\glm\detail\_features.hpp" />
@@ -623,10 +625,11 @@
     <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLTexture.cpp" />
     <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLVertexArray.cpp" />
     <ClCompile Include="src\Rod\Platform\Windows\WindowsInput.cpp" />
+    <ClCompile Include="src\Rod\Platform\Windows\WindowsPlatformUtils.cpp" />
     <ClCompile Include="src\Rod\Platform\Windows\WindowsWindow.cpp" />
     <ClCompile Include="src\Rod\Renderer\Buffer.cpp" />
-    <ClCompile Include="src\Rod\Renderer\OrthographicCamera.cpp" />
     <ClCompile Include="src\Rod\Renderer\FrameBuffer.cpp" />
+    <ClCompile Include="src\Rod\Renderer\OrthographicCamera.cpp" />
     <ClCompile Include="src\Rod\Renderer\OrthographicCameraController.cpp" />
     <ClCompile Include="src\Rod\Renderer\RenderCommand.cpp" />
     <ClCompile Include="src\Rod\Renderer\Renderer.cpp" />
@@ -636,12 +639,13 @@
     <ClCompile Include="src\Rod\Renderer\SubTexture2D.cpp" />
     <ClCompile Include="src\Rod\Renderer\Texture.cpp" />
     <ClCompile Include="src\Rod\Renderer\VertexArray.cpp" />
-    <ClCompile Include="src\rdpch.cpp">
-      <PrecompiledHeader>Create</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="src\Rod\Scene\Entity.cpp" />
     <ClCompile Include="src\Rod\Scene\Scene.cpp" />
     <ClCompile Include="src\Rod\Scene\SceneCamera.cpp" />
+    <ClCompile Include="src\Rod\Scene\SceneSerializer.cpp" />
+    <ClCompile Include="src\rdpch.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="vendor\stb_image\stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -653,6 +657,9 @@
     </ProjectReference>
     <ProjectReference Include="vendor\imgui\ImGui.vcxproj">
       <Project>{C0FF640D-2C14-8DBE-F595-301E616989EF}</Project>
+    </ProjectReference>
+    <ProjectReference Include="vendor\yaml-cpp\yaml-cpp.vcxproj">
+      <Project>{88F1A057-74BE-FB62-9DD7-E90A890331F1}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

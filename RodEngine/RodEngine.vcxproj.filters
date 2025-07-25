@@ -31,6 +31,12 @@
     <Filter Include="src\Rod\Renderer">
       <UniqueIdentifier>{C7DF95F7-B3D8-B449-DC0A-9ACEC8629455}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\Rod\Scene">
+      <UniqueIdentifier>{DE94B677-4A55-32AE-1390-7B2B7F0F778A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Rod\Utils">
+      <UniqueIdentifier>{2129E477-8DE9-5FAE-5624-A92BC2A3A48A}</UniqueIdentifier>
+    </Filter>
     <Filter Include="vendor">
       <UniqueIdentifier>{B3738122-9F15-ACF8-88D0-BF4C74113349}</UniqueIdentifier>
     </Filter>
@@ -141,13 +147,16 @@
     <ClInclude Include="src\Rod\Renderer\Buffer.h">
       <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rod\Renderer\OrthographicCamera.h">
+    <ClInclude Include="src\Rod\Renderer\Camera.h">
       <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Rod\Renderer\FrameBuffer.h">
       <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Rod\Renderer\GraphicsContext.h">
+      <Filter>src\Rod\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Renderer\OrthographicCamera.h">
       <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Rod\Renderer\OrthographicCameraController.h">
@@ -176,6 +185,27 @@
     </ClInclude>
     <ClInclude Include="src\Rod\Renderer\VertexArray.h">
       <Filter>src\Rod\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Scene\Components.h">
+      <Filter>src\Rod\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Scene\Entity.h">
+      <Filter>src\Rod\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Scene\Scene.h">
+      <Filter>src\Rod\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Scene\SceneCamera.h">
+      <Filter>src\Rod\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Scene\SceneSerializer.h">
+      <Filter>src\Rod\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Scene\ScriptableEntity.h">
+      <Filter>src\Rod\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Utils\PlatformUtils.h">
+      <Filter>src\Rod\Utils</Filter>
     </ClInclude>
     <ClInclude Include="src\rdpch.h">
       <Filter>src</Filter>
@@ -1434,12 +1464,6 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rod\Scene\Scene.h" />
-    <ClInclude Include="src\Rod\Scene\Components.h" />
-    <ClInclude Include="src\Rod\Scene\Entity.h" />
-    <ClInclude Include="src\Rod\Renderer\Camera.h" />
-    <ClInclude Include="src\Rod\Scene\SceneCamera.h" />
-    <ClInclude Include="src\Rod\Scene\ScriptableEntity.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Rod\Core\Application.cpp">
@@ -1484,16 +1508,19 @@
     <ClCompile Include="src\Rod\Platform\Windows\WindowsInput.cpp">
       <Filter>src\Rod\Platform\Windows</Filter>
     </ClCompile>
+    <ClCompile Include="src\Rod\Platform\Windows\WindowsPlatformUtils.cpp">
+      <Filter>src\Rod\Platform\Windows</Filter>
+    </ClCompile>
     <ClCompile Include="src\Rod\Platform\Windows\WindowsWindow.cpp">
       <Filter>src\Rod\Platform\Windows</Filter>
     </ClCompile>
     <ClCompile Include="src\Rod\Renderer\Buffer.cpp">
       <Filter>src\Rod\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rod\Renderer\OrthographicCamera.cpp">
+    <ClCompile Include="src\Rod\Renderer\FrameBuffer.cpp">
       <Filter>src\Rod\Renderer</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rod\Renderer\FrameBuffer.cpp">
+    <ClCompile Include="src\Rod\Renderer\OrthographicCamera.cpp">
       <Filter>src\Rod\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Rod\Renderer\OrthographicCameraController.cpp">
@@ -1523,14 +1550,23 @@
     <ClCompile Include="src\Rod\Renderer\VertexArray.cpp">
       <Filter>src\Rod\Renderer</Filter>
     </ClCompile>
+    <ClCompile Include="src\Rod\Scene\Entity.cpp">
+      <Filter>src\Rod\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\Scene\Scene.cpp">
+      <Filter>src\Rod\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\Scene\SceneCamera.cpp">
+      <Filter>src\Rod\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\Scene\SceneSerializer.cpp">
+      <Filter>src\Rod\Scene</Filter>
+    </ClCompile>
     <ClCompile Include="src\rdpch.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rod\Scene\Scene.cpp" />
-    <ClCompile Include="src\Rod\Scene\Entity.cpp" />
-    <ClCompile Include="src\Rod\Scene\SceneCamera.cpp" />
   </ItemGroup>
 </Project>

@@ -1,5 +1,5 @@
 //========================================================================
-// GLFW 3.5 - www.glfw.org
+// GLFW 3.4 - www.glfw.org
 //------------------------------------------------------------------------
 // Copyright (c) 2016-2017 Camilla Löwy <elmindreda@glfw.org>
 //
@@ -23,6 +23,8 @@
 //    distribution.
 //
 //========================================================================
+// It is fine to use C99 in this file because it will not be built with VS
+//========================================================================
 
 #include "internal.h"
 
@@ -40,7 +42,7 @@ void _glfwTerminateJoysticksNull(void)
 {
 }
 
-GLFWbool _glfwPollJoystickNull(_GLFWjoystick* js, int mode)
+int _glfwPollJoystickNull(_GLFWjoystick* js, int mode)
 {
     return GLFW_FALSE;
 }

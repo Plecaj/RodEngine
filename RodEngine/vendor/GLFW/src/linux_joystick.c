@@ -1,5 +1,5 @@
 //========================================================================
-// GLFW 3.5 Linux - www.glfw.org
+// GLFW 3.4 Linux - www.glfw.org
 //------------------------------------------------------------------------
 // Copyright (c) 2002-2006 Marcus Geelnard
 // Copyright (c) 2006-2017 Camilla Löwy <elmindreda@glfw.org>
@@ -24,10 +24,10 @@
 //    distribution.
 //
 //========================================================================
+// It is fine to use C99 in this file because it will not be built with VS
+//========================================================================
 
 #include "internal.h"
-
-#if defined(GLFW_BUILD_LINUX_JOYSTICK)
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -128,14 +128,14 @@ static GLFWbool openJoystickDevice(const char* path)
 {
     for (int jid = 0;  jid <= GLFW_JOYSTICK_LAST;  jid++)
     {
-        if (!_glfw.joysticks[jid].connected)
+        if (!_glfw.joysticks[jid].present)
             continue;
         if (strcmp(_glfw.joysticks[jid].linjs.path, path) == 0)
             return GLFW_FALSE;
     }
 
     _GLFWjoystickLinux linjs = {0};
-    linjs.fd = open(path, O_RDONLY | O_NONBLOCK | O_CLOEXEC);
+    linjs.fd = open(path, O_RDONLY | O_NONBLOCK);
     if (linjs.fd == -1)
         return GLFW_FALSE;
 
@@ -157,7 +157,7 @@ static GLFWbool openJoystickDevice(const char* path)
     }
 
     // Ensure this device supports the events expected of a joystick
-    if (!isBitSet(EV_ABS, evBits))
+    if (!isBitSet(EV_KEY, evBits) || !isBitSet(EV_ABS, evBits))
     {
         close(linjs.fd);
         return GLFW_FALSE;
@@ -245,9 +245,9 @@ static GLFWbool openJoystickDevice(const char* path)
 //
 static void closeJoystick(_GLFWjoystick* js)
 {
-    _glfwInputJoystick(js, GLFW_DISCONNECTED);
     close(js->linjs.fd);
     _glfwFreeJoystick(js);
+    _glfwInputJoystick(js, GLFW_DISCONNECTED);
 }
 
 // Lexically compare joysticks by name; used by qsort
@@ -324,8 +324,7 @@ GLFWbool _glfwInitJoysticksLinux(void)
 
     // Continue without device connection notifications if inotify fails
 
-    _glfw.linjs.regexCompiled = (regcomp(&_glfw.linjs.regex, "^event[0-9]\\+$", 0) == 0);
-    if (!_glfw.linjs.regexCompiled)
+    if (regcomp(&_glfw.linjs.regex, "^event[0-9]\\+$", 0) != 0)
     {
         _glfwInputError(GLFW_PLATFORM_ERROR, "Linux: Failed to compile regex");
         return GLFW_FALSE;
@@ -367,7 +366,7 @@ void _glfwTerminateJoysticksLinux(void)
     for (int jid = 0;  jid <= GLFW_JOYSTICK_LAST;  jid++)
     {
         _GLFWjoystick* js = _glfw.joysticks + jid;
-        if (js->connected)
+        if (js->present)
             closeJoystick(js);
     }
 
@@ -377,13 +376,11 @@ void _glfwTerminateJoysticksLinux(void)
             inotify_rm_watch(_glfw.linjs.inotify, _glfw.linjs.watch);
 
         close(_glfw.linjs.inotify);
-    }
-
-    if (_glfw.linjs.regexCompiled)
         regfree(&_glfw.linjs.regex);
+    }
 }
 
-GLFWbool _glfwPollJoystickLinux(_GLFWjoystick* js, int mode)
+int _glfwPollJoystickLinux(_GLFWjoystick* js, int mode)
 {
     // Read all queued events (non-blocking)
     for (;;)
@@ -420,7 +417,7 @@ GLFWbool _glfwPollJoystickLinux(_GLFWjoystick* js, int mode)
             handleAbsEvent(js, e.code, e.value);
     }
 
-    return js->connected;
+    return js->present;
 }
 
 const char* _glfwGetMappingNameLinux(void)
@@ -431,6 +428,4 @@ const char* _glfwGetMappingNameLinux(void)
 void _glfwUpdateGamepadGUIDLinux(char* guid)
 {
 }
-
-#endif // GLFW_BUILD_LINUX_JOYSTICK
 

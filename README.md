@@ -62,7 +62,7 @@ RodEngine uses **Premake5** as its build system. A setup script is included for 
 - **Language:** C++
 - **Build System:** Premake5  
 - **Rendering:** OpenGL 
-- **Windowing & Input:** GLFW  
+- **Windowing & Input:** GLFW - Custom Cherno's fork (for windows no titlebar support) 
 - **Math Library:** GLM  
 - **GUI:** ImGui
 - **ECS library:** entt 

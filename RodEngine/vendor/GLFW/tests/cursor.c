@@ -172,8 +172,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 
         case GLFW_KEY_ESCAPE:
         {
-            const int mode = glfwGetInputMode(window, GLFW_CURSOR);
-            if (mode != GLFW_CURSOR_DISABLED && mode != GLFW_CURSOR_CAPTURED)
+            if (glfwGetInputMode(window, GLFW_CURSOR) != GLFW_CURSOR_DISABLED)
             {
                 glfwSetWindowShouldClose(window, GLFW_TRUE);
                 break;
@@ -196,11 +195,6 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
         case GLFW_KEY_H:
             glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
             printf("(( cursor is hidden ))\n");
-            break;
-
-        case GLFW_KEY_C:
-            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_CAPTURED);
-            printf("(( cursor is captured ))\n");
             break;
 
         case GLFW_KEY_R:

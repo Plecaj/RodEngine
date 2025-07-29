@@ -12,7 +12,7 @@ namespace Rod {
 		
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application(const std::string& name)
+	Application::Application(const std::string& name, bool _isEditor)
 	{
 		RD_PROFILE_FUNCTION();
 		RD_CORE_ASSERT(!s_Instance, "Application already exists!")
@@ -20,6 +20,7 @@ namespace Rod {
 		
 		WindowProps props;
 		props.Title = name;
+		props._IsEditor = _isEditor;
 		m_Window = Scope<Window>(Window::Create(props));
 		m_Window->SetEventCallback(RD_BIND_EVENT_FN(Application::OnEvent));
 		m_Window->SetVSync(false);
@@ -57,6 +58,31 @@ namespace Rod {
 	void Application::Close()
 	{
 		m_Running = false;
+	}
+
+	void Application::Minimalize()
+	{
+		m_Minimized = true;
+		m_Window->Minimalize();
+	}
+
+	void Application::Maximalize()
+	{
+		m_Maximalized = true;
+		m_Window->Maximalize();
+	}
+
+	void Application::RestoreWindow()
+	{
+		if(m_Maximalized)
+			m_Maximalized = false;
+
+		m_Window->Restore();
+	}
+
+	void Application::BeginWindowDrag()
+	{
+		m_Window->BeginWindowDrag();
 	}
 
 	void Application::OnEvent(Event& e)

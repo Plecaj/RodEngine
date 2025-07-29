@@ -55,6 +55,10 @@ namespace Rod {
 
 		{
 			RD_PROFILE_SCOPE("glfw create window");
+			
+			if(props._IsEditor)
+				glfwWindowHint(GLFW_TITLEBAR, false);
+
 			m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
 		}
 
@@ -172,6 +176,52 @@ namespace Rod {
 		glfwPollEvents();
 		m_Context->SwapBuffers();
 	}
+
+	void WindowsWindow::Minimalize() const
+	{
+		glfwIconifyWindow(m_Window);
+	}
+
+	void WindowsWindow::Maximalize() const
+	{
+		glfwMaximizeWindow(m_Window);
+	}
+
+	void WindowsWindow::Restore() const
+	{
+		glfwRestoreWindow(m_Window);
+	}
+
+	void WindowsWindow::BeginWindowDrag() const
+	{
+		static bool dragging = false;
+		static glm::vec2 dragOffset;
+
+		if (!dragging)
+		{
+			double mouseX, mouseY;
+			glfwGetCursorPos(m_Window, &mouseX, &mouseY);
+
+			int winX, winY;
+			glfwGetWindowPos(m_Window, &winX, &winY);
+
+			dragOffset = glm::vec2((float)mouseX, (float)mouseY);
+			dragging = true;
+		}
+
+		int mouseScreenX, mouseScreenY;
+		glfwGetWindowPos(m_Window, &mouseScreenX, &mouseScreenY);
+		double localMouseX, localMouseY;
+		glfwGetCursorPos(m_Window, &localMouseX, &localMouseY);
+
+		int newWinX = mouseScreenX + (int)(localMouseX - dragOffset.x);
+		int newWinY = mouseScreenY + (int)(localMouseY - dragOffset.y);
+
+		glfwSetWindowPos(m_Window, newWinX, newWinY);
+
+		if (!glfwGetMouseButton(m_Window, GLFW_MOUSE_BUTTON_LEFT))
+			dragging = false;
+	}	
 
 	void WindowsWindow::SetVSync(bool enabled)
 	{

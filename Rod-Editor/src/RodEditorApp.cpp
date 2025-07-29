@@ -11,7 +11,7 @@ namespace Rod {
 	{
 	public:
 		RodEditor()
-			: Application("Rod Editor")
+			: Application("Rod Editor", true)
 		{
 			PushLayer(new EditorLayer());
 		}

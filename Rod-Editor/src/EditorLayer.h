@@ -2,6 +2,7 @@
 
 #include "Rod.h"
 #include "Panels/SceneHierarchyPanel.h"
+#include "Panels/TitlebarPanel.h"
 
 namespace Rod {
 
@@ -42,6 +43,8 @@ namespace Rod {
 		std::string m_SceneOutputFilepath = std::string();
 
 		// Panels
+		TitlebarPanel m_TitlebarPanel;
+		friend class TitlebarPanel;
 		SceneHierarchyPanel	m_SceneHierarchyPanel;
 	};
 

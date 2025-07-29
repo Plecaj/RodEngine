@@ -4,6 +4,8 @@
 
 #include "Rod/Events/Event.h"
 
+#include <glm/glm.hpp>
+
 namespace Rod {
 
 	struct WindowProps
@@ -12,10 +14,14 @@ namespace Rod {
 		unsigned int Width;
 		unsigned int Height;
 
+		// _IsEditor is internal, shoudnt be changed ever to true by user
+		bool _IsEditor;
+
 		WindowProps(const std::string& title = "Rod Engine",
 			uint32_t width = 1600,
-			uint32_t height = 900)
-			: Title(title), Width(width), Height(height)
+			uint32_t height = 900,
+			bool _Editor = false)
+			: Title(title), Width(width), Height(height), _IsEditor(_Editor)
 		{
 		}
 	};
@@ -31,6 +37,11 @@ namespace Rod {
 
 		virtual unsigned int GetWidth() const = 0;
 		virtual unsigned int GetHeight() const = 0;
+
+		virtual void Minimalize() const = 0;
+		virtual void Maximalize() const = 0;
+		virtual void Restore() const = 0;
+		virtual void BeginWindowDrag() const = 0;
 
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
 		virtual void SetVSync(bool enabled) = 0;

@@ -69,6 +69,11 @@ namespace Rod {
 		m_SecondCameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
+		m_TitlebarPanel.SetNewSceneCallback([this]() { NewScene(); });
+		m_TitlebarPanel.SetOpenSceneCallback([this]() { OpenScene(); });
+		m_TitlebarPanel.SetSaveSceneCallback([this]() { SaveScene(); });
+		m_TitlebarPanel.SetSaveSceneAsCallback([this]() { SaveSceneAs(); });
 	}
 
 	void EditorLayer::OnDetach()
@@ -100,7 +105,6 @@ namespace Rod {
 
 	void EditorLayer::OnImGuiRender()
 	{
-
 		// Dockspace code from ImGui demo
 		static bool dockspaceOpen = true;
 		static bool opt_fullscreen = true;
@@ -150,23 +154,7 @@ namespace Rod {
 
 		if (ImGui::BeginMenuBar())
 		{
-			if (ImGui::BeginMenu("File"))
-			{
-				if (ImGui::MenuItem("New", "Ctrl+N"))
-					NewScene();
-
-				if (ImGui::MenuItem("Open...", "Ctrl+O"))
-					OpenScene();
-
-				if (ImGui::MenuItem("Save", "Ctrl+S"))
-					SaveScene();
-
-				if (ImGui::MenuItem("Save as...", "Ctrl+Shift+S"))
-					SaveSceneAs();
-
-				if (ImGui::MenuItem("Exit")) { Application::Get().Close(); }
-				ImGui::EndMenu();
-			}
+			m_TitlebarPanel.OnImGuiRender();
 
 			ImGui::EndMenuBar();
 		}

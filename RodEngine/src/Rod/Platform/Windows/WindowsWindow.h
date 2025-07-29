@@ -4,6 +4,7 @@
 #include "Rod/Renderer/GraphicsContext.h"
 
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 
 namespace Rod {
 
@@ -17,6 +18,11 @@ namespace Rod {
 
 		inline unsigned int GetWidth() const override { return m_Data.Width; }
 		inline unsigned int GetHeight() const override { return m_Data.Height; }
+
+		virtual void Minimalize() const override;
+		virtual void Maximalize() const override;
+		virtual void Restore() const override;
+		virtual void BeginWindowDrag() const override;
 
 		// Window attributes
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }

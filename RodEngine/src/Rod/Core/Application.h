@@ -16,7 +16,8 @@ namespace Rod {
 	class Application
 	{
 	public:
-		Application(const std::string& name = "Rod App");
+		// _IsEditor is internal, shoudnt be changed ever to true by user
+		Application(const std::string& name = "Rod App", bool _isEditor = false);
 		virtual ~Application();
 
 		void Run();
@@ -30,7 +31,18 @@ namespace Rod {
 
 		void Close();
 
+		void Minimalize();
+		bool isMinimalized() { return m_Minimized; }
+
+		void Maximalize();
+		bool IsMaximalized() { return m_Maximalized; }
+
+		void RestoreWindow();
+		void BeginWindowDrag();
+
 		ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; };
+
+		virtual bool IsEditor() const { return false; }
 
 		static inline Application& Get() { return *s_Instance; };
 	private:
@@ -39,7 +51,7 @@ namespace Rod {
 	private:
 		Scope<Window> m_Window;
 		ImGuiLayer* m_ImGuiLayer;
-		bool m_Running = true, m_Minimized = false;
+		bool m_Running = true, m_Minimized = false, m_Maximalized = false;
 		LayerStack m_LayerStack;
 		float m_LastFrameTime = 0.0f;
 	private:

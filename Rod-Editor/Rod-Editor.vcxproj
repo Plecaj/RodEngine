@@ -136,11 +136,13 @@
   <ItemGroup>
     <ClInclude Include="src\EditorLayer.h" />
     <ClInclude Include="src\Panels\SceneHierarchyPanel.h" />
+    <ClInclude Include="src\Panels\TitlebarPanel.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\EditorLayer.cpp" />
     <ClCompile Include="src\Panels\SceneHierarchyPanel.cpp" />
     <ClCompile Include="src\RodEditorApp.cpp" />
+    <ClCompile Include="src\Panels\TitlebarPanel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RodEngine\RodEngine.vcxproj">

@@ -11,7 +11,7 @@ namespace Rod {
 	{
 	public:
 		RodEditor()
-			: Application("Rod Editor", true)
+			: Application("Rod Editor", "assets/textures/logo.png", true)
 		{
 			PushLayer(new EditorLayer());
 		}

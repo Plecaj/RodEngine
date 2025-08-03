@@ -10,17 +10,23 @@
 namespace Rod{
 
 	TitlebarPanel::TitlebarPanel()
-		: m_ButtonSize({40.0f, 24.0f})
+		: m_ButtonSize({ 40.0f, 24.0f })
 	{
+		m_Logo = Texture2D::Create("assets/textures/logo.png");
 	}
 
 	void TitlebarPanel::OnImGuiRender()
 	{
+		// Note that TitlebarPanel cannot resize on y axis right not, logo will be cuted off when height is greater then 24. 
+		// TODO: Remake way how titlebar is rendered in ImGui
+		ImVec2 logoSize = { (float)24.0f, (float)24.0f };
+		ImGui::Image(m_Logo->GetRendererID(), logoSize);
+
 		ImGui::Text("Rod-Editor");
 
 		DrawFileMenu();
 		DrawButtons();
-		HandleDrag();   
+		HandleDrag();
 	}
 
 	void TitlebarPanel::DrawFileMenu()

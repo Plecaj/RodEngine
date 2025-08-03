@@ -33,8 +33,6 @@ namespace Rod {
 		OrthographicCameraController m_CameraController;
 		Ref<FrameBuffer> m_Framebuffer;
 
-		Ref<Texture2D> m_Texture;
-
 		bool m_ViewportFocused, m_ViewportHovered = false;
 		glm::vec2 m_ViewportSize, m_PendingViewportSize;
 

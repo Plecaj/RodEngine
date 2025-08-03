@@ -24,8 +24,6 @@ namespace Rod {
 		fbSpec.Height = 720;
 		m_Framebuffer = FrameBuffer::Create(fbSpec);
 
-		m_Texture = Texture2D::Create("assets/textures/test.png");
-
 		m_ActiveScene = CreateRef<Scene>();
 
 		auto square = m_ActiveScene->CreateEntity("Square");
@@ -152,7 +150,8 @@ namespace Rod {
 
 		style.WindowMinSize.x = 32.0f;
 
-		if (ImGui::BeginMenuBar())
+		// TODO: Remake way how titlebar is rendered in ImGui
+		if (ImGui::BeginMenuBar()) 
 		{
 			m_TitlebarPanel.OnImGuiRender();
 

@@ -8,6 +8,8 @@
 
 #include "Rod/Platform/OpenGL/OpenGLContext.h"
 
+#include <stb_image.h>
+
 namespace Rod {
 
 	static bool s_GLFWInitialized = false;
@@ -160,6 +162,23 @@ namespace Rod {
 			MouseMovedEvent event((float)xPos, (float)yPos);				
 			data.EventCallback(event);
 		});
+
+		if (props.TaskbarIconFilepath.empty())
+			return;
+
+		GLFWimage icon;
+
+		int width, height, channels;
+		auto data = stbi_load(props.TaskbarIconFilepath.c_str(), &width, &height, &channels, 4);
+
+		RD_CORE_ASSERT(data, "Failed to load taskbar icon image");
+
+		icon.width = width;
+		icon.height = height;
+		icon.pixels = data;
+
+		glfwSetWindowIcon(m_Window, 1, &icon);
+		stbi_image_free(data);
 	}
 
 	void WindowsWindow::Shutdown()

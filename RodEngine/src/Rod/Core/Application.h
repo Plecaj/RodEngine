@@ -17,7 +17,7 @@ namespace Rod {
 	{
 	public:
 		// _IsEditor is internal, shoudnt be changed ever to true by user
-		Application(const std::string& name = "Rod App", bool _isEditor = false);
+		Application(const std::string& name = "Rod App", const std::string& iconFilepath = "", bool _isEditor = false);
 		virtual ~Application();
 
 		void Run();

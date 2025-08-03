@@ -14,14 +14,17 @@ namespace Rod {
 		unsigned int Width;
 		unsigned int Height;
 
+		std::string TaskbarIconFilepath;
+
 		// _IsEditor is internal, shoudnt be changed ever to true by user
 		bool _IsEditor;
 
 		WindowProps(const std::string& title = "Rod Engine",
 			uint32_t width = 1600,
 			uint32_t height = 900,
+			std::string taskbarIconFilepath = "",
 			bool _Editor = false)
-			: Title(title), Width(width), Height(height), _IsEditor(_Editor)
+			: Title(title), Width(width), Height(height), _IsEditor(_Editor), TaskbarIconFilepath(taskbarIconFilepath)
 		{
 		}
 	};

@@ -12,7 +12,7 @@ namespace Rod {
 		
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application(const std::string& name, bool _isEditor)
+	Application::Application(const std::string& name, const std::string& iconFilepath, bool _isEditor)
 	{
 		RD_PROFILE_FUNCTION();
 		RD_CORE_ASSERT(!s_Instance, "Application already exists!")
@@ -21,6 +21,7 @@ namespace Rod {
 		WindowProps props;
 		props.Title = name;
 		props._IsEditor = _isEditor;
+		props.TaskbarIconFilepath = iconFilepath;
 		m_Window = Scope<Window>(Window::Create(props));
 		m_Window->SetEventCallback(RD_BIND_EVENT_FN(Application::OnEvent));
 		m_Window->SetVSync(false);

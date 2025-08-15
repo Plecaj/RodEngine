@@ -40,6 +40,8 @@ namespace Rod {
 
 		std::string m_SceneOutputFilepath = std::string();
 
+		int m_GuizmoType = -1;
+
 		// Panels
 		TitlebarPanel m_TitlebarPanel;
 		friend class TitlebarPanel;

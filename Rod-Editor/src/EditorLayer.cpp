@@ -9,6 +9,7 @@
 #include "Rod/Utils/PlatformUtils.h"
 
 #include "ImGuizmo.h"
+#include "Rod/Math/Math.h"
 
 namespace Rod {
 
@@ -35,7 +36,7 @@ namespace Rod {
 		otherSquare.AddComponent<SpriteRendererComponent>(glm::vec4{ 1.0f, 0.0f, 0.0f, 1.0f });
 
 		m_CameraEntity = m_ActiveScene->CreateEntity("Camera A");
-		m_CameraEntity.AddComponent<CameraComponent>();
+		auto& firstCc = m_CameraEntity.AddComponent<CameraComponent>();
 
 		m_SecondCameraEntity = m_ActiveScene->CreateEntity("Camera B");
 		auto& cc = m_SecondCameraEntity.AddComponent<CameraComponent>();
@@ -54,13 +55,13 @@ namespace Rod {
 				auto& translation = GetComponent<TransformComponent>().Translation;
 				float speed = 5.0f;
 
-				if (Input::IsKeyPressed(Key::A))
+				if (Input::IsKeyPressed(Key::Left))
 					translation.x -= speed * ts;
-				if (Input::IsKeyPressed(Key::D))
+				if (Input::IsKeyPressed(Key::Right))
 					translation.x += speed * ts;
-				if (Input::IsKeyPressed(Key::W))
+				if (Input::IsKeyPressed(Key::Up))
 					translation.y += speed * ts;
-				if (Input::IsKeyPressed(Key::S))
+				if (Input::IsKeyPressed(Key::Down))
 					translation.y -= speed * ts;
 			}
 		};
@@ -209,7 +210,7 @@ namespace Rod {
 		ImGui::Begin("Viewport");
 		m_ViewportFocused = ImGui::IsWindowFocused();
 		m_ViewportHovered = ImGui::IsWindowHovered();
-		Application::Get().GetImGuiLayer()->SetBlockEvents(!m_ViewportFocused || !m_ViewportHovered);
+		Application::Get().GetImGuiLayer()->SetBlockEvents(!m_ViewportFocused && !m_ViewportHovered);
 
 		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
 		ImVec2 viewPortPanelSize = ImGui::GetContentRegionAvail();
@@ -219,7 +220,7 @@ namespace Rod {
 
 		// Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-		if (selectedEntity)
+		if (selectedEntity && m_GuizmoType != -1)
 		{
 			auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
 			const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
@@ -237,11 +238,23 @@ namespace Rod {
 			auto& tc = selectedEntity.GetComponent<TransformComponent>();
 			glm::mat4 transform = tc.GetTransform();
 
-			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), ImGuizmo::OPERATION::TRANSLATE, ImGuizmo::MODE::LOCAL, glm::value_ptr(transform));
+			bool snap = Input::IsKeyPressed(Key::LeftControl);
+			float snapValue = 0.5f;
+			if (m_GuizmoType == ImGuizmo::OPERATION::ROTATE)
+				snapValue = 45.0f;
+
+			float snapValues[3] = { snapValue, snapValue, snapValue };
+
+			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), (ImGuizmo::OPERATION)m_GuizmoType, ImGuizmo::MODE::LOCAL, glm::value_ptr(transform), nullptr, snap ? snapValues : nullptr);
 
 			if (ImGuizmo::IsUsing())
 			{
-				tc.Translation = glm::vec3(transform[3]);
+				glm::vec3 translation, rotation, scale;
+				Math::DecomposeTransform(transform, translation, rotation, scale);
+
+				tc.Translation = translation;
+				tc.Rotation = rotation;
+				tc.Scale = scale;
 			}
 		}
 
@@ -296,6 +309,24 @@ namespace Rod {
 
 				break;
 			}
+
+			// Guizmos
+			case Key::Q:
+				if(!ImGuizmo::IsUsing())
+					m_GuizmoType = -1;
+				break;
+			case Key::W:
+				if (!ImGuizmo::IsUsing())
+					m_GuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+				break;
+			case Key::E:
+				if (!ImGuizmo::IsUsing())
+					m_GuizmoType = ImGuizmo::OPERATION::ROTATE;
+				break;
+			case Key::R:
+				if (!ImGuizmo::IsUsing())
+					m_GuizmoType = ImGuizmo::OPERATION::SCALE;
+				break;
 		}
 	}
 

@@ -162,6 +162,7 @@
     <ClInclude Include="src\Rod\Events\KeyEvent.h" />
     <ClInclude Include="src\Rod\Events\MouseEvent.h" />
     <ClInclude Include="src\Rod\ImGui\ImGuiLayer.h" />
+    <ClInclude Include="src\Rod\Math\Math.h" />
     <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLBuffer.h" />
     <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLContext.h" />
     <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLFrameBuffer.h" />
@@ -619,6 +620,7 @@
     <ClCompile Include="src\Rod\Core\Log.cpp" />
     <ClCompile Include="src\Rod\ImGui\ImGuiBuild.cpp" />
     <ClCompile Include="src\Rod\ImGui\ImGuiLayer.cpp" />
+    <ClCompile Include="src\Rod\Math\Math.cpp" />
     <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLBuffer.cpp" />
     <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLContext.cpp" />
     <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLFrameBuffer.cpp" />

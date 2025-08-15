@@ -16,7 +16,7 @@ namespace Rod {
 
 
 		void SetProjectionType(ProjectionType type) { m_ProjectionType = type; RecalculateProjection(); }
-		ProjectionType GetProjectionType() { return m_ProjectionType; }
+		ProjectionType GetProjectionType() const { return m_ProjectionType; }
 
 		//===========================
 		// Perspective

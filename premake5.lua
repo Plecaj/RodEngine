@@ -20,6 +20,7 @@ IncludeDir["glm"] = "RodEngine/vendor/glm"
 IncludeDir["stb_image"] = "RodEngine/vendor/stb_image"
 IncludeDir["entt"] = "RodEngine/vendor/entt"
 IncludeDir["yaml_cpp"] = "RodEngine/vendor/yaml-cpp/include"
+IncludeDir["ImGuizmo"] = "RodEngine/vendor/ImGuizmo"
 
 group "Dependencies"
 	include "RodEngine/vendor/GLFW"
@@ -49,7 +50,10 @@ project "RodEngine"
 		"%{prj.name}/vendor/stb_image/stb_image.cpp",
 		"%{prj.name}/vendor/entt/entt.hpp",
 		"%{prj.name}/vendor/glm/glm/**.hpp",
-		"%{prj.name}/vendor/glm/glm/**.inl"
+		"%{prj.name}/vendor/glm/glm/**.inl",
+
+		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.h",
+		"%{prj.name}/vendor/ImGuizmo/ImGuizmo.cpp"
 	}
 
 	defines
@@ -67,7 +71,8 @@ project "RodEngine"
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.stb_image}",
 		"%{IncludeDir.entt}",
-		"%{IncludeDir.yaml_cpp}"
+		"%{IncludeDir.yaml_cpp}",
+		"%{IncludeDir.ImGuizmo}"
 	}
 
 	links 
@@ -78,6 +83,9 @@ project "RodEngine"
 		"yaml-cpp",
 		"opengl32.lib"
 	}
+
+	filter "files:RodEngine/vendor/ImGuizmo/**.cpp"
+		flags { "NoPCH" }
 
 	filter "system:windows"
 		systemversion "latest"
@@ -127,7 +135,8 @@ project "Rod-Editor"
 		"RodEngine/src",
 		"%{IncludeDir.glm}",
 		"%{IncludeDir.ImGui}",
-		"%{IncludeDir.entt}"
+		"%{IncludeDir.entt}",
+		"%{IncludeDir.ImGuizmo}"
 	}
 
 	links

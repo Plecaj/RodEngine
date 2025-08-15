@@ -103,6 +103,29 @@ namespace Rod {
 
 	void EditorLayer::OnImGuiRender()
 	{
+		float titlebarHeight = m_TitlebarPanel.GetHeight();
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+
+		ImGui::SetNextWindowPos(viewport->WorkPos);
+		ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, titlebarHeight));
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+		ImGuiWindowFlags titlebar_flags =
+			ImGuiWindowFlags_NoDocking |
+			ImGuiWindowFlags_NoCollapse |
+			ImGuiWindowFlags_NoResize |
+			ImGuiWindowFlags_NoMove |
+			ImGuiWindowFlags_NoScrollbar |
+			ImGuiWindowFlags_NoScrollWithMouse |
+			ImGuiWindowFlags_NoTitleBar;
+		ImGui::Begin("Titlebar", nullptr, titlebar_flags);
+
+		m_TitlebarPanel.OnImGuiRender();
+
+		ImGui::End();
+		ImGui::PopStyleVar(3);
+
 		// Dockspace code from ImGui demo
 		static bool dockspaceOpen = true;
 		static bool opt_fullscreen = true;
@@ -110,6 +133,14 @@ namespace Rod {
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+
+		ImVec2 dockPos = ImVec2(viewport->WorkPos.x, viewport->WorkPos.y + titlebarHeight);
+		ImVec2 dockSize = ImVec2(viewport->WorkSize.x, viewport->WorkSize.y - titlebarHeight);
+
+		ImGui::SetNextWindowPos(dockPos);
+		ImGui::SetNextWindowSize(dockSize);
+		ImGui::SetNextWindowViewport(viewport->ID);
+
 		if (opt_fullscreen)
 		{
 			const ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -131,7 +162,7 @@ namespace Rod {
 
 		if (!opt_padding)
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-		ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
+		ImGui::Begin("Dockspace", &dockspaceOpen, window_flags);
 		if (!opt_padding)
 			ImGui::PopStyleVar();
 
@@ -149,14 +180,6 @@ namespace Rod {
 		}
 
 		style.WindowMinSize.x = 32.0f;
-
-		// TODO: Remake way how titlebar is rendered in ImGui
-		if (ImGui::BeginMenuBar()) 
-		{
-			m_TitlebarPanel.OnImGuiRender();
-
-			ImGui::EndMenuBar();
-		}
 
 		m_SceneHierarchyPanel.OnImGuiRender();
 

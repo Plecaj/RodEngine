@@ -141,8 +141,8 @@
   <ItemGroup>
     <ClCompile Include="src\EditorLayer.cpp" />
     <ClCompile Include="src\Panels\SceneHierarchyPanel.cpp" />
-    <ClCompile Include="src\RodEditorApp.cpp" />
     <ClCompile Include="src\Panels\TitlebarPanel.cpp" />
+    <ClCompile Include="src\RodEditorApp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\RodEngine\RodEngine.vcxproj">

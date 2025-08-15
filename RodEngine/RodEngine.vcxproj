@@ -145,6 +145,7 @@
   <ItemGroup>
     <ClInclude Include="src\Rod.h" />
     <ClInclude Include="src\Rod\Core\Application.h" />
+    <ClInclude Include="src\Rod\Core\BuildMode.h" />
     <ClInclude Include="src\Rod\Core\Core.h" />
     <ClInclude Include="src\Rod\Core\EntryPoint.h" />
     <ClInclude Include="src\Rod\Core\Input.h" />

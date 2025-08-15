@@ -21,12 +21,13 @@ namespace Rod {
 		void SetOpenSceneCallback(std::function<void()> callback) { m_OpenScene = std::move(callback); }
 		void SetSaveSceneCallback(std::function<void()> callback) { m_SaveScene = std::move(callback); }
 		void SetSaveSceneAsCallback(std::function<void()> callback) { m_SaveSceneAs = std::move(callback); }
+
+		uint32_t GetHeight() { return m_Height; }
 	private:
 		void DrawFileMenu();
-		void HandleDrag();
 		void DrawButtons();
 	private:
-		uint32_t m_Width = 0, m_Height = 24;
+		uint32_t m_Height = 32;
 		ImVec2 m_ButtonSize;
 
 		Ref<Texture2D> m_Logo;

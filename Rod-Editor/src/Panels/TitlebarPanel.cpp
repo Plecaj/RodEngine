@@ -10,76 +10,67 @@
 namespace Rod{
 
 	TitlebarPanel::TitlebarPanel()
-		: m_ButtonSize({ 40.0f, 24.0f })
 	{
-		m_Logo = Texture2D::Create("assets/textures/logo.png");
+		m_Logo = Texture2D::Create("assets/textures/titlebarLogo.png");
+		m_ButtonSize = ImVec2((float)m_Height * 1.25f, (float)m_Height);
 	}
 
 	void TitlebarPanel::OnImGuiRender()
 	{
-		// Note that TitlebarPanel cannot resize on y axis right not, logo will be cuted off when height is greater then 24. 
-		// TODO: Remake way how titlebar is rendered in ImGui
-		ImVec2 logoSize = { (float)24.0f, (float)24.0f };
-		ImGui::Image(m_Logo->GetRendererID(), logoSize);
+		float rowY = ImGui::GetCursorPosY();
 
-		ImGui::Text("Rod-Editor");
+		ImVec2 logoSize = { (float)m_Height, (float)m_Height };
+		ImGui::Image(m_Logo->GetRendererID(), logoSize, ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
 
+		ImGui::SameLine();
+		ImGui::TextUnformatted("Rod-Editor");
+
+		ImGui::SameLine();
 		DrawFileMenu();
+
+		float dragZoneStartX = ImGui::GetCursorPosX();
+		float dragZoneWidth = ImGui::GetContentRegionAvail().x - (m_ButtonSize.x * 3.0f);
+		if (dragZoneWidth < 0.0f) dragZoneWidth = 0.0f;
+
+		ImGui::SetCursorPos(ImVec2(dragZoneStartX + dragZoneWidth, rowY));
 		DrawButtons();
-		HandleDrag();
+
+		ImGui::SetCursorPos(ImVec2(dragZoneStartX, rowY));
+		ImGui::InvisibleButton("TitlebarDragZone", ImVec2(dragZoneWidth, m_ButtonSize.y));
+		if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+			Application::Get().BeginWindowDrag();
 	}
+
+
+
 
 	void TitlebarPanel::DrawFileMenu()
 	{
-		if (ImGui::BeginMenu("File"))
+		if (ImGui::Button("File"))
+			ImGui::OpenPopup("FileMenuPopup");
+
+		if (ImGui::BeginPopup("FileMenuPopup"))
 		{
-			if (ImGui::MenuItem("New", "Ctrl+N"))
+			if (ImGui::MenuItem("New", "Ctrl+N"))           
 				m_NewScene();
-
-			if (ImGui::MenuItem("Open...", "Ctrl+O"))
+			if (ImGui::MenuItem("Open...", "Ctrl+O"))       
 				m_OpenScene();
-
-			if (ImGui::MenuItem("Save", "Ctrl+S"))
+			if (ImGui::MenuItem("Save", "Ctrl+S"))          
 				m_SaveScene();
-
-			if (ImGui::MenuItem("Save as...", "Ctrl+Shift+S"))
+			if (ImGui::MenuItem("Save as...", "Ctrl+Shift+S")) 
 				m_SaveSceneAs();
-
-			if (ImGui::MenuItem("Exit")) { Application::Get().Close(); }
-			ImGui::EndMenu();
-		}
-	}
-
-	void TitlebarPanel::HandleDrag()
-	{
-		ImGuiViewport* viewport = ImGui::GetMainViewport();
-
-		float buttonAreaWidth = m_ButtonSize.x * 3;
-
-		ImVec2 titlebarSize = { viewport->WorkSize.x - buttonAreaWidth, (float)m_Height };
-
-		ImGui::SetCursorPos(ImVec2(0, 0));
-		ImGui::InvisibleButton("TitlebarDragZone", titlebarSize, ImGuiButtonFlags_MouseButtonLeft);
-
-		if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
-		{
-			Application::Get().BeginWindowDrag();
+			if (ImGui::MenuItem("Exit"))                    
+				Application::Get().Close();
+			ImGui::EndPopup();
 		}
 	}
 
 	void TitlebarPanel::DrawButtons()
 	{
-		ImGuiViewport* viewport = ImGui::GetMainViewport();
-
-		ImVec2 buttonAreaStart = ImVec2(viewport->WorkSize.x - m_ButtonSize.x * 3, 0);
-		ImGui::SetCursorScreenPos(ImVec2(viewport->Pos.x + buttonAreaStart.x, viewport->Pos.y));
-
 		if (ImGui::Button("_", m_ButtonSize))
-		{
 			Application::Get().Minimalize();
-		}
-		ImGui::SameLine(0.0f, 0.0f);
 
+		ImGui::SameLine(0.0f, 0.0f);
 		if (ImGui::Button("[]", m_ButtonSize))
 		{
 			if (Application::Get().IsMaximalized())
@@ -87,16 +78,14 @@ namespace Rod{
 			else
 				Application::Get().Maximalize();
 		}
-		ImGui::SameLine(0.0f, 0.0f);
 
+		ImGui::SameLine(0.0f, 0.0f);
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.9f, 0.2f, 0.2f, 1.0f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.1f, 0.1f, 1.0f));
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.8f, 0.0f, 0.0f, 1.0f));
 
 		if (ImGui::Button("X", m_ButtonSize))
-		{
 			Application::Get().Close();
-		}
 
 		ImGui::PopStyleColor(3);
 	}

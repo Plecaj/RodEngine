@@ -19,9 +19,9 @@
     <ClCompile Include="src\Panels\SceneHierarchyPanel.cpp">
       <Filter>Panels</Filter>
     </ClCompile>
-    <ClCompile Include="src\RodEditorApp.cpp" />
     <ClCompile Include="src\Panels\TitlebarPanel.cpp">
       <Filter>Panels</Filter>
     </ClCompile>
+    <ClCompile Include="src\RodEditorApp.cpp" />
   </ItemGroup>
 </Project>

@@ -72,6 +72,9 @@
     <ClInclude Include="src\Rod\Core\Application.h">
       <Filter>src\Rod\Core</Filter>
     </ClInclude>
+    <ClInclude Include="src\Rod\Core\BuildMode.h">
+      <Filter>src\Rod\Core</Filter>
+    </ClInclude>
     <ClInclude Include="src\Rod\Core\Core.h">
       <Filter>src\Rod\Core</Filter>
     </ClInclude>

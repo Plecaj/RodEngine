@@ -1,9 +1,9 @@
 #pragma once
 
-#include "entt.hpp"
-
+#include "Rod/Renderer/EditorCamera.h"
 #include "Rod/Core/Timestep.h"
 
+#include "entt.hpp"
 
 namespace Rod {
 
@@ -18,7 +18,8 @@ namespace Rod {
 		Entity CreateEntity(const std::string& name = "");
 		void DestroyEntity(Entity entity);
 
-		void OnUpdate(Timestep& ts);
+		void OnUpdateRuntime(Timestep& ts);
+		void OnUpdateEditor(Timestep& ts, EditorCamera& camera);
 		void OnViewportResize(uint32_t width, uint32_t height);
 
 		Entity GetPrimaryCameraEntity();

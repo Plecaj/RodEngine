@@ -2,9 +2,9 @@ Scene: Untitled
 Entities:
   - Entity: 87124874287
     TagComponent:
-      Tag: Camera A
+      Tag: Camera
     TransformComponent:
-      Translation: [2, -0.58406353, 0]
+      Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
@@ -20,37 +20,19 @@ Entities:
       FixedAspectRatio: false
   - Entity: 87124874287
     TagComponent:
-      Tag: Camera B
+      Tag: Second Square
     TransformComponent:
-      Translation: [-4, -0.58406353, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    CameraComponent:
-      Camera:
-        ProjectionType: 1
-        PerspectiveFOV: 0.7853982
-        PerspectiveNear: 0.01
-        PerspectiveFar: 1000
-        OrthographicSize: 10
-        OrthographicNear: -1
-        OrthographicFar: 1
-      Primary: false
-      FixedAspectRatio: false
+      Translation: [-1.4759948, 1.4345789, -0.006589911]
+      Rotation: [0.004543829, 0.003457528, -1.0716218]
+      Scale: [0.99998987, 2.2896433, 0.999955]
+    SpriteRendererComponent:
+      Color: [1, 0, 0, 1]
   - Entity: 87124874287
     TagComponent:
       Tag: Square
     TransformComponent:
-      Translation: [0, 0, 0]
-      Rotation: [0, 0, 0]
+      Translation: [1.353344, 0, 0]
+      Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     SpriteRendererComponent:
       Color: [0, 1, 0, 1]
-  - Entity: 87124874287
-    TagComponent:
-      Tag: Second Square
-    TransformComponent:
-      Translation: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    SpriteRendererComponent:
-      Color: [1, 0, 0, 1]

@@ -14,7 +14,7 @@
 namespace Rod {
 
 	EditorLayer::EditorLayer()
-		:Layer("Sandbox2D"), m_CameraController(1280.0f / 720.0f)
+		:Layer("Sandbox2D"), m_CameraController(1280.0f, 720.0f)
 	{
 	}
 
@@ -27,47 +27,9 @@ namespace Rod {
 		fbSpec.Height = 720;
 		m_Framebuffer = FrameBuffer::Create(fbSpec);
 
-		m_ActiveScene = CreateRef<Scene>();
-
-		auto square = m_ActiveScene->CreateEntity("Square");
-		square.AddComponent<SpriteRendererComponent>(glm::vec4{ 0.0f, 1.0f, 0.0f, 1.0f });
-
-		auto otherSquare = m_ActiveScene->CreateEntity("Second Square");
-		otherSquare.AddComponent<SpriteRendererComponent>(glm::vec4{ 1.0f, 0.0f, 0.0f, 1.0f });
-
-		m_CameraEntity = m_ActiveScene->CreateEntity("Camera A");
-		auto& firstCc = m_CameraEntity.AddComponent<CameraComponent>();
-
-		m_SecondCameraEntity = m_ActiveScene->CreateEntity("Camera B");
-		auto& cc = m_SecondCameraEntity.AddComponent<CameraComponent>();
-		cc.Primary = false;
-
-		class CameraController : public ScriptableEntity
-		{
-		public:
-			void OnCreate()
-			{
-				GetComponent<TransformComponent>().Translation.x = rand() % 10 - 5.0f;
-			};
-
-			void OnUpdate(Timestep ts)
-			{
-				auto& translation = GetComponent<TransformComponent>().Translation;
-				float speed = 5.0f;
-
-				if (Input::IsKeyPressed(Key::Left))
-					translation.x -= speed * ts;
-				if (Input::IsKeyPressed(Key::Right))
-					translation.x += speed * ts;
-				if (Input::IsKeyPressed(Key::Up))
-					translation.y += speed * ts;
-				if (Input::IsKeyPressed(Key::Down))
-					translation.y -= speed * ts;
-			}
-		};
-
-		m_CameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
-		m_SecondCameraEntity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+		NewScene();
+		SceneSerializer serializer(m_ActiveScene);
+		serializer.DeserializeText("assets/scenes/Example.rod");
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
@@ -75,6 +37,8 @@ namespace Rod {
 		m_TitlebarPanel.SetOpenSceneCallback([this]() { OpenScene(); });
 		m_TitlebarPanel.SetSaveSceneCallback([this]() { SaveScene(); });
 		m_TitlebarPanel.SetSaveSceneAsCallback([this]() { SaveSceneAs(); });
+
+		m_EditorCamera = EditorCamera(30.0f, 1.778f, 1.0f, 1000.0f);
 	}
 
 	void EditorLayer::OnDetach()
@@ -89,17 +53,23 @@ namespace Rod {
 			m_ViewportSize = m_PendingViewportSize;
 			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_EditorCamera.SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
-		if(m_ViewportFocused)
+		if (m_ViewportFocused)
+		{
 			m_CameraController.OnUpdate(ts);
+			m_EditorCamera.OnUpdate(ts);
+		}
+
+		m_EditorCamera.OnUpdate(ts);
 
 		m_Framebuffer->Bind();
 		Renderer2D::ResetStats();
 		RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
 		RenderCommand::Clear();
 
-		m_ActiveScene->OnUpdate(ts);
+		m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
 
 		m_Framebuffer->Unbind();
 	}
@@ -222,18 +192,23 @@ namespace Rod {
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 		if (selectedEntity && m_GuizmoType != -1)
 		{
-			auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
-			const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
+			// Runtime camera
+			//auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
+			//const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
+			//const glm::mat4& cameraProjection = camera.GetProjection();
+			//glm::mat4 cameraView = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
 
-			ImGuizmo::SetOrthographic(camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic);
+			// Editor camera 
+			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
+			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
+
+
+			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
 
 			float windowWidth = (float)ImGui::GetWindowWidth();
 			float windowHeight = (float)ImGui::GetWindowHeight();
 			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
-
-			const glm::mat4& cameraProjection = camera.GetProjection();
-			glm::mat4 cameraView = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
 
 			auto& tc = selectedEntity.GetComponent<TransformComponent>();
 			glm::mat4 transform = tc.GetTransform();
@@ -267,6 +242,7 @@ namespace Rod {
 	void EditorLayer::OnEvent(Event& event)
 	{
 		m_CameraController.OnEvent(event);
+		m_EditorCamera.OnEvent(event);
 
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<KeyPressedEvent>(RD_BIND_EVENT_FN(EditorLayer::OnKeyPressed));

@@ -4,6 +4,8 @@
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/TitlebarPanel.h"
 
+#include "Rod/Renderer/EditorCamera.h"
+
 namespace Rod {
 
 	class EditorLayer : public Rod::Layer {
@@ -26,11 +28,12 @@ namespace Rod {
 		void SaveSceneAs();
 	private:
 		Ref<Scene> m_ActiveScene;
-		Entity m_CameraEntity, m_SecondCameraEntity;
-
-		bool m_PrimaryCamera = true;
+		Entity m_CameraEntity;
 
 		OrthographicCameraController m_CameraController;
+
+		EditorCamera m_EditorCamera;
+
 		Ref<FrameBuffer> m_Framebuffer;
 
 		bool m_ViewportFocused, m_ViewportHovered = false;

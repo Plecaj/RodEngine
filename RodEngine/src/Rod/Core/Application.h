@@ -35,7 +35,7 @@ namespace Rod {
 		bool isMinimalized() { return m_Minimized; }
 
 		void Maximalize();
-		bool IsMaximalized() { return m_Maximalized; }
+		bool IsMaximized() { return m_Maximalized; }
 
 		void RestoreWindow();
 		void BeginWindowDrag();

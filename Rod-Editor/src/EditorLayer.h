@@ -34,7 +34,7 @@ namespace Rod {
 
 		EditorCamera m_EditorCamera;
 
-		Ref<FrameBuffer> m_Framebuffer;
+		Ref<Framebuffer> m_Framebuffer;
 
 		bool m_ViewportFocused, m_ViewportHovered = false;
 		glm::vec2 m_ViewportSize, m_PendingViewportSize;

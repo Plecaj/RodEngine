@@ -51,15 +51,15 @@ namespace Rod{
 
 		if (ImGui::BeginPopup("FileMenuPopup"))
 		{
-			if (ImGui::MenuItem("New", "Ctrl+N"))           
+			if (ImGui::MenuItem(" New", "Ctrl+N"))           
 				m_NewScene();
-			if (ImGui::MenuItem("Open...", "Ctrl+O"))       
+			if (ImGui::MenuItem(" Open...", "Ctrl+O"))       
 				m_OpenScene();
-			if (ImGui::MenuItem("Save", "Ctrl+S"))          
+			if (ImGui::MenuItem(" Save", "Ctrl+S"))          
 				m_SaveScene();
-			if (ImGui::MenuItem("Save as...", "Ctrl+Shift+S")) 
+			if (ImGui::MenuItem(" Save as...", "Ctrl+Shift+S")) 
 				m_SaveSceneAs();
-			if (ImGui::MenuItem("Exit"))                    
+			if (ImGui::MenuItem(" Exit"))                    
 				Application::Get().Close();
 			ImGui::EndPopup();
 		}
@@ -71,12 +71,12 @@ namespace Rod{
 			Application::Get().Minimalize();
 
 		ImGui::SameLine(0.0f, 0.0f);
-		if (ImGui::Button("[]", m_ButtonSize))
-		{
-			if (Application::Get().IsMaximalized())
-				Application::Get().RestoreWindow();
-			else
-				Application::Get().Maximalize();
+		if (ImGui::Button("[]", m_ButtonSize)) 
+		{ 
+			if (Application::Get().IsMaximized()) 
+				Application::Get().RestoreWindow(); 
+			else 
+				Application::Get().Maximalize(); 
 		}
 
 		ImGui::SameLine(0.0f, 0.0f);

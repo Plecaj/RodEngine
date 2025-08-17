@@ -22,10 +22,11 @@ namespace Rod {
 	{
 		RD_PROFILE_FUNCTION();
 
-		FrameBufferSpecification fbSpec;
+		FramebufferSpecification fbSpec;
+		fbSpec.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::Depth };
 		fbSpec.Width = 1280;
 		fbSpec.Height = 720;
-		m_Framebuffer = FrameBuffer::Create(fbSpec);
+		m_Framebuffer = Framebuffer::Create(fbSpec);
 
 		NewScene();
 		SceneSerializer serializer(m_ActiveScene);

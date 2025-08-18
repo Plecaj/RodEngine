@@ -18,6 +18,9 @@ namespace Rod {
         glm::vec2 TexCoord;
         float TexIdx;
         float TilingFactor;
+
+        // For editor, should be changed
+        int EntityID = 0;
     };
 
     struct Renderer2DData 
@@ -53,14 +56,17 @@ namespace Rod {
         RD_PROFILE_FUNCTION();
         s_Data = new Renderer2DData;
         
+        // Note that shaders conatin bunch of editor code that shouldnt exist for runtime
+
         std::string vertexShaderSrc = R"(
-        #version 330 core
+        #version 450
 
         layout(location = 0) in vec3 a_Position;
         layout(location = 1) in vec4 a_Color;
         layout(location = 2) in vec2 a_TexCoord;
         layout(location = 3) in float a_TexIdx;
         layout(location = 4) in float a_TilingFactor;
+        layout(location = 5) in int a_EntityID;
 
         uniform mat4 u_ViewProjection;
 
@@ -68,6 +74,7 @@ namespace Rod {
         out vec2 v_TexCoord;
         out float v_TexIdx;
         out float v_TilingFactor;
+        out flat int v_EntityID;
 
         void main()
         {
@@ -75,19 +82,22 @@ namespace Rod {
             v_TexCoord = a_TexCoord;
             v_TexIdx = a_TexIdx;
             v_TilingFactor = a_TilingFactor;
+            v_EntityID = a_EntityID;
             gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
         }
         )";
 
-        std::string fragmentShaderSrc = R"(#version 330 core
+        std::string fragmentShaderSrc = R"(
+        #version 450
 
         layout(location = 0) out vec4 color;
-        layout(location = 1) out int entityID;
+        layout(location = 1) out int entityID;   
 
         in vec4 v_Color;
         in vec2 v_TexCoord;
         in float v_TexIdx;
         in float v_TilingFactor;
+        in flat int v_EntityID;
 
         uniform sampler2D u_Textures[)" + std::to_string(s_Data->MaxTexturesSlots) + R"(];
 
@@ -108,7 +118,7 @@ namespace Rod {
         }
 
             color = texColor * v_Color;
-            entityID = 50; 
+            entityID = v_EntityID; 
         }
         )";
 
@@ -129,7 +139,8 @@ namespace Rod {
             { ShaderDataType::Float4, "a_Color"},
             { ShaderDataType::Float2, "a_TexCoord" },
             { ShaderDataType::Float, "a_TexIdx"},
-            { ShaderDataType::Float, "a_TilingFactor"}
+            { ShaderDataType::Float, "a_TilingFactor"},
+            { ShaderDataType::Int, "a_EntityID"}
             });
         s_Data->QuadVertexArray->AddVertexBuffer(s_Data->QuadVertexBuffer);
 
@@ -306,7 +317,7 @@ namespace Rod {
         s_Data->Stats.QuadCount++;
     }
 
-    void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color)
+    void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color, int entityID)
     {
         RD_PROFILE_FUNCTION();
         if (s_Data->QuadIndexCount + 6 > s_Data->MAX_INDICES_COUNT) {
@@ -331,6 +342,7 @@ namespace Rod {
             s_Data->QuadVertexBufferPtr->TexCoord = textureCoords[i];
             s_Data->QuadVertexBufferPtr->TexIdx = whiteTextureIndex;
             s_Data->QuadVertexBufferPtr->TilingFactor = tilingFactor;
+            s_Data->QuadVertexBufferPtr->EntityID = entityID;
             s_Data->QuadVertexBufferPtr++;
         }
 
@@ -339,7 +351,7 @@ namespace Rod {
         s_Data->Stats.QuadCount++;
     }
 
-    void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor)
+    void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor, int entityID)
     {
         RD_PROFILE_FUNCTION();
         if ((s_Data->QuadIndexCount + 6 > s_Data->MAX_INDICES_COUNT)) {
@@ -384,6 +396,7 @@ namespace Rod {
             s_Data->QuadVertexBufferPtr->TexCoord = textureCoords[i];
             s_Data->QuadVertexBufferPtr->TexIdx = textureIndex;
             s_Data->QuadVertexBufferPtr->TilingFactor = tilingFactor;
+            s_Data->QuadVertexBufferPtr->EntityID = entityID;
             s_Data->QuadVertexBufferPtr++;
         }
 
@@ -484,6 +497,11 @@ namespace Rod {
         s_Data->QuadIndexCount += 6;
 
         s_Data->Stats.QuadCount++;
+    }
+
+    void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID)
+    {
+        DrawQuad(transform, src.Color, entityID);
     }
 
     void Renderer2D::ResetStats()

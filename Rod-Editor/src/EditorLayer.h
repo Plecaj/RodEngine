@@ -44,6 +44,8 @@ namespace Rod {
 
 		std::string m_SceneOutputFilepath = std::string();
 
+		Entity m_HoveredEntity;
+
 		int m_GuizmoType = -1;
 
 		// Panels

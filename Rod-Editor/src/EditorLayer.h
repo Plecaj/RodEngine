@@ -21,6 +21,7 @@ namespace Rod {
 		void OnEvent(Event& event) override;
 	private:
 		bool OnKeyPressed(KeyPressedEvent& e);
+		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
 
 		void NewScene();
 		void OpenScene();
@@ -38,10 +39,13 @@ namespace Rod {
 
 		bool m_ViewportFocused, m_ViewportHovered = false;
 		glm::vec2 m_ViewportSize, m_PendingViewportSize;
+		glm::vec2 m_ViewportBounds[2];
 
 		bool m_Profiling = false;
 
 		std::string m_SceneOutputFilepath = std::string();
+
+		Entity m_HoveredEntity;
 
 		int m_GuizmoType = -1;
 

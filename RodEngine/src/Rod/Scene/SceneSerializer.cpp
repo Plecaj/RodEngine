@@ -86,7 +86,7 @@ namespace Rod {
 	static void SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
 		out << YAML::BeginMap; // Entity
-		out << YAML::Key << "Entity" << YAML::Value << "87124874287"; // TODO: Entity ID right there
+		out << YAML::Key << "Entity" << YAML::Value << (uint32_t)entity; 
 
 		if (entity.HasComponent<TagComponent>())
 		{

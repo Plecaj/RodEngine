@@ -16,6 +16,9 @@ namespace Rod {
 		virtual void Unbind() override;
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
+		virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) override;
+
+		virtual void ClearColorAttachment(uint32_t attachmentIndex, int value) override;
 
 		virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const override { RD_CORE_ASSERT(index < m_ColorAttachments.size(), "Index < ColorAttachments.size()"); return m_ColorAttachments[index]; }
 

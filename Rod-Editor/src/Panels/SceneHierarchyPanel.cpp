@@ -35,8 +35,10 @@ namespace Rod {
 		// Right click on blank space
 		if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
 		{
-			if (ImGui::MenuItem("Create Empty Entity"))
-				m_Context->CreateEntity("Empty Entity");
+			if (ImGui::MenuItem("Create Empty Entity")) 
+				 m_Context->CreateEntity("Empty Entity");
+			
+			
 
 			ImGui::EndPopup();
 		}

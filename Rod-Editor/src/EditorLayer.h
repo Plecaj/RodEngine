@@ -49,6 +49,8 @@ namespace Rod {
 
 		int m_GuizmoType = -1;
 
+		float m_LastDeltaTime = 0.0f;
+
 		// Panels
 		TitlebarPanel m_TitlebarPanel;
 		friend class TitlebarPanel;

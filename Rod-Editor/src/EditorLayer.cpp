@@ -89,11 +89,13 @@ namespace Rod {
 		}
 
 		m_Framebuffer->Unbind();
+
+		m_LastDeltaTime = ts;
 	}
 
 	void EditorLayer::OnImGuiRender()
 	{
-		float titlebarHeight = m_TitlebarPanel.GetHeight();
+		float titlebarHeight = (float)m_TitlebarPanel.GetHeight() - 20.0f;
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
 
 		ImGui::SetNextWindowPos(viewport->WorkPos);
@@ -173,64 +175,77 @@ namespace Rod {
 
 		m_SceneHierarchyPanel.OnImGuiRender();
 
-		ImGui::Begin("Stats");
+		ImGui::Begin("Performance");
 
-		std::string name = "None";
-		if (m_HoveredEntity)
-			name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
+			float fps = 1.0f / m_LastDeltaTime;
+			ImGui::Text("FPS: %.1f", fps);
+			ImGui::Text("Frame Time: %.3f ms", m_LastDeltaTime * 1000.0f);
 
-		ImGui::Text("Hovered Entity: %s", name.c_str());
+			ImGui::Separator();
 
-		auto stats = Renderer2D::GetStats();
-		ImGui::Text("Renderer Stats 2D:");
-		ImGui::Text("	Draw calls: %d", stats.DrawCalls);
-		ImGui::Text("	Quad Count: %d", stats.QuadCount);
-
-		ImGui::Separator();
-		
-		if (!m_Profiling && ImGui::Button("Start Profiling")) {
-			m_Profiling = true;
-			RD_PROFILE_BEGIN_SESSION("Runtime", "RodProfile-Runtime.json");
-		}
-		if (m_Profiling && ImGui::Button("Stop Profiling")) {
-			m_Profiling = false;
-			RD_PROFILE_END_SESSION();
-		}
+			auto stats = Renderer2D::GetStats();
+			ImGui::Text("Renderer Stats:");
+			ImGui::Text("	Draw calls: %d", stats.DrawCalls);
+			ImGui::Text("	Quad Count: %d", stats.QuadCount);
 
 		ImGui::End();
 
-		ImGui::Begin("Controls");
+		ImGui::Begin("Other");
 
-		// Guizmos
-		ImGui::BeginChild("Guizmos", ImVec2(0, 150), true); 
-		ImGui::Text("Guizmos:");
+			const char* guizmoMode = "None";
+			switch (m_GuizmoType)
+			{
+			case -1:                                guizmoMode = "None";      break;
+			case ImGuizmo::OPERATION::TRANSLATE:    guizmoMode = "Translate"; break;
+			case ImGuizmo::OPERATION::ROTATE:       guizmoMode = "Rotate";    break;
+			case ImGuizmo::OPERATION::SCALE:        guizmoMode = "Scale";     break;
+			}
+			ImGui::Text("Current Guizmo mode: %s", guizmoMode);
+		
+			ImGui::Separator();
 
-		const char* mode = "None";
-		switch (m_GuizmoType)
-		{
-		case -1:                                mode = "None";      break;
-		case ImGuizmo::OPERATION::TRANSLATE:    mode = "Translate"; break;
-		case ImGuizmo::OPERATION::ROTATE:       mode = "Rotate";    break;
-		case ImGuizmo::OPERATION::SCALE:        mode = "Scale";     break;
-		}
+			std::string name = "None";
+			if (m_HoveredEntity)
+				name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
 
-		ImGui::Text("	Current: %s", mode);
-		ImGui::Separator(); 
-		ImGui::Text("Shortcut keys:");
-		ImGui::Text("	Q = None, W = Translate, E = Rotate, R = Scale");
-		ImGui::EndChild();
+			ImGui::Text("Hovered Entity: %s", name.c_str());
 
-		ImGui::Spacing(); 
+			ImGui::Separator();
 
-		// Camera 
-		ImGui::BeginChild("Camera", ImVec2(0, 150), true); 
-		ImGui::Text("Editor Camera Controls:");
-		ImGui::Separator();
-		ImGui::Text("Alt + Left Mouse = Rotate");
-		ImGui::Text("Alt + Middle Mouse = Translate");
-		ImGui::Text("Alt + Right Mouse = Zoom");
-		ImGui::Text("Mouse Scroll = Zoom");
-		ImGui::EndChild();
+			if (!m_Profiling && ImGui::Button("Start Profiling")) {
+				m_Profiling = true;
+				RD_PROFILE_BEGIN_SESSION("Runtime", "RodProfile-Runtime.json");
+			}
+			if (m_Profiling && ImGui::Button("Stop Profiling")) {
+				m_Profiling = false;
+				RD_PROFILE_END_SESSION();
+			}
+
+		ImGui::End();
+
+		ImGui::Begin("Guide");
+
+			// Guizmos 
+			if (ImGui::CollapsingHeader("Guizmos"))
+			{
+				ImGui::Text("Guizmos Shortcut Keys:");
+				ImGui::Separator();
+				ImGui::Text("Q = None");
+				ImGui::Text("W = Translate");
+				ImGui::Text("E = Rotate");
+				ImGui::Text("R = Scale");
+			}
+
+			// Camera
+			if (ImGui::CollapsingHeader("Editor Camera"))
+			{
+				ImGui::Text("Camera Controls:");
+				ImGui::Separator();
+				ImGui::Text("Alt + Left Mouse = Rotate");
+				ImGui::Text("Alt + Middle Mouse = Translate");
+				ImGui::Text("Alt + Right Mouse = Zoom");
+				ImGui::Text("Mouse Scroll = Zoom");
+			}
 
 		ImGui::End();
 

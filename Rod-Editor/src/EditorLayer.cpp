@@ -199,6 +199,41 @@ namespace Rod {
 
 		ImGui::End();
 
+		ImGui::Begin("Controls");
+
+		// Guizmos
+		ImGui::BeginChild("Guizmos", ImVec2(0, 150), true); 
+		ImGui::Text("Guizmos:");
+
+		const char* mode = "None";
+		switch (m_GuizmoType)
+		{
+		case -1:                                mode = "None";      break;
+		case ImGuizmo::OPERATION::TRANSLATE:    mode = "Translate"; break;
+		case ImGuizmo::OPERATION::ROTATE:       mode = "Rotate";    break;
+		case ImGuizmo::OPERATION::SCALE:        mode = "Scale";     break;
+		}
+
+		ImGui::Text("	Current: %s", mode);
+		ImGui::Separator(); 
+		ImGui::Text("Shortcut keys:");
+		ImGui::Text("	Q = None, W = Translate, E = Rotate, R = Scale");
+		ImGui::EndChild();
+
+		ImGui::Spacing(); 
+
+		// Camera 
+		ImGui::BeginChild("Camera", ImVec2(0, 150), true); 
+		ImGui::Text("Editor Camera Controls:");
+		ImGui::Separator();
+		ImGui::Text("Alt + Left Mouse = Rotate");
+		ImGui::Text("Alt + Middle Mouse = Translate");
+		ImGui::Text("Alt + Right Mouse = Zoom");
+		ImGui::Text("Mouse Scroll = Zoom");
+		ImGui::EndChild();
+
+		ImGui::End();
+
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
 		ImGui::Begin("Viewport");
 

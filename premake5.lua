@@ -21,6 +21,7 @@ IncludeDir["stb_image"] = "RodEngine/vendor/stb_image"
 IncludeDir["entt"] = "RodEngine/vendor/entt"
 IncludeDir["yaml_cpp"] = "RodEngine/vendor/yaml-cpp/include"
 IncludeDir["ImGuizmo"] = "RodEngine/vendor/ImGuizmo"
+IncludeDir["shaderc"] = "RodEngine/vendor/shaderc/libshaderc/include"
 
 group "Dependencies"
 	include "RodEngine/vendor/GLFW"
@@ -72,8 +73,18 @@ project "RodEngine"
 		"%{IncludeDir.stb_image}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.yaml_cpp}",
-		"%{IncludeDir.ImGuizmo}"
+		"%{IncludeDir.ImGuizmo}",
+		"%{IncludeDir.shaderc}"
 	}
+
+	libdirs {
+		"RodEngine/vendor/shaderc/build/libshaderc_util/Debug",
+		"RodEngine/vendor/shaderc/build/libshaderc/Debug",
+		"RodEngine/vendor/shaderc/build/third_party/glslang/glslang/Debug",
+		"RodEngine/vendor/shaderc/build/third_party/spirv-tools/source/Debug",
+		"RodEngine/vendor/shaderc/build/third_party/spirv-tools/source/opt/Debug"
+	}
+
 
 	links 
 	{ 
@@ -81,7 +92,13 @@ project "RodEngine"
 		"Glad",
 		"ImGui",
 		"yaml-cpp",
-		"opengl32.lib"
+		"opengl32.lib",
+		"shaderc_combined", "shaderc_util", "glslangd", "SPIRV-Tools-opt", "SPIRV-Tools.lib"
+	}
+
+	dependson 
+	{
+		"Shaderc-Build"
 	}
 
 	filter "files:RodEngine/vendor/ImGuizmo/**.cpp"
@@ -92,7 +109,6 @@ project "RodEngine"
 		defines
 		{
 			"RD_PLATFORM_WINDOWS",
-			"RD_BUILD_DLL",
 			"GLFW_INCLUDE_NONE",
 			"YAML_CPP_STATIC_DEFINE"
 		}
@@ -219,3 +235,30 @@ project "Sandbox"
 		defines "RD_DIST"
 		runtime "Release"
 		optimize "on"
+	
+project "Shaderc-Build"
+    kind "Makefile"
+    language "C++"
+
+    location "RodEngine/vendor/shaderc"
+
+	buildcommands {
+		"cmake -S . -B build "
+		  .. "-DSHADERC_SKIP_TESTS=ON "
+		  .. "-DSHADERC_SKIP_EXAMPLES=ON "
+		  .. "-DSHADERC_ENABLE_INSTALL=OFF "
+		  .. "-DSPIRV_TOOLS_SKIP_INSTALL=ON "
+		  .. "-DSPIRV_HEADERS_SKIP_INSTALL=ON "
+		  .. "-DGLSLANG_SKIP_INSTALL=ON",
+		"cmake --build build --config %{cfg.buildcfg}"
+	}
+
+    rebuildcommands {
+        "cmake --build build --config %{cfg.buildcfg} --clean-first"
+    }
+
+    cleancommands {
+        "rmdir /s /q build"
+    }
+
+    buildoutputs { "build/libshaderc/%{cfg.buildcfg}/shaderc_combined.lib" }

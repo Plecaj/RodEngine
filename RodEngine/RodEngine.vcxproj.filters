@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="src">
@@ -18,6 +18,9 @@
     </Filter>
     <Filter Include="src\Rod\ImGui">
       <UniqueIdentifier>{EB9C0677-575D-82AD-2098-CB2A8C17C789}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Rod\Math">
+      <UniqueIdentifier>{7A1886A6-667B-154B-0F01-4E01FB42E1CD}</UniqueIdentifier>
     </Filter>
     <Filter Include="src\Rod\Platform">
       <UniqueIdentifier>{75D8B81C-61D1-D76E-8A03-BDF3765BB77A}</UniqueIdentifier>
@@ -126,6 +129,9 @@
     <ClInclude Include="src\Rod\ImGui\ImGuiLayer.h">
       <Filter>src\Rod\ImGui</Filter>
     </ClInclude>
+    <ClInclude Include="src\Rod\Math\Math.h">
+      <Filter>src\Rod\Math</Filter>
+    </ClInclude>
     <ClInclude Include="src\Rod\Platform\OpenGL\OpenGLBuffer.h">
       <Filter>src\Rod\Platform\OpenGL</Filter>
     </ClInclude>
@@ -154,6 +160,9 @@
       <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Rod\Renderer\Camera.h">
+      <Filter>src\Rod\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Rod\Renderer\EditorCamera.h">
       <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
     <ClInclude Include="src\Rod\Renderer\FrameBuffer.h">
@@ -1473,8 +1482,6 @@
     <ClInclude Include="vendor\stb_image\stb_image.h">
       <Filter>vendor\stb_image</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rod\Math\Math.h" />
-    <ClInclude Include="src\Rod\Renderer\EditorCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Rod\Core\Application.cpp">
@@ -1494,6 +1501,9 @@
     </ClCompile>
     <ClCompile Include="src\Rod\ImGui\ImGuiLayer.cpp">
       <Filter>src\Rod\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\Math\Math.cpp">
+      <Filter>src\Rod\Math</Filter>
     </ClCompile>
     <ClCompile Include="src\Rod\Platform\OpenGL\OpenGLBuffer.cpp">
       <Filter>src\Rod\Platform\OpenGL</Filter>
@@ -1526,6 +1536,9 @@
       <Filter>src\Rod\Platform\Windows</Filter>
     </ClCompile>
     <ClCompile Include="src\Rod\Renderer\Buffer.cpp">
+      <Filter>src\Rod\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Rod\Renderer\EditorCamera.cpp">
       <Filter>src\Rod\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Rod\Renderer\FrameBuffer.cpp">
@@ -1582,7 +1595,5 @@
     <ClCompile Include="vendor\stb_image\stb_image.cpp">
       <Filter>vendor\stb_image</Filter>
     </ClCompile>
-    <ClCompile Include="src\Rod\Math\Math.cpp" />
-    <ClCompile Include="src\Rod\Renderer\EditorCamera.cpp" />
   </ItemGroup>
 </Project>

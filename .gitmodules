@@ -7,3 +7,6 @@
 [submodule "RodEngine/vendor/ImGuizmo"]
 	path = RodEngine/vendor/ImGuizmo
 	url = https://github.com/CedricGuillemet/ImGuizmo
+[submodule "RodEngine/vendor/shaderc"]
+	path = RodEngine/vendor/shaderc
+	url = https://github.com/google/shaderc

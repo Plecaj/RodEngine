@@ -54,20 +54,20 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>..\bin\Debug-windows-x86_64\RodEngine\</OutDir>
-    <IntDir>..\bin-int\Debug-windows-x86_64\RodEngine\</IntDir>
+    <OutDir>$(ProjectDir)..\bin\Debug-windows-x86_64\RodEngine\</OutDir>
+    <IntDir>$(ProjectDir)..\bin-int\Debug-windows-x86_64\RodEngine\</IntDir>
     <TargetName>RodEngine</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>..\bin\Release-windows-x86_64\RodEngine\</OutDir>
-    <IntDir>..\bin-int\Release-windows-x86_64\RodEngine\</IntDir>
+    <OutDir>$(ProjectDir)..\bin\Release-windows-x86_64\RodEngine\</OutDir>
+    <IntDir>$(ProjectDir)..\bin-int\Release-windows-x86_64\RodEngine\</IntDir>
     <TargetName>RodEngine</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
-    <OutDir>..\bin\Dist-windows-x86_64\RodEngine\</OutDir>
-    <IntDir>..\bin-int\Dist-windows-x86_64\RodEngine\</IntDir>
+    <OutDir>$(ProjectDir)..\bin\Dist-windows-x86_64\RodEngine\</OutDir>
+    <IntDir>$(ProjectDir)..\bin-int\Dist-windows-x86_64\RodEngine\</IntDir>
     <TargetName>RodEngine</TargetName>
     <TargetExt>.lib</TargetExt>
   </PropertyGroup>
@@ -76,8 +76,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>rdpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RD_PLATFORM_WINDOWS;RD_BUILD_DLL;GLFW_INCLUDE_NONE;YAML_CPP_STATIC_DEFINE;RD_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Glad\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt;vendor\yaml-cpp\include;vendor\ImGuizmo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RD_PLATFORM_WINDOWS;GLFW_INCLUDE_NONE;YAML_CPP_STATIC_DEFINE;RD_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Glad\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt;vendor\yaml-cpp\include;vendor\ImGuizmo;vendor\shaderc\libshaderc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -89,7 +89,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;shaderc_combined.lib;shaderc_util.lib;glslangd.lib;SPIRV-Tools-opt.lib;SPIRV-Tools.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>vendor\shaderc\build\libshaderc_util\Debug;vendor\shaderc\build\libshaderc\Debug;vendor\shaderc\build\third_party\glslang\glslang\Debug;vendor\shaderc\build\third_party\spirv-tools\source\Debug;vendor\shaderc\build\third_party\spirv-tools\source\opt\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -97,8 +98,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>rdpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RD_PLATFORM_WINDOWS;RD_BUILD_DLL;GLFW_INCLUDE_NONE;YAML_CPP_STATIC_DEFINE;RD_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Glad\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt;vendor\yaml-cpp\include;vendor\ImGuizmo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RD_PLATFORM_WINDOWS;GLFW_INCLUDE_NONE;YAML_CPP_STATIC_DEFINE;RD_RELEASE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Glad\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt;vendor\yaml-cpp\include;vendor\ImGuizmo;vendor\shaderc\libshaderc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -114,7 +115,8 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;shaderc_combined.lib;shaderc_util.lib;glslangd.lib;SPIRV-Tools-opt.lib;SPIRV-Tools.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>vendor\shaderc\build\libshaderc_util\Debug;vendor\shaderc\build\libshaderc\Debug;vendor\shaderc\build\third_party\glslang\glslang\Debug;vendor\shaderc\build\third_party\spirv-tools\source\Debug;vendor\shaderc\build\third_party\spirv-tools\source\opt\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
@@ -122,8 +124,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>rdpch.h</PrecompiledHeaderFile>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RD_PLATFORM_WINDOWS;RD_BUILD_DLL;GLFW_INCLUDE_NONE;YAML_CPP_STATIC_DEFINE;RD_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Glad\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt;vendor\yaml-cpp\include;vendor\ImGuizmo;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;RD_PLATFORM_WINDOWS;GLFW_INCLUDE_NONE;YAML_CPP_STATIC_DEFINE;RD_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>src;vendor\spdlog\include;vendor\GLFW\include;vendor\Glad\include;vendor\imgui;vendor\glm;vendor\stb_image;vendor\entt;vendor\yaml-cpp\include;vendor\ImGuizmo;vendor\shaderc\libshaderc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -139,7 +141,8 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <Lib>
-      <AdditionalDependencies>opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;shaderc_combined.lib;shaderc_util.lib;glslangd.lib;SPIRV-Tools-opt.lib;SPIRV-Tools.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>vendor\shaderc\build\libshaderc_util\Debug;vendor\shaderc\build\libshaderc\Debug;vendor\shaderc\build\third_party\glslang\glslang\Debug;vendor\shaderc\build\third_party\spirv-tools\source\Debug;vendor\shaderc\build\third_party\spirv-tools\source\opt\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>

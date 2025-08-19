@@ -14,8 +14,13 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yaml-cpp", "RodEngine\vendor\yaml-cpp\yaml-cpp.vcxproj", "{88F1A057-74BE-FB62-9DD7-E90A890331F1}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RodEngine", "RodEngine\RodEngine.vcxproj", "{0089386D-6CF3-ECE3-B531-9E8921DBCA38}"
+	ProjectSection(ProjectDependencies) = postProject
+		{FC02FE84-68C3-79BB-31FE-C2389D7DBE97} = {FC02FE84-68C3-79BB-31FE-C2389D7DBE97}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Sandbox", "Sandbox\Sandbox.vcxproj", "{F4C124E3-60A1-A37E-69B9-2E55D5170AE0}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Shaderc-Build", "RodEngine\vendor\shaderc\Shaderc-Build.vcxproj", "{FC02FE84-68C3-79BB-31FE-C2389D7DBE97}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -66,6 +71,12 @@ Global
 		{F4C124E3-60A1-A37E-69B9-2E55D5170AE0}.Dist|x64.Build.0 = Dist|x64
 		{F4C124E3-60A1-A37E-69B9-2E55D5170AE0}.Release|x64.ActiveCfg = Release|x64
 		{F4C124E3-60A1-A37E-69B9-2E55D5170AE0}.Release|x64.Build.0 = Release|x64
+		{FC02FE84-68C3-79BB-31FE-C2389D7DBE97}.Debug|x64.ActiveCfg = Debug|x64
+		{FC02FE84-68C3-79BB-31FE-C2389D7DBE97}.Debug|x64.Build.0 = Debug|x64
+		{FC02FE84-68C3-79BB-31FE-C2389D7DBE97}.Dist|x64.ActiveCfg = Dist|x64
+		{FC02FE84-68C3-79BB-31FE-C2389D7DBE97}.Dist|x64.Build.0 = Dist|x64
+		{FC02FE84-68C3-79BB-31FE-C2389D7DBE97}.Release|x64.ActiveCfg = Release|x64
+		{FC02FE84-68C3-79BB-31FE-C2389D7DBE97}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -7,6 +7,8 @@
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>;
 
+#include <shaderc/shaderc.h>
+
 namespace Rod {
 
 	static GLenum ShaderTypeFromString(const std::string& type) {

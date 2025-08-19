@@ -8,8 +8,6 @@
 
 **RodEngine** is a custom C++ game engine I'm building from scratch. It's currently based on [The Cherno's](https://www.youtube.com/@TheCherno) game engine series, which serves as the foundation for learning and early development. Once I complete the tutorials, I plan to expand the engine with my own architecture, features, and tools.  
 
-**Initially conceptualized as a 3D engine, my current focus is on developing a solid 2D engine that I can develop and maintain effectively.**
-
 ## 🚧 Development Status
 > ⚠️ RodEngine is in early development. Expect rapid changes, incomplete systems, and experimental features.
  
@@ -18,8 +16,11 @@
 #### 🧾 Prerequisites
 
 - **Windows**
-- **Visual Studio 2022** (or later)
-- **Git** (with submodule support)
+- **Visual Studio 2022** 
+- **Git**
+- **Python 3.13+**
+- **CMake 3.30+**
+- **Premake5**
 
 #### 🧪 Steps to Build
 
@@ -55,8 +56,6 @@
 
    Once the solution is open, set your desired configuration (**Debug**, **Release**, etc.) and build the project.
 
-> ⚠️ If Premake5 is not installed globally — a compatible version is included in the project for convenience.
-
 
 ## 🛠 Tech Stack
 
@@ -64,50 +63,48 @@
 - 💻 **Language:** C++  
 - 🏗️ **Build System:** Premake5  
 - 🎨 **Rendering:** OpenGL  
-- 🖱️ **Windowing & Input:** GLFW - Custom Cherno's fork (for Windows no titlebar support)  
+- 🖱️ **Windowing & Input:** GLFW (with minor changes for no windows titlebar support)
 - 📐 **Math Library:** GLM  
-- 🖥️ **GUI:** ImGui  
+- 🖥️ **GUI:** ImGui, ImGuizmo  
 - ⚛️ **ECS Library:** entt  
 - 📝 **Logging:** spdlog  
 - 🖼️ **Image Loading:** stb_image  
+- 🔧 **Shader Compilation:** Shaderc
+
 ## 🎯 Goals
 
 ### 🎨 Rendering
-- High-performance 2D rendering with support for sprites, tilemaps, and vector graphics  
-- Support multiple rendering APIs (OpenGL, Vulkan, DirectX, Metal)  
-- Efficient batching and draw call optimization
+- High-performance 3D rendering with support for meshes, models, materials, and textures  
+- Physically-Based Rendering (PBR) pipeline with real-time lighting and shadows  
+- Support for multiple rendering APIs (OpenGL, Vulkan, DirectX, Metal)  
+- Efficient batching, frustum culling, and draw call optimization  
+- Post-processing effects: bloom, HDR, motion blur, and SSAO  
 
 ### 🛠️ Editor & Tools
-- Intuitive, built-in scene editor with drag-and-drop functionality  
-- Visual UI editor for creating menus and HUDs  
-- Real-time preview and live editing  
-- Asset management system 
+- Built-in 3D scene editor with drag-and-drop functionality  
+- Visual UI editor for interfaces, menus, and HUDs  
+- Real-time preview and live editing of scenes and assets  
+- Asset management for models, textures, shaders, animations, and audio  
 
 ### 🖥️ Platform Support
-- Cross-platform support (Windows, Linux, macOS)
+- Cross-platform support: Windows, Linux, macOS
 
 ### 🎵 Audio
-- Flexible audio playback system supporting 2D spatial audio  
-- Sound effects and music management with mixing and layering  
+- 3D spatial audio engine with sound positioning  
+- Sound effects and music management with mixing, layering, and attenuation  
 
 ### 📜 Scripting
-- C# scripting support 
-- Hot-reload scripts 
-- API designed for easy access to engine features 
+- C# scripting support with hot-reload capability  
+- Easy-to-use API for engine features and gameplay logic  
 
 ### ⚙️ Physics
-- 2D physics engine with rigid bodies, colliders, and joints  
-- Collision detection and resolution 
+- 3D physics engine with rigid bodies, colliders, and joints  
+- Collision detection, resolution, and physics simulation  
 
 ### 📊 ECS & Performance
-- Rod’s custom ECS
-- High-performance data-driven architecture for scalability  
-- Multi-threading support and job system 
+- Rod’s custom ECS architecture for scalable, data-driven performance  
+- Multi-threading support and job system for parallelized tasks  
 
-### 🕹️ Gameplay & UI
-- Built-in UI system for menus, buttons, and interactive elements  
-- Animation system for sprites and UI components  
-- Input handling tailored for keyboard, mouse, and gamepads
 
 ## 🙏 Credits
 

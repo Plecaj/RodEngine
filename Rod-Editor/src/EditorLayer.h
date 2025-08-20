@@ -2,6 +2,7 @@
 
 #include "Rod.h"
 #include "Panels/SceneHierarchyPanel.h"
+#include "Panels/ContentBrowserPanel.h"
 #include "Panels/TitlebarPanel.h"
 
 #include "Rod/Renderer/EditorCamera.h"
@@ -55,6 +56,7 @@ namespace Rod {
 		TitlebarPanel m_TitlebarPanel;
 		friend class TitlebarPanel;
 		SceneHierarchyPanel	m_SceneHierarchyPanel;
+		ContentBrowserPanel	m_ContentBrowserPanel;
 	};
 
 }

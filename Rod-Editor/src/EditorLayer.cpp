@@ -174,6 +174,7 @@ namespace Rod {
 		style.WindowMinSize.x = 32.0f;
 
 		m_SceneHierarchyPanel.OnImGuiRender();
+		m_ContentBrowserPanel.OnImGuiRender();
 
 		ImGui::Begin("Performance");
 

@@ -6,6 +6,8 @@
 #include "Rod/Scene/SceneCamera.h"
 #include "ScriptableEntity.h"
 
+#include "Rod/Renderer/Texture.h"
+
 namespace Rod {
 
 	struct TagComponent
@@ -44,6 +46,8 @@ namespace Rod {
 	struct SpriteRendererComponent
 	{
 		glm::vec4 Color = glm::vec4(1.0f);
+		Ref<Texture2D> Texture;
+		float TilingFactor = 1.0f;
 
 		SpriteRendererComponent() = default;
 		SpriteRendererComponent(const SpriteRendererComponent&) = default;

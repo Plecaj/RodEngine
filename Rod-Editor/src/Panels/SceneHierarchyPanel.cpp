@@ -6,7 +6,11 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+#include  <filesystem>
+
 namespace Rod {
+
+	extern const std::filesystem::path g_AssetsPath;
 
 	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& scene)
 	{
@@ -318,6 +322,22 @@ namespace Rod {
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component) 
 		{
 			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+
+			ImGui::Button("Texture", ImVec2(100.0f, 0.0f));
+
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_TEXTURE_ITEM"))
+				{
+					const char* path = (const char*)payload->Data;
+					std::filesystem::path texturePath = std::filesystem::path(g_AssetsPath) / path;
+					component.Texture = Texture2D::Create(texturePath.string());
+				}
+				ImGui::EndDragDropTarget();
+			}
+
+
+			ImGui::DragFloat("Tiling Factor", &component.TilingFactor, 0.1f, 0.0f, 100.0f);
 		});
 	}
 }

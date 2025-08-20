@@ -54,14 +54,27 @@ namespace Rod {
             );
             ImGui::PopStyleColor();
 
-            if (!directoryEntry.is_directory() && path.extension() == ".rod")
+            if (!directoryEntry.is_directory())
             {
-                if (ImGui::BeginDragDropSource())
+                if (path.extension() == ".rod")
                 {
-                    std::string itemPath = relativePath.string();
-                    ImGui::SetDragDropPayload("CONTENT_BROWSER_SCENE_ITEM", itemPath.c_str(), itemPath.size() + 1);
-                    ImGui::Text("%s", filenameString.c_str());
-                    ImGui::EndDragDropSource();
+                    if (ImGui::BeginDragDropSource())
+                    {
+                        std::string itemPath = relativePath.string();
+                        ImGui::SetDragDropPayload("CONTENT_BROWSER_SCENE_ITEM", itemPath.c_str(), itemPath.size() + 1);
+                        ImGui::Text("%s", filenameString.c_str());
+                        ImGui::EndDragDropSource();
+                    }
+                }
+                else if (path.extension() == ".png")
+                {
+                    if (ImGui::BeginDragDropSource()) 
+                    {
+                        std::string itemPath = relativePath.string();
+                        ImGui::SetDragDropPayload("CONTENT_BROWSER_TEXTURE_ITEM", itemPath.c_str(), itemPath.size() + 1);
+                        ImGui::Text("%s", filenameString.c_str());
+                        ImGui::EndDragDropSource();
+                    }
                 }
             }
 

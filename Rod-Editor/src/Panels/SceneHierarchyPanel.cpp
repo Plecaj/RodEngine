@@ -39,7 +39,6 @@ namespace Rod {
 				 m_Context->CreateEntity("Empty Entity");
 			
 			
-
 			ImGui::EndPopup();
 		}
 

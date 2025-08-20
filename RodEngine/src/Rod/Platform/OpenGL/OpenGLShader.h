@@ -13,8 +13,7 @@ namespace Rod {
 	class OpenGLShader : public Shader
 	{
 	public:
-		OpenGLShader(const std::string& filepath);
-		OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
+		OpenGLShader(const std::string& filepath, const ShaderOptions& options = {});
 		virtual	~OpenGLShader();
 
 		virtual void Bind() const override;
@@ -42,12 +41,15 @@ namespace Rod {
 	private:
 		int GetUniformLocation(const std::string& name) const;
 		std::string ReadFile(const std::string& filepath);
-		std::unordered_map<GLenum, std::string> PreProcess(const std::string& source);
-		void Compile(const std::unordered_map<GLenum, std::string>& shaderSources);
+		std::unordered_map<shaderc_shader_kind, std::string> PreProcess(const std::string& source);
+		void CompileSpirv(const std::unordered_map<shaderc_shader_kind, std::string>& shaderSources, const ShaderOptions& options);
+		void LoadSpirv();
 	private:
 		uint32_t m_RendererID;
 		mutable std::unordered_map<std::string, int> m_UniformLocationCache;
 		std::string m_Name;
+
+		std::unordered_map<shaderc_shader_kind, std::vector<uint32_t>> m_SPIRV;
 	};
 
 }

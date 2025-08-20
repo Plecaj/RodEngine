@@ -6,25 +6,14 @@
 #include <Glad/glad.h>
 
 namespace Rod {
-	Ref<Shader> Shader::Create(const std::string& filepath)
+	Ref<Shader> Shader::Create(const std::string& filepath, const ShaderOptions& options)
 	{
 		switch (RendererAPI::GetAPI())
 		{
-		case RendererAPI::API::OpenGL: return CreateRef<OpenGLShader>(filepath);
+		case RendererAPI::API::OpenGL: return CreateRef<OpenGLShader>(filepath, options);
 		case RendererAPI::API::None:
-			return nullptr;
 			RD_CORE_ASSERT(false, "None API is not supported");
-		}
-		return nullptr;
-	}
-	Ref<Shader> Shader::Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc)
-	{
-		switch(RendererAPI::GetAPI())
-		{
-		case RendererAPI::API::OpenGL: return CreateRef<OpenGLShader>(name, vertexSrc, fragmentSrc);
-			case RendererAPI::API::None:  
-				return nullptr;
-				RD_CORE_ASSERT(false, "None API is not supported");
+			return nullptr;
 		}
 		return nullptr;
 	}

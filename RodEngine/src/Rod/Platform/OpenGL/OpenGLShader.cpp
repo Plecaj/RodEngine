@@ -7,28 +7,55 @@
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>;
 
-#include <shaderc/shaderc.h>
+#include <shaderc/shaderc.hpp>
 
 namespace Rod {
 
-	static GLenum ShaderTypeFromString(const std::string& type) {
-		if (type == "vertex")
-			return GL_VERTEX_SHADER;
-		if (type == "fragment" || type == "pixel")
-			return GL_FRAGMENT_SHADER;
-		else
-			RD_CORE_ASSERT(false, "Invalid shader type specified");
+	namespace Utils {
 
-		return 0;
+		static shaderc_shader_kind ShadercTypeFromString(const std::string& type) {
+			if (type == "vertex")
+				return shaderc_vertex_shader;
+			if (type == "fragment" || type == "pixel")
+				return shaderc_fragment_shader;
+			if (type == "geometry")
+				return shaderc_geometry_shader;
+			if (type == "tess_control" || type == "hull")
+				return shaderc_tess_control_shader;
+			if (type == "tess_evaluation" || type == "domain")
+				return shaderc_tess_evaluation_shader;
+			if (type == "compute")
+				return shaderc_compute_shader;
+
+			RD_CORE_ASSERT(false, "Invalid shader type specified: {0}", type);
+			return shaderc_glsl_infer_from_source;
+		}
+
+		static GLenum OpenGLShaderKind(shaderc_shader_kind kind)
+		{
+			switch (kind)
+			{
+			case shaderc_vertex_shader:          return GL_VERTEX_SHADER;
+			case shaderc_fragment_shader:        return GL_FRAGMENT_SHADER;
+			case shaderc_geometry_shader:        return GL_GEOMETRY_SHADER;
+			case shaderc_tess_control_shader:    return GL_TESS_CONTROL_SHADER;
+			case shaderc_tess_evaluation_shader: return GL_TESS_EVALUATION_SHADER;
+			case shaderc_compute_shader:         return GL_COMPUTE_SHADER;
+			default:
+				RD_CORE_ASSERT(false, "Unsupported Shaderc type for OpenGL");
+				return 0;
+			}
+		}
+
 	}
 
-	OpenGLShader::OpenGLShader(const std::string& filepath)
+
+	OpenGLShader::OpenGLShader(const std::string& filepath, const ShaderOptions& options)
 	{
 		RD_PROFILE_FUNCTION();
 
 		std::string source = ReadFile(filepath);
 		auto shaderSources = PreProcess(source);
-		Compile(shaderSources);
 
 		// Extracting name from filepath
 		auto lastSlash = filepath.find_last_of("/\\");
@@ -36,17 +63,9 @@ namespace Rod {
 		auto lastDot = filepath.rfind('.');
 		auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
 		m_Name = filepath.substr(lastSlash, count);
-	}
 
-	OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc)
-		:m_Name(name)
-	{
-		RD_PROFILE_FUNCTION();
-
-		std::unordered_map<GLenum, std::string> sources;
-		sources[GL_VERTEX_SHADER] = vertexSrc;
-		sources[GL_FRAGMENT_SHADER] = fragmentSrc;
-		Compile(sources);
+		CompileSpirv(shaderSources, options);
+		LoadSpirv();
 	}
 
 	OpenGLShader::~OpenGLShader()
@@ -77,43 +96,84 @@ namespace Rod {
 		return result;
 	}
 
-	std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::string& source)
+	std::unordered_map<shaderc_shader_kind, std::string> OpenGLShader::PreProcess(const std::string& source)
 	{
 		RD_PROFILE_FUNCTION();
 
-		std::unordered_map<GLenum, std::string> shaderSources;
+		std::unordered_map<shaderc_shader_kind, std::string> shaderSources;
 
 		const char* typeToken = "#type";
-		size_t typeTokenLenght = strlen(typeToken);
+		size_t typeTokenLength = strlen(typeToken);
 		size_t pos = source.find(typeToken, 0);
 		while (pos != std::string::npos) {
 			size_t eol = source.find_first_of("\r\n", pos);
 			RD_CORE_ASSERT(eol != std::string::npos, "Syntax Error");
-			size_t begin = pos + typeTokenLenght + 1;
+			size_t begin = pos + typeTokenLength + 1;
 			std::string type = source.substr(begin, eol - begin);
 
 			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
 			pos = source.find(typeToken, nextLinePos);
-			shaderSources[ShaderTypeFromString(type)] = source.substr(nextLinePos, pos - (nextLinePos == std::string::npos ? source.size() : nextLinePos));
+
+			size_t shaderEnd = (pos == std::string::npos) ? source.size() : pos;
+			shaderSources[Utils::ShadercTypeFromString(type)] =
+				source.substr(nextLinePos, shaderEnd - nextLinePos);
 		}
+
 		return shaderSources;
 	}
 
-	void OpenGLShader::Compile(const std::unordered_map<GLenum, std::string>& shaderSources)
+	void OpenGLShader::CompileSpirv(const std::unordered_map<shaderc_shader_kind, std::string>& shaderSources, const ShaderOptions& options)
+	{
+		RD_PROFILE_FUNCTION();
+
+		shaderc::Compiler compiler;
+		shaderc::CompileOptions compileOptions;
+
+		compileOptions.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
+
+		switch (options.OptimizationLevel)
+		{
+			case Shader::OptimalizationLevel::None: 			compileOptions.SetOptimizationLevel(shaderc_optimization_level_zero);
+			case Shader::OptimalizationLevel::Performance: 		compileOptions.SetOptimizationLevel(shaderc_optimization_level_performance);
+			case Shader::OptimalizationLevel::Size: 			compileOptions.SetOptimizationLevel(shaderc_optimization_level_size);
+		}
+
+		for (auto&& [key, value] : options.Macros)
+			compileOptions.AddMacroDefinition(key, value);
+
+		if (options.GenerateDebugInfo)
+			compileOptions.SetGenerateDebugInfo();
+
+
+		for (auto&& [kind, source] : shaderSources)
+		{
+			RD_CORE_ASSERT(m_SPIRV.find(kind) == m_SPIRV.end(), "2 Shaders of same kind defined");
+
+			shaderc::SpvCompilationResult res = compiler.CompileGlslToSpv(source, kind, m_Name.c_str());
+			std::string messages = res.GetErrorMessage();
+			if (!messages.empty())
+				RD_CORE_WARN("Shader compilation messages:\n{0}", messages);
+
+			if (res.GetCompilationStatus() != shaderc_compilation_status_success)
+				RD_CORE_ASSERT(false, "Shader compilation failed for {0}", m_Name);
+
+			m_SPIRV[kind] = { res.cbegin(), res.cend() };
+		}
+	}
+
+	void OpenGLShader::LoadSpirv()
 	{
 		RD_PROFILE_FUNCTION();
 
 		GLuint program = glCreateProgram();
-		RD_CORE_ASSERT(shaderSources.size() <= 2, "Maximum 2 shaders from one file for now");
-		std::array<GLenum, 2> glShaderIDs;
-		int glShaderIDIndex = 0;
-		for (auto&& [type, source] : shaderSources) {
-			GLuint shader = glCreateShader(type);
+		std::vector<GLuint> glShaderIDs;
 
-			const GLchar* sourceCStr = source.c_str();
-			glShaderSource(shader, 1, &sourceCStr, 0);
+		for (auto&& [kind, spirvBinary] : m_SPIRV)
+		{
+			GLuint shader = glCreateShader(Utils::OpenGLShaderKind(kind));
 
-			glCompileShader(shader);
+			glShaderBinary(1, &shader, GL_SHADER_BINARY_FORMAT_SPIR_V, spirvBinary.data(), spirvBinary.size() * sizeof(uint32_t));
+			glSpecializeShader(shader, "main", 0, nullptr, nullptr); 
 
 			GLint isCompiled = 0;
 			glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
@@ -123,45 +183,51 @@ namespace Rod {
 				glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
 
 				std::vector<GLchar> infoLog(maxLength);
-				glGetShaderInfoLog(shader, maxLength, &maxLength, &infoLog[0]);
+				glGetShaderInfoLog(shader, maxLength, &maxLength, infoLog.data());
 
 				glDeleteShader(shader);
 
 				RD_CORE_ERROR("{0}", infoLog.data());
-				RD_CORE_ASSERT(false, "Shader compilation failure!");
-				break;
+				RD_CORE_ASSERT(false, "SPIR-V shader compilation failure!");
+				return;
 			}
+
 			glAttachShader(program, shader);
-			glShaderIDs[glShaderIDIndex++] = shader;
+			glShaderIDs.push_back(shader);
 		}
 
 		m_RendererID = program;
-
 		glLinkProgram(program);
 
 		GLint isLinked = 0;
-		glGetProgramiv(program, GL_LINK_STATUS, (int*)&isLinked);
+		glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
 		if (isLinked == GL_FALSE)
 		{
 			GLint maxLength = 0;
 			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
 
 			std::vector<GLchar> infoLog(maxLength);
-			glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
+			glGetProgramInfoLog(program, maxLength, &maxLength, infoLog.data());
 
 			glDeleteProgram(program);
-			for (auto id : glShaderIDs) 
+			for (auto id : glShaderIDs)
+			{
+				glDetachShader(program, id);
 				glDeleteShader(id);
+			}
 
 			RD_CORE_ERROR("{0}", infoLog.data());
-			RD_CORE_ASSERT(false, "Linking shader failure!");
-
+			RD_CORE_ASSERT(false, "SPIR-V shader linking failure!");
 			return;
 		}
 
 		for (auto id : glShaderIDs)
+		{
 			glDetachShader(program, id);
+			glDeleteShader(id);
+		}
 	}
+
 
 	void OpenGLShader::Bind() const
 	{

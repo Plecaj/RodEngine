@@ -91,4 +91,54 @@ namespace Rod {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	}
 
+
+	/// ========================================
+	/// Uniform buffer
+	/// ========================================
+
+	OpenGLUniformBuffer::OpenGLUniformBuffer(uint32_t size)
+	{
+		RD_PROFILE_FUNCTION();
+
+		glGenBuffers(1, &m_RendererID);
+		glBindBuffer(GL_UNIFORM_BUFFER, m_RendererID);
+		glBufferData(GL_UNIFORM_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+	}
+
+	OpenGLUniformBuffer::~OpenGLUniformBuffer()
+	{
+		RD_PROFILE_FUNCTION();
+
+		glDeleteBuffers(1, &m_RendererID);
+	}
+
+	void OpenGLUniformBuffer::Bind() const
+	{
+		RD_PROFILE_FUNCTION();
+
+		glBindBuffer(GL_UNIFORM_BUFFER, m_RendererID);
+	}
+
+	void OpenGLUniformBuffer::Unbind() const
+	{
+		RD_PROFILE_FUNCTION();
+
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	}
+
+	void OpenGLUniformBuffer::BindBase(uint32_t bindingIndex) const
+	{
+		RD_PROFILE_FUNCTION();
+
+		glBindBufferBase(GL_UNIFORM_BUFFER, bindingIndex, m_RendererID);
+	}
+
+	void OpenGLUniformBuffer::SetData(void* data, uint32_t size)
+	{
+		RD_PROFILE_FUNCTION();
+
+		glBindBuffer(GL_UNIFORM_BUFFER, m_RendererID);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0, size, data);
+	}
+
 }

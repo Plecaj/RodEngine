@@ -41,4 +41,19 @@ namespace Rod {
 		uint32_t m_Count;
 	};
 
+	class OpenGLUniformBuffer : public UniformBuffer
+	{
+	public:
+		OpenGLUniformBuffer(uint32_t size);
+		virtual ~OpenGLUniformBuffer();
+
+		virtual void Bind() const override;
+		virtual void Unbind() const override;
+		virtual void BindBase(uint32_t bindingIndex) const override;
+
+		virtual void SetData(void* data, uint32_t size) override;
+	private:
+		uint32_t m_RendererID;
+	};
+
 }

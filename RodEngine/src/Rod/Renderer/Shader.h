@@ -7,13 +7,28 @@
 
 #include "RenderCommand.h"
 
+#include <shaderc/shaderc.hpp>
+
 namespace Rod {
 
 	class Shader
 	{
 	public:
-		static Ref<Shader> Create(const std::string& filepath);
-		static Ref<Shader> Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc);
+		enum class OptimalizationLevel
+		{
+			None,
+			Performance,
+			Size
+		};
+
+		struct ShaderOptions
+		{
+			std::unordered_map<std::string, std::string> Macros; // #define KEY VALUE
+			OptimalizationLevel OptimizationLevel = OptimalizationLevel::Performance;
+			bool GenerateDebugInfo = false;
+		};
+
+		static Ref<Shader> Create(const std::string& filepath, const ShaderOptions& options = {});
 		virtual ~Shader() = default;
 
 		virtual void SetInt(const std::string& name, int value) = 0;

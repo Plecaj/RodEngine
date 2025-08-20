@@ -32,6 +32,7 @@ namespace Rod {
 
         Ref<VertexArray> QuadVertexArray;
         Ref<VertexBuffer> QuadVertexBuffer;
+        Ref<UniformBuffer> QuadUniformBuffer;  
         Ref<Shader> TextureShader;
         Ref<Texture2D> WhiteTexture;
 
@@ -55,74 +56,16 @@ namespace Rod {
     {
         RD_PROFILE_FUNCTION();
         s_Data = new Renderer2DData;
-        
-        // Note that shaders conatin bunch of editor code that shouldnt exist for runtime
+       
+        Shader::ShaderOptions shaderOptions;
+        shaderOptions.Macros["MAX_TEXTURE_SLOTS"] = std::to_string(s_Data->MaxTexturesSlots);
+        shaderOptions.OptimizationLevel = Shader::OptimalizationLevel::Performance;
+        shaderOptions.GenerateDebugInfo = true;
 
-        std::string vertexShaderSrc = R"(
-        #version 450
+        s_Data->TextureShader = Shader::Create("assets/shaders/Texture.glsl", shaderOptions);
 
-        layout(location = 0) in vec3 a_Position;
-        layout(location = 1) in vec4 a_Color;
-        layout(location = 2) in vec2 a_TexCoord;
-        layout(location = 3) in float a_TexIdx;
-        layout(location = 4) in float a_TilingFactor;
-        layout(location = 5) in int a_EntityID;
+        s_Data->QuadUniformBuffer = UniformBuffer::Create(sizeof(glm::mat4));
 
-        uniform mat4 u_ViewProjection;
-
-        out vec4 v_Color;
-        out vec2 v_TexCoord;
-        out float v_TexIdx;
-        out float v_TilingFactor;
-        out flat int v_EntityID;
-
-        void main()
-        {
-            v_Color = a_Color;
-            v_TexCoord = a_TexCoord;
-            v_TexIdx = a_TexIdx;
-            v_TilingFactor = a_TilingFactor;
-            v_EntityID = a_EntityID;
-            gl_Position = u_ViewProjection * vec4(a_Position, 1.0);
-        }
-        )";
-
-        std::string fragmentShaderSrc = R"(
-        #version 450
-
-        layout(location = 0) out vec4 color;
-        layout(location = 1) out int entityID;   
-
-        in vec4 v_Color;
-        in vec2 v_TexCoord;
-        in float v_TexIdx;
-        in float v_TilingFactor;
-        in flat int v_EntityID;
-
-        uniform sampler2D u_Textures[)" + std::to_string(s_Data->MaxTexturesSlots) + R"(];
-
-        void main()
-        {
-            vec4 texColor = vec4(1.0);
-            int idx = int(v_TexIdx);
-            switch(idx)
-            {
-        )";
-
-        for (int i = 0; i < s_Data->MaxTexturesSlots; ++i)
-        {
-            fragmentShaderSrc += "        case " + std::to_string(i) + ": texColor = texture(u_Textures[" + std::to_string(i) + "], v_TexCoord * v_TilingFactor); break;\n";
-        }
-
-        fragmentShaderSrc += R"(        default: texColor = vec4(1.0); break;
-        }
-
-            color = texColor * v_Color;
-            entityID = v_EntityID; 
-        }
-        )";
-
-        s_Data->TextureShader = Shader::Create("Texture", vertexShaderSrc, fragmentShaderSrc);
         int* samplers = new int[s_Data->MaxTexturesSlots];
         for (int i = 0; i < s_Data->MaxTexturesSlots; i++) {
             samplers[i] = i;
@@ -189,7 +132,9 @@ namespace Rod {
         glm::mat4 viewProj = camera.GetProjection() * glm::inverse(transform);
 
         s_Data->TextureShader->Bind();
-        s_Data->TextureShader->SetMat4("u_ViewProjection", viewProj);
+
+        s_Data->QuadUniformBuffer->BindBase(0);
+        s_Data->QuadUniformBuffer->SetData(&viewProj, sizeof(viewProj), 0);
 
         BeginBatch();
     }
@@ -201,17 +146,9 @@ namespace Rod {
         glm::mat4 viewProj = camera.GetViewProjection();
 
         s_Data->TextureShader->Bind();
-        s_Data->TextureShader->SetMat4("u_ViewProjection", viewProj);
 
-        BeginBatch();
-    }
-
-    void Renderer2D::BeginScene(const OrthographicCamera& camera)
-    {
-        RD_PROFILE_FUNCTION();
-
-        s_Data->TextureShader->Bind();
-        s_Data->TextureShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
+        s_Data->QuadUniformBuffer->BindBase(0);
+        s_Data->QuadUniformBuffer->SetData(&viewProj, sizeof(viewProj));
 
         BeginBatch();
     }

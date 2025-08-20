@@ -13,6 +13,9 @@
 
 namespace Rod {
 
+	// Temporary 
+	extern const std::filesystem::path g_AssetsPath;
+
 	EditorLayer::EditorLayer()
 		:Layer("Sandbox2D"), m_CameraController(1280.0f, 720.0f)
 	{
@@ -265,6 +268,16 @@ namespace Rod {
 
 		ImGui::Image((uint64_t)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, { 0.0f, 1.0f }, { 1.0f, 0.0f });
 
+		if (ImGui::BeginDragDropTarget())
+		{
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_SCENE_ITEM"))
+			{
+				const char* path = (const char*)payload->Data; 
+				OpenScene(std::filesystem::path(g_AssetsPath) / path);
+			}
+			ImGui::EndDragDropTarget();
+		}
+
 		ImVec2 minBound = ImGui::GetWindowPos();
 		minBound.x += viewportOffset.x;
 		minBound.y += viewportOffset.y;
@@ -415,6 +428,14 @@ namespace Rod {
 			SceneSerializer serializer(m_ActiveScene);
 			serializer.DeserializeText(filepath);
 		}
+	}
+
+	void EditorLayer::OpenScene(const std::filesystem::path& path)
+	{
+		NewScene();
+
+		SceneSerializer serializer(m_ActiveScene);
+		serializer.DeserializeText(path.string());
 	}
 
 	void EditorLayer::SaveScene()

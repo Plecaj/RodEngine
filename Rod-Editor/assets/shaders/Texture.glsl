@@ -9,7 +9,6 @@ layout(location = 4) in float a_TilingFactor;
 layout(location = 5) in int a_EntityID;
 
 
-// TODO: Make this work
 layout(set = 0, binding = 0) uniform UBO
 {
     mat4 u_ViewProjection;

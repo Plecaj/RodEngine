@@ -134,7 +134,7 @@ namespace Rod {
         s_Data->TextureShader->Bind();
 
         s_Data->QuadUniformBuffer->BindBase(0);
-        s_Data->QuadUniformBuffer->SetData(&viewProj, sizeof(viewProj), 0);
+        s_Data->QuadUniformBuffer->SetData(&viewProj, sizeof(viewProj));
 
         BeginBatch();
     }

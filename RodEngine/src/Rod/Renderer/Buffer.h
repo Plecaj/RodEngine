@@ -128,4 +128,18 @@ namespace Rod {
 
 		static Ref<IndexBuffer> Create(uint32_t* indices, uint32_t count);
 	};
+
+	class UniformBuffer
+	{
+	public:
+		virtual ~UniformBuffer() {};
+
+		virtual void Bind() const = 0;
+		virtual void Unbind() const = 0;
+		virtual void BindBase(uint32_t bindingIndex) const = 0;
+
+		virtual void SetData(void* data, uint32_t size) = 0;
+
+		static Ref<UniformBuffer> Create(uint32_t size);
+	};
 }

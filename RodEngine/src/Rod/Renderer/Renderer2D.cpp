@@ -32,6 +32,7 @@ namespace Rod {
 
         Ref<VertexArray> QuadVertexArray;
         Ref<VertexBuffer> QuadVertexBuffer;
+        Ref<UniformBuffer> QuadUniformBuffer;  
         Ref<Shader> TextureShader;
         Ref<Texture2D> WhiteTexture;
 
@@ -62,6 +63,9 @@ namespace Rod {
         shaderOptions.GenerateDebugInfo = true;
 
         s_Data->TextureShader = Shader::Create("assets/shaders/Texture.glsl", shaderOptions);
+
+        s_Data->QuadUniformBuffer = UniformBuffer::Create(sizeof(glm::mat4));
+
         int* samplers = new int[s_Data->MaxTexturesSlots];
         for (int i = 0; i < s_Data->MaxTexturesSlots; i++) {
             samplers[i] = i;
@@ -128,7 +132,9 @@ namespace Rod {
         glm::mat4 viewProj = camera.GetProjection() * glm::inverse(transform);
 
         s_Data->TextureShader->Bind();
-        s_Data->TextureShader->SetMat4("u_ViewProjection", viewProj);
+
+        s_Data->QuadUniformBuffer->BindBase(0);
+        s_Data->QuadUniformBuffer->SetData(&viewProj, sizeof(viewProj), 0);
 
         BeginBatch();
     }
@@ -140,17 +146,9 @@ namespace Rod {
         glm::mat4 viewProj = camera.GetViewProjection();
 
         s_Data->TextureShader->Bind();
-        s_Data->TextureShader->SetMat4("u_ViewProjection", viewProj);
 
-        BeginBatch();
-    }
-
-    void Renderer2D::BeginScene(const OrthographicCamera& camera)
-    {
-        RD_PROFILE_FUNCTION();
-
-        s_Data->TextureShader->Bind();
-        s_Data->TextureShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix());
+        s_Data->QuadUniformBuffer->BindBase(0);
+        s_Data->QuadUniformBuffer->SetData(&viewProj, sizeof(viewProj));
 
         BeginBatch();
     }

@@ -11,8 +11,8 @@ namespace Rod {
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: RD_CORE_ASSERT(false, "RendererAPI::None is currently not supported"); return nullptr;
-		case RendererAPI::API::OpenGL: return CreateRef<OpenGLVertexBuffer>(size);
+			case RendererAPI::API::None: RD_CORE_ASSERT(false, "RendererAPI::None is currently not supported"); return nullptr;
+			case RendererAPI::API::OpenGL: return CreateRef<OpenGLVertexBuffer>(size);
 		}
 
 		RD_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -23,8 +23,8 @@ namespace Rod {
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: RD_CORE_ASSERT(false, "RendererAPI::None is currently not supported"); return nullptr;
-		case RendererAPI::API::OpenGL: return CreateRef<OpenGLVertexBuffer>(vertices, size);
+			case RendererAPI::API::None: RD_CORE_ASSERT(false, "RendererAPI::None is currently not supported"); return nullptr;
+			case RendererAPI::API::OpenGL: return CreateRef<OpenGLVertexBuffer>(vertices, size);
 		}
 
 		RD_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -35,8 +35,20 @@ namespace Rod {
 	{
 		switch (Renderer::GetAPI())
 		{
-		case RendererAPI::API::None: RD_CORE_ASSERT(false, "RendererAPI::None is currently not supported"); return nullptr;
-		case RendererAPI::API::OpenGL: return CreateRef<OpenGLIndexBuffer>(indices, count);
+			case RendererAPI::API::None: RD_CORE_ASSERT(false, "RendererAPI::None is currently not supported"); return nullptr;
+			case RendererAPI::API::OpenGL: return CreateRef<OpenGLIndexBuffer>(indices, count);
+		}
+
+		RD_CORE_ASSERT(false, "Unknown RendererAPI");
+		return nullptr;
+	}
+
+	Ref<UniformBuffer> UniformBuffer::Create(uint32_t size)
+	{
+		switch (Renderer::GetAPI())
+		{
+			case RendererAPI::API::None: RD_CORE_ASSERT(false, "RendererAPI::None is currently not supported"); return nullptr;
+			case RendererAPI::API::OpenGL: return CreateRef<OpenGLUniformBuffer>(size);
 		}
 
 		RD_CORE_ASSERT(false, "Unknown RendererAPI");

@@ -29,6 +29,11 @@ namespace Rod {
 		void OpenScene(const std::filesystem::path& path);
 		void SaveScene();
 		void SaveSceneAs();
+
+		void OnScenePlay();
+		void OnSceneStop();
+
+		void UI_Toolbar();
 	private:
 		Ref<Scene> m_ActiveScene;
 		Entity m_CameraEntity;
@@ -53,11 +58,22 @@ namespace Rod {
 
 		float m_LastDeltaTime = 0.0f;
 
+		enum class SceneState
+		{
+			Edit = 0, Play = 1
+		};
+
+		SceneState m_SceneState = SceneState::Edit;
+
 		// Panels
 		TitlebarPanel m_TitlebarPanel;
 		friend class TitlebarPanel;
 		SceneHierarchyPanel	m_SceneHierarchyPanel;
 		ContentBrowserPanel	m_ContentBrowserPanel;
+
+
+		// Editor Resources
+		Ref<Texture2D> m_PlayButton, m_StopButton;
 	};
 
 }

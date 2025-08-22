@@ -43,6 +43,9 @@ namespace Rod {
 		m_TitlebarPanel.SetSaveSceneAsCallback([this]() { SaveSceneAs(); });
 
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 1.0f, 1000.0f);
+
+		m_PlayButton = Texture2D::Create("assets/textures/PlayButton.png");
+		m_StopButton = Texture2D::Create("assets/textures/StopButton.png");
 	}
 
 	void EditorLayer::OnDetach()
@@ -60,12 +63,6 @@ namespace Rod {
 			m_EditorCamera.SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
-		if (m_ViewportFocused)
-		{
-			m_CameraController.OnUpdate(ts);
-			m_EditorCamera.OnUpdate(ts);
-		}
-
 		m_EditorCamera.OnUpdate(ts);
 
 		m_Framebuffer->Bind();
@@ -75,7 +72,24 @@ namespace Rod {
 
 		m_Framebuffer->ClearColorAttachment(1, -1);
 
-		m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
+		switch (m_SceneState)
+		{
+			case SceneState::Edit:
+			{
+				if (m_ViewportFocused)
+					m_CameraController.OnUpdate(ts);
+
+				m_EditorCamera.OnUpdate(ts);
+
+				m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
+				break;
+			}
+			case SceneState::Play:
+			{
+				m_ActiveScene->OnUpdateRuntime(ts);
+				break;
+			}
+		}
 
 
 		auto [mx, my] = ImGui::GetMousePos();
@@ -171,6 +185,10 @@ namespace Rod {
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+
+			ImGui::GetStyle().Colors[ImGuiCol_Separator].w = 0.0f;
+			ImGui::GetStyle().Colors[ImGuiCol_DockingPreview].w = 0.0f;
+
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 		}
 
@@ -331,6 +349,37 @@ namespace Rod {
 		ImGui::End();
 		ImGui::PopStyleVar();
 
+		UI_Toolbar();
+
+		ImGui::End();
+	}
+
+	void EditorLayer::UI_Toolbar()
+	{
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 2));
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
+		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+		auto& colors = ImGui::GetStyle().Colors;
+		const auto& buttonHovered = colors[ImGuiCol_ButtonHovered];
+		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(buttonHovered.x, buttonHovered.y, buttonHovered.z, 0.5f));
+		const auto& buttonActive = colors[ImGuiCol_ButtonActive];
+		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(buttonActive.x, buttonActive.y, buttonActive.z, 0.5f));
+
+		ImGui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+
+		float size = ImGui::GetWindowHeight() - 4.0f;
+		Ref<Texture2D> icon = m_SceneState == SceneState::Edit ? m_PlayButton : m_StopButton;
+		ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x * 0.5f - (size * 0.5f));
+		if (ImGui::ImageButton("play/stop button", icon->GetRendererID(), { size, size }, {0.0f, 1.0f}, {1.0f, 0.0f}))
+		{
+			if (m_SceneState == SceneState::Edit)
+				OnScenePlay();
+			else if (m_SceneState == SceneState::Play)
+				OnSceneStop();
+		}
+
+		ImGui::PopStyleVar(2);
+		ImGui::PopStyleColor(3);
 		ImGui::End();
 	}
 
@@ -456,6 +505,16 @@ namespace Rod {
 			SceneSerializer serializer(m_ActiveScene);
 			serializer.SerializeText(filepath);
 		}
+	}
+
+	void EditorLayer::OnScenePlay()
+	{
+		m_SceneState = SceneState::Play;
+	}
+
+	void EditorLayer::OnSceneStop()
+	{
+		m_SceneState = SceneState::Edit;
 	}
 
 }

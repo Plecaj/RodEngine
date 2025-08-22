@@ -27,7 +27,7 @@ namespace Rod {
 			if (type == "compute")
 				return shaderc_compute_shader;
 
-			RD_CORE_ASSERT(false, "Invalid shader type specified: {0}", type);
+			RD_CORE_ASSERT(false, "Invalid shader type specified");
 			return shaderc_glsl_infer_from_source;
 		}
 
@@ -35,15 +35,15 @@ namespace Rod {
 		{
 			switch (kind)
 			{
-			case shaderc_vertex_shader:          return GL_VERTEX_SHADER;
-			case shaderc_fragment_shader:        return GL_FRAGMENT_SHADER;
-			case shaderc_geometry_shader:        return GL_GEOMETRY_SHADER;
-			case shaderc_tess_control_shader:    return GL_TESS_CONTROL_SHADER;
-			case shaderc_tess_evaluation_shader: return GL_TESS_EVALUATION_SHADER;
-			case shaderc_compute_shader:         return GL_COMPUTE_SHADER;
-			default:
-				RD_CORE_ASSERT(false, "Unsupported Shaderc type for OpenGL");
-				return 0;
+				case shaderc_vertex_shader:          return GL_VERTEX_SHADER;
+				case shaderc_fragment_shader:        return GL_FRAGMENT_SHADER;
+				case shaderc_geometry_shader:        return GL_GEOMETRY_SHADER;
+				case shaderc_tess_control_shader:    return GL_TESS_CONTROL_SHADER;
+				case shaderc_tess_evaluation_shader: return GL_TESS_EVALUATION_SHADER;
+				case shaderc_compute_shader:         return GL_COMPUTE_SHADER;
+				default:
+					RD_CORE_ASSERT(false, "Unsupported Shaderc type for OpenGL");
+					return 0;
 			}
 		}
 
@@ -133,9 +133,9 @@ namespace Rod {
 
 		switch (options.OptimizationLevel)
 		{
-			case Shader::OptimalizationLevel::None: 			compileOptions.SetOptimizationLevel(shaderc_optimization_level_zero);
-			case Shader::OptimalizationLevel::Performance: 		compileOptions.SetOptimizationLevel(shaderc_optimization_level_performance);
-			case Shader::OptimalizationLevel::Size: 			compileOptions.SetOptimizationLevel(shaderc_optimization_level_size);
+			case Shader::OptimalizationLevel::None: 			compileOptions.SetOptimizationLevel(shaderc_optimization_level_zero); break;
+			case Shader::OptimalizationLevel::Performance: 		compileOptions.SetOptimizationLevel(shaderc_optimization_level_performance); break;
+			case Shader::OptimalizationLevel::Size: 			compileOptions.SetOptimizationLevel(shaderc_optimization_level_size); break;	
 		}
 
 		for (auto&& [key, value] : options.Macros)
@@ -155,7 +155,7 @@ namespace Rod {
 				RD_CORE_WARN("Shader compilation messages:\n{0}", messages);
 
 			if (res.GetCompilationStatus() != shaderc_compilation_status_success)
-				RD_CORE_ASSERT(false, "Shader compilation failed for {0}", m_Name);
+				RD_CORE_ASSERT(false, "Shader compilation failed");
 
 			m_SPIRV[kind] = { res.cbegin(), res.cend() };
 		}

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Rod/Renderer/OrthographicCamera.h"
 #include "Rod/Renderer/Camera.h"
 #include "Rod/Renderer/EditorCamera.h"
 #include "Texture.h"

@@ -171,12 +171,6 @@
     <ClInclude Include="src\Rod\Renderer\GraphicsContext.h">
       <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
-    <ClInclude Include="src\Rod\Renderer\OrthographicCamera.h">
-      <Filter>src\Rod\Renderer</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Rod\Renderer\OrthographicCameraController.h">
-      <Filter>src\Rod\Renderer</Filter>
-    </ClInclude>
     <ClInclude Include="src\Rod\Renderer\RenderCommand.h">
       <Filter>src\Rod\Renderer</Filter>
     </ClInclude>
@@ -1542,12 +1536,6 @@
       <Filter>src\Rod\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Rod\Renderer\FrameBuffer.cpp">
-      <Filter>src\Rod\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rod\Renderer\OrthographicCamera.cpp">
-      <Filter>src\Rod\Renderer</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Rod\Renderer\OrthographicCameraController.cpp">
       <Filter>src\Rod\Renderer</Filter>
     </ClCompile>
     <ClCompile Include="src\Rod\Renderer\RenderCommand.cpp">

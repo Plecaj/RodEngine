@@ -9,7 +9,6 @@
 #include "Rod/Core/Input.h"
 #include "Rod/Core/KeyCodes.h"
 #include "Rod/Core/MouseButtonCodes.h"
-#include "Rod/Renderer/OrthographicCameraController.h"
 
 #include "Rod/ImGui/ImGuiLayer.h"
 
@@ -32,6 +31,5 @@
 #include "Rod/Renderer/SubTexture2D.h"
 #include "Rod/Renderer/VertexArray.h"
 
-#include "Rod/Renderer/OrthographicCamera.h"
 //-------------------------------------
 

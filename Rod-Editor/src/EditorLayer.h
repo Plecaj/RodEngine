@@ -38,8 +38,6 @@ namespace Rod {
 		Ref<Scene> m_ActiveScene;
 		Entity m_CameraEntity;
 
-		OrthographicCameraController m_CameraController;
-
 		EditorCamera m_EditorCamera;
 
 		Ref<Framebuffer> m_Framebuffer;

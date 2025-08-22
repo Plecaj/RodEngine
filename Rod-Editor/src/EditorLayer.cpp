@@ -17,7 +17,7 @@ namespace Rod {
 	extern const std::filesystem::path g_AssetsPath;
 
 	EditorLayer::EditorLayer()
-		:Layer("Sandbox2D"), m_CameraController(1280.0f, 720.0f)
+		:Layer("Sandbox2D")
 	{
 	}
 
@@ -32,8 +32,8 @@ namespace Rod {
 		m_Framebuffer = Framebuffer::Create(fbSpec);
 
 		NewScene();
-		//SceneSerializer serializer(m_ActiveScene);
-		//serializer.DeserializeText("assets/scenes/Example.rod");
+		SceneSerializer serializer(m_ActiveScene);
+		serializer.DeserializeText("assets/scenes/Example.rod");
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
@@ -76,9 +76,6 @@ namespace Rod {
 		{
 			case SceneState::Edit:
 			{
-				if (m_ViewportFocused)
-					m_CameraController.OnUpdate(ts);
-
 				m_EditorCamera.OnUpdate(ts);
 
 				m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
@@ -404,7 +401,6 @@ namespace Rod {
 
 	void EditorLayer::OnEvent(Event& event)
 	{
-		m_CameraController.OnEvent(event);
 		m_EditorCamera.OnEvent(event);
 
 		EventDispatcher dispatcher(event);
@@ -530,12 +526,14 @@ namespace Rod {
 	{
 		m_SceneState = SceneState::Play;
 		m_GuizmoType = -1;
+		m_EditorCamera.SetControlsEnabled(false);
 	}
 
 	void EditorLayer::OnSceneStop()
 	{
 		m_SceneState = SceneState::Edit;
 		m_GuizmoType = -1;
+		m_EditorCamera.SetControlsEnabled(true);
 	}
 
 }

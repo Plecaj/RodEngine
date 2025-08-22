@@ -34,6 +34,8 @@ namespace Rod {
 
 		float GetPitch() const { return m_Pitch; }
 		float GetYaw() const { return m_Yaw; }
+
+		void SetControlsEnabled(bool controlsEnabled) { m_ControlsEnabled = controlsEnabled; };
 	private:
 		void UpdateProjection();
 		void UpdateView();
@@ -62,6 +64,8 @@ namespace Rod {
 		float m_Pitch = 0.0f, m_Yaw = 0.0f;
 
 		float m_ViewportWidth = 1280, m_ViewportHeight = 720;
+
+		bool m_ControlsEnabled = true;
 	};
 
 }

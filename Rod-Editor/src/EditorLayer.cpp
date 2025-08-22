@@ -307,33 +307,52 @@ namespace Rod {
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 		if (selectedEntity && m_GuizmoType != -1)
 		{
-			// Runtime camera
-			//auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
-			//const auto& camera = cameraEntity.GetComponent<CameraComponent>().Camera;
-			//const glm::mat4& cameraProjection = camera.GetProjection();
-			//glm::mat4 cameraView = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
+			glm::mat4 cameraView, cameraProjection;
 
-			// Editor camera 
-			const glm::mat4& cameraProjection = m_EditorCamera.GetProjection();
-			glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
+			if (m_SceneState == SceneState::Edit) 
+			{
+				cameraProjection = m_EditorCamera.GetProjection();
+				cameraView = m_EditorCamera.GetViewMatrix();
+			}
+			else if(m_SceneState == SceneState::Play)
+			{
+				auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
+				if (cameraEntity)
+				{
+					auto& cameraComp = cameraEntity.GetComponent<CameraComponent>().Camera;
+					cameraProjection = cameraComp.GetProjection();
 
+					const auto& transform = cameraEntity.GetComponent<TransformComponent>().GetTransform();
+					cameraView = glm::inverse(transform); 
+				}
+			}
 
 			ImGuizmo::SetOrthographic(false);
 			ImGuizmo::SetDrawlist();
 
-			ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
+			ImGuizmo::SetRect(
+				m_ViewportBounds[0].x,
+				m_ViewportBounds[0].y,
+				m_ViewportBounds[1].x - m_ViewportBounds[0].x,
+				m_ViewportBounds[1].y - m_ViewportBounds[0].y
+			);
 
 			auto& tc = selectedEntity.GetComponent<TransformComponent>();
 			glm::mat4 transform = tc.GetTransform();
 
 			bool snap = Input::IsKeyPressed(Key::LeftControl);
-			float snapValue = 0.5f;
-			if (m_GuizmoType == ImGuizmo::OPERATION::ROTATE)
-				snapValue = 45.0f;
-
+			float snapValue = (m_GuizmoType == ImGuizmo::OPERATION::ROTATE) ? 45.0f : 0.5f;
 			float snapValues[3] = { snapValue, snapValue, snapValue };
 
-			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection), (ImGuizmo::OPERATION)m_GuizmoType, ImGuizmo::MODE::LOCAL, glm::value_ptr(transform), nullptr, snap ? snapValues : nullptr);
+			ImGuizmo::Manipulate(
+				glm::value_ptr(cameraView),
+				glm::value_ptr(cameraProjection),
+				(ImGuizmo::OPERATION)m_GuizmoType,
+				ImGuizmo::MODE::LOCAL,
+				glm::value_ptr(transform),
+				nullptr,
+				snap ? snapValues : nullptr
+			);
 
 			if (ImGuizmo::IsUsing())
 			{
@@ -510,11 +529,13 @@ namespace Rod {
 	void EditorLayer::OnScenePlay()
 	{
 		m_SceneState = SceneState::Play;
+		m_GuizmoType = -1;
 	}
 
 	void EditorLayer::OnSceneStop()
 	{
 		m_SceneState = SceneState::Edit;
+		m_GuizmoType = -1;
 	}
 
 }

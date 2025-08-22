@@ -1,10 +1,10 @@
 Scene: Untitled
 Entities:
-  - Entity: 0
+  - Entity: 2
     TagComponent:
       Tag: Camera
     TransformComponent:
-      Translation: [0, 0, 9.4]
+      Translation: [0, 0, 8]
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
     CameraComponent:
@@ -18,21 +18,25 @@ Entities:
         OrthographicFar: 1
       Primary: true
       FixedAspectRatio: false
-  - Entity: 2
+  - Entity: 1
     TagComponent:
       Tag: Square B
     TransformComponent:
-      Translation: [0.30208647, 0.1470626, 0]
-      Rotation: [0, -0, 0]
-      Scale: [2.5817778, 1.5599842, 1]
+      Translation: [-2.2022235, 1.6388628, 6.1035156e-05]
+      Rotation: [0, -0, -1.0555449]
+      Scale: [2.0331106, 1.6854731, 1]
     SpriteRendererComponent:
-      Color: [0.0024895316, 0.20584269, 0.64478767, 1]
-  - Entity: 1
+      Color: [0.23166025, 0.006261084, 0.006261084, 1]
+      TilingFactor: 1
+      Texture: None
+  - Entity: 0
     TagComponent:
       Tag: Square A
     TransformComponent:
-      Translation: [-1.5285475, 1.9294776, 0]
+      Translation: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [0.9999999, 0.9999999, 1]
+      Scale: [1, 1, 1]
     SpriteRendererComponent:
-      Color: [0.61003864, 0.07066085, 0.07066085, 1]
+      Color: [1, 1, 1, 1]
+      TilingFactor: 1
+      Texture: assets\textures\logo.png

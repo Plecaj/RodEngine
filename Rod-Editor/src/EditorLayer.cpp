@@ -32,8 +32,8 @@ namespace Rod {
 		m_Framebuffer = Framebuffer::Create(fbSpec);
 
 		NewScene();
-		SceneSerializer serializer(m_ActiveScene);
-		serializer.DeserializeText("assets/scenes/Example.rod");
+		//SceneSerializer serializer(m_ActiveScene);
+		//serializer.DeserializeText("assets/scenes/Example.rod");
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 

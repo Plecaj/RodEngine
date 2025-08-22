@@ -144,6 +144,12 @@ namespace Rod {
 
 			auto& spriteRendererComponent = entity.GetComponent<SpriteRendererComponent>();
 			out << YAML::Key << "Color" << YAML::Value << spriteRendererComponent.Color;
+			out << YAML::Key << "TilingFactor" << YAML::Value << spriteRendererComponent.TilingFactor;
+
+			if (spriteRendererComponent.Texture)
+				out << YAML::Key << "Texture" << YAML::Value << spriteRendererComponent.Texture->GetPath();
+			else
+				out << YAML::Key << "Texture" << YAML::Value << "None";
 
 			out << YAML::EndMap; // SpriteRendererComponent
 		}
@@ -243,6 +249,11 @@ namespace Rod {
 				{
 					auto& src = deserializedEntity.AddComponent<SpriteRendererComponent>();
 					src.Color = spriteRendererComponent["Color"].as<glm::vec4>();
+					src.TilingFactor = spriteRendererComponent["TilingFactor"].as<float>();
+
+					std::string texturePath = spriteRendererComponent["Texture"].as<std::string>();
+					if (texturePath != "None")
+						src.Texture = Texture2D::Create(texturePath);
 				}
 			}
 		}

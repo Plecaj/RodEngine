@@ -6,8 +6,8 @@
 
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>;
-
 #include <shaderc/shaderc.hpp>
+
 
 namespace Rod {
 
@@ -29,6 +29,20 @@ namespace Rod {
 
 			RD_CORE_ASSERT(false, "Invalid shader type specified");
 			return shaderc_glsl_infer_from_source;
+		}
+
+		static std::string ShaderExtensionFromType(shaderc_shader_kind type) {
+			switch (type) {
+				case shaderc_vertex_shader:          return "vert";
+				case shaderc_fragment_shader:        return "frag";
+				case shaderc_geometry_shader:        return "geom";
+				case shaderc_tess_control_shader:    return "tesc";
+				case shaderc_tess_evaluation_shader: return "tese";
+				case shaderc_compute_shader:         return "comp";
+				default:
+					RD_CORE_ASSERT(false, "Invalid shaderc_shader_kind");
+					return "unknown";
+			}
 		}
 
 		static GLenum OpenGLShaderKind(shaderc_shader_kind kind)
@@ -57,14 +71,29 @@ namespace Rod {
 		std::string source = ReadFile(filepath);
 		auto shaderSources = PreProcess(source);
 
-		// Extracting name from filepath
-		auto lastSlash = filepath.find_last_of("/\\");
-		lastSlash = lastSlash == std::string::npos ? 0 : lastSlash + 1;
-		auto lastDot = filepath.rfind('.');
-		auto count = lastDot == std::string::npos ? filepath.size() - lastSlash : lastDot - lastSlash;
-		m_Name = filepath.substr(lastSlash, count);
+		std::filesystem::path file(filepath);
+		m_Name = file.stem().string();
 
-		CompileSpirv(shaderSources, options);
+		if (!std::filesystem::exists(m_CacheDirectory)) 
+		{
+			bool created = std::filesystem::create_directories(m_CacheDirectory);
+			RD_CORE_ASSERT(created, "Directory could not be created");
+		}
+
+		if (!std::filesystem::exists(m_CacheFile))
+			CreateYAMLCacheDatabase();
+
+		m_CacheData = YAML::LoadFile(m_CacheFile.string());
+
+		if (!m_CacheData["Hashes"])
+		{
+			CreateYAMLCacheDatabase();
+			m_CacheData = YAML::LoadFile(m_CacheFile.string());
+		}
+
+		ValidateCachedFiles();
+
+		CompileOrOpenSpirv(shaderSources, options);
 		LoadSpirv();
 	}
 
@@ -122,7 +151,64 @@ namespace Rod {
 		return shaderSources;
 	}
 
-	void OpenGLShader::CompileSpirv(const std::unordered_map<shaderc_shader_kind, std::string>& shaderSources, const ShaderOptions& options)
+	void OpenGLShader::ValidateCachedFiles()
+	{
+		std::unordered_set<std::string> existingFiles;
+
+		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CacheDirectory))
+		{
+			if (!directoryEntry.is_directory())
+				existingFiles.insert(directoryEntry.path().filename().string());
+		}
+
+		std::unordered_set<std::string> allowedFiles;
+		allowedFiles.insert(m_CacheFile.filename().string()); 
+
+		// Delete yaml entries that doesnt exist
+		if (m_CacheData["Hashes"])
+		{
+			YAML::Node newHashes(YAML::NodeType::Sequence);
+
+			for (const auto& hashNode : m_CacheData["Hashes"])
+			{
+				std::string hashStr = hashNode.as<std::string>();
+				if (existingFiles.find(hashStr) != existingFiles.end())
+				{
+					allowedFiles.insert(hashStr);
+					newHashes.push_back(hashStr);
+				}
+				else
+				{
+					RD_CORE_WARN("Removing hash {} from YAML cache because file is missing", hashStr);
+				}
+			}
+
+			m_CacheData["Hashes"] = newHashes;
+		}
+
+		// Delete files not listed in yaml
+		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CacheDirectory))
+		{
+			std::string name = directoryEntry.path().filename().string();
+			if (allowedFiles.find(name) == allowedFiles.end())
+			{
+				if (directoryEntry.is_directory())
+					std::filesystem::remove_all(directoryEntry.path());
+				else
+					std::filesystem::remove(directoryEntry.path());
+
+				RD_CORE_WARN("Removing {} because there is no coresponding YAML entry", directoryEntry.path().string());
+			}
+		}
+
+		// Save updated YAML cache
+		std::ofstream fout(m_CacheFile, std::ios::out | std::ios::trunc);
+		if (fout.is_open())
+			fout << m_CacheData;
+	}
+
+
+	void OpenGLShader::CompileOrOpenSpirv(const std::unordered_map<shaderc_shader_kind, std::string>& shaderSources, const ShaderOptions& options)
 	{
 		RD_PROFILE_FUNCTION();
 
@@ -133,9 +219,9 @@ namespace Rod {
 
 		switch (options.OptimizationLevel)
 		{
-			case Shader::OptimalizationLevel::None: 			compileOptions.SetOptimizationLevel(shaderc_optimization_level_zero); break;
-			case Shader::OptimalizationLevel::Performance: 		compileOptions.SetOptimizationLevel(shaderc_optimization_level_performance); break;
-			case Shader::OptimalizationLevel::Size: 			compileOptions.SetOptimizationLevel(shaderc_optimization_level_size); break;	
+		case Shader::OptimalizationLevel::None: 			compileOptions.SetOptimizationLevel(shaderc_optimization_level_zero); break;
+		case Shader::OptimalizationLevel::Performance: 		compileOptions.SetOptimizationLevel(shaderc_optimization_level_performance); break;
+		case Shader::OptimalizationLevel::Size: 			compileOptions.SetOptimizationLevel(shaderc_optimization_level_size); break;
 		}
 
 		for (auto&& [key, value] : options.Macros)
@@ -144,22 +230,104 @@ namespace Rod {
 		if (options.GenerateDebugInfo)
 			compileOptions.SetGenerateDebugInfo();
 
-
 		for (auto&& [kind, source] : shaderSources)
 		{
 			RD_CORE_ASSERT(m_SPIRV.find(kind) == m_SPIRV.end(), "2 Shaders of same kind defined");
 
-			shaderc::SpvCompilationResult res = compiler.CompileGlslToSpv(source, kind, m_Name.c_str());
-			std::string messages = res.GetErrorMessage();
-			if (!messages.empty())
-				RD_CORE_WARN("Shader compilation messages:\n{0}", messages);
-
-			if (res.GetCompilationStatus() != shaderc_compilation_status_success)
-				RD_CORE_ASSERT(false, "Shader compilation failed");
-
-			m_SPIRV[kind] = { res.cbegin(), res.cend() };
+			YAML::Node returnedNode;
+			if (OpenSpirv(kind, source)) continue;
+	
+			std::vector<uint32_t> res = CompileSpirv(kind, source, compiler);
+			CacheCompiledSpirv(kind, source, res);
+	
 		}
+
+		std::ofstream fout(m_CacheFile, std::ios::out | std::ios::trunc);
+		if (!fout.is_open())
+			RD_CORE_WARN("Could not write to cache file: {}", m_CacheFile.string());
+		else 
+			fout << m_CacheData;
 	}
+
+	bool OpenGLShader::OpenSpirv(const shaderc_shader_kind& kind, const std::string& source)
+	{
+		size_t targetHash = std::hash<std::string>{}(source);
+		std::filesystem::path filename = m_CacheDirectory / std::to_string(targetHash);
+		for (const auto& hash : m_CacheData["Hashes"])
+		{
+			if (targetHash == hash.as<size_t>())
+			{
+				// Found shader in cache library
+				std::ifstream in(filename, std::ios::binary | std::ios::ate);
+				if (!in) 
+				{
+					// Note that this should happen like almost never since files were validated
+					RD_CORE_ERROR("Failed to open cached shader file: {}", filename.string());
+					return false; 
+				}
+				std::streamsize size = in.tellg();
+				in.seekg(0, std::ios::beg);
+
+				size_t count = static_cast<size_t>((size + 3) / 4);
+				std::vector<uint32_t> buffer(count);
+
+				if (size > 0)
+					in.read(reinterpret_cast<char*>(buffer.data()), size);
+
+				m_SPIRV[kind] = buffer;
+
+				RD_CORE_TRACE("Loaded shader {}.{} from cache!", m_Name, Utils::ShaderExtensionFromType(kind));
+				return true;
+			}
+		}
+		return false;
+	}
+
+	std::vector<uint32_t> OpenGLShader::CompileSpirv(const shaderc_shader_kind& kind, const std::string& source, shaderc::Compiler& compiler)
+	{
+		shaderc::SpvCompilationResult res = compiler.CompileGlslToSpv(source, kind, m_Name.c_str());
+		std::string messages = res.GetErrorMessage();
+		if (!messages.empty())
+			RD_CORE_WARN("Shader compilation messages:\n{0}", messages);
+
+		if (res.GetCompilationStatus() != shaderc_compilation_status_success)
+			RD_CORE_ASSERT(false, "Shader compilation failed");
+
+		std::vector<uint32_t> data(res.cbegin(), res.cend());
+		m_SPIRV[kind] = data;
+
+		return data;
+	}
+
+	void OpenGLShader::CacheCompiledSpirv(const shaderc_shader_kind& kind, const std::string& source, std::vector<uint32_t>& data)
+	{
+		size_t hash = std::hash<std::string>{}(source);
+		std::filesystem::path filename = m_CacheDirectory / std::to_string(hash);
+		std::ofstream fout(filename, std::ios::binary | std::ios::out | std::ios::trunc);
+		if (!fout)
+		{
+			RD_CORE_WARN("Couldnt cache shader: {}, {}", m_Name, Utils::ShaderExtensionFromType(kind));
+			return;
+		}
+
+		fout.write(reinterpret_cast<const char*>(data.data()), data.size() * sizeof(uint32_t));
+		m_CacheData["Hashes"].push_back(std::hash<std::string>{}(source));
+	}
+
+	void OpenGLShader::CreateYAMLCacheDatabase()
+	{
+		YAML::Node root;
+		root["Hashes"] = YAML::Node(YAML::NodeType::Sequence);
+
+		std::ofstream fout(m_CacheFile, std::ios::out | std::ios::trunc);
+		if (!fout.is_open())
+		{
+			RD_CORE_ERROR("Failed to open file: {}", m_CacheFile.string());
+			return;
+		}
+		fout << root;
+	}
+
 
 	void OpenGLShader::LoadSpirv()
 	{

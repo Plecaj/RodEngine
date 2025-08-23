@@ -4,6 +4,9 @@
 
 #include <glm/glm.hpp>
 #include <unordered_map>
+#include <filesystem>
+
+#include <yaml-cpp/yaml.h>
 
 // TODO: REMOVE
 typedef unsigned int GLenum;
@@ -42,7 +45,14 @@ namespace Rod {
 		int GetUniformLocation(const std::string& name) const;
 		std::string ReadFile(const std::string& filepath);
 		std::unordered_map<shaderc_shader_kind, std::string> PreProcess(const std::string& source);
-		void CompileSpirv(const std::unordered_map<shaderc_shader_kind, std::string>& shaderSources, const ShaderOptions& options);
+		void CreateYAMLCacheDatabase();
+		void ValidateCachedFiles();
+
+		void CompileOrOpenSpirv(const std::unordered_map<shaderc_shader_kind, std::string>& shaderSources, const ShaderOptions& options);
+		bool OpenSpirv(const shaderc_shader_kind& kind, const std::string& source);
+		std::vector<uint32_t> CompileSpirv(const shaderc_shader_kind& kind, const std::string& source, shaderc::Compiler& compiler);
+		void CacheCompiledSpirv(const shaderc_shader_kind& kind, const std::string& source, std::vector<uint32_t>& data);
+
 		void LoadSpirv();
 	private:
 		uint32_t m_RendererID;
@@ -50,6 +60,10 @@ namespace Rod {
 		std::string m_Name;
 
 		std::unordered_map<shaderc_shader_kind, std::vector<uint32_t>> m_SPIRV;
+
+		std::filesystem::path m_CacheDirectory = "assets/shaders/cached/OpenGL";
+		std::filesystem::path m_CacheFile = m_CacheDirectory / "cache.yaml";
+		YAML::Node m_CacheData;
 	};
 
 }

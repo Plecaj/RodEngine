@@ -42,6 +42,9 @@ namespace Rod {
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
+	private:
+		static std::string ReadFile(const std::string& filepath);
+		static std::unordered_map<shaderc_shader_kind, std::string> PreProcess(const std::string& source);
 	};
 
 	class ShaderLibrary {

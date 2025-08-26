@@ -9,6 +9,8 @@
 
 #include "Rod/Core/Timestep.h"
 
+#include "Rod/Scripts/DotNetRuntime.h"
+
 #include "Rod/ImGui/ImGuiLayer.h"
 
 namespace Rod {
@@ -54,6 +56,8 @@ namespace Rod {
 		bool m_Running = true, m_Minimized = false, m_Maximalized = false;
 		LayerStack m_LayerStack;
 		float m_LastFrameTime = 0.0f;
+
+		DotNetRuntime m_DotNetRuntime;
 	private:
 		static Application* s_Instance;
 	};

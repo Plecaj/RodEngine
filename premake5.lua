@@ -22,6 +22,7 @@ IncludeDir["entt"] = "RodEngine/vendor/entt"
 IncludeDir["yaml_cpp"] = "RodEngine/vendor/yaml-cpp/include"
 IncludeDir["ImGuizmo"] = "RodEngine/vendor/ImGuizmo"
 IncludeDir["shaderc"] = "RodEngine/vendor/shaderc/libshaderc/include"
+IncludeDir["dotnet"] = "RodEngine/vendor/dotnet/include"
 
 group "Dependencies"
 	include "RodEngine/vendor/GLFW"
@@ -74,15 +75,18 @@ project "RodEngine"
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.yaml_cpp}",
 		"%{IncludeDir.ImGuizmo}",
-		"%{IncludeDir.shaderc}"
+		"%{IncludeDir.shaderc}",
+		"%{IncludeDir.dotnet}"
 	}
 
-	libdirs {
+	libdirs 
+	{
 		"RodEngine/vendor/shaderc/build/libshaderc_util/Debug",
 		"RodEngine/vendor/shaderc/build/libshaderc/Debug",
 		"RodEngine/vendor/shaderc/build/third_party/glslang/glslang/Debug",
 		"RodEngine/vendor/shaderc/build/third_party/spirv-tools/source/Debug",
-		"RodEngine/vendor/shaderc/build/third_party/spirv-tools/source/opt/Debug"
+		"RodEngine/vendor/shaderc/build/third_party/spirv-tools/source/opt/Debug",
+		"RodEngine/vendor/dotnet/lib"
 	}
 
 
@@ -93,7 +97,8 @@ project "RodEngine"
 		"ImGui",
 		"yaml-cpp",
 		"opengl32.lib",
-		"shaderc_combined", "shaderc_util", "glslangd", "SPIRV-Tools-opt", "SPIRV-Tools.lib"
+		"shaderc_combined", "shaderc_util", "glslangd", "SPIRV-Tools-opt", "SPIRV-Tools.lib",
+		"nethost.lib"
 	}
 
 	dependson 
@@ -153,12 +158,18 @@ project "Rod-Editor"
 		"%{IncludeDir.ImGui}",
 		"%{IncludeDir.entt}",
 		"%{IncludeDir.ImGuizmo}",
-		"%{IncludeDir.shaderc}"
+		"%{IncludeDir.shaderc}",
+		"%{IncludeDir.dotnet}"
 	}
 
 	links
 	{
 		"RodEngine"
+	}
+
+	postbuildcommands 
+	{
+		("{COPY} \"%{wks.location}RodEngine/vendor/dotnet/lib/nethost.dll\" \"%{cfg.targetdir}\"")
 	}
 
 	filter "system:windows"

@@ -21,6 +21,5 @@ int main(int argc, char** argv)
 	RD_PROFILE_BEGIN_SESSION("Shutdown", "RodProfile-Shutdown.json");
 	delete app;
 	RD_PROFILE_END_SESSION();
-
 }
 #endif

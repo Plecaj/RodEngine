@@ -183,6 +183,7 @@
     <ClInclude Include="src\Rod\Renderer\Renderer.h" />
     <ClInclude Include="src\Rod\Renderer\Renderer2D.h" />
     <ClInclude Include="src\Rod\Renderer\RendererAPI.h" />
+    <ClInclude Include="src\Rod\Renderer\RendererLimits.h" />
     <ClInclude Include="src\Rod\Renderer\Shader.h" />
     <ClInclude Include="src\Rod\Renderer\ShaderCacheDatabase.h" />
     <ClInclude Include="src\Rod\Renderer\SubTexture2D.h" />

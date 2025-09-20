@@ -10,9 +10,7 @@ namespace Rod {
 	{
 	public:
 		static void Init();
-
-		// TODO: Should be in some RendererCapabilities class 
-		static int GetMaxTextureSlots();
+		static void Shutdown();
 
 		static void OnWindowResize(uint32_t width, uint32_t height);
 

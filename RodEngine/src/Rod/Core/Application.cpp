@@ -36,6 +36,8 @@ namespace Rod {
 	Application::~Application()
 	{
 		RD_PROFILE_FUNCTION();
+
+		Renderer::Shutdown();
 	}
 
 	void Application::PushLayer(Layer* layer)

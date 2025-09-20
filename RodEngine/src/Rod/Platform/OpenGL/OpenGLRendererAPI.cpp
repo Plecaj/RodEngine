@@ -15,7 +15,7 @@ namespace Rod {
 		glEnable(GL_DEPTH_TEST);
 	}
 
-	int OpenGLRendererAPI::GetMaxTextureSlots()
+	const int OpenGLRendererAPI::GetMaxTextureSlots() const
 	{
 		int TexSlots;
 		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &TexSlots);

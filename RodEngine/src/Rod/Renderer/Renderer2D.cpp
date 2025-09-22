@@ -57,43 +57,60 @@ namespace Rod {
         RD_PROFILE_FUNCTION();
         s_Data = new Renderer2DData;
        
+        InitShader();
+        InitSamplers();
+        InitQuadVertexArray();
+        InitWhiteTexture();
+        InitQuadVertexPositions();
+    }
+
+
+    void Renderer2D::InitShader()
+    {
         Shader::ShaderOptions shaderOptions;
         shaderOptions.Macros["MAX_TEXTURE_SLOTS"] = std::to_string(s_Data->MaxTexturesSlots);
         shaderOptions.OptimizationLevel = Shader::OptimalizationLevel::Performance;
         shaderOptions.GenerateDebugInfo = false;
 
         s_Data->TextureShader = Shader::Create("assets/shaders/Texture.glsl", shaderOptions);
-
         s_Data->QuadUniformBuffer = UniformBuffer::Create(sizeof(glm::mat4));
+    }
 
+    void Renderer2D::InitSamplers()
+    {
         int* samplers = new int[s_Data->MaxTexturesSlots];
-        for (int i = 0; i < s_Data->MaxTexturesSlots; i++) 
-        {
+        for (int i = 0; i < s_Data->MaxTexturesSlots; i++)
             samplers[i] = i;
-        }
+
         s_Data->TextureShader->Bind();
         s_Data->TextureShader->SetIntArray("u_Textures", samplers, s_Data->MaxTexturesSlots);
-        delete[] samplers;
 
+        delete[] samplers;
+    }
+
+    void Renderer2D::InitQuadVertexArray()
+    {
         s_Data->QuadVertexArray = VertexArray::Create();
 
         s_Data->QuadVertexBuffer = VertexBuffer::Create(sizeof(QuadVertex) * s_Data->MAX_VERTICES_COUNT);
         s_Data->QuadVertexBuffer->SetBufferLayout(
-        {
-            { ShaderDataType::Float3, "a_Position" },
-            { ShaderDataType::Float4, "a_Color"},
-            { ShaderDataType::Float2, "a_TexCoord" },
-            { ShaderDataType::Float, "a_TexIdx"},
-            { ShaderDataType::Float, "a_TilingFactor"},
-            { ShaderDataType::Int, "a_EntityID"}
-        });
-        s_Data->QuadVertexArray->AddVertexBuffer(s_Data->QuadVertexBuffer);
+            {
+                { ShaderDataType::Float3, "a_Position" },
+                { ShaderDataType::Float4, "a_Color"},
+                { ShaderDataType::Float2, "a_TexCoord" },
+                { ShaderDataType::Float, "a_TexIdx"},
+                { ShaderDataType::Float, "a_TilingFactor"},
+                { ShaderDataType::Int, "a_EntityID"}
+            });
 
+        s_Data->QuadVertexArray->AddVertexBuffer(s_Data->QuadVertexBuffer);
         s_Data->QuadVertexBufferBase = new QuadVertex[s_Data->MAX_VERTICES_COUNT];
 
+        // Generate indices
         uint32_t* quadIndices = new uint32_t[s_Data->MAX_INDICES_COUNT];
         uint32_t offset = 0;
-        for (uint32_t i = 0; i < s_Data->MAX_INDICES_COUNT; i += 6) {
+        for (uint32_t i = 0; i < s_Data->MAX_INDICES_COUNT; i += 6)
+        {
             quadIndices[i + 0] = offset + 0;
             quadIndices[i + 1] = offset + 1;
             quadIndices[i + 2] = offset + 2;
@@ -104,20 +121,27 @@ namespace Rod {
 
             offset += 4;
         }
+
         Ref<IndexBuffer> QuadIB = IndexBuffer::Create(quadIndices, s_Data->MAX_INDICES_COUNT);
         s_Data->QuadVertexArray->SetIndexBuffer(QuadIB);
         delete[] quadIndices;
+    }
 
+    void Renderer2D::InitWhiteTexture()
+    {
         s_Data->WhiteTexture = Texture2D::Create(1, 1);
         uint32_t whiteTextureData = 0xffffffff;
         s_Data->WhiteTexture->SetData(&whiteTextureData, sizeof(whiteTextureData));
 
         s_Data->TextureSlots[0] = s_Data->WhiteTexture;
+    }
 
+    void Renderer2D::InitQuadVertexPositions()
+    {
         s_Data->QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
         s_Data->QuadVertexPositions[1] = { 0.5f, -0.5f, 0.0f, 1.0f };
-        s_Data->QuadVertexPositions[2] = { 0.5f, 0.5f, 0.0f, 1.0f };
-        s_Data->QuadVertexPositions[3] = { -0.5f, 0.5f, 0.0f, 1.0f };
+        s_Data->QuadVertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
+        s_Data->QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
     }
 
     void Renderer2D::Shutdown()

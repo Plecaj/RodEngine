@@ -35,6 +35,13 @@ namespace Rod {
 		static void ResetStats();
 		static Statistics GetStats();
 	private:
+		// Initialize 
+		static void InitShader();
+		static void InitSamplers();
+		static void InitQuadVertexArray();
+		static void InitWhiteTexture();
+		static void InitQuadVertexPositions();
+
 		static void BeginBatch();
 		static void Flush();
 		static void EndBatch();

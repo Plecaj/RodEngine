@@ -18,14 +18,29 @@ namespace Rod {
     {
         ImGui::Begin("Content Browser");
 
+        DrawNavigationBar();
+
+        float thumbnailSize = 64.0f;
+        float padding = 16.0f;
+        SetupGridLayout(thumbnailSize, padding);
+
+        DrawDirectoryContents(thumbnailSize);
+
+        ImGui::Columns(1);
+        ImGui::End();
+    }
+
+    void ContentBrowserPanel::DrawNavigationBar()
+    {
         if (m_CurrentDirectory != g_AssetsPath)
         {
             if (ImGui::Button("<-"))
                 m_CurrentDirectory = m_CurrentDirectory.parent_path();
         }
+    }
 
-        static float padding = 16.0f;
-        static float thumbnailSize = 64.0f;
+    void ContentBrowserPanel::SetupGridLayout(float thumbnailSize, float padding)
+    {
         float cellSize = thumbnailSize + padding;
 
         ImVec2 panelSize = ImGui::GetContentRegionAvail();
@@ -33,7 +48,10 @@ namespace Rod {
         if (columnCount < 1) columnCount = 1;
 
         ImGui::Columns(columnCount, 0, false);
+    }
 
+    void ContentBrowserPanel::DrawDirectoryContents(float thumbnailSize)
+    {
         for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
         {
             const auto& path = directoryEntry.path();
@@ -45,38 +63,8 @@ namespace Rod {
 
             Ref<Texture2D> icon = directoryEntry.is_directory() ? m_DirectoryIcon : m_FileIcon;
 
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-            ImGui::ImageButton(
-                uniqueID.c_str(),
-                (ImTextureID)(uint64_t)icon->GetRendererID(),
-                { thumbnailSize, thumbnailSize },
-                { 0.0f, 1.0f }, { 1.0f, 0.0f }
-            );
-            ImGui::PopStyleColor();
-
-            if (!directoryEntry.is_directory())
-            {
-                if (path.extension() == ".rod")
-                {
-                    if (ImGui::BeginDragDropSource())
-                    {
-                        std::string itemPath = relativePath.string();
-                        ImGui::SetDragDropPayload("CONTENT_BROWSER_SCENE_ITEM", itemPath.c_str(), itemPath.size() + 1);
-                        ImGui::Text("%s", filenameString.c_str());
-                        ImGui::EndDragDropSource();
-                    }
-                }
-                else if (path.extension() == ".png")
-                {
-                    if (ImGui::BeginDragDropSource()) 
-                    {
-                        std::string itemPath = relativePath.string();
-                        ImGui::SetDragDropPayload("CONTENT_BROWSER_TEXTURE_ITEM", itemPath.c_str(), itemPath.size() + 1);
-                        ImGui::Text("%s", filenameString.c_str());
-                        ImGui::EndDragDropSource();
-                    }
-                }
-            }
+            DrawIconButton(uniqueID, icon, thumbnailSize);
+            HandleDragDrop(path, relativePath, filenameString);
 
             if (directoryEntry.is_directory() && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
             {
@@ -88,10 +76,42 @@ namespace Rod {
 
             ImGui::PopID();
         }
+    }
 
-        ImGui::Columns(1);
+    void ContentBrowserPanel::DrawIconButton(const std::string& id, Ref<Texture2D> icon, float size)
+    {
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+        ImGui::ImageButton(
+            id.c_str(),
+            (ImTextureID)(uint64_t)icon->GetRendererID(),
+            { size, size },
+            { 0.0f, 1.0f }, { 1.0f, 0.0f }
+        );
+        ImGui::PopStyleColor();
+    }
 
-        ImGui::End();
+    void ContentBrowserPanel::HandleDragDrop(const std::filesystem::path& path, const std::filesystem::path& relativePath, const std::string& filename)
+    {
+        if (path.extension() == ".rod")
+        {
+            if (ImGui::BeginDragDropSource())
+            {
+                std::string itemPath = relativePath.string();
+                ImGui::SetDragDropPayload("CONTENT_BROWSER_SCENE_ITEM", itemPath.c_str(), itemPath.size() + 1);
+                ImGui::Text("%s", filename.c_str());
+                ImGui::EndDragDropSource();
+            }
+        }
+        else if (path.extension() == ".png")
+        {
+            if (ImGui::BeginDragDropSource())
+            {
+                std::string itemPath = relativePath.string();
+                ImGui::SetDragDropPayload("CONTENT_BROWSER_TEXTURE_ITEM", itemPath.c_str(), itemPath.size() + 1);
+                ImGui::Text("%s", filename.c_str());
+                ImGui::EndDragDropSource();
+            }
+        }
     }
 
 }

@@ -25,35 +25,31 @@ namespace Rod {
 
 	void SceneHierarchyPanel::OnImGuiRender()
 	{
+		DrawSceneHierarchy();
+		DrawPropertiesPanel();
+	}
+
+	void SceneHierarchyPanel::DrawSceneHierarchy()
+	{
 		ImGui::Begin("Scene Hierarchy");
 
-		for (auto entityID : m_Context->m_Registry.storage<entt::entity>()) 
+		for (auto entityID : m_Context->m_Registry.storage<entt::entity>())
 		{
-			Entity entity{ entityID, m_Context.get()};
+			Entity entity{ entityID, m_Context.get() };
 			DrawEntityNode(entity);
 		}
 
-		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
-			m_SelectionContext = {};
-
-		// Right click on blank space
-		if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
-		{
-			if (ImGui::MenuItem("Create Empty Entity")) 
-				 m_Context->CreateEntity("Empty Entity");
-			
-			
-			ImGui::EndPopup();
-		}
+		HandleHierarchyBlankSpace();
 
 		ImGui::End();
+	}
 
+	void SceneHierarchyPanel::DrawPropertiesPanel()
+	{
 		ImGui::Begin("Properties");
 
 		if (m_SelectionContext)
-		{
 			DrawComponents(m_SelectionContext);
-		}
 
 		ImGui::End();
 	}
@@ -67,27 +63,18 @@ namespace Rod {
 
 		ImGuiTreeNodeFlags flags = ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
+
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+
 		if (ImGui::IsItemClicked())
-		{
 			m_SelectionContext = entity;
-		}
 
-		bool entityDeleted = false;
-		if(ImGui::BeginPopupContextItem(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
-		{
-			if (ImGui::MenuItem("Delete Entity"))
-				entityDeleted = true;
-
-			ImGui::EndPopup();
-		}
+		bool entityDeleted = HandleEntityContextMenu(entity);
 
 		if (opened)
 		{
-			ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow;
-			flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
-			bool opened = ImGui::TreeNodeEx((void*)90714394, flags, tag.c_str());
-			if (opened)
+			ImGuiTreeNodeFlags childFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+			if (ImGui::TreeNodeEx((void*)90714394, childFlags, tag.c_str()))
 				ImGui::TreePop();
 			ImGui::TreePop();
 		}
@@ -95,9 +82,34 @@ namespace Rod {
 		if (entityDeleted)
 		{
 			m_Context->DestroyEntity(entity);
-			if(m_SelectionContext == entity)
+			if (m_SelectionContext == entity)
 				m_SelectionContext = {};
 		}
+	}
+
+	void SceneHierarchyPanel::HandleHierarchyBlankSpace()
+	{
+		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
+			m_SelectionContext = {};
+
+		if (ImGui::BeginPopupContextWindow(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
+		{
+			if (ImGui::MenuItem("Create Empty Entity"))
+				m_Context->CreateEntity("Empty Entity");
+			ImGui::EndPopup();
+		}
+	}
+
+	bool SceneHierarchyPanel::HandleEntityContextMenu(Entity entity)
+	{
+		bool entityDeleted = false;
+		if (ImGui::BeginPopupContextItem(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
+		{
+			if (ImGui::MenuItem("Delete Entity"))
+				entityDeleted = true;
+			ImGui::EndPopup();
+		}
+		return entityDeleted;
 	}
 
 	static void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f)
@@ -214,19 +226,32 @@ namespace Rod {
 
 	void SceneHierarchyPanel::DrawComponents(Entity entity)
 	{
-		if (entity.HasComponent<TagComponent>())
-		{
-			auto& tag = entity.GetComponent<TagComponent>().Tag;
+		DrawTag(entity);
+		DrawAddComponentButton(entity);
 
-			char buffer[256];
-			memset(buffer, 0, sizeof(buffer));
-			strcpy_s(buffer, sizeof(buffer), tag.c_str());
-			if (ImGui::InputText("##", buffer, sizeof(buffer)))
-			{
-				tag = std::string(buffer);
-			}
-		}
+		DrawTransformComponent(entity);
+		DrawCameraComponent(entity);
+		DrawSpriteRendererComponent(entity);
+	}
 
+	void SceneHierarchyPanel::DrawTag(Entity entity)
+	{
+		if (!entity.HasComponent<TagComponent>())
+			return;
+
+		auto& tag = entity.GetComponent<TagComponent>().Tag;
+
+		char buffer[256];
+		memset(buffer, 0, sizeof(buffer));
+		strcpy_s(buffer, sizeof(buffer), tag.c_str());
+
+		if (ImGui::InputText("##", buffer, sizeof(buffer)))
+			tag = std::string(buffer);
+	}
+
+
+	void SceneHierarchyPanel::DrawAddComponentButton(Entity entity)
+	{
 		ImGui::SameLine();
 		ImGui::PushItemWidth(-1);
 		if (ImGui::Button("Add Component"))
@@ -234,32 +259,39 @@ namespace Rod {
 
 		if (ImGui::BeginPopup("AddComponent"))
 		{
-			if (ImGui::MenuItem("Camera"))
+			if (ImGui::MenuItem("Camera") && !entity.HasComponent<CameraComponent>())
 			{
-				m_SelectionContext.AddComponent<CameraComponent>();
+				entity.AddComponent<CameraComponent>();
 				ImGui::CloseCurrentPopup();
 			}
 
-			if (ImGui::MenuItem("Sprite Renderer"))
+			if (ImGui::MenuItem("Sprite Renderer") && !entity.HasComponent<SpriteRendererComponent>())
 			{
-				m_SelectionContext.AddComponent<SpriteRendererComponent>();
+				entity.AddComponent<SpriteRendererComponent>();
 				ImGui::CloseCurrentPopup();
 			}
 
 			ImGui::EndPopup();
 		}
-
 		ImGui::PopItemWidth();
+	}
 
-		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
-		{
-			DrawVec3Control("Translation", component.Translation);
-			glm::vec3 rotation = glm::degrees(component.Rotation);
-			DrawVec3Control("Rotation", rotation);
-			component.Rotation = glm::radians(rotation);
-			DrawVec3Control("Scale", component.Scale, 1.0f);
-		});
+	void SceneHierarchyPanel::DrawTransformComponent(Entity entity)
+	{
+		DrawComponent<TransformComponent>("Transform", entity, [this](auto& component)
+			{
+				DrawVec3Control("Translation", component.Translation);
 
+				glm::vec3 rotation = glm::degrees(component.Rotation);
+				DrawVec3Control("Rotation", rotation);
+				component.Rotation = glm::radians(rotation);
+
+				DrawVec3Control("Scale", component.Scale, 1.0f);
+			});
+	}
+
+	void SceneHierarchyPanel::DrawCameraComponent(Entity entity)
+	{
 		DrawComponent<CameraComponent>("Camera", entity, [](auto& component)
 			{
 				auto& camera = component.Camera;
@@ -268,6 +300,7 @@ namespace Rod {
 
 				const char* projectionTypeStrings[] = { "Perspective", "Orthographic" };
 				const char* currentProjectionTypeString = projectionTypeStrings[(int)camera.GetProjectionType()];
+
 				if (ImGui::BeginCombo("Projection", currentProjectionTypeString))
 				{
 					for (int i = 0; i < 2; i++)
@@ -278,66 +311,66 @@ namespace Rod {
 							currentProjectionTypeString = projectionTypeStrings[i];
 							camera.SetProjectionType((SceneCamera::ProjectionType)i);
 						}
-
 						if (isSelected)
 							ImGui::SetItemDefaultFocus();
 					}
-
 					ImGui::EndCombo();
 				}
 
 				if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 				{
-					float perspectiveVerticalFov = glm::degrees(camera.GetPerspectiveVerticalFOV());
-					if (ImGui::DragFloat("Vertical FOV", &perspectiveVerticalFov))
-						camera.SetPerspectiveVerticalFOV(glm::radians(perspectiveVerticalFov));
+					float fov = glm::degrees(camera.GetPerspectiveVerticalFOV());
+					if (ImGui::DragFloat("Vertical FOV", &fov))
+						camera.SetPerspectiveVerticalFOV(glm::radians(fov));
 
-					float perspectiveNear = camera.GetPerspectiveNearClip();
-					if (ImGui::DragFloat("Near", &perspectiveNear))
-						camera.SetPerspectiveNearClip(perspectiveNear);
+					float nearClip = camera.GetPerspectiveNearClip();
+					if (ImGui::DragFloat("Near", &nearClip))
+						camera.SetPerspectiveNearClip(nearClip);
 
-					float perspectiveFar = camera.GetPerspectiveFarClip();
-					if (ImGui::DragFloat("Far", &perspectiveFar))
-						camera.SetPerspectiveFarClip(perspectiveFar);
+					float farClip = camera.GetPerspectiveFarClip();
+					if (ImGui::DragFloat("Far", &farClip))
+						camera.SetPerspectiveFarClip(farClip);
 				}
 
 				if (camera.GetProjectionType() == SceneCamera::ProjectionType::Orthographic)
 				{
-					float orthoSize = camera.GetOrthographicSize();
-					if (ImGui::DragFloat("Size", &orthoSize))
-						camera.SetOrthographicSize(orthoSize);
+					float size = camera.GetOrthographicSize();
+					if (ImGui::DragFloat("Size", &size))
+						camera.SetOrthographicSize(size);
 
-					float orthoNear = camera.GetOrthographicNearClip();
-					if (ImGui::DragFloat("Near", &orthoNear))
-						camera.SetOrthographicNearClip(orthoNear);
+					float nearClip = camera.GetOrthographicNearClip();
+					if (ImGui::DragFloat("Near", &nearClip))
+						camera.SetOrthographicNearClip(nearClip);
 
-					float orthoFar = camera.GetOrthographicFarClip();
-					if (ImGui::DragFloat("Far", &orthoFar))
-						camera.SetOrthographicFarClip(orthoFar);
+					float farClip = camera.GetOrthographicFarClip();
+					if (ImGui::DragFloat("Far", &farClip))
+						camera.SetOrthographicFarClip(farClip);
 
 					ImGui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
 				}
 			});
+	}
 
-		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component) 
-		{
-			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
-
-			ImGui::Button("Texture", ImVec2(100.0f, 0.0f));
-
-			if (ImGui::BeginDragDropTarget())
+	void SceneHierarchyPanel::DrawSpriteRendererComponent(Entity entity)
+	{
+		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component)
 			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_TEXTURE_ITEM"))
+				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
+
+				ImGui::Button("Texture", ImVec2(100.0f, 0.0f));
+
+				if (ImGui::BeginDragDropTarget())
 				{
-					const char* path = (const char*)payload->Data;
-					std::filesystem::path texturePath = std::filesystem::path(g_AssetsPath) / path;
-					component.Texture = Texture2D::Create(texturePath.string());
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_TEXTURE_ITEM"))
+					{
+						const char* path = (const char*)payload->Data;
+						std::filesystem::path texturePath = std::filesystem::path(g_AssetsPath) / path;
+						component.Texture = Texture2D::Create(texturePath.string());
+					}
+					ImGui::EndDragDropTarget();
 				}
-				ImGui::EndDragDropTarget();
-			}
 
-
-			ImGui::DragFloat("Tiling Factor", &component.TilingFactor, 0.1f, 0.0f, 100.0f);
-		});
+				ImGui::DragFloat("Tiling Factor", &component.TilingFactor, 0.1f, 0.0f, 100.0f);
+			});
 	}
 }

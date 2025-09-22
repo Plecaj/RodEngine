@@ -11,6 +11,8 @@
 #include "ImGuizmo.h"
 #include "Rod/Math/Math.h"
 
+// BIG TODO: SPLIT TS INTO FEW OTHER FILES LIKE NORMAL PEOPLE DO!!!!!@#@#!3!@
+
 namespace Rod {
 
 	// Temporary 

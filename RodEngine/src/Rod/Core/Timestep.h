@@ -5,10 +5,10 @@ namespace Rod {
 	class Timestep
 	{
 	public:
+		Timestep() : m_Time(0.0f) {}
 		Timestep(float time)
 			: m_Time(time)
-		{
-		}
+		{}
 
 		operator float() const { return m_Time; };
 

@@ -1,5 +1,6 @@
 #include "EditorLayer.h"
 #include "imgui.h"
+#include "ImGuizmo.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -8,10 +9,6 @@
 
 #include "Rod/Utils/PlatformUtils.h"
 
-#include "ImGuizmo.h"
-#include "Rod/Math/Math.h"
-
-// BIG TODO: SPLIT TS INTO FEW OTHER FILES LIKE NORMAL PEOPLE DO!!!!!@#@#!3!@
 
 namespace Rod {
 
@@ -196,208 +193,35 @@ namespace Rod {
 		m_SceneHierarchyPanel.OnImGuiRender();
 		m_ContentBrowserPanel.OnImGuiRender();
 
-		ImGui::Begin("Performance");
+		m_PerformancePanel.OnImGuiRender(m_LastDeltaTime);
+		m_DebugPanel.OnImGuiRender(m_GuizmoType, m_HoveredEntity, m_Profiling);
+		m_GuidePanel.OnImGuiRender();
 
-			float fps = 1.0f / m_LastDeltaTime;
-			ImGui::Text("FPS: %.1f", fps);
-			ImGui::Text("Frame Time: %.3f ms", m_LastDeltaTime * 1000.0f);
-
-			ImGui::Separator();
-
-			auto stats = Renderer2D::GetStats();
-			ImGui::Text("Renderer Stats:");
-			ImGui::Text("	Draw calls: %d", stats.DrawCalls);
-			ImGui::Text("	Quad Count: %d", stats.QuadCount);
-
-		ImGui::End();
-
-		ImGui::Begin("Other");
-
-			const char* guizmoMode = "None";
-			switch (m_GuizmoType)
-			{
-			case -1:                                guizmoMode = "None";      break;
-			case ImGuizmo::OPERATION::TRANSLATE:    guizmoMode = "Translate"; break;
-			case ImGuizmo::OPERATION::ROTATE:       guizmoMode = "Rotate";    break;
-			case ImGuizmo::OPERATION::SCALE:        guizmoMode = "Scale";     break;
-			}
-			ImGui::Text("Current Guizmo mode: %s", guizmoMode);
-		
-			ImGui::Separator();
-
-			std::string name = "None";
-			if (m_HoveredEntity)
-				name = m_HoveredEntity.GetComponent<TagComponent>().Tag;
-
-			ImGui::Text("Hovered Entity: %s", name.c_str());
-
-			ImGui::Separator();
-
-			if (!m_Profiling && ImGui::Button("Start Profiling")) {
-				m_Profiling = true;
-				RD_PROFILE_BEGIN_SESSION("Runtime", "RodProfile-Runtime.json");
-			}
-			if (m_Profiling && ImGui::Button("Stop Profiling")) {
-				m_Profiling = false;
-				RD_PROFILE_END_SESSION();
-			}
-
-		ImGui::End();
-
-		ImGui::Begin("Guide");
-
-			// Guizmos 
-			if (ImGui::CollapsingHeader("Guizmos"))
-			{
-				ImGui::Text("Guizmos Shortcut Keys:");
-				ImGui::Separator();
-				ImGui::Text("Q = None");
-				ImGui::Text("W = Translate");
-				ImGui::Text("E = Rotate");
-				ImGui::Text("R = Scale");
-			}
-
-			// Camera
-			if (ImGui::CollapsingHeader("Editor Camera"))
-			{
-				ImGui::Text("Camera Controls:");
-				ImGui::Separator();
-				ImGui::Text("Alt + Left Mouse = Rotate");
-				ImGui::Text("Alt + Middle Mouse = Translate");
-				ImGui::Text("Alt + Right Mouse = Zoom");
-				ImGui::Text("Mouse Scroll = Zoom");
-			}
-
-		ImGui::End();
-
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
-		ImGui::Begin("Viewport");
-
-		auto viewportOffset = ImGui::GetCursorPos();
-
-		m_ViewportFocused = ImGui::IsWindowFocused();
-		m_ViewportHovered = ImGui::IsWindowHovered();
-		Application::Get().GetImGuiLayer()->SetBlockEvents(!m_ViewportFocused && !m_ViewportHovered);
-
-		uint32_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
-		ImVec2 viewPortPanelSize = ImGui::GetContentRegionAvail();
-		m_PendingViewportSize = { viewPortPanelSize.x, viewPortPanelSize.y };
-
-		ImGui::Image((uint64_t)textureID, ImVec2{ m_ViewportSize.x, m_ViewportSize.y }, { 0.0f, 1.0f }, { 1.0f, 0.0f });
-
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_SCENE_ITEM"))
-			{
-				const char* path = (const char*)payload->Data; 
-				OpenScene(std::filesystem::path(g_AssetsPath) / path);
-			}
-			ImGui::EndDragDropTarget();
-		}
-
-		ImVec2 minBound = ImGui::GetWindowPos();
-		minBound.x += viewportOffset.x;
-		minBound.y += viewportOffset.y;
-		ImVec2 maxBound = { minBound.x + m_ViewportSize.x, minBound.y + m_ViewportSize.y };
-		m_ViewportBounds[0] = { minBound.x, minBound.y };
-		m_ViewportBounds[1] = { maxBound.x, maxBound.y };
-
-		// Gizmos
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-		if (selectedEntity && m_GuizmoType != -1)
-		{
-			glm::mat4 cameraView, cameraProjection;
+		m_ViewportPanel.OnImGuiRender(
+			m_Framebuffer,
+			m_ActiveScene,
+			selectedEntity,
+			m_EditorCamera,
+			m_SceneState,
+			m_GuizmoType,
+			m_ViewportSize,
+			m_PendingViewportSize,
+			m_ViewportBounds,
+			m_ViewportFocused,
+			m_ViewportHovered,
+			g_AssetsPath,
+			[this](const std::filesystem::path& path) { OpenScene(path); }
+		);
 
-			if (m_SceneState == SceneState::Edit) 
-			{
-				cameraProjection = m_EditorCamera.GetProjection();
-				cameraView = m_EditorCamera.GetViewMatrix();
-			}
-			else if(m_SceneState == SceneState::Play)
-			{
-				auto cameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
-				if (cameraEntity)
-				{
-					auto& cameraComp = cameraEntity.GetComponent<CameraComponent>().Camera;
-					cameraProjection = cameraComp.GetProjection();
+		m_ToolbarPanel.OnImGuiRender(
+			m_SceneState,
+			m_PlayButton,
+			m_StopButton,
+			[this]() { OnScenePlay(); },
+			[this]() { OnSceneStop(); }
+		);
 
-					const auto& transform = cameraEntity.GetComponent<TransformComponent>().GetTransform();
-					cameraView = glm::inverse(transform); 
-				}
-			}
-
-			ImGuizmo::SetOrthographic(false);
-			ImGuizmo::SetDrawlist();
-
-			ImGuizmo::SetRect(
-				m_ViewportBounds[0].x,
-				m_ViewportBounds[0].y,
-				m_ViewportBounds[1].x - m_ViewportBounds[0].x,
-				m_ViewportBounds[1].y - m_ViewportBounds[0].y
-			);
-
-			auto& tc = selectedEntity.GetComponent<TransformComponent>();
-			glm::mat4 transform = tc.GetTransform();
-
-			bool snap = Input::IsKeyPressed(Key::LeftControl);
-			float snapValue = (m_GuizmoType == ImGuizmo::OPERATION::ROTATE) ? 45.0f : 0.5f;
-			float snapValues[3] = { snapValue, snapValue, snapValue };
-
-			ImGuizmo::Manipulate(
-				glm::value_ptr(cameraView),
-				glm::value_ptr(cameraProjection),
-				(ImGuizmo::OPERATION)m_GuizmoType,
-				ImGuizmo::MODE::LOCAL,
-				glm::value_ptr(transform),
-				nullptr,
-				snap ? snapValues : nullptr
-			);
-
-			if (ImGuizmo::IsUsing())
-			{
-				glm::vec3 translation, rotation, scale;
-				Math::DecomposeTransform(transform, translation, rotation, scale);
-
-				tc.Translation = translation;
-				tc.Rotation = rotation;
-				tc.Scale = scale;
-			}
-		}
-
-		ImGui::End();
-		ImGui::PopStyleVar();
-
-		UI_Toolbar();
-
-		ImGui::End();
-	}
-
-	void EditorLayer::UI_Toolbar()
-	{
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 2));
-		ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
-		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-		auto& colors = ImGui::GetStyle().Colors;
-		const auto& buttonHovered = colors[ImGuiCol_ButtonHovered];
-		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(buttonHovered.x, buttonHovered.y, buttonHovered.z, 0.5f));
-		const auto& buttonActive = colors[ImGuiCol_ButtonActive];
-		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(buttonActive.x, buttonActive.y, buttonActive.z, 0.5f));
-
-		ImGui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
-
-		float size = ImGui::GetWindowHeight() - 4.0f;
-		Ref<Texture2D> icon = m_SceneState == SceneState::Edit ? m_PlayButton : m_StopButton;
-		ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x * 0.5f - (size * 0.5f));
-		if (ImGui::ImageButton("play/stop button", icon->GetRendererID(), { size, size }, {0.0f, 1.0f}, {1.0f, 0.0f}))
-		{
-			if (m_SceneState == SceneState::Edit)
-				OnScenePlay();
-			else if (m_SceneState == SceneState::Play)
-				OnSceneStop();
-		}
-
-		ImGui::PopStyleVar(2);
-		ImGui::PopStyleColor(3);
 		ImGui::End();
 	}
 

@@ -4,8 +4,15 @@
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/ContentBrowserPanel.h"
 #include "Panels/TitlebarPanel.h"
+#include "Panels/PerformancePanel.h"
+#include "Panels/DebugPanel.h"
+#include "Panels/GuidePanel.h"
+#include "Panels/ViewportPanel.h"
+#include "Panels/ToolbarPanel.h"
 
 #include "Rod/Renderer/EditorCamera.h"
+
+#include "SceneState.h"
 
 namespace Rod {
 
@@ -32,8 +39,6 @@ namespace Rod {
 
 		void OnScenePlay();
 		void OnSceneStop();
-
-		void UI_Toolbar();
 	private:
 		Ref<Scene> m_ActiveScene;
 		Entity m_CameraEntity;
@@ -56,11 +61,6 @@ namespace Rod {
 
 		float m_LastDeltaTime = 0.0f;
 
-		enum class SceneState
-		{
-			Edit = 0, Play = 1
-		};
-
 		SceneState m_SceneState = SceneState::Edit;
 
 		// Panels
@@ -68,6 +68,11 @@ namespace Rod {
 		friend class TitlebarPanel;
 		SceneHierarchyPanel	m_SceneHierarchyPanel;
 		ContentBrowserPanel	m_ContentBrowserPanel;
+		PerformancePanel m_PerformancePanel;
+		DebugPanel m_DebugPanel;
+		GuidePanel m_GuidePanel;
+		ViewportPanel m_ViewportPanel;
+		ToolbarPanel m_ToolbarPanel;
 
 
 		// Editor Resources

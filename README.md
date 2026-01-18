@@ -8,12 +8,12 @@
 
 **RodEngine** is a custom C++ game engine I'm building from scratch. It's currently based on [The Cherno's](https://www.youtube.com/@TheCherno) game engine series, which serves as the foundation for learning and early development. Once I complete the tutorials, I plan to expand the engine with my own architecture, features, and tools.  
 
-## 🚧 Development Status
-> ⚠️ RodEngine is in early development. Expect rapid changes, incomplete systems, and experimental features.
+##  Development Status
+>  RodEngine is in early development. Expect rapid changes, incomplete systems, and experimental features.
  
-## 🔧 Building
+##  Building
 
-#### 🧾 Prerequisites
+####  Prerequisites
 
 - **Windows**
 - **Visual Studio 2022** 
@@ -22,7 +22,7 @@
 - **CMake 3.30+**
 - **Premake5**
 
-#### 🧪 Steps to Build
+####  Steps to Build
 
 1. **Clone the repository (with submodules):**
    
@@ -57,56 +57,56 @@
    Once the solution is open, set your desired configuration (**Debug**, **Release**, etc.) and build the project.
 
 
-## 🛠 Tech Stack
+##  Tech Stack
 
-- 🖥️ **Platform:** Windows  
-- 💻 **Language:** C++  
-- 🏗️ **Build System:** Premake5  
-- 🎨 **Rendering:** OpenGL  
-- 🖱️ **Windowing & Input:** GLFW (with minor changes for no windows titlebar support)
-- 📐 **Math Library:** GLM  
-- 🖥️ **GUI:** ImGui, ImGuizmo  
-- ⚛️ **ECS Library:** entt  
-- 📝 **Logging:** spdlog  
-- 🖼️ **Image Loading:** stb_image  
-- 🔧 **Shader Compilation:** Shaderc
+-  **Platform:** Windows  
+-  **Language:** C++  
+-  **Build System:** Premake5  
+-  **Rendering:** OpenGL  
+-  **Windowing & Input:** GLFW (with minor changes for no windows titlebar support)
+-  **Math Library:** GLM  
+-  **GUI:** ImGui, ImGuizmo  
+-  **ECS Library:** entt  
+-  **Logging:** spdlog  
+-  **Image Loading:** stb_image  
+-  **Shader Compilation:** Shaderc
 
-## 🎯 Goals
+##  Goals
 
-### 🎨 Rendering
+###  Rendering
 - High-performance 3D rendering with support for meshes, models, materials, and textures  
 - Physically-Based Rendering (PBR) pipeline with real-time lighting and shadows  
 - Support for multiple rendering APIs (OpenGL, Vulkan, DirectX, Metal)  
 - Efficient batching, frustum culling, and draw call optimization  
 - Post-processing effects: bloom, HDR, motion blur, and SSAO  
 
-### 🛠️ Editor & Tools
+###  Editor & Tools
 - Built-in 3D scene editor with drag-and-drop functionality  
 - Visual UI editor for interfaces, menus, and HUDs  
 - Real-time preview and live editing of scenes and assets  
 - Asset management for models, textures, shaders, animations, and audio  
 
-### 🖥️ Platform Support
+###  Platform Support
 - Cross-platform support: Windows, Linux, macOS
 
-### 🎵 Audio
+###  Audio
 - 3D spatial audio engine with sound positioning  
 - Sound effects and music management with mixing, layering, and attenuation  
 
-### 📜 Scripting
+###  Scripting
 - C# scripting support with hot-reload capability  
 - Easy-to-use API for engine features and gameplay logic  
 
-### ⚙️ Physics
+###  Physics
 - 3D physics engine with rigid bodies, colliders, and joints  
 - Collision detection, resolution, and physics simulation  
 
-### 📊 ECS & Performance
+###  ECS & Performance
 - Rod’s custom ECS architecture for scalable, data-driven performance  
 - Multi-threading support and job system for parallelized tasks  
 
 
-## 🙏 Credits
+##  Credits
 
 Special thanks to [The Cherno](https://github.com/thecherno) for the incredible game engine tutorial series, which helped kickstart this project and continues to be a valuable learning resource.
 

@@ -1,0 +1,79 @@
+cmake_minimum_required(VERSION 3.20)
+
+project(RodEngineWorkspace LANGUAGES C CXX)
+
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+if(MSVC)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+    add_compile_options(/W4 /permissive-)
+else()
+    add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
+
+set(CMAKE_ARCHITECTURE "x86_64")
+
+if(CMAKE_GENERATOR MATCHES "Visual Studio" OR CMAKE_GENERATOR MATCHES "Xcode")
+    set(CMAKE_CONFIGURATION_TYPES "Debug;Release;Dist" CACHE STRING "Build configurations" FORCE)
+else()
+    if(NOT CMAKE_BUILD_TYPE)
+        set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+        set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "Dist")
+    endif()
+endif()
+
+if(MSVC)
+    set(CMAKE_CXX_FLAGS_DIST "${CMAKE_CXX_FLAGS_RELEASE}" CACHE STRING "Flags used by the C++ compiler during Dist builds" FORCE)
+    set(CMAKE_C_FLAGS_DIST "${CMAKE_C_FLAGS_RELEASE}" CACHE STRING "Flags used by the C compiler during Dist builds" FORCE)
+    set(CMAKE_EXE_LINKER_FLAGS_DIST "${CMAKE_EXE_LINKER_FLAGS_RELEASE}" CACHE STRING "Linker flags during Dist builds" FORCE)
+    set(CMAKE_SHARED_LINKER_FLAGS_DIST "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}" CACHE STRING "Linker flags during Dist builds" FORCE)
+endif()
+
+if(POLICY CMP0091)
+    cmake_policy(SET CMP0091 NEW)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
+
+if(POLICY CMP0141)
+    cmake_policy(SET CMP0141 NEW)
+endif()
+
+string(TOLOWER "${CMAKE_SYSTEM_NAME}" SYSTEM_NAME_LOWER)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/bin/Debug-${SYSTEM_NAME_LOWER}-${CMAKE_ARCHITECTURE}")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin/Release-${SYSTEM_NAME_LOWER}-${CMAKE_ARCHITECTURE}")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DIST "${CMAKE_BINARY_DIR}/bin/Dist-${SYSTEM_NAME_LOWER}-${CMAKE_ARCHITECTURE}")
+
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/bin/Debug-${SYSTEM_NAME_LOWER}-${CMAKE_ARCHITECTURE}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin/Release-${SYSTEM_NAME_LOWER}-${CMAKE_ARCHITECTURE}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_DIST "${CMAKE_BINARY_DIR}/bin/Dist-${SYSTEM_NAME_LOWER}-${CMAKE_ARCHITECTURE}")
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/bin/Debug-${SYSTEM_NAME_LOWER}-${CMAKE_ARCHITECTURE}")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin/Release-${SYSTEM_NAME_LOWER}-${CMAKE_ARCHITECTURE}")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_DIST "${CMAKE_BINARY_DIR}/bin/Dist-${SYSTEM_NAME_LOWER}-${CMAKE_ARCHITECTURE}")
+
+include(cmake/Vendor.cmake)
+include(cmake/RodEngine.cmake)
+include(cmake/RodEditor.cmake)
+
+if(WIN32)
+    set(SHADERC_BUILD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/RodEngine/vendor/shaderc/build)
+    
+    if(EXISTS ${SHADERC_BUILD_DIR}/CMakeCache.txt)
+        file(REMOVE ${SHADERC_BUILD_DIR}/CMakeCache.txt)
+    endif()
+    
+    add_custom_target(Shaderc-Build
+        COMMAND ${CMAKE_COMMAND} -S ${CMAKE_CURRENT_SOURCE_DIR}/RodEngine/vendor/shaderc -B ${SHADERC_BUILD_DIR}
+            -DSHADERC_SKIP_TESTS=ON
+            -DSHADERC_SKIP_EXAMPLES=ON
+            -DSHADERC_ENABLE_INSTALL=OFF
+            -DSPIRV_TOOLS_SKIP_INSTALL=ON
+            -DSPIRV_HEADERS_SKIP_INSTALL=ON
+            -DGLSLANG_SKIP_INSTALL=ON
+        COMMAND ${CMAKE_COMMAND} --build ${SHADERC_BUILD_DIR} --config $<CONFIG>
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/RodEngine/vendor/shaderc
+    )
+endif()

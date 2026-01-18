@@ -1,0 +1,16 @@
+set(GLAD_SOURCES
+    ${VENDOR_DIR}/Glad/include/glad/glad.h
+    ${VENDOR_DIR}/Glad/include/KHR/khrplatform.h
+    ${VENDOR_DIR}/Glad/src/glad.c
+)
+
+add_library(Glad STATIC ${GLAD_SOURCES})
+
+target_include_directories(Glad PUBLIC ${INCLUDE_DIR_GLAD})
+
+string(TOLOWER "${CMAKE_SYSTEM_NAME}" SYSTEM_NAME_LOWER)
+set_target_properties(Glad PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/bin/Debug-${SYSTEM_NAME_LOWER}-${CMAKE_ARCHITECTURE}/Glad"
+    ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin/Release-${SYSTEM_NAME_LOWER}-${CMAKE_ARCHITECTURE}/Glad"
+    ARCHIVE_OUTPUT_DIRECTORY_DIST "${CMAKE_BINARY_DIR}/bin/Dist-${SYSTEM_NAME_LOWER}-${CMAKE_ARCHITECTURE}/Glad"
+)

@@ -1,0 +1,16 @@
+set(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/RodEngine/vendor)
+
+set(INCLUDE_DIR_GLFW ${VENDOR_DIR}/GLFW/include)
+set(INCLUDE_DIR_GLAD ${VENDOR_DIR}/Glad/include)
+set(INCLUDE_DIR_IMGUI ${VENDOR_DIR}/imgui)
+set(INCLUDE_DIR_GLM ${VENDOR_DIR}/glm)
+set(INCLUDE_DIR_STB_IMAGE ${VENDOR_DIR}/stb_image)
+set(INCLUDE_DIR_ENTT ${VENDOR_DIR}/entt)
+set(INCLUDE_DIR_YAML_CPP ${VENDOR_DIR}/yaml-cpp/include)
+set(INCLUDE_DIR_IMGUIZMO ${VENDOR_DIR}/ImGuizmo)
+set(INCLUDE_DIR_SHADERC ${VENDOR_DIR}/shaderc/libshaderc/include)
+
+include(cmake/vendor/GLFW.cmake)
+include(cmake/vendor/Glad.cmake)
+include(cmake/vendor/ImGui.cmake)
+include(cmake/vendor/yaml-cpp.cmake)

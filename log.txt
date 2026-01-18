@@ -1,0 +1,628 @@
+1>------ Build started: Project: ZERO_CHECK, Configuration: Debug|x64 ------
+1>  1>Checking Build System
+2>------ Build started: Project: yaml-cpp, Configuration: Debug|x64 ------
+3>------ Build started: Project: GLFW, Configuration: Debug|x64 ------
+4>------ Build started: Project: Glad, Configuration: Debug|x64 ------
+5>------ Build started: Project: ImGui, Configuration: Debug|x64 ------
+6>------ Build started: Project: Shaderc-Build, Configuration: Debug|x64 ------
+2>  Building Custom Rule X:/wazne/RodEngine/CMakeLists.txt
+3>  Building Custom Rule X:/wazne/RodEngine/CMakeLists.txt
+5>  Building Custom Rule X:/wazne/RodEngine/CMakeLists.txt
+4>  Building Custom Rule X:/wazne/RodEngine/CMakeLists.txt
+2>  binary.cpp
+3>  context.c
+6>X:\wazne\RodEngine\build\CUSTOMBUILD : CMake error : The current CMakeCache.txt directory X:/wazne/RodEngine/RodEngine/vendor/shaderc/build/CMakeCache.txt is different than the directory c:/dev/RodEngine/RodEngine/vendor/shaderc/build where CMakeCache.txt was created. This may result in binaries being created in the wrong place. If you are not sure, reedit the CMakeCache.txt
+6>X:\wazne\RodEngine\build\CUSTOMBUILD : CMake error : The source "X:/wazne/RodEngine/RodEngine/vendor/shaderc/CMakeLists.txt" does not match the source "C:/dev/RodEngine/RodEngine/vendor/shaderc/CMakeLists.txt" used to generate cache.  Re-run cmake with a different source directory.
+6>C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppCommon.targets(254,5): error MSB8066: Custom build for 'X:\wazne\RodEngine\build\CMakeFiles\96959884115009a6b5f89b950c3421b5\Shaderc-Build.rule;X:\wazne\RodEngine\CMakeLists.txt' exited with code 1.
+5>  imgui.cpp
+4>  glad.c
+3>  init.c
+2>X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\binary.cpp(88,22): warning C4244: '=': conversion from 'unsigned int' to 'unsigned char', possible loss of data
+2>X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\binary.cpp(90,24): warning C4244: '=': conversion from 'unsigned int' to 'unsigned char', possible loss of data
+2>X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\binary.cpp(92,18): warning C4244: '=': conversion from 'unsigned int' to 'unsigned char', possible loss of data
+3>  input.c
+2>  graphbuilder.cpp
+3>  monitor.c
+4>  Glad.vcxproj -> X:\wazne\RodEngine\build\bin\Debug-windows-x86_64\Glad\Glad.lib
+3>  null_init.c
+5>  imgui_draw.cpp
+3>  null_joystick.c
+2>  graphbuilderadapter.cpp
+3>  null_monitor.c
+5>  imgui_tables.cpp
+3>  null_window.c
+5>  imgui_widgets.cpp
+3>  platform.c
+2>  convert.cpp
+3>  vulkan.c
+5>  imgui_demo.cpp
+3>  window.c
+5>  Generating Code...
+3>  win32_init.c
+3>  win32_joystick.c
+3>  win32_module.c
+5>  ImGui.vcxproj -> X:\wazne\RodEngine\build\bin\Debug-windows-x86_64\ImGui\ImGui.lib
+2>  depthguard.cpp
+3>  win32_monitor.c
+3>  win32_time.c
+3>  win32_thread.c
+3>  win32_window.c
+2>  directives.cpp
+3>  wgl_context.c
+3>  egl_context.c
+2>  emit.cpp
+3>  Generating Code...
+3>  Compiling...
+3>  osmesa_context.c
+3>  Generating Code...
+3>  GLFW.vcxproj -> X:\wazne\RodEngine\build\bin\Debug-windows-x86_64\GLFW\GLFW.lib
+2>  emitfromevents.cpp
+2>  emitter.cpp
+2>  emitterstate.cpp
+2>  emitterutils.cpp
+2>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\utility(274,16): warning C4244: 'initializing': conversion from '_Ty' to '_Ty1', possible loss of data
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\utility(274,16): warning C4244:         with
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\utility(274,16): warning C4244:         [
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\utility(274,16): warning C4244:             _Ty=uint32_t
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\utility(274,16): warning C4244:         ]
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\utility(274,16): warning C4244:         and
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\utility(274,16): warning C4244:         [
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\utility(274,16): warning C4244:             _Ty1=uint16_t
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\utility(274,16): warning C4244:         ]
+2>  (compiling source file '../RodEngine/vendor/yaml-cpp/src/emitterutils.cpp')
+      C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\utility(274,16):
+      the template instantiation context (the oldest one first) is
+          X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\emitterutils.cpp(225,3):
+          see reference to function template instantiation 'std::pair<uint16_t,uint16_t>::pair<uint32_t,int,0>(_Other1 &&,_Other2 &&) noexcept' being compiled
+          with
+          [
+              _Other1=uint32_t,
+              _Other2=int
+          ]
+              X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\emitterutils.cpp(225,3):
+              see the first reference to 'std::pair<uint16_t,uint16_t>::pair' in 'YAML::Utils::`anonymous-namespace'::EncodeUTF16SurrogatePair'
+  
+2>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\utility(274,54): warning C4244: 'initializing': conversion from '_Ty' to '_Ty2', possible loss of data
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\utility(274,54): warning C4244:         with
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\utility(274,54): warning C4244:         [
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\utility(274,54): warning C4244:             _Ty=int
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\utility(274,54): warning C4244:         ]
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\utility(274,54): warning C4244:         and
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\utility(274,54): warning C4244:         [
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\utility(274,54): warning C4244:             _Ty2=uint16_t
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\utility(274,54): warning C4244:         ]
+2>  (compiling source file '../RodEngine/vendor/yaml-cpp/src/emitterutils.cpp')
+  
+2>  exceptions.cpp
+2>  exp.cpp
+2>  fptostring.cpp
+2>X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\fptostring.cpp(217,47): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+2>X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\fptostring.cpp(221,47): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+2>X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(3008,29): warning C4267: '+=': conversion from 'size_t' to 'DecimalExponentType', possible loss of data
+X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(3008,29): warning C4267:         with
+X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(3008,29): warning C4267:         [
+X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(3008,29): warning C4267:             DecimalExponentType=YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary64,uint_least64_t,int>>::compute_nearest::decimal_exponent_type_
+X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(3008,29): warning C4267:         ]
+2>  (compiling source file '../RodEngine/vendor/yaml-cpp/src/fptostring.cpp')
+      X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(3008,29):
+      the template instantiation context (the oldest one first) is
+          X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\fptostring.cpp(221,33):
+          see reference to function template instantiation 'std::string YAML::detail::fp_formatting::FpToString<double>(T,int)' being compiled
+          with
+          [
+              T=double
+          ]
+          X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\fptostring.cpp(93,28):
+          see reference to function template instantiation 'YAML::jkj::dragonbox::decimal_fp<unsigned __int64,int,true,false> YAML::jkj::dragonbox::to_decimal<T,YAML::jkj::dragonbox::default_float_bit_carrier_conversion_traits<Float>,YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary64,uint_least64_t,int>,>(Float) noexcept' being compiled
+          with
+          [
+              T=double,
+              Float=double
+          ]
+          X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(4163,20):
+          see reference to function template instantiation 'YAML::jkj::dragonbox::decimal_fp<unsigned __int64,int,true,false> YAML::jkj::dragonbox::to_decimal_ex<FormatTraits,int,>(YAML::jkj::dragonbox::signed_significand_bits<FormatTraits>,ExponentBits) noexcept' being compiled
+          with
+          [
+              FormatTraits=YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary64,uint_least64_t,int>,
+              ExponentBits=int
+          ]
+          X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(4146,35):
+          see reference to function template instantiation 'YAML::jkj::dragonbox::decimal_fp<unsigned __int64,int,true,false> YAML::jkj::dragonbox::policy::decimal_to_binary_rounding::nearest_to_even_t::delegate<YAML::jkj::dragonbox::signed_significand_bits<FormatTraits>,YAML::jkj::dragonbox::detail::to_decimal_dispatcher<FormatTraits,YAML::jkj::dragonbox::to_decimal_ex::policy_holder>,YAML::jkj::dragonbox::signed_significand_bits<FormatTraits>,ExponentBits>(SignedSignificandBits,Func,YAML::jkj::dragonbox::signed_significand_bits<FormatTraits>,ExponentBits) noexcept' being compiled
+          with
+          [
+              FormatTraits=YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary64,uint_least64_t,int>,
+              ExponentBits=int,
+              SignedSignificandBits=YAML::jkj::dragonbox::signed_significand_bits<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary64,uint_least64_t,int>>,
+              Func=YAML::jkj::dragonbox::detail::to_decimal_dispatcher<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary64,uint_least64_t,int>,YAML::jkj::dragonbox::to_decimal_ex::policy_holder>
+          ]
+          X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(2483,32):
+          see reference to function template instantiation 'YAML::jkj::dragonbox::decimal_fp<unsigned __int64,int,true,false> YAML::jkj::dragonbox::detail::to_decimal_dispatcher<FormatTraits,YAML::jkj::dragonbox::to_decimal_ex::policy_holder>::operator ()<_Ty>(IntervalTypeProvider,YAML::jkj::dragonbox::signed_significand_bits<FormatTraits>,int) noexcept' being compiled
+          with
+          [
+              FormatTraits=YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary64,uint_least64_t,int>,
+              _Ty=YAML::jkj::dragonbox::policy::decimal_to_binary_rounding::nearest_to_even_t,
+              IntervalTypeProvider=YAML::jkj::dragonbox::policy::decimal_to_binary_rounding::nearest_to_even_t
+          ]
+          X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(4108,61):
+          see reference to function template instantiation 'YAML::jkj::dragonbox::decimal_fp<unsigned __int64,int,true,false> YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary64,uint_least64_t,int>>::compute_nearest<YAML::jkj::dragonbox::policy::sign::return_sign_t,YAML::jkj::dragonbox::policy::trailing_zero::remove_t,_Ty,YAML::jkj::dragonbox::policy::binary_to_decimal_rounding::to_even_t,YAML::jkj::dragonbox::policy::cache::full_t,YAML::jkj::dragonbox::policy::preferred_integer_types::match_t>(YAML::jkj::dragonbox::signed_significand_bits<FormatTraits>,int) noexcept' being compiled
+          with
+          [
+              _Ty=YAML::jkj::dragonbox::policy::decimal_to_binary_rounding::nearest_to_even_t,
+              FormatTraits=YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary64,uint_least64_t,int>
+          ]
+          X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(3353,69):
+          see reference to function template instantiation 'YAML::jkj::dragonbox::decimal_fp<unsigned __int64,YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary64,uint_least64_t,int>>::compute_nearest::decimal_exponent_type_,false,false> YAML::jkj::dragonbox::policy::trailing_zero::remove_t::on_trailing_zeros<YAML::jkj::dragonbox::ieee754_binary64,unsigned __int64,YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary64,uint_least64_t,int>>::compute_nearest::decimal_exponent_type_>(DecimalSignificand,DecimalExponentType) noexcept' being compiled
+          with
+          [
+              DecimalSignificand=unsigned __int64,
+              DecimalExponentType=YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary64,uint_least64_t,int>>::compute_nearest::decimal_exponent_type_
+          ]
+          X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(2379,51):
+          see reference to class template instantiation 'YAML::jkj::dragonbox::remove_trailing_zeros_traits<YAML::jkj::dragonbox::policy::trailing_zero::remove_t,YAML::jkj::dragonbox::ieee754_binary64,unsigned __int64,YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary64,uint_least64_t,int>>::compute_nearest::decimal_exponent_type_>' being compiled
+          X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(2978,13):
+          while compiling class template member function 'void YAML::jkj::dragonbox::remove_trailing_zeros_traits<YAML::jkj::dragonbox::policy::trailing_zero::remove_t,YAML::jkj::dragonbox::ieee754_binary64,unsigned __int64,YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary64,uint_least64_t,int>>::compute_nearest::decimal_exponent_type_>::remove_trailing_zeros(uint_least64_t &,DecimalExponentType &) noexcept'
+          with
+          [
+              DecimalExponentType=YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary64,uint_least64_t,int>>::compute_nearest::decimal_exponent_type_
+          ]
+              X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(2379,72):
+              see the first reference to 'YAML::jkj::dragonbox::remove_trailing_zeros_traits<YAML::jkj::dragonbox::policy::trailing_zero::remove_t,YAML::jkj::dragonbox::ieee754_binary64,unsigned __int64,YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary64,uint_least64_t,int>>::compute_nearest::decimal_exponent_type_>::remove_trailing_zeros' in 'YAML::jkj::dragonbox::policy::trailing_zero::remove_t::on_trailing_zeros'
+              X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(3353,69):
+              see the first reference to 'YAML::jkj::dragonbox::policy::trailing_zero::remove_t::on_trailing_zeros' in 'YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary64,uint_least64_t,int>>::compute_nearest'
+              X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(4108,25):
+              see the first reference to 'YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary64,uint_least64_t,int>>::compute_nearest' in 'YAML::jkj::dragonbox::detail::to_decimal_dispatcher<FormatTraits,YAML::jkj::dragonbox::to_decimal_ex::policy_holder>::operator ()'
+          with
+          [
+              FormatTraits=YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary64,uint_least64_t,int>
+          ]
+              X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(2483,25):
+              see the first reference to 'YAML::jkj::dragonbox::detail::to_decimal_dispatcher<FormatTraits,YAML::jkj::dragonbox::to_decimal_ex::policy_holder>::operator ()' in 'YAML::jkj::dragonbox::policy::decimal_to_binary_rounding::nearest_to_even_t::delegate'
+          with
+          [
+              FormatTraits=YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary64,uint_least64_t,int>
+          ]
+              X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(4146,35):
+              see the first reference to 'YAML::jkj::dragonbox::policy::decimal_to_binary_rounding::nearest_to_even_t::delegate' in 'YAML::jkj::dragonbox::to_decimal_ex'
+              X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(4163,20):
+              see the first reference to 'YAML::jkj::dragonbox::to_decimal_ex' in 'YAML::jkj::dragonbox::to_decimal'
+              X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\fptostring.cpp(93,28):
+              see the first reference to 'YAML::jkj::dragonbox::to_decimal' in 'YAML::detail::fp_formatting::FpToString'
+  
+2>X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(2970,29): warning C4267: '+=': conversion from 'size_t' to 'DecimalExponentType', possible loss of data
+X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(2970,29): warning C4267:         with
+X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(2970,29): warning C4267:         [
+X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(2970,29): warning C4267:             DecimalExponentType=YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary32,uint_least32_t,int>>::compute_nearest::decimal_exponent_type_
+X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(2970,29): warning C4267:         ]
+2>  (compiling source file '../RodEngine/vendor/yaml-cpp/src/fptostring.cpp')
+      X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(2970,29):
+      the template instantiation context (the oldest one first) is
+          X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\fptostring.cpp(217,33):
+          see reference to function template instantiation 'std::string YAML::detail::fp_formatting::FpToString<float>(T,int)' being compiled
+          with
+          [
+              T=float
+          ]
+          X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\fptostring.cpp(93,28):
+          see reference to function template instantiation 'YAML::jkj::dragonbox::decimal_fp<unsigned int,int,true,false> YAML::jkj::dragonbox::to_decimal<T,YAML::jkj::dragonbox::default_float_bit_carrier_conversion_traits<Float>,YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary32,uint_least32_t,int>,>(Float) noexcept' being compiled
+          with
+          [
+              T=float,
+              Float=float
+          ]
+          X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(4163,20):
+          see reference to function template instantiation 'YAML::jkj::dragonbox::decimal_fp<unsigned int,int,true,false> YAML::jkj::dragonbox::to_decimal_ex<FormatTraits,int,>(YAML::jkj::dragonbox::signed_significand_bits<FormatTraits>,ExponentBits) noexcept' being compiled
+          with
+          [
+              FormatTraits=YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary32,uint_least32_t,int>,
+              ExponentBits=int
+          ]
+          X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(4146,35):
+          see reference to function template instantiation 'YAML::jkj::dragonbox::decimal_fp<unsigned int,int,true,false> YAML::jkj::dragonbox::policy::decimal_to_binary_rounding::nearest_to_even_t::delegate<YAML::jkj::dragonbox::signed_significand_bits<FormatTraits>,YAML::jkj::dragonbox::detail::to_decimal_dispatcher<FormatTraits,YAML::jkj::dragonbox::to_decimal_ex::policy_holder>,YAML::jkj::dragonbox::signed_significand_bits<FormatTraits>,ExponentBits>(SignedSignificandBits,Func,YAML::jkj::dragonbox::signed_significand_bits<FormatTraits>,ExponentBits) noexcept' being compiled
+          with
+          [
+              FormatTraits=YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary32,uint_least32_t,int>,
+              ExponentBits=int,
+              SignedSignificandBits=YAML::jkj::dragonbox::signed_significand_bits<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary32,uint_least32_t,int>>,
+              Func=YAML::jkj::dragonbox::detail::to_decimal_dispatcher<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary32,uint_least32_t,int>,YAML::jkj::dragonbox::to_decimal_ex::policy_holder>
+          ]
+          X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(2483,32):
+          see reference to function template instantiation 'YAML::jkj::dragonbox::decimal_fp<unsigned int,int,true,false> YAML::jkj::dragonbox::detail::to_decimal_dispatcher<FormatTraits,YAML::jkj::dragonbox::to_decimal_ex::policy_holder>::operator ()<_Ty>(IntervalTypeProvider,YAML::jkj::dragonbox::signed_significand_bits<FormatTraits>,int) noexcept' being compiled
+          with
+          [
+              FormatTraits=YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary32,uint_least32_t,int>,
+              _Ty=YAML::jkj::dragonbox::policy::decimal_to_binary_rounding::nearest_to_even_t,
+              IntervalTypeProvider=YAML::jkj::dragonbox::policy::decimal_to_binary_rounding::nearest_to_even_t
+          ]
+          X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(4108,61):
+          see reference to function template instantiation 'YAML::jkj::dragonbox::decimal_fp<unsigned int,int,true,false> YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary32,uint_least32_t,int>>::compute_nearest<YAML::jkj::dragonbox::policy::sign::return_sign_t,YAML::jkj::dragonbox::policy::trailing_zero::remove_t,_Ty,YAML::jkj::dragonbox::policy::binary_to_decimal_rounding::to_even_t,YAML::jkj::dragonbox::policy::cache::full_t,YAML::jkj::dragonbox::policy::preferred_integer_types::match_t>(YAML::jkj::dragonbox::signed_significand_bits<FormatTraits>,int) noexcept' being compiled
+          with
+          [
+              _Ty=YAML::jkj::dragonbox::policy::decimal_to_binary_rounding::nearest_to_even_t,
+              FormatTraits=YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary32,uint_least32_t,int>
+          ]
+          X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(3353,69):
+          see reference to function template instantiation 'YAML::jkj::dragonbox::decimal_fp<unsigned int,YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary32,uint_least32_t,int>>::compute_nearest::decimal_exponent_type_,false,false> YAML::jkj::dragonbox::policy::trailing_zero::remove_t::on_trailing_zeros<YAML::jkj::dragonbox::ieee754_binary32,unsigned int,YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary32,uint_least32_t,int>>::compute_nearest::decimal_exponent_type_>(DecimalSignificand,DecimalExponentType) noexcept' being compiled
+          with
+          [
+              DecimalSignificand=unsigned int,
+              DecimalExponentType=YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary32,uint_least32_t,int>>::compute_nearest::decimal_exponent_type_
+          ]
+          X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(2379,51):
+          see reference to class template instantiation 'YAML::jkj::dragonbox::remove_trailing_zeros_traits<YAML::jkj::dragonbox::policy::trailing_zero::remove_t,YAML::jkj::dragonbox::ieee754_binary32,unsigned int,YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary32,uint_least32_t,int>>::compute_nearest::decimal_exponent_type_>' being compiled
+          X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(2946,13):
+          while compiling class template member function 'void YAML::jkj::dragonbox::remove_trailing_zeros_traits<YAML::jkj::dragonbox::policy::trailing_zero::remove_t,YAML::jkj::dragonbox::ieee754_binary32,unsigned int,YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary32,uint_least32_t,int>>::compute_nearest::decimal_exponent_type_>::remove_trailing_zeros(uint_least32_t &,DecimalExponentType &) noexcept'
+          with
+          [
+              DecimalExponentType=YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary32,uint_least32_t,int>>::compute_nearest::decimal_exponent_type_
+          ]
+              X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(2379,72):
+              see the first reference to 'YAML::jkj::dragonbox::remove_trailing_zeros_traits<YAML::jkj::dragonbox::policy::trailing_zero::remove_t,YAML::jkj::dragonbox::ieee754_binary32,unsigned int,YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary32,uint_least32_t,int>>::compute_nearest::decimal_exponent_type_>::remove_trailing_zeros' in 'YAML::jkj::dragonbox::policy::trailing_zero::remove_t::on_trailing_zeros'
+              X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(3353,69):
+              see the first reference to 'YAML::jkj::dragonbox::policy::trailing_zero::remove_t::on_trailing_zeros' in 'YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary32,uint_least32_t,int>>::compute_nearest'
+              X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(4108,25):
+              see the first reference to 'YAML::jkj::dragonbox::detail::impl<YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary32,uint_least32_t,int>>::compute_nearest' in 'YAML::jkj::dragonbox::detail::to_decimal_dispatcher<FormatTraits,YAML::jkj::dragonbox::to_decimal_ex::policy_holder>::operator ()'
+          with
+          [
+              FormatTraits=YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary32,uint_least32_t,int>
+          ]
+              X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(2483,25):
+              see the first reference to 'YAML::jkj::dragonbox::detail::to_decimal_dispatcher<FormatTraits,YAML::jkj::dragonbox::to_decimal_ex::policy_holder>::operator ()' in 'YAML::jkj::dragonbox::policy::decimal_to_binary_rounding::nearest_to_even_t::delegate'
+          with
+          [
+              FormatTraits=YAML::jkj::dragonbox::ieee754_binary_traits<YAML::jkj::dragonbox::ieee754_binary32,uint_least32_t,int>
+          ]
+              X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(4146,35):
+              see the first reference to 'YAML::jkj::dragonbox::policy::decimal_to_binary_rounding::nearest_to_even_t::delegate' in 'YAML::jkj::dragonbox::to_decimal_ex'
+              X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\contrib\dragonbox.h(4163,20):
+              see the first reference to 'YAML::jkj::dragonbox::to_decimal_ex' in 'YAML::jkj::dragonbox::to_decimal'
+              X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\fptostring.cpp(93,28):
+              see the first reference to 'YAML::jkj::dragonbox::to_decimal' in 'YAML::detail::fp_formatting::FpToString'
+  
+2>  memory.cpp
+2>  node.cpp
+2>  node_data.cpp
+2>  nodebuilder.cpp
+2>  nodeevents.cpp
+2>  null.cpp
+2>  Generating Code...
+2>X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\node_data.cpp(104,1): warning C4702: unreachable code
+2>X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\emitterstate.cpp(111,1): warning C4702: unreachable code
+2>X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\emitterstate.cpp(112,1): warning C4702: unreachable code
+2>X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\emitterstate.h(184,1): warning C4702: unreachable code
+2>X:\wazne\RodEngine\RodEngine\vendor\yaml-cpp\src\emitterstate.h(185,1): warning C4702: unreachable code
+2>  Compiling...
+2>  ostream_wrapper.cpp
+2>  parse.cpp
+2>  parser.cpp
+2>  regex_yaml.cpp
+2>  scanner.cpp
+2>  scanscalar.cpp
+2>  scantag.cpp
+2>  scantoken.cpp
+2>  simplekey.cpp
+2>  singledocparser.cpp
+2>  stream.cpp
+2>  tag.cpp
+2>  Generating Code...
+2>  yaml-cpp.vcxproj -> X:\wazne\RodEngine\build\bin\Debug-windows-x86_64\yaml-cpp\yaml-cpp.lib
+7>------ Build started: Project: RodEngine, Configuration: Debug|x64 ------
+7>  Building Custom Rule X:/wazne/RodEngine/CMakeLists.txt
+7>  cmake_pch.cxx
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Debug\Instrumentator.h(120,31): warning C4267: 'initializing': conversion from 'size_t' to 'uint32_t', possible loss of data
+7>  (compiling source file 'CMakeFiles/RodEngine.dir/cmake_pch.cxx')
+  
+7>  Application.cpp
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Layer.h(16,34): warning C4100: 'ts': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Core/Application.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Layer.h(18,31): warning C4100: 'event': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Core/Application.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Application.cpp(113,4): warning C4456: declaration of 'timer__LINE__' hides previous local declaration
+7>  (compiling source file '../RodEngine/src/Rod/Core/Application.cpp')
+      X:\wazne\RodEngine\RodEngine\src\Rod\Core\Application.cpp(109,3):
+      see declaration of 'timer__LINE__'
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Application.cpp(121,6): warning C4456: declaration of 'timer__LINE__' hides previous local declaration
+7>  (compiling source file '../RodEngine/src/Rod/Core/Application.cpp')
+      X:\wazne\RodEngine\RodEngine\src\Rod\Core\Application.cpp(113,4):
+      see declaration of 'timer__LINE__'
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Application.cpp(131,5): warning C4456: declaration of 'timer__LINE__' hides previous local declaration
+7>  (compiling source file '../RodEngine/src/Rod/Core/Application.cpp')
+      X:\wazne\RodEngine\RodEngine\src\Rod\Core\Application.cpp(113,4):
+      see declaration of 'timer__LINE__'
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Application.cpp(144,52): warning C4100: 'e': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Core/Application.cpp')
+  
+7>  Layer.cpp
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Layer.h(16,34): warning C4100: 'ts': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Core/Layer.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Layer.h(18,31): warning C4100: 'event': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Core/Layer.cpp')
+  
+7>  LayerStack.cpp
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Layer.h(16,34): warning C4100: 'ts': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Core/LayerStack.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Layer.h(18,31): warning C4100: 'event': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Core/LayerStack.cpp')
+  
+7>  Log.cpp
+7>  ImGuiBuild.cpp
+7>  ImGuiLayer.cpp
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Core\layer.h(16,34): warning C4100: 'ts': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/ImGui/ImGuiLayer.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Core\layer.h(18,31): warning C4100: 'event': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/ImGui/ImGuiLayer.cpp')
+  
+7>  Math.cpp
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Math\Math.cpp(37,16): warning C4101: 'Pdum3': unreferenced local variable
+7>  (compiling source file '../RodEngine/src/Rod/Math/Math.cpp')
+  
+7>  OpenGLBuffer.cpp
+7>  OpenGLContext.cpp
+7>  OpenGLFrameBuffer.cpp
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Platform\OpenGL\OpenGLFrameBuffer.cpp(97,13): warning C4457: declaration of 'spec' hides function parameter
+7>  (compiling source file '../RodEngine/src/Rod/Platform/OpenGL/OpenGLFrameBuffer.cpp')
+      X:\wazne\RodEngine\RodEngine\src\Rod\Platform\OpenGL\OpenGLFrameBuffer.cpp(94,71):
+      see declaration of 'spec'
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Platform\OpenGL\OpenGLFrameBuffer.cpp(112,43): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+7>  (compiling source file '../RodEngine/src/Rod/Platform/OpenGL/OpenGLFrameBuffer.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Platform\OpenGL\OpenGLFrameBuffer.cpp(121,44): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+7>  (compiling source file '../RodEngine/src/Rod/Platform/OpenGL/OpenGLFrameBuffer.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Platform\OpenGL\OpenGLFrameBuffer.cpp(136,89): warning C4267: 'argument': conversion from 'size_t' to 'uint32_t', possible loss of data
+7>  (compiling source file '../RodEngine/src/Rod/Platform/OpenGL/OpenGLFrameBuffer.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Platform\OpenGL\OpenGLFrameBuffer.cpp(145,147): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+7>  (compiling source file '../RodEngine/src/Rod/Platform/OpenGL/OpenGLFrameBuffer.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Platform\OpenGL\OpenGLFrameBuffer.cpp(150,153): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+7>  (compiling source file '../RodEngine/src/Rod/Platform/OpenGL/OpenGLFrameBuffer.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Platform\OpenGL\OpenGLFrameBuffer.cpp(174,41): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+7>  (compiling source file '../RodEngine/src/Rod/Platform/OpenGL/OpenGLFrameBuffer.cpp')
+  
+7>  OpenGLRendererAPI.cpp
+7>  OpenGLShader.cpp
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Platform\OpenGL\OpenGLShader.cpp(9,10): warning C4067: unexpected tokens following preprocessor directive - expected a newline
+7>  (compiling source file '../RodEngine/src/Rod/Platform/OpenGL/OpenGLShader.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Platform\OpenGL\OpenGLShader.cpp(67,103): warning C4100: 'name': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Platform/OpenGL/OpenGLShader.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Platform\OpenGL\OpenGLShader.cpp(116,83): warning C4100: 'source': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Platform/OpenGL/OpenGLShader.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Platform\OpenGL\OpenGLShader.cpp(166,102): warning C4267: 'argument': conversion from 'size_t' to 'GLsizei', possible loss of data
+7>  (compiling source file '../RodEngine/src/Rod/Platform/OpenGL/OpenGLShader.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Platform\OpenGL\OpenGLShader.cpp(17,30): warning C4505: 'Rod::Utils::ShadercTypeFromString': unreferenced function with internal linkage has been removed
+7>  (compiling source file '../RodEngine/src/Rod/Platform/OpenGL/OpenGLShader.cpp')
+  
+7>  OpenGLTexture.cpp
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Platform\OpenGL\OpenGLTexture.cpp(33,13): warning C4456: declaration of 'timer__LINE__' hides previous local declaration
+7>  (compiling source file '../RodEngine/src/Rod/Platform/OpenGL/OpenGLTexture.cpp')
+      X:\wazne\RodEngine\RodEngine\src\Rod\Platform\OpenGL\OpenGLTexture.cpp(26,9):
+      see declaration of 'timer__LINE__'
+  
+7>  OpenGLVertexArray.cpp
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Platform\OpenGL\OpenGLVertexArray.cpp(82,7): warning C4312: 'type cast': conversion from 'const uint32_t' to 'const void *' of greater size
+7>  (compiling source file '../RodEngine/src/Rod/Platform/OpenGL/OpenGLVertexArray.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Platform\OpenGL\OpenGLVertexArray.cpp(97,7): warning C4312: 'type cast': conversion from 'const uint32_t' to 'const void *' of greater size
+7>  (compiling source file '../RodEngine/src/Rod/Platform/OpenGL/OpenGLVertexArray.cpp')
+  
+7>  WindowsInput.cpp
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Layer.h(16,34): warning C4100: 'ts': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Platform/Windows/WindowsInput.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Layer.h(18,31): warning C4100: 'event': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Platform/Windows/WindowsInput.cpp')
+  
+7>  WindowsPlatformUtils.cpp
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Layer.h(16,34): warning C4100: 'ts': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Platform/Windows/WindowsPlatformUtils.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Layer.h(18,31): warning C4100: 'event': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Platform/Windows/WindowsPlatformUtils.cpp')
+  
+7>  WindowsWindow.cpp
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Platform\Windows\WindowsWindow.cpp(50,4): warning C4456: declaration of 'timer__LINE__' hides previous local declaration
+7>  (compiling source file '../RodEngine/src/Rod/Platform/Windows/WindowsWindow.cpp')
+      X:\wazne\RodEngine\RodEngine\src\Rod\Platform\Windows\WindowsWindow.cpp(39,3):
+      see declaration of 'timer__LINE__'
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Platform\Windows\WindowsWindow.cpp(59,4): warning C4456: declaration of 'timer__LINE__' hides previous local declaration
+7>  (compiling source file '../RodEngine/src/Rod/Platform/Windows/WindowsWindow.cpp')
+      X:\wazne\RodEngine\RodEngine\src\Rod\Platform\Windows\WindowsWindow.cpp(39,3):
+      see declaration of 'timer__LINE__'
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Platform\Windows\WindowsWindow.cpp(92,94): warning C4100: 'mods': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Platform/Windows/WindowsWindow.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Platform\Windows\WindowsWindow.cpp(92,68): warning C4100: 'scancode': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Platform/Windows/WindowsWindow.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Platform\Windows\WindowsWindow.cpp(129,91): warning C4100: 'mods': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Platform/Windows/WindowsWindow.cpp')
+  
+7>  Buffer.cpp
+7>  EditorCamera.cpp
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Renderer\EditorCamera.cpp(61,39): warning C4100: 'ts': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Renderer/EditorCamera.cpp')
+  
+7>  FrameBuffer.cpp
+7>  Generating Code...
+7>  Compiling...
+7>  RenderCommand.cpp
+7>  Renderer.cpp
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Scene\ScriptableEntity.h(21,34): warning C4100: 'ts': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Renderer/Renderer.cpp')
+  
+7>  Renderer2D.cpp
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Scene\ScriptableEntity.h(21,34): warning C4100: 'ts': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Renderer/Renderer2D.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Renderer\Renderer2D.cpp(253,59): warning C4018: '<': signed/unsigned mismatch
+7>  (compiling source file '../RodEngine/src/Rod/Renderer/Renderer2D.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Renderer\Renderer2D.cpp(311,27): warning C4244: 'initializing': conversion from '__int64' to 'uint32_t', possible loss of data
+7>  (compiling source file '../RodEngine/src/Rod/Renderer/Renderer2D.cpp')
+  
+7>  RendererAPI.cpp
+7>  Shader.cpp
+7>  ShaderCacheDatabase.cpp
+7>  SubTexture2D.cpp
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Renderer\SubTexture2D.cpp(18,20): warning C4244: 'initializing': conversion from 'uint32_t' to 'float', possible loss of data
+7>  (compiling source file '../RodEngine/src/Rod/Renderer/SubTexture2D.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Renderer\SubTexture2D.cpp(18,61): warning C4244: 'initializing': conversion from 'uint32_t' to 'float', possible loss of data
+7>  (compiling source file '../RodEngine/src/Rod/Renderer/SubTexture2D.cpp')
+  
+7>  Texture.cpp
+7>  VertexArray.cpp
+7>  Entity.cpp
+7>  Scene.cpp
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Scene\ScriptableEntity.h(21,34): warning C4100: 'ts': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Scene/Scene.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Scene\Scene.cpp(87,39): warning C4100: 'ts': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Scene/Scene.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Scene\Scene.cpp(138,86): warning C4100: 'component': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Scene/Scene.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Scene\Scene.cpp(138,58): warning C4100: 'entity': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Scene/Scene.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Scene\Scene.cpp(143,55): warning C4100: 'entity': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Scene/Scene.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Scene\Scene.cpp(149,96): warning C4100: 'component': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Scene/Scene.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Scene\Scene.cpp(149,63): warning C4100: 'entity': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Scene/Scene.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Scene\Scene.cpp(154,74): warning C4100: 'component': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Scene/Scene.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Scene\Scene.cpp(154,52): warning C4100: 'entity': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Scene/Scene.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Scene\Scene.cpp(159,92): warning C4100: 'component': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Scene/Scene.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Scene\Scene.cpp(159,61): warning C4100: 'entity': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Scene/Scene.cpp')
+  
+7>  SceneCamera.cpp
+7>  SceneSerializer.cpp
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Scene\ScriptableEntity.h(21,34): warning C4100: 'ts': unreferenced parameter
+7>  (compiling source file '../RodEngine/src/Rod/Scene/SceneSerializer.cpp')
+  
+7>X:\wazne\RodEngine\RodEngine\src\Rod\Scene\SceneSerializer.cpp(166,9): warning C4189: 'storage': local variable is initialized but not referenced
+7>  (compiling source file '../RodEngine/src/Rod/Scene/SceneSerializer.cpp')
+  
+7>  rdpch.cpp
+7>  stb_image.cpp
+7>  Generating Code...
+7>  ImGuizmo.cpp
+7>X:\wazne\RodEngine\RodEngine\vendor\ImGuizmo\ImGuizmo.cpp(765,28): warning C4245: 'initializing': conversion from 'int' to 'ImGuiID', signed/unsigned mismatch
+7>X:\wazne\RodEngine\RodEngine\vendor\ImGuizmo\ImGuizmo.cpp(775,32): warning C4245: 'argument': conversion from 'int' to 'const T', signed/unsigned mismatch
+X:\wazne\RodEngine\RodEngine\vendor\ImGuizmo\ImGuizmo.cpp(775,32): warning C4245:         with
+X:\wazne\RodEngine\RodEngine\vendor\ImGuizmo\ImGuizmo.cpp(775,32): warning C4245:         [
+X:\wazne\RodEngine\RodEngine\vendor\ImGuizmo\ImGuizmo.cpp(775,32): warning C4245:             T=ImU32
+X:\wazne\RodEngine\RodEngine\vendor\ImGuizmo\ImGuizmo.cpp(775,32): warning C4245:         ]
+7>X:\wazne\RodEngine\RodEngine\vendor\ImGuizmo\ImGuizmo.cpp(1911,35): warning C4245: '=': conversion from 'int' to 'ImGuiID', signed/unsigned mismatch
+7>X:\wazne\RodEngine\RodEngine\vendor\ImGuizmo\ImGuizmo.cpp(2494,35): warning C4245: '=': conversion from 'int' to 'ImGuiID', signed/unsigned mismatch
+7>X:\wazne\RodEngine\RodEngine\vendor\ImGuizmo\ImGuizmo.cpp(2559,38): warning C4245: 'argument': conversion from 'int' to 'const T', signed/unsigned mismatch
+X:\wazne\RodEngine\RodEngine\vendor\ImGuizmo\ImGuizmo.cpp(2559,38): warning C4245:         with
+X:\wazne\RodEngine\RodEngine\vendor\ImGuizmo\ImGuizmo.cpp(2559,38): warning C4245:         [
+X:\wazne\RodEngine\RodEngine\vendor\ImGuizmo\ImGuizmo.cpp(2559,38): warning C4245:             T=ImU32
+X:\wazne\RodEngine\RodEngine\vendor\ImGuizmo\ImGuizmo.cpp(2559,38): warning C4245:         ]
+7>  RodEngine.vcxproj -> X:\wazne\RodEngine\build\bin\Debug-windows-x86_64\RodEngine\RodEngine.lib
+8>------ Build started: Project: Rod-Editor, Configuration: Debug|x64 ------
+8>  Building Custom Rule X:/wazne/RodEngine/CMakeLists.txt
+8>  EditorLayer.cpp
+8>X:\wazne\RodEngine\RodEngine\src\Rod\Debug\Instrumentator.h(120,31): warning C4267: 'initializing': conversion from 'size_t' to 'uint32_t', possible loss of data
+8>  (compiling source file '../Rod-Editor/src/EditorLayer.cpp')
+  
+8>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Layer.h(16,34): warning C4100: 'ts': unreferenced parameter
+8>  (compiling source file '../Rod-Editor/src/EditorLayer.cpp')
+  
+8>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Layer.h(18,31): warning C4100: 'event': unreferenced parameter
+8>  (compiling source file '../Rod-Editor/src/EditorLayer.cpp')
+  
+8>X:\wazne\RodEngine\RodEngine\src\Rod\Scene\ScriptableEntity.h(21,34): warning C4100: 'ts': unreferenced parameter
+8>  (compiling source file '../Rod-Editor/src/EditorLayer.cpp')
+  
+8>X:\wazne\RodEngine\Rod-Editor\src\EditorLayer.cpp(65,87): warning C4244: 'argument': conversion from 'uint32_t' to 'float', possible loss of data
+8>X:\wazne\RodEngine\Rod-Editor\src\EditorLayer.cpp(65,59): warning C4244: 'argument': conversion from 'uint32_t' to 'float', possible loss of data
+8>X:\wazne\RodEngine\Rod-Editor\src\EditorLayer.cpp(154,25): warning C4456: declaration of 'viewport' hides previous local declaration
+8>      X:\wazne\RodEngine\Rod-Editor\src\EditorLayer.cpp(115,24):
+      see declaration of 'viewport'
+  
+8>  ContentBrowserPanel.cpp
+8>X:\wazne\RodEngine\RodEngine\src\Rod\Debug\Instrumentator.h(120,31): warning C4267: 'initializing': conversion from 'size_t' to 'uint32_t', possible loss of data
+8>  (compiling source file '../Rod-Editor/src/Panels/ContentBrowserPanel.cpp')
+  
+8>  SceneHierarchyPanel.cpp
+8>X:\wazne\RodEngine\RodEngine\src\Rod\Debug\Instrumentator.h(120,31): warning C4267: 'initializing': conversion from 'size_t' to 'uint32_t', possible loss of data
+8>  (compiling source file '../Rod-Editor/src/Panels/SceneHierarchyPanel.cpp')
+  
+8>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Layer.h(16,34): warning C4100: 'ts': unreferenced parameter
+8>  (compiling source file '../Rod-Editor/src/Panels/SceneHierarchyPanel.cpp')
+  
+8>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Layer.h(18,31): warning C4100: 'event': unreferenced parameter
+8>  (compiling source file '../Rod-Editor/src/Panels/SceneHierarchyPanel.cpp')
+  
+8>X:\wazne\RodEngine\RodEngine\src\Rod\Scene\ScriptableEntity.h(21,34): warning C4100: 'ts': unreferenced parameter
+8>  (compiling source file '../Rod-Editor/src/Panels/SceneHierarchyPanel.cpp')
+  
+8>X:\wazne\RodEngine\Rod-Editor\src\Panels\SceneHierarchyPanel.cpp(103,59): warning C4100: 'entity': unreferenced parameter
+8>  TitlebarPanel.cpp
+8>X:\wazne\RodEngine\RodEngine\src\Rod\Debug\Instrumentator.h(120,31): warning C4267: 'initializing': conversion from 'size_t' to 'uint32_t', possible loss of data
+8>  (compiling source file '../Rod-Editor/src/Panels/TitlebarPanel.cpp')
+  
+8>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Layer.h(16,34): warning C4100: 'ts': unreferenced parameter
+8>  (compiling source file '../Rod-Editor/src/Panels/TitlebarPanel.cpp')
+  
+8>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Layer.h(18,31): warning C4100: 'event': unreferenced parameter
+8>  (compiling source file '../Rod-Editor/src/Panels/TitlebarPanel.cpp')
+  
+8>X:\wazne\RodEngine\RodEngine\src\Rod\Scene\ScriptableEntity.h(21,34): warning C4100: 'ts': unreferenced parameter
+8>  (compiling source file '../Rod-Editor/src/Panels/TitlebarPanel.cpp')
+  
+8>  RodEditorApp.cpp
+8>X:\wazne\RodEngine\RodEngine\src\Rod\Debug\Instrumentator.h(120,31): warning C4267: 'initializing': conversion from 'size_t' to 'uint32_t', possible loss of data
+8>  (compiling source file '../Rod-Editor/src/RodEditorApp.cpp')
+  
+8>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Layer.h(16,34): warning C4100: 'ts': unreferenced parameter
+8>  (compiling source file '../Rod-Editor/src/RodEditorApp.cpp')
+  
+8>X:\wazne\RodEngine\RodEngine\src\Rod\Core\Layer.h(18,31): warning C4100: 'event': unreferenced parameter
+8>  (compiling source file '../Rod-Editor/src/RodEditorApp.cpp')
+  
+8>X:\wazne\RodEngine\RodEngine\src\Rod\Scene\ScriptableEntity.h(21,34): warning C4100: 'ts': unreferenced parameter
+8>  (compiling source file '../Rod-Editor/src/RodEditorApp.cpp')
+  
+8>X:\wazne\RodEngine\RodEngine\src\Rod\Core\EntryPoint.h(9,27): warning C4100: 'argv': unreferenced parameter
+8>  (compiling source file '../Rod-Editor/src/RodEditorApp.cpp')
+  
+8>X:\wazne\RodEngine\RodEngine\src\Rod\Core\EntryPoint.h(9,14): warning C4100: 'argc': unreferenced parameter
+8>  (compiling source file '../Rod-Editor/src/RodEditorApp.cpp')
+  
+8>  Generating Code...
+8>X:\wazne\RodEngine\Rod-Editor\src\EditorLayer.cpp(469,1): warning C4715: 'Rod::EditorLayer::OnKeyPressed': not all control paths return a value
+8>X:\wazne\RodEngine\build\LINK : fatal error LNK1104: cannot open file 'shaderc_combined.lib'
+9>------ Build started: Project: ALL_BUILD, Configuration: Debug|x64 ------
+9>  Building Custom Rule X:/wazne/RodEngine/CMakeLists.txt
+========== Build: 7 succeeded, 2 failed, 0 up-to-date, 0 skipped ==========

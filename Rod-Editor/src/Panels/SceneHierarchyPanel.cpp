@@ -357,7 +357,10 @@ namespace Rod {
 			{
 				ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 
-				ImGui::Button("Texture", ImVec2(100.0f, 0.0f));
+				if (ImGui::Button("Texture", ImVec2(100.0f, 0.0f)))
+				{
+					component.Texture = nullptr;
+				}
 
 				if (ImGui::BeginDragDropTarget())
 				{

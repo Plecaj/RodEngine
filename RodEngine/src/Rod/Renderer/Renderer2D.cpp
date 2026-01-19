@@ -29,7 +29,7 @@ namespace Rod {
         static constexpr int MAX_QUAD_COUNT = 10000;
         static constexpr int MAX_VERTICES_COUNT = MAX_QUAD_COUNT * 4;
         static constexpr int MAX_INDICES_COUNT = MAX_QUAD_COUNT * 6;
-        int MaxTexturesSlots;
+        static constexpr int MAX_TEXTURE_SLOTS = 32;
 
         Ref<VertexArray> QuadVertexArray;
         Ref<VertexBuffer> QuadVertexBuffer;
@@ -46,8 +46,6 @@ namespace Rod {
 
         glm::vec4 QuadVertexPositions[4];
         Renderer2D::Statistics Stats;
-
-        Renderer2DData()    : MaxTexturesSlots(RendererLimits::GetMaxTextureSlots()), TextureSlots(MaxTexturesSlots){}
     };
 
     static Renderer2DData* s_Data;
@@ -56,6 +54,7 @@ namespace Rod {
     {
         RD_PROFILE_FUNCTION();
         s_Data = new Renderer2DData;
+        s_Data->TextureSlots.resize(s_Data->MAX_TEXTURE_SLOTS);
        
         InitShader();
         InitSamplers();
@@ -68,7 +67,6 @@ namespace Rod {
     void Renderer2D::InitShader()
     {
         Shader::ShaderOptions shaderOptions;
-        shaderOptions.Macros["MAX_TEXTURE_SLOTS"] = std::to_string(s_Data->MaxTexturesSlots);
         shaderOptions.OptimizationLevel = Shader::OptimalizationLevel::Performance;
         shaderOptions.GenerateDebugInfo = false;
 
@@ -78,12 +76,12 @@ namespace Rod {
 
     void Renderer2D::InitSamplers()
     {
-        int* samplers = new int[s_Data->MaxTexturesSlots];
-        for (int i = 0; i < s_Data->MaxTexturesSlots; i++)
+        int* samplers = new int[s_Data->MAX_TEXTURE_SLOTS];
+        for (int i = 0; i < s_Data->MAX_TEXTURE_SLOTS; i++)
             samplers[i] = i;
 
         s_Data->TextureShader->Bind();
-        s_Data->TextureShader->SetIntArray("u_Textures", samplers, s_Data->MaxTexturesSlots);
+        s_Data->TextureShader->SetIntArray("u_Textures", samplers, s_Data->MAX_TEXTURE_SLOTS);
 
         delete[] samplers;
     }
@@ -250,7 +248,7 @@ namespace Rod {
             }
         }
 
-        if (textureIndex == 0 && s_Data->TextureSlotIndex < s_Data->MaxTexturesSlots - 1)
+        if (textureIndex == 0 && s_Data->TextureSlotIndex < s_Data->MAX_TEXTURE_SLOTS - 1)
         {
             textureIndex = (float)s_Data->TextureSlotIndex;
             s_Data->TextureSlots[s_Data->TextureSlotIndex] = texture;

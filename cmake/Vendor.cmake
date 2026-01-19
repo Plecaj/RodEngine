@@ -9,6 +9,8 @@ set(INCLUDE_DIR_ENTT ${VENDOR_DIR}/entt)
 set(INCLUDE_DIR_YAML_CPP ${VENDOR_DIR}/yaml-cpp/include)
 set(INCLUDE_DIR_IMGUIZMO ${VENDOR_DIR}/ImGuizmo)
 set(INCLUDE_DIR_SHADERC ${VENDOR_DIR}/shaderc/libshaderc/include)
+set(INCLUDE_DIR_JSON ${VENDOR_DIR}/json)
+set(INCLUDE_DIR_TINYGLTF ${VENDOR_DIR}/tinygltf)
 
 include(cmake/vendor/GLFW.cmake)
 include(cmake/vendor/Glad.cmake)

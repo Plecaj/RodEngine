@@ -66,7 +66,7 @@ namespace Rod {
 
 		m_Framebuffer->Bind();
 		Renderer2D::ResetStats();
-		RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+		RenderCommand::SetClearColor({ 0.15f, 0.15f, 0.15f, 1 });
 		RenderCommand::Clear();
 
 		m_Framebuffer->ClearColorAttachment(1, -1);

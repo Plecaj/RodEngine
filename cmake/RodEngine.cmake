@@ -6,9 +6,12 @@ file(GLOB_RECURSE RODENGINE_CPP_SOURCES
 )
 
 list(APPEND RODENGINE_CPP_SOURCES
-    ${RODENGINE_DIR}/vendor/stb_image/stb_image.h
+    ${RODENGINE_DIR}/vendor/stb_image/stb_image.h    
+    ${RODENGINE_DIR}/vendor/stb_image/stb_image_write.h
     ${RODENGINE_DIR}/vendor/stb_image/stb_image.cpp
     ${RODENGINE_DIR}/vendor/entt/entt.hpp
+    ${RODENGINE_DIR}/vendor/json/json.hpp
+    ${RODENGINE_DIR}/vendor/tinygltf/tiny_gltf.h
 )
 
 file(GLOB_RECURSE GLM_SOURCES
@@ -43,6 +46,8 @@ target_include_directories(RodEngine PUBLIC
     ${INCLUDE_DIR_YAML_CPP}
     ${INCLUDE_DIR_IMGUIZMO}
     ${INCLUDE_DIR_SHADERC}
+    ${INCLUDE_DIR_JSON}
+    ${INCLUDE_DIR_TINYGLTF}
 )
 
 if(WIN32)

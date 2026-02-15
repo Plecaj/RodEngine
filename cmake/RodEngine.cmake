@@ -11,7 +11,7 @@ list(APPEND RODENGINE_CPP_SOURCES
     ${RODENGINE_DIR}/vendor/stb_image/stb_image.cpp
     ${RODENGINE_DIR}/vendor/entt/entt.hpp
     ${RODENGINE_DIR}/vendor/json/json.hpp
-    ${RODENGINE_DIR}/vendor/tinygltf/tiny_gltf.h
+    ${RODENGINE_DIR}/vendor/tinygltf/tiny_gltf.cpp
 )
 
 file(GLOB_RECURSE GLM_SOURCES

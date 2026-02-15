@@ -45,6 +45,16 @@ namespace Rod {
 
 		m_PlayButton = Texture2D::Create("assets/textures/PlayButton.png");
 		m_StopButton = Texture2D::Create("assets/textures/StopButton.png");
+
+		auto cube = m_ActiveScene->CreateEntity("Cube");
+		auto& mc = cube.AddComponent<MeshComponent>();
+		auto& transform = cube.GetComponent<TransformComponent>();
+
+		mc.Mesh = Mesh::Create("assets/Meshes/Cube.glb");
+		mc.Shader = Shader::Create("assets/shaders/cubeTest.glsl");
+			
+		transform.Translation = glm::vec3(0.0f, 0.0f, 0.0f);
+		transform.Scale = glm::vec3(2.0f, 2.0f, 2.0f);
 	}
 
 	void EditorLayer::OnDetach()

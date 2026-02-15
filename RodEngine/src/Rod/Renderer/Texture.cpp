@@ -17,7 +17,7 @@ namespace Rod {
 		return nullptr;
 	}
 
-	Ref<Texture2D> Rod::Texture2D::Create(const std::string& path)
+	Ref<Texture2D> Texture2D::Create(const std::string& path)
 	{
 		switch (Renderer::GetAPI())
 		{

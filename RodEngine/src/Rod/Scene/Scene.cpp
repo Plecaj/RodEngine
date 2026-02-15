@@ -2,6 +2,7 @@
 #include "Scene.h"
 
 #include "Rod/Renderer/Renderer2D.h"
+#include "Rod/Renderer/Renderer.h"
 
 #include <glm/glm.hpp>
 
@@ -52,48 +53,73 @@ namespace Rod {
 			});
 		}
 
-		// Render 2D
 		Camera* mainCamera = nullptr;
 		glm::mat4 cameraTransform;
 		{
-			auto group = m_Registry.group<CameraComponent>(entt::get<TransformComponent>);
-			for (auto entity : group) {
-				auto [transform, camera] = group.get<TransformComponent, CameraComponent>(entity);
-
+			auto view = m_Registry.view<CameraComponent, TransformComponent>();
+			view.each([&](auto entity, CameraComponent& camera, TransformComponent& transform) {
 				if (camera.Primary)
 				{
 					mainCamera = &camera.Camera;
 					cameraTransform = transform.GetTransform();
-					break;
 				}
-			}
+			});
 		}
 
 		if (!mainCamera) return;
 
+		Renderer::BeginScene(*mainCamera, cameraTransform);
+
+		{
+			auto view = m_Registry.view<TransformComponent, MeshComponent>();
+
+			view.each([&](auto entity, TransformComponent& transform, MeshComponent& mesh) {
+				Renderer::Submit(
+					mesh.Shader,
+					mesh.Mesh->GetVAO(),
+					transform.GetTransform()
+				);
+			});
+		}
+
+		Renderer::EndScene();
+
 		Renderer2D::BeginScene(mainCamera->GetProjection(), cameraTransform);
 
-		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-		for(auto entity : group)
-		{
-			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-
+		auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
+		view.each([&](auto entity, TransformComponent& transform, SpriteRendererComponent& sprite) {
 			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
-		}
+		});
 
 		Renderer2D::EndScene();
 	}
 
 	void Scene::OnUpdateEditor(Timestep& ts, EditorCamera& camera)
 	{
+		Renderer::BeginScene(camera);
+
+		{
+			auto view = m_Registry.view<TransformComponent, MeshComponent>();
+			volatile bool breakpoint = view.size_hint() <= 0;
+
+			view.each([&](auto entity, TransformComponent& transform, MeshComponent& mesh) {
+				Renderer::Submit(
+					mesh.Shader,
+					mesh.Mesh->GetVAO(),
+					transform.GetTransform()
+				);
+			});
+		}
+
+		Renderer::EndScene();
+
 		Renderer2D::BeginScene(camera);
 
-		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-		for (auto entity : group)
 		{
-			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-
-			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
+			view.each([&](auto entity, TransformComponent& transform, SpriteRendererComponent& sprite) {
+				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+				});
 		}
 
 		Renderer2D::EndScene();
@@ -147,6 +173,11 @@ namespace Rod {
 
 	template<>
 	void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<MeshComponent>(Entity entity, MeshComponent& component)
 	{
 	}
 

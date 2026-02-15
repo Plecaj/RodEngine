@@ -7,6 +7,8 @@
 #include "ScriptableEntity.h"
 
 #include "Rod/Renderer/Texture.h"
+#include "Rod/Renderer/Mesh.h"
+#include "Rod/Renderer/Shader.h"
 
 namespace Rod {
 
@@ -53,6 +55,12 @@ namespace Rod {
 		SpriteRendererComponent(const SpriteRendererComponent&) = default;
 		SpriteRendererComponent(const glm::vec4& color)
 			:Color(color) {}
+	};
+
+	struct MeshComponent
+	{
+		Ref<Mesh> Mesh;
+		Ref<Shader> Shader;
 	};
 
 	struct CameraComponent

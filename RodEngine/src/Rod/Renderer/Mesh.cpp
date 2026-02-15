@@ -1,0 +1,114 @@
+#include "Mesh.h"
+
+namespace Rod {
+
+    Ref<Mesh> Mesh::Create(const std::string & glbPath)
+    {
+        return std::make_shared<Mesh>(glbPath);
+    }
+
+    Mesh::Mesh(const std::string& glbPath) 
+    {
+        LoadGLB(glbPath);
+    }
+
+    void Mesh::LoadGLB(const std::string& path) 
+    {
+        RD_PROFILE_FUNCTION();
+
+        tinygltf::TinyGLTF loader;
+        tinygltf::Model model;
+        std::string err, warn;
+
+        bool ok = loader.LoadBinaryFromFile(&model, &err, &warn, path);
+        if (!warn.empty()) RD_CORE_WARN(warn);
+        if (!err.empty())  RD_CORE_ERROR(err);
+        RD_CORE_ASSERT(ok, "Failed to load GLB");
+
+        RD_CORE_ASSERT(!model.meshes.empty(), "Meshes are empty");
+
+        m_VAO = VertexArray::Create();
+
+        const auto& mesh = model.meshes[0];
+        for (const auto& primitive : mesh.primitives) {
+            ProcessPrimitive(model, primitive);
+        }
+    }
+
+    void Mesh::ProcessPrimitive(const tinygltf::Model& model, const tinygltf::Primitive& primitive) 
+    {
+        RD_PROFILE_FUNCTION();
+
+        auto posIt = primitive.attributes.find("POSITION");
+        RD_CORE_ASSERT(posIt != primitive.attributes.end(), "Couldnt find position in mesh primitive");
+
+        const auto& posAccessor = model.accessors[posIt->second];
+        const auto& posView = model.bufferViews[posAccessor.bufferView];
+        const auto& posBuffer = model.buffers[posView.buffer];
+
+        const float* positions = reinterpret_cast<const float*>(
+            &posBuffer.data[posView.byteOffset + posAccessor.byteOffset]);
+
+        size_t vertexCount = posAccessor.count;
+
+        std::vector<float> vertexData;
+        vertexData.reserve(vertexCount * 3);
+
+        for (size_t i = 0; i < vertexCount * 3; i++) {
+            vertexData.push_back(positions[i]);
+        }
+
+        auto vertexBuffer = VertexBuffer::Create(
+            vertexData.data(),
+            vertexData.size() * sizeof(float)
+        );
+        BufferLayout layout = {
+            { ShaderDataType::Float3, "a_Position" }
+        };
+
+        vertexBuffer->SetBufferLayout(layout);
+
+
+        RD_CORE_ASSERT(primitive.indices >= 0, "Mesh indicies < 0");
+
+        const auto& idxAccessor = model.accessors[primitive.indices];
+        const auto& idxView = model.bufferViews[idxAccessor.bufferView];
+        const auto& idxBuffer = model.buffers[idxView.buffer];
+
+        std::vector<uint32_t> indices;
+        indices.reserve(idxAccessor.count);
+
+        const uint8_t* data = &idxBuffer.data[idxView.byteOffset + idxAccessor.byteOffset];
+
+        size_t stride = idxView.byteStride;
+        if (stride == 0)
+            stride = idxAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT ? 2 : 4;
+
+        for (size_t i = 0; i < idxAccessor.count; i++)
+        {
+            const uint8_t* element = data + i * stride;
+
+            switch (idxAccessor.componentType)
+            {
+            case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
+                indices.push_back(*reinterpret_cast<const uint16_t*>(element));
+                break;
+
+            case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
+                indices.push_back(*reinterpret_cast<const uint32_t*>(element));
+                break;
+
+            default:
+                RD_CORE_ASSERT(false, "Unsupported index type");
+            }
+        }
+
+        auto indexBuffer = IndexBuffer::Create(         
+            indices.data(),
+            indices.size()
+        );
+
+        m_VAO->AddVertexBuffer(vertexBuffer);
+        m_VAO->SetIndexBuffer(indexBuffer);
+    }
+}

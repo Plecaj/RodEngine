@@ -46,7 +46,7 @@ layout(location = 4) in flat int v_EntityID;
 #define MAX_TEXTURES 32
 #endif
 
-layout(set = 1, binding = 0) uniform sampler2D u_Textures[MAX_TEXTURES];
+layout(set = 0, binding = 0) uniform sampler2D u_Textures[MAX_TEXTURES];
 
 vec4 SampleTexture(int idx, vec2 uv)
 {

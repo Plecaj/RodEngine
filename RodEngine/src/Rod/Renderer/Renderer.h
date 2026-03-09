@@ -3,6 +3,7 @@
 #include "RenderCommand.h"
 #include "Rod/Renderer/Camera.h"
 #include "Rod/Renderer/EditorCamera.h"
+#include "Rod/Scene/Components.h"
 
 #include "Shader.h"
 
@@ -15,17 +16,19 @@ namespace Rod {
 
 		static void OnWindowResize(uint32_t width, uint32_t height);
 
-		static void BeginScene(const Camera& camera, const glm::mat4& transform);
-		static void BeginScene(const EditorCamera& camera);
+		static void BeginScene(const Camera& camera, const glm::mat4& transform, std::vector<DirectionalLightComponent>& lights);
+		static void BeginScene(const EditorCamera& camera, std::vector<DirectionalLightComponent>& lights);
 		static void EndScene();
 
-		static void Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const glm::mat4& transform = glm::mat4(1.0f));
+		static void Submit(const Ref<VertexArray>& vertexArray, const glm::mat4& transform = glm::mat4(1.0f));
 
 		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 	private:
 		struct SceneData {
 			glm::mat4 ViewProjection;
 			Ref<UniformBuffer> SceneUBO;
+			Ref<UniformBuffer> LightsUBO;
+			Ref<Shader> Shader;
 		};
 
 		static SceneData* s_SceneData;

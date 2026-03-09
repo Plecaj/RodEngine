@@ -67,7 +67,8 @@ namespace Rod {
 	OpenGLShader::OpenGLShader(std::unordered_map<shaderc_shader_kind, std::string> shaders, std::string name, const ShaderOptions& options )
 	{
 		RD_PROFILE_FUNCTION();
-
+		m_Name = name;
+		
 		shaderc::Compiler compiler;
 		shaderc::CompileOptions compileOptions;                 
 

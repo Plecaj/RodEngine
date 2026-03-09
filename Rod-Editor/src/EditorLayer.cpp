@@ -51,10 +51,13 @@ namespace Rod {
 		auto& transform = cube.GetComponent<TransformComponent>();
 
 		mc.Mesh = Mesh::Create("assets/Meshes/Cube.glb");
-		mc.Shader = Shader::Create("assets/shaders/cubeTest.glsl");
 			
 		transform.Translation = glm::vec3(0.0f, 0.0f, 0.0f);
 		transform.Scale = glm::vec3(2.0f, 2.0f, 2.0f);
+
+		auto light = m_ActiveScene->CreateEntity("Light source");
+		light.AddComponent<DirectionalLightComponent>(glm::vec3(0.667f, -0.667f, -0.333f), glm::vec3(1.0f, 0.97f, 0.92f), 1.0f);
+
 	}
 
 	void EditorLayer::OnDetach()

@@ -50,12 +50,44 @@ namespace Rod {
             &posBuffer.data[posView.byteOffset + posAccessor.byteOffset]);
 
         size_t vertexCount = posAccessor.count;
+        
+        const float* normals = nullptr;
+
+        auto normIt = primitive.attributes.find("NORMAL");
+        if (normIt != primitive.attributes.end())
+        {
+            const auto& normAccessor = model.accessors[normIt->second];
+            const auto& normView = model.bufferViews[normAccessor.bufferView];
+            const auto& normBuffer = model.buffers[normView.buffer];
+
+            normals = reinterpret_cast<const float*>(
+                &normBuffer.data[normView.byteOffset + normAccessor.byteOffset]);
+        }
+        else
+        {
+            RD_CORE_WARN("Mesh primitive has no NORMAL attribute");
+        }
 
         std::vector<float> vertexData;
-        vertexData.reserve(vertexCount * 3);
+        vertexData.reserve(vertexCount * 6);
 
-        for (size_t i = 0; i < vertexCount * 3; i++) {
-            vertexData.push_back(positions[i]);
+        for (size_t i = 0; i < vertexCount; i++) {
+            vertexData.push_back(positions[i * 3 + 0]);
+            vertexData.push_back(positions[i * 3 + 1]);
+            vertexData.push_back(positions[i * 3 + 2]);
+
+            if (normals)
+            {
+                vertexData.push_back(normals[i * 3 + 0]);
+                vertexData.push_back(normals[i * 3 + 1]);
+                vertexData.push_back(normals[i * 3 + 2]);
+            }
+            else
+            {
+                vertexData.push_back(0.0f);
+                vertexData.push_back(0.0f);
+                vertexData.push_back(0.0f);
+            }
         }
 
         auto vertexBuffer = VertexBuffer::Create(
@@ -63,7 +95,8 @@ namespace Rod {
             vertexData.size() * sizeof(float)
         );
         BufferLayout layout = {
-            { ShaderDataType::Float3, "a_Position" }
+            { ShaderDataType::Float3, "a_Position" },
+            { ShaderDataType::Float3, "a_Normal"}
         };
 
         vertexBuffer->SetBufferLayout(layout);

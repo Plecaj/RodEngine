@@ -68,14 +68,22 @@ namespace Rod {
 
 		if (!mainCamera) return;
 
-		Renderer::BeginScene(*mainCamera, cameraTransform);
+		std::vector<DirectionalLightComponent> lightSources;
+
+		{
+			auto view = m_Registry.view<DirectionalLightComponent>();
+			view.each([&](auto entity, DirectionalLightComponent& light) {
+				lightSources.push_back(light);
+				});
+		}
+
+		Renderer::BeginScene(*mainCamera, cameraTransform, lightSources);
 
 		{
 			auto view = m_Registry.view<TransformComponent, MeshComponent>();
 
 			view.each([&](auto entity, TransformComponent& transform, MeshComponent& mesh) {
 				Renderer::Submit(
-					mesh.Shader,
 					mesh.Mesh->GetVAO(),
 					transform.GetTransform()
 				);
@@ -85,26 +93,35 @@ namespace Rod {
 		Renderer::EndScene();
 
 		Renderer2D::BeginScene(mainCamera->GetProjection(), cameraTransform);
-
-		auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
-		view.each([&](auto entity, TransformComponent& transform, SpriteRendererComponent& sprite) {
-			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
-		});
+		
+		{
+			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
+			view.each([&](auto entity, TransformComponent& transform, SpriteRendererComponent& sprite) {
+				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+				});
+		}
 
 		Renderer2D::EndScene();
 	}
 
 	void Scene::OnUpdateEditor(Timestep& ts, EditorCamera& camera)
 	{
-		Renderer::BeginScene(camera);
+		std::vector<DirectionalLightComponent> lightSources;
+
+		{
+			auto view = m_Registry.view<DirectionalLightComponent>();
+			view.each([&](auto entity, DirectionalLightComponent& light) {
+				lightSources.push_back(light);
+				});
+		}		
+
+		Renderer::BeginScene(camera, lightSources);
 
 		{
 			auto view = m_Registry.view<TransformComponent, MeshComponent>();
-			volatile bool breakpoint = view.size_hint() <= 0;
 
 			view.each([&](auto entity, TransformComponent& transform, MeshComponent& mesh) {
 				Renderer::Submit(
-					mesh.Shader,
 					mesh.Mesh->GetVAO(),
 					transform.GetTransform()
 				);
@@ -113,6 +130,7 @@ namespace Rod {
 
 		Renderer::EndScene();
 
+		/*
 		Renderer2D::BeginScene(camera);
 
 		{
@@ -123,6 +141,7 @@ namespace Rod {
 		}
 
 		Renderer2D::EndScene();
+		*/
 
 	}
 
@@ -178,6 +197,11 @@ namespace Rod {
 
 	template<>
 	void Scene::OnComponentAdded<MeshComponent>(Entity entity, MeshComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<DirectionalLightComponent>(Entity entity, DirectionalLightComponent& component)
 	{
 	}
 

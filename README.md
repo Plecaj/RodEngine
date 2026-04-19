@@ -6,56 +6,81 @@
   <img src="logo.png" alt="RodEngine Logo" width="400" />
 </p>
 
-**RodEngine** is a custom C++ game engine I'm building from scratch. It's currently based on [The Cherno's](https://www.youtube.com/@TheCherno) game engine series, which serves as the foundation for learning and early development. Once I complete the tutorials, I plan to expand the engine with my own architecture, features, and tools.  
+**RodEngine** is a custom C++ game engine I'm building from scratch. It's based on [The Cherno's](https://www.youtube.com/@TheCherno) game engine series, which serves as the foundation for learning and early development.I expand the engine with my own architecture, features, and tools.  
 
 ##  Development Status
 >  RodEngine is in early development. Expect rapid changes, incomplete systems, and experimental features.
  
 ##  Building
 
-####  Prerequisites
+###  Prerequisites
 
 - **Windows**
-- **Visual Studio 2022** 
+- **Visual Studio 2022** (should be fine in other IDE's, but hasnt been tested)
 - **Git**
 - **Python 3.13+**
 - **CMake 3.30+**
-- **Premake5**
 
-####  Steps to Build
 
-1. **Clone the repository (with submodules):**
-   
-   ```bash
-   git clone --recurse-submodules https://github.com/Plecaj/RodEngine.git
-   ```
+### 1. Clone the repository
 
-2. **Navigate to the project root folder:**
+This project uses Git submodules, so it is **recommended** to clone with:
 
-   ```bash
-   cd RodEngine
-   ```
+```bash
+git clone --recursive <repo_url>
+```
 
-3. **Navigate into the `scripts/` directory:**
+If you already cloned the repository without submodules:
 
-   ```bash
-   cd scripts
-   ```
+```bash
+git submodule update --init --recursive
+```
 
-4. **Run the Windows setup script to generate project files:**
+---
 
-   ```bash
-   Win-GenProjects.bat
-   ```
+### 2. Sync shaderc dependencies
 
-5. **Open the generated solution file:**
+The project requires additional dependency setup for `shaderc`.
 
-   After running the script, a `.sln` file will be created in the root directory. Open it using **Visual Studio**.
+Navigate from project root direcotry forwards to:
 
-6. **Build the solution:**
+```bash
+cd RodEngine/vendor/shaderc/utils
+```
 
-   Once the solution is open, set your desired configuration (**Debug**, **Release**, etc.) and build the project.
+Run the sync script:
 
+```bash
+python git-sync-deps
+```
+
+> Make sure you have Python 3.x installed.
+
+---
+
+### 3. Generate build files (CMake)
+
+Go back to the root directory and run:
+
+```bash
+cmake -S . -B build
+```
+
+---
+
+### 4. Build the project
+
+```bash
+cmake --build build
+```
+
+---
+
+
+###  Notes
+
+- Failing to initialize submodules will result in build errors.
+- Running `git-sync-deps` is required — skipping it may cause missing `shaderc` dependencies.
 
 ##  Tech Stack
 

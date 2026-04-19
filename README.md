@@ -13,13 +13,74 @@
  
 ##  Building
 
-####  Prerequisites
+###  Prerequisites
 
 - **Windows**
-- **Visual Studio 2022** 
+- **Visual Studio 2022** (should be fine in other IDE's, but hasnt been tested)
 - **Git**
 - **Python 3.13+**
 - **CMake 3.30+**
+
+
+### 1. Clone the repository
+
+This project uses Git submodules, so it is **recommended** to clone with:
+
+```bash
+git clone --recursive <repo_url>
+```
+
+If you already cloned the repository without submodules:
+
+```bash
+git submodule update --init --recursive
+```
+
+---
+
+### 2. Sync shaderc dependencies
+
+The project requires additional dependency setup for `shaderc`.
+
+Navigate from project root direcotry forwards to:
+
+```bash
+cd RodEngine/vendor/shaderc/utils
+```
+
+Run the sync script:
+
+```bash
+python git-sync-deps
+```
+
+> Make sure you have Python 3.x installed.
+
+---
+
+### 3. Generate build files (CMake)
+
+Go back to the root directory and run:
+
+```bash
+cmake -S . -B build
+```
+
+---
+
+### 4. Build the project
+
+```bash
+cmake --build build
+```
+
+---
+
+
+###  Notes
+
+- Failing to initialize submodules will result in build errors.
+- Running `git-sync-deps` is required — skipping it may cause missing `shaderc` dependencies.
 
 ##  Tech Stack
 

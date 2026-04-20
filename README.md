@@ -6,7 +6,7 @@
   <img src="logo.png" alt="RodEngine Logo" width="400" />
 </p>
 
-**RodEngine** is a custom C++ game engine I'm building from scratch. It's based on [The Cherno's](https://www.youtube.com/@TheCherno) game engine series, which serves as the foundation for learning and early development.I expand the engine with my own architecture, features, and tools.  
+**RodEngine** is a custom C++ game engine I'm building from scratch. It's based on some part of [The Cherno's](https://www.youtube.com/@TheCherno) game engine series, which serves as the foundation for learning and early development. Now I expand the engine with my own architecture, features, and tools.  
 
 ##  Development Status
 >  RodEngine is in early development. Expect rapid changes, incomplete systems, and experimental features.
@@ -16,7 +16,7 @@
 ###  Prerequisites
 
 - **Windows**
-- **Visual Studio 2022** (should be fine in other IDE's, but hasnt been tested)
+- **MSVC** (should be fine in other compilers, but hasnt been tested)
 - **Git**
 - **Python 3.13+**
 - **CMake 3.30+**
@@ -42,7 +42,7 @@ git submodule update --init --recursive
 
 The project requires additional dependency setup for `shaderc`.
 
-Navigate from project root direcotry forwards to:
+Navigate starting from project root direcotry forwards to:
 
 ```bash
 cd RodEngine/vendor/shaderc/utils
@@ -86,7 +86,7 @@ cmake --build build
 
 -  **Platform:** Windows  
 -  **Language:** C++  
--  **Build System:** Premake5  
+-  **Build System:** CMake  
 -  **Rendering:** OpenGL  
 -  **Windowing & Input:** GLFW (with minor changes for no windows titlebar support)
 -  **Math Library:** GLM  
@@ -126,14 +126,11 @@ cmake --build build
 - 3D physics engine with rigid bodies, colliders, and joints  
 - Collision detection, resolution, and physics simulation  
 
-###  ECS & Performance
-- Rod’s custom ECS architecture for scalable, data-driven performance  
-- Multi-threading support and job system for parallelized tasks  
 
 
 ##  Credits
 
-Special thanks to [The Cherno](https://github.com/thecherno) for the incredible game engine tutorial series, which helped kickstart this project and continues to be a valuable learning resource.
+Special thanks to [The Cherno](https://github.com/thecherno) for the incredible game engine tutorial series, which helped start project.
 
 ---
 

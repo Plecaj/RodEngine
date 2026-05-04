@@ -9,6 +9,7 @@
 #include "Rod/Renderer/Texture.h"
 #include "Rod/Renderer/Mesh.h"
 #include "Rod/Renderer/Shader.h"
+#include "Rod/Renderer/Material.h"
 
 namespace Rod {
 
@@ -60,6 +61,11 @@ namespace Rod {
 	struct MeshComponent
 	{
 		Ref<Mesh> Mesh;
+	};
+
+	struct MaterialComponent
+	{
+		Ref<Material> Material;
 	};
 
 	struct DirectionalLightComponent

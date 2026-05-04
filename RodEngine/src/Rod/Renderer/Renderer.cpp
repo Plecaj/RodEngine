@@ -31,6 +31,13 @@ namespace Rod {
 		uint32_t _padding[3];
 		Intensity Lights[MAX_LIGHT_COUNT];
 	};
+
+	struct MaterialData
+	{
+		glm::vec4 Albedo;
+		glm::vec3 Emissive;
+		float _Padding0;
+	};
 	
 	void Renderer::Init()
 	{
@@ -41,6 +48,7 @@ namespace Rod {
 
 		s_SceneData->Shader = Shader::Create("assets/shaders/3D.glsl");
 		s_SceneData->SceneUBO = UniformBuffer::Create(sizeof(SceneMatrices));
+		s_SceneData->MaterialUBO = UniformBuffer::Create(sizeof(MaterialData));
 	}
 
 	void Renderer::Shutdown()
@@ -108,7 +116,7 @@ namespace Rod {
 	{
 	}
 
-	void Renderer::Submit(const Ref<VertexArray>& vertexArray, const glm::mat4& transform)
+	void Renderer::Submit(const Ref<VertexArray>& vertexArray, const glm::mat4& transform, const Ref<Material>& material)
 	{
 		RD_PROFILE_FUNCTION();
 
@@ -121,6 +129,21 @@ namespace Rod {
 
 
 		s_SceneData->Shader->Bind();
+		MaterialData materialData;
+		if (material)
+		{
+			materialData.Albedo = material->GetAlbedo();
+			materialData.Emissive = material->GetEmissive();
+			materialData._Padding0 = 0.0f;
+		}
+		else
+		{
+			materialData.Albedo = glm::vec4(0.6f, 0.2f, 0.8f, 1.0f);
+			materialData.Emissive = glm::vec3(0.0f);
+			materialData._Padding0 = 0.0f;
+		}
+		s_SceneData->MaterialUBO->BindBase(3);
+		s_SceneData->MaterialUBO->SetData(&materialData, sizeof(MaterialData));
 		vertexArray->Bind();
 		vertexArray->GetIndexBuffer()->Bind();
 		RenderCommand::DrawIndexed(vertexArray);

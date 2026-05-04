@@ -42,15 +42,22 @@ struct Light
 layout(set = 0, binding = 2) uniform LightsUBO
 {
     int u_LightCount;
-    Light[MAX_LIGHT_COUNT] u_Lights;
+    Light u_Lights[MAX_LIGHT_COUNT];
 } lights;
+
+layout(set = 0, binding = 3) uniform MaterialUBO
+{
+    vec4 u_Albedo;
+    vec3 u_Emissive;
+    float _Padding0;
+} material;
 
 layout(location = 0) out vec4 FragColor;
 
 void main()
 {
     vec3 normal = normalize(v_Normal);
-    vec3 albedo = vec3(0.6, 0.2, 0.8);
+    vec3 albedo = material.u_Albedo.rgb;
 
     vec3 ambient = 0.1 * albedo;
     vec3 totalDiffuse = vec3(0.0);
@@ -69,7 +76,7 @@ void main()
         totalDiffuse += diffuse;
     }
 
-    vec3 finalColor = ambient + totalDiffuse;
+    vec3 finalColor = ambient + totalDiffuse + material.u_Emissive;
 
-    FragColor = vec4(finalColor, 1.0);
+    FragColor = vec4(finalColor, material.u_Albedo.a);
 }

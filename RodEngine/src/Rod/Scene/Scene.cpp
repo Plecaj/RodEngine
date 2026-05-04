@@ -85,7 +85,8 @@ namespace Rod {
 			view.each([&](auto entity, TransformComponent& transform, MeshComponent& mesh) {
 				Renderer::Submit(
 					mesh.Mesh->GetVAO(),
-					transform.GetTransform()
+					transform.GetTransform(),
+					mesh.Mesh->GetMaterial()
 				);
 			});
 		}
@@ -123,7 +124,8 @@ namespace Rod {
 			view.each([&](auto entity, TransformComponent& transform, MeshComponent& mesh) {
 				Renderer::Submit(
 					mesh.Mesh->GetVAO(),
-					transform.GetTransform()
+					transform.GetTransform(),
+					mesh.Mesh->GetMaterial()
 				);
 			});
 		}
@@ -202,6 +204,11 @@ namespace Rod {
 
 	template<>
 	void Scene::OnComponentAdded<DirectionalLightComponent>(Entity entity, DirectionalLightComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<MaterialComponent>(Entity entity, MaterialComponent& component)
 	{
 	}
 

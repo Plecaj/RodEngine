@@ -48,9 +48,11 @@ namespace Rod {
 
 		auto cube = m_ActiveScene->CreateEntity("Cube");
 		auto& mc = cube.AddComponent<MeshComponent>();
+		auto& material = cube.AddComponent<MaterialComponent>();
 		auto& transform = cube.GetComponent<TransformComponent>();
 
 		mc.Mesh = Mesh::Create("assets/Meshes/Cube.glb");
+		material.Material = mc.Mesh->GetMaterial();
 			
 		transform.Translation = glm::vec3(0.0f, 0.0f, 0.0f);
 		transform.Scale = glm::vec3(2.0f, 2.0f, 2.0f);

@@ -1,0 +1,44 @@
+Scene: Untitled
+Entities:
+  - Entity: 2097154
+    TagComponent:
+      Tag: Camera
+    TransformComponent:
+      Translation: [-0.3, 0.9, 12.5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 0.7853982
+        PerspectiveNear: 0.01
+        PerspectiveFar: 1000
+        OrthographicSize: 6
+        OrthographicNear: -1
+        OrthographicFar: 1
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 1048577
+    TagComponent:
+      Tag: Light
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    DirectionalLightComponent:
+      Direction: [0.6667777, -0.6667777, -0.33288902]
+      Color: [1, 1, 1]
+      Intensity: 1
+  - Entity: 1048576
+    TagComponent:
+      Tag: Cube
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0.46774822, 0.34906584, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Path: assets\Meshes\Cube.glb
+      Albedo: [0.54826254, 0.17146435, 0.17146435, 1]
+      Emissive: [0, 0, 0]
+      Roughness: 0.5
+      Metallic: 0

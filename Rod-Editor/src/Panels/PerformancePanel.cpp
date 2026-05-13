@@ -15,7 +15,7 @@ namespace Rod {
 		ImGui::Separator();
 
 		auto stats = Renderer2D::GetStats();
-		ImGui::Text("Renderer Stats:");
+		ImGui::Text("Renderer 2D Stats:");
 		ImGui::Text("	Draw calls: %d", stats.DrawCalls);
 		ImGui::Text("	Quad Count: %d", stats.QuadCount);
 

@@ -16,6 +16,7 @@ namespace Rod {
 	void Mesh::LoadGLB(const std::string& path)
 	{
 		RD_PROFILE_FUNCTION();
+		m_SourcePath = path;
 
 		tinygltf::TinyGLTF loader;
 		tinygltf::Model model;

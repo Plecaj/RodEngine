@@ -16,7 +16,7 @@ namespace Rod {
 	extern const std::filesystem::path g_AssetsPath;
 
 	EditorLayer::EditorLayer()
-		:Layer("Sandbox2D")
+		:Layer("Editor Layer")
 	{
 	}
 
@@ -32,7 +32,7 @@ namespace Rod {
 
 		NewScene();
 		SceneSerializer serializer(m_ActiveScene);
-		serializer.DeserializeText("assets/scenes/Example.rod");
+		serializer.DeserializeText("assets/scenes/Example3D.rod");
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
@@ -45,21 +45,6 @@ namespace Rod {
 
 		m_PlayButton = Texture2D::Create("assets/textures/PlayButton.png");
 		m_StopButton = Texture2D::Create("assets/textures/StopButton.png");
-
-		auto cube = m_ActiveScene->CreateEntity("Cube");
-		auto& mc = cube.AddComponent<MeshComponent>();
-		auto& material = cube.AddComponent<MaterialComponent>();
-		auto& transform = cube.GetComponent<TransformComponent>();
-
-		mc.Mesh = Mesh::Create("assets/Meshes/Cube.glb");
-		material.Material = mc.Mesh->GetMaterial();
-			
-		transform.Translation = glm::vec3(0.0f, 0.0f, 0.0f);
-		transform.Scale = glm::vec3(2.0f, 2.0f, 2.0f);
-
-		auto light = m_ActiveScene->CreateEntity("Light source");
-		light.AddComponent<DirectionalLightComponent>(glm::vec3(0.667f, -0.667f, -0.333f), glm::vec3(1.0f, 0.97f, 0.92f), 1.0f);
-
 	}
 
 	void EditorLayer::OnDetach()

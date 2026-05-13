@@ -52,7 +52,16 @@ layout(set = 0, binding = 3) uniform MaterialUBO
     float _Padding0;
 } material;
 
+layout(set = 0, binding = 4) uniform DrawUBO
+{
+    int u_EntityID;
+    int _Padding1;
+    int _Padding2;
+    int _Padding3;
+} draw;
+
 layout(location = 0) out vec4 FragColor;
+layout(location = 1) out int EntityID;
 
 void main()
 {
@@ -79,4 +88,5 @@ void main()
     vec3 finalColor = ambient + totalDiffuse + material.u_Emissive;
 
     FragColor = vec4(finalColor, material.u_Albedo.a);
+    EntityID = draw.u_EntityID;
 }

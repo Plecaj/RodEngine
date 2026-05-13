@@ -83,11 +83,16 @@ namespace Rod {
 			auto view = m_Registry.view<TransformComponent, MeshComponent>();
 
 			view.each([&](auto entity, TransformComponent& transform, MeshComponent& mesh) {
-				Renderer::Submit(
-					mesh.Mesh->GetVAO(),
-					transform.GetTransform(),
-					mesh.Mesh->GetMaterial()
+				if (mesh.Mesh != nullptr)
+				{
+					Renderer::Submit(
+						mesh.Mesh->GetVAO(),
+						transform.GetTransform(),
+						mesh.Mesh->GetMaterial(),
+						(int)entity
 				);
+
+				}
 			});
 		}
 
@@ -122,17 +127,21 @@ namespace Rod {
 			auto view = m_Registry.view<TransformComponent, MeshComponent>();
 
 			view.each([&](auto entity, TransformComponent& transform, MeshComponent& mesh) {
-				Renderer::Submit(
-					mesh.Mesh->GetVAO(),
-					transform.GetTransform(),
-					mesh.Mesh->GetMaterial()
+				if (mesh.Mesh != nullptr)
+				{
+					Renderer::Submit(
+						mesh.Mesh->GetVAO(),
+						transform.GetTransform(),
+						mesh.Mesh->GetMaterial(),
+						(int)entity
 				);
+				}
 			});
 		}
 
 		Renderer::EndScene();
 
-		/*
+		
 		Renderer2D::BeginScene(camera);
 
 		{
@@ -143,7 +152,6 @@ namespace Rod {
 		}
 
 		Renderer2D::EndScene();
-		*/
 
 	}
 
@@ -204,11 +212,6 @@ namespace Rod {
 
 	template<>
 	void Scene::OnComponentAdded<DirectionalLightComponent>(Entity entity, DirectionalLightComponent& component)
-	{
-	}
-
-	template<>
-	void Scene::OnComponentAdded<MaterialComponent>(Entity entity, MaterialComponent& component)
 	{
 	}
 

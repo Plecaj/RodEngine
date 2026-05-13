@@ -63,21 +63,16 @@ namespace Rod {
 		Ref<Mesh> Mesh;
 	};
 
-	struct MaterialComponent
-	{
-		Ref<Material> Material;
-	};
-
 	struct DirectionalLightComponent
 	{
-		glm::vec3 Direction;
-		glm::vec3 Color;
-		float Intensity;
+		glm::vec3 Direction = glm::vec3(0.667f, -0.667f, -0.333f);
+		glm::vec3 Color = glm::vec3(1.0f);
+		float Intensity = 1.0f;
 		
 		DirectionalLightComponent() = default;
 		DirectionalLightComponent(const DirectionalLightComponent&) = default;
-		DirectionalLightComponent(const glm::vec3& direction, const glm::vec3& color, float density = 1.0f)
-			:Direction(direction), Color(color), Intensity(density) {}
+		DirectionalLightComponent(const glm::vec3& direction, const glm::vec3& color, float intensity = 1.0f)
+			:Direction(direction), Color(color), Intensity(intensity) {}
 	};
 
 	struct CameraComponent

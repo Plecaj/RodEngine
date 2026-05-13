@@ -20,7 +20,7 @@ namespace Rod {
 		static void BeginScene(const EditorCamera& camera, std::vector<DirectionalLightComponent>& lights);
 		static void EndScene();
 
-		static void Submit(const Ref<VertexArray>& vertexArray, const glm::mat4& transform = glm::mat4(1.0f), const Ref<Material>& material = nullptr);
+		static void Submit(const Ref<VertexArray>& vertexArray, const glm::mat4& transform = glm::mat4(1.0f), const Ref<Material>& material = nullptr, int entityID = -1);
 
 		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 	private:

@@ -17,6 +17,7 @@ namespace Rod {
 
         Ref<VertexArray> GetVAO() const { return m_VAO; }
         Ref<Material> GetMaterial() const { return m_Material; }
+        const std::string& GetPath() const { return m_SourcePath; }
 
     private:
         void LoadGLB(const std::string& path);
@@ -26,6 +27,7 @@ namespace Rod {
     private:
         Ref<VertexArray> m_VAO;
         Ref<Material> m_Material;
+        std::string m_SourcePath;
     };
 
 }

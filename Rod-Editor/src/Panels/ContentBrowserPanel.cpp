@@ -112,6 +112,16 @@ namespace Rod {
                 ImGui::EndDragDropSource();
             }
         }
+        else if (path.extension() == ".glb")
+        {
+            if (ImGui::BeginDragDropSource())
+            {
+                std::string itemPath = relativePath.string();
+                ImGui::SetDragDropPayload("CONTENT_BROWSER_MESH_ITEM", itemPath.c_str(), itemPath.size() + 1);
+                ImGui::Text("%s", filename.c_str());
+                ImGui::EndDragDropSource();
+            }
+        }
     }
 
 }

@@ -63,7 +63,7 @@ namespace Rod {
 	}
 
 	EditorLayer::EditorLayer()
-		:Layer("Sandbox2D")
+		:Layer("Editor Layer")
 	{
 	}
 
@@ -79,7 +79,7 @@ namespace Rod {
 
 		NewScene();
 		SceneSerializer serializer(m_ActiveScene);
-		serializer.DeserializeText("assets/scenes/Example.rod");
+		serializer.DeserializeText("assets/scenes/Example3D.rod");
 
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
@@ -113,7 +113,7 @@ namespace Rod {
 
 		m_Framebuffer->Bind();
 		Renderer2D::ResetStats();
-		RenderCommand::SetClearColor({ 0.1f, 0.1f, 0.1f, 1 });
+		RenderCommand::SetClearColor({ 0.15f, 0.15f, 0.15f, 1 });
 		RenderCommand::Clear();
 
 		m_Framebuffer->ClearColorAttachment(1, -1);

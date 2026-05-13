@@ -112,7 +112,8 @@ namespace Rod {
 		return entityDeleted;
 	}
 
-	static void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f, float columnWidth = 100.0f)
+	static void DrawVec3Control(const std::string& label, glm::vec3& values, const float speed = 0.1f,
+		const float minBound = 0.0f, const float maxBound = 0.0f, float resetValue = 0.0f, float columnWidth = 100.0f)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		auto boldFont = io.Fonts->Fonts[0];
@@ -140,7 +141,7 @@ namespace Rod {
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		ImGui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f");
+		ImGui::DragFloat("##X", &values.x, speed, minBound, maxBound, "%.2f");
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -154,7 +155,7 @@ namespace Rod {
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		ImGui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, "%.2f");
+		ImGui::DragFloat("##Y", &values.y, 0.1f, minBound, maxBound, "%.2f");
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -168,7 +169,7 @@ namespace Rod {
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		ImGui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, "%.2f");
+		ImGui::DragFloat("##Z", &values.z, 0.1f, minBound, maxBound, "%.2f");
 		ImGui::PopItemWidth();
 
 		ImGui::PopStyleVar();
@@ -232,6 +233,8 @@ namespace Rod {
 		DrawTransformComponent(entity);
 		DrawCameraComponent(entity);
 		DrawSpriteRendererComponent(entity);
+		DrawMeshComponent(entity);
+		DrawDirectionalLightComponent(entity);
 	}
 
 	void SceneHierarchyPanel::DrawTag(Entity entity)
@@ -268,6 +271,18 @@ namespace Rod {
 			if (ImGui::MenuItem("Sprite Renderer") && !entity.HasComponent<SpriteRendererComponent>())
 			{
 				entity.AddComponent<SpriteRendererComponent>();
+				ImGui::CloseCurrentPopup();
+			}
+
+			if (ImGui::MenuItem("Mesh") && !entity.HasComponent<MeshComponent>())
+			{
+				entity.AddComponent<MeshComponent>();
+				ImGui::CloseCurrentPopup();
+			}
+
+			if (ImGui::MenuItem("Directional Light") && !entity.HasComponent<DirectionalLightComponent>())
+			{
+				entity.AddComponent<DirectionalLightComponent>();
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -374,6 +389,64 @@ namespace Rod {
 				}
 
 				ImGui::DragFloat("Tiling Factor", &component.TilingFactor, 0.1f, 0.0f, 100.0f);
+			});
+	}
+
+	void SceneHierarchyPanel::DrawMeshComponent(Entity entity)
+	{
+		DrawComponent<MeshComponent>("Mesh", entity, [](auto& component)
+			{
+				std::string meshPath = component.Mesh ? component.Mesh->GetPath() : "None";
+				ImGui::Text("Asset: %s", meshPath.c_str());
+
+				if (ImGui::Button("Clear Mesh", ImVec2(100.0f, 0.0f)))
+				{
+					component.Mesh = nullptr;
+					return;
+				}
+
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_MESH_ITEM"))
+					{
+						const char* path = (const char*)payload->Data;
+						std::filesystem::path meshAssetPath = std::filesystem::path(g_AssetsPath) / path;
+						component.Mesh = Mesh::Create(meshAssetPath.string());
+					}
+					ImGui::EndDragDropTarget();
+				}
+				if (!component.Mesh) return;
+
+				if (!component.Mesh->GetMaterial())
+					component.Mesh->GetMaterial() = Material::Create();
+
+				auto material = component.Mesh->GetMaterial();
+				glm::vec4 albedo = material->GetAlbedo();
+				glm::vec3 emissive = material->GetEmissive();
+				float roughness = material->GetRoughness();
+				float metallic = material->GetMetallic();
+
+				ImGui::ColorEdit4("Albedo", glm::value_ptr(albedo));
+				ImGui::ColorEdit3("Emissive", glm::value_ptr(emissive));
+				ImGui::DragFloat("Roughness", &roughness, 0.01f, 0.0f, 1.0f);
+				ImGui::DragFloat("Metallic", &metallic, 0.01f, 0.0f, 1.0f);
+
+				material->SetAlbedo(albedo);
+				material->SetEmissive(emissive);
+				material->SetRoughness(roughness);
+				material->SetMetallic(metallic);
+
+			});
+	}
+
+	void SceneHierarchyPanel::DrawDirectionalLightComponent(Entity entity)
+	{
+		DrawComponent<DirectionalLightComponent>("Directional Light", entity, [](auto& component)
+			{
+				DrawVec3Control("Direction", component.Direction, 0.01, -1.0f, 1.0f);
+				component.Direction = glm::normalize(component.Direction);
+				ImGui::ColorEdit3("Color", glm::value_ptr(component.Color));
+				ImGui::DragFloat("Intensity", &component.Intensity, 0.01f, 0.0f, 1.0f);
 			});
 	}
 }

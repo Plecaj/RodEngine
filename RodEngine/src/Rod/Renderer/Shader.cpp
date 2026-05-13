@@ -35,7 +35,6 @@ namespace Rod {
 
 	   std::filesystem::path file(filepath);
 	   std::string name = file.stem().string();
-
        switch (RendererAPI::GetAPI())
        {
        case RendererAPI::API::OpenGL: return CreateRef<OpenGLShader>(processed, name, options);

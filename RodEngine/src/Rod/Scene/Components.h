@@ -7,6 +7,9 @@
 #include "ScriptableEntity.h"
 
 #include "Rod/Renderer/Texture.h"
+#include "Rod/Renderer/Mesh.h"
+#include "Rod/Renderer/Shader.h"
+#include "Rod/Renderer/Material.h"
 
 namespace Rod {
 
@@ -53,6 +56,23 @@ namespace Rod {
 		SpriteRendererComponent(const SpriteRendererComponent&) = default;
 		SpriteRendererComponent(const glm::vec4& color)
 			:Color(color) {}
+	};
+
+	struct MeshComponent
+	{
+		Ref<Mesh> Mesh;
+	};
+
+	struct DirectionalLightComponent
+	{
+		glm::vec3 Direction = glm::vec3(0.667f, -0.667f, -0.333f);
+		glm::vec3 Color = glm::vec3(1.0f);
+		float Intensity = 1.0f;
+		
+		DirectionalLightComponent() = default;
+		DirectionalLightComponent(const DirectionalLightComponent&) = default;
+		DirectionalLightComponent(const glm::vec3& direction, const glm::vec3& color, float intensity = 1.0f)
+			:Direction(direction), Color(color), Intensity(intensity) {}
 	};
 
 	struct CameraComponent

@@ -154,6 +154,42 @@ namespace Rod {
 			out << YAML::EndMap; // SpriteRendererComponent
 		}
 
+		if (entity.HasComponent<MeshComponent>())
+		{
+			out << YAML::Key << "MeshComponent";
+			out << YAML::BeginMap; // MeshComponent
+
+			auto& meshComponent = entity.GetComponent<MeshComponent>();
+			if (meshComponent.Mesh)
+				out << YAML::Key << "Path" << YAML::Value << meshComponent.Mesh->GetPath();
+			else
+				out << YAML::Key << "Path" << YAML::Value << "None";
+			
+			if (auto mat = meshComponent.Mesh->GetMaterial())
+			{
+				out << YAML::Key << "Albedo" << YAML::Value << mat->GetAlbedo();
+				out << YAML::Key << "Emissive" << YAML::Value << mat->GetEmissive();
+				out << YAML::Key << "Roughness" << YAML::Value << mat->GetRoughness();
+				out << YAML::Key << "Metallic" << YAML::Value << mat->GetMetallic();
+			}
+
+
+			out << YAML::EndMap; // MeshComponent
+		}
+
+		if (entity.HasComponent<DirectionalLightComponent>())
+		{
+			out << YAML::Key << "DirectionalLightComponent";
+			out << YAML::BeginMap; // DirectionalLightComponent
+
+			auto& light = entity.GetComponent<DirectionalLightComponent>();
+			out << YAML::Key << "Direction" << YAML::Value << light.Direction;
+			out << YAML::Key << "Color" << YAML::Value << light.Color;
+			out << YAML::Key << "Intensity" << YAML::Value << light.Intensity;
+
+			out << YAML::EndMap; // DirectionalLightComponent
+		}
+
 		out << YAML::EndMap; // Entity
 	}
 
@@ -254,6 +290,34 @@ namespace Rod {
 					std::string texturePath = spriteRendererComponent["Texture"].as<std::string>();
 					if (texturePath != "None")
 						src.Texture = Texture2D::Create(texturePath);
+				}
+
+				auto meshComponent = entity["MeshComponent"];
+				if (meshComponent)
+				{
+					auto& mc = deserializedEntity.AddComponent<MeshComponent>();
+					std::string meshPath = meshComponent["Path"].as<std::string>();
+					if (meshPath != "None")
+						mc.Mesh = Mesh::Create(meshPath);
+
+					if (meshComponent["Albedo"])
+						mc.Mesh->GetMaterial()->SetAlbedo(meshComponent["Albedo"].as<glm::vec4>());
+					if (meshComponent["Emissive"])
+						mc.Mesh->GetMaterial()->SetEmissive(meshComponent["Emissive"].as<glm::vec3>());
+					if (meshComponent["Roughness"])
+						mc.Mesh->GetMaterial()->SetRoughness(meshComponent["Roughness"].as<float>());
+					if (meshComponent["Metallic"])
+						mc.Mesh->GetMaterial()->SetMetallic(meshComponent["Metallic"].as<float>());
+
+				}
+
+				auto directionalLightComponent = entity["DirectionalLightComponent"];
+				if (directionalLightComponent)
+				{
+					auto& light = deserializedEntity.AddComponent<DirectionalLightComponent>();
+					light.Direction = directionalLightComponent["Direction"].as<glm::vec3>();
+					light.Color = directionalLightComponent["Color"].as<glm::vec3>();
+					light.Intensity = directionalLightComponent["Intensity"].as<float>();
 				}
 			}
 		}

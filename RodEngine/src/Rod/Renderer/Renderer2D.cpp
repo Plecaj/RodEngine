@@ -24,7 +24,7 @@ namespace Rod {
         int EntityID = 0;
     };
 
-    struct Renderer2DData 
+    struct Renderer2DData
     {
         static constexpr int MAX_QUAD_COUNT = 10000;
         static constexpr int MAX_VERTICES_COUNT = MAX_QUAD_COUNT * 4;
@@ -33,7 +33,7 @@ namespace Rod {
 
         Ref<VertexArray> QuadVertexArray;
         Ref<VertexBuffer> QuadVertexBuffer;
-        Ref<UniformBuffer> QuadUniformBuffer;  
+        Ref<UniformBuffer> QuadUniformBuffer;
         Ref<Shader> TextureShader;
         Ref<Texture2D> WhiteTexture;
 
@@ -55,7 +55,7 @@ namespace Rod {
         RD_PROFILE_FUNCTION();
         s_Data = new Renderer2DData;
         s_Data->TextureSlots.resize(s_Data->MAX_TEXTURE_SLOTS);
-       
+
         InitShader();
         InitSamplers();
         InitQuadVertexArray();
@@ -314,8 +314,11 @@ namespace Rod {
     {
         RD_PROFILE_FUNCTION();
 
-        for (uint32_t i = 0; i < s_Data->TextureSlotIndex; i++) 
+        for (uint32_t i = 0; i < s_Data->TextureSlotIndex; i++)
             s_Data->TextureSlots[i]->Bind(i);
+
+        s_Data->QuadVertexArray->Bind();
+        s_Data->QuadVertexArray->GetIndexBuffer()->Bind();
 
         RenderCommand::DrawIndexed(s_Data->QuadVertexArray, s_Data->QuadIndexCount);
         s_Data->Stats.DrawCalls++;

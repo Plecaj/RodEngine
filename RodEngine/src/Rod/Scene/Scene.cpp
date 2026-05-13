@@ -2,6 +2,7 @@
 #include "Scene.h"
 
 #include "Rod/Renderer/Renderer2D.h"
+#include "Rod/Renderer/Renderer.h"
 
 #include <glm/glm.hpp>
 
@@ -52,33 +53,58 @@ namespace Rod {
 			});
 		}
 
-		// Render 2D
 		Camera* mainCamera = nullptr;
 		glm::mat4 cameraTransform;
 		{
-			auto group = m_Registry.group<CameraComponent>(entt::get<TransformComponent>);
-			for (auto entity : group) {
-				auto [transform, camera] = group.get<TransformComponent, CameraComponent>(entity);
-
+			auto view = m_Registry.view<CameraComponent, TransformComponent>();
+			view.each([&](auto entity, CameraComponent& camera, TransformComponent& transform) {
 				if (camera.Primary)
 				{
 					mainCamera = &camera.Camera;
 					cameraTransform = transform.GetTransform();
-					break;
 				}
-			}
+			});
 		}
 
 		if (!mainCamera) return;
 
-		Renderer2D::BeginScene(mainCamera->GetProjection(), cameraTransform);
+		std::vector<DirectionalLightComponent> lightSources;
 
-		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-		for(auto entity : group)
 		{
-			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
+			auto view = m_Registry.view<DirectionalLightComponent>();
+			view.each([&](auto entity, DirectionalLightComponent& light) {
+				lightSources.push_back(light);
+				});
+		}
 
-			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+		Renderer::BeginScene(*mainCamera, cameraTransform, lightSources);
+
+		{
+			auto view = m_Registry.view<TransformComponent, MeshComponent>();
+
+			view.each([&](auto entity, TransformComponent& transform, MeshComponent& mesh) {
+				if (mesh.Mesh != nullptr)
+				{
+					Renderer::Submit(
+						mesh.Mesh->GetVAO(),
+						transform.GetTransform(),
+						mesh.Mesh->GetMaterial(),
+						(int)entity
+				);
+
+				}
+			});
+		}
+
+		Renderer::EndScene();
+
+		Renderer2D::BeginScene(mainCamera->GetProjection(), cameraTransform);
+		
+		{
+			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
+			view.each([&](auto entity, TransformComponent& transform, SpriteRendererComponent& sprite) {
+				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+				});
 		}
 
 		Renderer2D::EndScene();
@@ -86,14 +112,43 @@ namespace Rod {
 
 	void Scene::OnUpdateEditor(Timestep& ts, EditorCamera& camera)
 	{
+		std::vector<DirectionalLightComponent> lightSources;
+
+		{
+			auto view = m_Registry.view<DirectionalLightComponent>();
+			view.each([&](auto entity, DirectionalLightComponent& light) {
+				lightSources.push_back(light);
+				});
+		}		
+
+		Renderer::BeginScene(camera, lightSources);
+
+		{
+			auto view = m_Registry.view<TransformComponent, MeshComponent>();
+
+			view.each([&](auto entity, TransformComponent& transform, MeshComponent& mesh) {
+				if (mesh.Mesh != nullptr)
+				{
+					Renderer::Submit(
+						mesh.Mesh->GetVAO(),
+						transform.GetTransform(),
+						mesh.Mesh->GetMaterial(),
+						(int)entity
+				);
+				}
+			});
+		}
+
+		Renderer::EndScene();
+
+		
 		Renderer2D::BeginScene(camera);
 
-		auto group = m_Registry.group<TransformComponent>(entt::get<SpriteRendererComponent>);
-		for (auto entity : group)
 		{
-			auto [transform, sprite] = group.get<TransformComponent, SpriteRendererComponent>(entity);
-
-			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
+			view.each([&](auto entity, TransformComponent& transform, SpriteRendererComponent& sprite) {
+				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+				});
 		}
 
 		Renderer2D::EndScene();
@@ -147,6 +202,16 @@ namespace Rod {
 
 	template<>
 	void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<MeshComponent>(Entity entity, MeshComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<DirectionalLightComponent>(Entity entity, DirectionalLightComponent& component)
 	{
 	}
 

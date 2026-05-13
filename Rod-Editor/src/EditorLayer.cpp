@@ -1,5 +1,6 @@
 #include "EditorLayer.h"
 #include "imgui.h"
+#include "imgui_internal.h"
 #include "ImGuizmo.h"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -14,6 +15,52 @@ namespace Rod {
 
 	// Temporary 
 	extern const std::filesystem::path g_AssetsPath;
+
+	void EditorLayer::SetupDefaultDockLayout(ImGuiID dockspaceID)
+	{
+		ImGuiDockNode* dockNode = ImGui::DockBuilderGetNode(dockspaceID);
+		if (dockNode == nullptr)
+		{
+			return;
+		}
+		const ImVec2 dockSpaceSize = dockNode->Size;
+
+		ImGui::DockBuilderRemoveNode(dockspaceID);
+		ImGui::DockBuilderAddNode(dockspaceID, ImGuiDockNodeFlags_DockSpace);
+		ImGui::DockBuilderSetNodeSize(dockspaceID, dockSpaceSize);
+
+		ImGuiID leftDockID, centerDockID, rightDockID;
+		ImGuiID leftBottomDockID, centerBottomDockID, toolbarDockID;
+		ImGuiID rightBottomDockID, rightBottomLowerDockID;
+
+		// Ratios are based on the reference layout from imgui.ini.
+		leftDockID = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Left, 0.230f, nullptr, &centerDockID);
+		rightDockID = ImGui::DockBuilderSplitNode(centerDockID, ImGuiDir_Right, 0.299f, nullptr, &centerDockID);
+
+		leftBottomDockID = ImGui::DockBuilderSplitNode(leftDockID, ImGuiDir_Down, 0.498f, nullptr, &leftDockID);
+
+		centerBottomDockID = ImGui::DockBuilderSplitNode(centerDockID, ImGuiDir_Down, 0.245f, nullptr, &centerDockID);
+		toolbarDockID = ImGui::DockBuilderSplitNode(centerDockID, ImGuiDir_Up, 0.066f, nullptr, &centerDockID);
+
+		rightBottomDockID = ImGui::DockBuilderSplitNode(rightDockID, ImGuiDir_Down, 0.724f, nullptr, &rightDockID);
+		rightBottomLowerDockID = ImGui::DockBuilderSplitNode(rightBottomDockID, ImGuiDir_Down, 0.408f, nullptr, &rightBottomDockID);
+
+		ImGui::DockBuilderDockWindow("Scene Hierarchy", leftDockID);
+		ImGui::DockBuilderDockWindow("Properties", leftBottomDockID);
+
+		ImGui::DockBuilderDockWindow("##toolbar", toolbarDockID);
+		ImGui::DockBuilderDockWindow("Viewport", centerDockID);
+		ImGui::DockBuilderDockWindow("Content Browser", centerBottomDockID);
+
+		ImGui::DockBuilderDockWindow("Performance", rightDockID);
+		ImGui::DockBuilderDockWindow("Other", rightBottomDockID);
+		ImGui::DockBuilderDockWindow("Guide", rightBottomLowerDockID);
+
+		if (ImGuiDockNode* toolbarNode = ImGui::DockBuilderGetNode(toolbarDockID))
+			toolbarNode->LocalFlags |= ImGuiDockNodeFlags_HiddenTabBar;
+
+		ImGui::DockBuilderFinish(dockspaceID);
+	}
 
 	EditorLayer::EditorLayer()
 		:Layer("Editor Layer")
@@ -186,6 +233,12 @@ namespace Rod {
 			ImGui::GetStyle().Colors[ImGuiCol_DockingPreview].w = 0.0f;
 
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+
+			if (!m_DockLayoutInitialized)
+			{
+				SetupDefaultDockLayout(dockspace_id);
+				m_DockLayoutInitialized = true;
+			}
 		}
 
 		style.WindowMinSize.x = 32.0f;

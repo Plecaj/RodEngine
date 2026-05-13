@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Rod.h"
+#include "imgui.h"
 #include "Panels/SceneHierarchyPanel.h"
 #include "Panels/ContentBrowserPanel.h"
 #include "Panels/TitlebarPanel.h"
@@ -28,6 +29,8 @@ namespace Rod {
 		virtual void OnImGuiRender() override;
 		void OnEvent(Event& event) override;
 	private:
+		void SetupDefaultDockLayout(ImGuiID dockspaceID);
+
 		bool OnKeyPressed(KeyPressedEvent& e);
 		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
 
@@ -77,6 +80,7 @@ namespace Rod {
 
 		// Editor Resources
 		Ref<Texture2D> m_PlayButton, m_StopButton;
+		bool m_DockLayoutInitialized = false;
 	};
 
 }

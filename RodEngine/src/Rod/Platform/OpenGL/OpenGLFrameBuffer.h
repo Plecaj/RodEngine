@@ -21,6 +21,8 @@ namespace Rod {
 		virtual void ClearColorAttachment(uint32_t attachmentIndex, int value) override;
 
 		virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const override { RD_CORE_ASSERT(index < m_ColorAttachments.size(), "Index < ColorAttachments.size()"); return m_ColorAttachments[index]; }
+		virtual uint32_t GetDepthAttachmentRendererID() const override { return m_DepthAttachment; }
+		virtual void BindDepthAttachment(uint32_t slot = 0) const override;
 
 		virtual const FramebufferSpecification& GetSpecification() const override { return m_Specification; };
 	private:

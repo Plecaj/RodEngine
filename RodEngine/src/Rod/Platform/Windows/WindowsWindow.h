@@ -33,9 +33,13 @@ namespace Rod {
 	private:
 		virtual void Init(const WindowProps& props);
 		virtual void Shutdown();
+		void UpdateWindowDrag() const;
 	private:
 		GLFWwindow* m_Window;
 		GraphicsContext* m_Context;
+		mutable bool m_WindowDragActive = false;
+		mutable glm::vec2 m_WindowDragStartMouseScreen = { 0.0f, 0.0f };
+		mutable glm::ivec2 m_WindowDragStartPosition = { 0, 0 };
 
 		struct WindowData
 		{

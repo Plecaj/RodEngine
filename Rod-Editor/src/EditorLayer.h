@@ -81,6 +81,7 @@ namespace Rod {
 		// Editor Resources
 		Ref<Texture2D> m_PlayButton, m_StopButton;
 		bool m_DockLayoutInitialized = false;
+		ImGuiID m_ToolbarDockID = 0;
 	};
 
 }

@@ -3,7 +3,7 @@
 
 namespace Rod {
 
-	void ToolbarPanel::OnImGuiRender(SceneState sceneState, Ref<Texture2D> playButton, Ref<Texture2D> stopButton,
+	void ToolbarPanel::OnImGuiRender(SceneState sceneState, Ref<Texture2D> playButton, Ref<Texture2D> stopButton, ImGuiID dockID,
 		std::function<void()> onPlay, std::function<void()> onStop)
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 2));
@@ -15,7 +15,14 @@ namespace Rod {
 		const auto& buttonActive = colors[ImGuiCol_ButtonActive];
 		ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(buttonActive.x, buttonActive.y, buttonActive.z, 0.5f));
 
-		ImGui::Begin("##toolbar", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+		ImGuiWindowFlags toolbarFlags =
+			ImGuiWindowFlags_NoDecoration |
+			ImGuiWindowFlags_NoScrollbar |
+			ImGuiWindowFlags_NoScrollWithMouse;
+
+		if (dockID != 0)
+			ImGui::SetNextWindowDockID(dockID, ImGuiCond_Always);
+		ImGui::Begin("##toolbar", nullptr, toolbarFlags);
 
 		float size = ImGui::GetWindowHeight() - 4.0f;
 		Ref<Texture2D> icon = sceneState == SceneState::Edit ? playButton : stopButton;

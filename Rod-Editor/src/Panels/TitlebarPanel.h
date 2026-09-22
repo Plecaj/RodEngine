@@ -27,7 +27,7 @@ namespace Rod {
 		void DrawFileMenu();
 		void DrawButtons();
 	private:
-		uint32_t m_Height = 32;
+		uint32_t m_Height = 36;
 		ImVec2 m_ButtonSize;
 
 		Ref<Texture2D> m_Logo;

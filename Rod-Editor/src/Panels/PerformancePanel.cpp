@@ -8,16 +8,17 @@ namespace Rod {
 	{
 		ImGui::Begin("Performance");
 
-		float fps = 1.0f / deltaTime;
+		float fps = deltaTime > 0.0f ? 1.0f / deltaTime : 0.0f;
+		ImGui::TextDisabled("Frame");
 		ImGui::Text("FPS: %.1f", fps);
 		ImGui::Text("Frame Time: %.3f ms", deltaTime * 1000.0f);
 
 		ImGui::Separator();
 
 		auto stats = Renderer2D::GetStats();
-		ImGui::Text("Renderer 2D Stats:");
-		ImGui::Text("	Draw calls: %d", stats.DrawCalls);
-		ImGui::Text("	Quad Count: %d", stats.QuadCount);
+		ImGui::TextDisabled("Renderer 2D");
+		ImGui::Text("Draw Calls: %d", stats.DrawCalls);
+		ImGui::Text("Quad Count: %d", stats.QuadCount);
 
 		ImGui::End();
 	}

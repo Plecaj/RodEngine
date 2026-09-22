@@ -33,7 +33,6 @@ namespace Rod {
 		ImGuiID leftBottomDockID, centerBottomDockID, toolbarDockID;
 		ImGuiID rightBottomDockID, rightBottomLowerDockID;
 
-		// Ratios are based on the reference layout from imgui.ini.
 		leftDockID = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Left, 0.230f, nullptr, &centerDockID);
 		rightDockID = ImGui::DockBuilderSplitNode(centerDockID, ImGuiDir_Right, 0.299f, nullptr, &centerDockID);
 
@@ -41,6 +40,7 @@ namespace Rod {
 
 		centerBottomDockID = ImGui::DockBuilderSplitNode(centerDockID, ImGuiDir_Down, 0.245f, nullptr, &centerDockID);
 		toolbarDockID = ImGui::DockBuilderSplitNode(centerDockID, ImGuiDir_Up, 0.066f, nullptr, &centerDockID);
+		m_ToolbarDockID = toolbarDockID;
 
 		rightBottomDockID = ImGui::DockBuilderSplitNode(rightDockID, ImGuiDir_Down, 0.724f, nullptr, &rightDockID);
 		rightBottomLowerDockID = ImGui::DockBuilderSplitNode(rightBottomDockID, ImGuiDir_Down, 0.408f, nullptr, &rightBottomDockID);
@@ -57,7 +57,16 @@ namespace Rod {
 		ImGui::DockBuilderDockWindow("Guide", rightBottomLowerDockID);
 
 		if (ImGuiDockNode* toolbarNode = ImGui::DockBuilderGetNode(toolbarDockID))
-			toolbarNode->LocalFlags |= ImGuiDockNodeFlags_HiddenTabBar;
+		{
+			toolbarNode->LocalFlags |= ImGuiDockNodeFlags_NoTabBar;
+			toolbarNode->LocalFlags |= ImGuiDockNodeFlags_NoWindowMenuButton;
+			toolbarNode->LocalFlags |= ImGuiDockNodeFlags_NoCloseButton;
+			toolbarNode->LocalFlags |= ImGuiDockNodeFlags_NoResize;
+			toolbarNode->LocalFlags |= ImGuiDockNodeFlags_NoResizeY;
+		}
+
+		if (ImGuiDockNode* viewportNode = ImGui::DockBuilderGetNode(centerDockID))
+			viewportNode->LocalFlags |= ImGuiDockNodeFlags_HiddenTabBar;
 
 		ImGui::DockBuilderFinish(dockspaceID);
 	}
@@ -155,7 +164,7 @@ namespace Rod {
 
 	void EditorLayer::OnImGuiRender()
 	{
-		float titlebarHeight = (float)m_TitlebarPanel.GetHeight() - 20.0f;
+		float titlebarHeight = (float)m_TitlebarPanel.GetHeight();
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
 
 		ImGui::SetNextWindowPos(viewport->WorkPos);
@@ -170,6 +179,7 @@ namespace Rod {
 			ImGuiWindowFlags_NoMove |
 			ImGuiWindowFlags_NoScrollbar |
 			ImGuiWindowFlags_NoScrollWithMouse |
+			ImGuiWindowFlags_NoSavedSettings |
 			ImGuiWindowFlags_NoTitleBar;
 		ImGui::Begin("Titlebar", nullptr, titlebar_flags);
 
@@ -178,13 +188,12 @@ namespace Rod {
 		ImGui::End();
 		ImGui::PopStyleVar(3);
 
-		// Dockspace code from ImGui demo
 		static bool dockspaceOpen = true;
 		static bool opt_fullscreen = true;
 		static bool opt_padding = false;
 		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoSavedSettings;
 
 		ImVec2 dockPos = ImVec2(viewport->WorkPos.x, viewport->WorkPos.y + titlebarHeight);
 		ImVec2 dockSize = ImVec2(viewport->WorkSize.x, viewport->WorkSize.y - titlebarHeight);
@@ -195,9 +204,8 @@ namespace Rod {
 
 		if (opt_fullscreen)
 		{
-			const ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImGui::SetNextWindowPos(viewport->WorkPos);
-			ImGui::SetNextWindowSize(viewport->WorkSize);
+			ImGui::SetNextWindowPos(dockPos);
+			ImGui::SetNextWindowSize(dockSize);
 			ImGui::SetNextWindowViewport(viewport->ID);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
@@ -228,9 +236,6 @@ namespace Rod {
 		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 		{
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-
-			ImGui::GetStyle().Colors[ImGuiCol_Separator].w = 0.0f;
-			ImGui::GetStyle().Colors[ImGuiCol_DockingPreview].w = 0.0f;
 
 			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 
@@ -271,6 +276,7 @@ namespace Rod {
 			m_SceneState,
 			m_PlayButton,
 			m_StopButton,
+			m_ToolbarDockID,
 			[this]() { OnScenePlay(); },
 			[this]() { OnSceneStop(); }
 		);

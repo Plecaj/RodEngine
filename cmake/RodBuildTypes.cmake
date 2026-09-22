@@ -1,0 +1,19 @@
+set(ROD_KNOWN_BUILD_TYPES Debug Release Dist)
+
+get_property(ROD_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(ROD_IS_MULTI_CONFIG)
+    set(CMAKE_CONFIGURATION_TYPES "${ROD_KNOWN_BUILD_TYPES}" CACHE STRING "Build configurations" FORCE)
+else()
+    if(NOT CMAKE_BUILD_TYPE)
+        set(CMAKE_BUILD_TYPE Debug CACHE STRING "Build type" FORCE)
+    endif()
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS ${ROD_KNOWN_BUILD_TYPES})
+endif()
+
+foreach(language IN ITEMS C CXX)
+    set(CMAKE_${language}_FLAGS_DIST "${CMAKE_${language}_FLAGS_RELEASE}" CACHE STRING "Flags used by ${language} during Dist builds" FORCE)
+endforeach()
+
+set(CMAKE_EXE_LINKER_FLAGS_DIST "${CMAKE_EXE_LINKER_FLAGS_RELEASE}" CACHE STRING "Linker flags during Dist builds" FORCE)
+set(CMAKE_SHARED_LINKER_FLAGS_DIST "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}" CACHE STRING "Shared linker flags during Dist builds" FORCE)
+set(CMAKE_STATIC_LINKER_FLAGS_DIST "${CMAKE_STATIC_LINKER_FLAGS_RELEASE}" CACHE STRING "Static linker flags during Dist builds" FORCE)

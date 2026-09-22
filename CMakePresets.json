@@ -1,0 +1,64 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "vs",
+      "displayName": "Visual Studio MSVC",
+      "description": "MSVC-first configuration for Visual Studio development.",
+      "generator": "Visual Studio 17 2022",
+      "architecture": "x64",
+      "toolset": "host=x64",
+      "binaryDir": "${sourceDir}/build/vs",
+      "cacheVariables": {
+        "ROD_CXX_STANDARD": "23",
+        "ROD_ENABLE_PCH": "ON",
+        "ROD_USE_SYSTEM_SHADERC": "OFF",
+        "ROD_BUILD_EDITOR": "ON"
+      },
+      "vendor": {
+        "microsoft.com/VisualStudioSettings/CMake/1.0": {
+          "hostOS": "Windows",
+          "intelliSenseMode": "windows-msvc-x64",
+          "enableMicrosoftCodeAnalysis": true,
+          "intelliSenseOptions": {
+            "useCompilerDefaults": true
+          }
+        }
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "vs-debug",
+      "displayName": "VS Debug",
+      "configurePreset": "vs",
+      "configuration": "Debug",
+      "targets": [
+        "Rod-Editor"
+      ]
+    },
+    {
+      "name": "vs-release",
+      "displayName": "VS Release",
+      "configurePreset": "vs",
+      "configuration": "Release",
+      "targets": [
+        "Rod-Editor"
+      ]
+    },
+    {
+      "name": "vs-dist",
+      "displayName": "VS Dist",
+      "configurePreset": "vs",
+      "configuration": "Dist",
+      "targets": [
+        "Rod-Editor"
+      ]
+    }
+  ]
+}

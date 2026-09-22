@@ -16,7 +16,7 @@ namespace Rod {
 	class OpenGLShader : public Shader
 	{
 	public:
-		OpenGLShader(std::unordered_map<shaderc_shader_kind, std::string> shaders, std::string namem, const ShaderOptions& options = {});
+		OpenGLShader(std::unordered_map<shaderc_shader_kind, std::string> shaders, std::string namem, const ShaderOptions& options = ShaderOptions());
 		virtual	~OpenGLShader();
 
 		virtual void Bind() const override;

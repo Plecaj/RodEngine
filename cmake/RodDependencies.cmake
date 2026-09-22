@@ -1,0 +1,40 @@
+set(ROD_VENDOR_DIR "${CMAKE_CURRENT_SOURCE_DIR}/RodEngine/vendor")
+
+add_library(RodGlm INTERFACE)
+add_library(Rod::Glm ALIAS RodGlm)
+target_include_directories(RodGlm SYSTEM INTERFACE "${ROD_VENDOR_DIR}/glm")
+
+add_library(RodEntt INTERFACE)
+add_library(Rod::Entt ALIAS RodEntt)
+target_include_directories(RodEntt SYSTEM INTERFACE "${ROD_VENDOR_DIR}/entt")
+
+add_library(RodJson INTERFACE)
+add_library(Rod::Json ALIAS RodJson)
+target_include_directories(RodJson SYSTEM INTERFACE "${ROD_VENDOR_DIR}/json")
+
+add_library(RodSpdlog INTERFACE)
+add_library(Rod::Spdlog ALIAS RodSpdlog)
+target_include_directories(RodSpdlog SYSTEM INTERFACE "${ROD_VENDOR_DIR}/spdlog/include")
+
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
+set(USE_MSVC_RUNTIME_LIBRARY_DLL OFF CACHE BOOL "" FORCE)
+add_subdirectory("${ROD_VENDOR_DIR}/GLFW" "${CMAKE_BINARY_DIR}/_deps/glfw" EXCLUDE_FROM_ALL)
+add_library(Rod::GLFW ALIAS glfw)
+
+set(YAML_CPP_BUILD_CONTRIB OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(YAML_CPP_INSTALL OFF CACHE BOOL "" FORCE)
+set(YAML_MSVC_SHARED_RT OFF CACHE BOOL "" FORCE)
+add_subdirectory("${ROD_VENDOR_DIR}/yaml-cpp" "${CMAKE_BINARY_DIR}/_deps/yaml-cpp" EXCLUDE_FROM_ALL)
+add_library(Rod::YamlCpp ALIAS yaml-cpp)
+
+include(vendor/Glad)
+include(vendor/ImGui)
+include(vendor/imguizmo)
+include(vendor/stb)
+include(vendor/tinygltf)
+include(vendor/shaderc)

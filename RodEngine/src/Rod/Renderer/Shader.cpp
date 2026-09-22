@@ -3,7 +3,7 @@
 
 #include "Rod/Platform/OpenGL/OpenGLShader.h"
 
-#include <Glad/glad.h>
+#include <glad/glad.h>
 
 namespace Rod {
 

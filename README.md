@@ -16,10 +16,10 @@
 ###  Prerequisites
 
 - **Windows**
-- **MSVC** (should be fine in other compilers, but hasnt been tested)
+- **Visual Studio 2022 / MSVC** with the **Desktop development with C++** workload
 - **Git**
-- **Python 3.13+**
-- **CMake 3.30+**
+- **Python 3.x**
+- **CMake 3.25+**
 
 
 ### 1. Clone the repository
@@ -27,7 +27,8 @@
 This project uses Git submodules, so it is **recommended** to clone with:
 
 ```bash
-git clone --recursive <repo_url>
+git clone --recursive https://github.com/Plecaj/RodEngine
+cd RodEngine
 ```
 
 If you already cloned the repository without submodules:
@@ -42,16 +43,16 @@ git submodule update --init --recursive
 
 The project requires additional dependency setup for `shaderc`.
 
-Navigate starting from project root direcotry forwards to:
+Navigate from the project root to the `shaderc` directory:
 
 ```bash
-cd RodEngine/vendor/shaderc/utils
+cd RodEngine/vendor/shaderc
 ```
 
 Run the sync script:
 
 ```bash
-python git-sync-deps
+python utils/git-sync-deps
 ```
 
 > Make sure you have Python 3.x installed.
@@ -60,10 +61,11 @@ python git-sync-deps
 
 ### 3. Generate build files (CMake)
 
-Go back to the root directory and run:
+Go back to the project root directory and run the Visual Studio preset:
 
 ```bash
-cmake -S . -B build
+cd ../../..
+cmake --preset vs
 ```
 
 ---
@@ -71,7 +73,7 @@ cmake -S . -B build
 ### 4. Build the project
 
 ```bash
-cmake --build build
+cmake --build --preset vs-debug
 ```
 
 ---
@@ -80,7 +82,10 @@ cmake --build build
 ###  Notes
 
 - Failing to initialize submodules will result in build errors.
-- Running `git-sync-deps` is required — skipping it may cause missing `shaderc` dependencies.
+- Running `git-sync-deps` is required for the default vendored `shaderc` setup — skipping it may cause missing `shaderc` dependencies.
+- The `vs` preset uses **Visual Studio 17 2022**, **x64**, **C++23**, vendored `shaderc`, and generates files into `build/vs`.
+- Available build presets are `vs-debug`, `vs-release`, and `vs-dist`; the main executable target is `Rod-Editor`.
+- Build outputs are written under `build/vs/bin/<Config>/`.
 
 ##  Tech Stack
 

@@ -1,25 +1,45 @@
 # RodEngine
 
-[![License](https://img.shields.io/github/license/Plecaj/RodEngine?color=green)](LICENSE) [![Latest Commit](https://img.shields.io/github/last-commit/Plecaj/RodEngine)](https://github.com/Plecaj/RodEngine/commits/main)
+[![License](https://img.shields.io/github/license/Plecaj/RodEngine?color=green)](LICENSE)
+[![Latest Commit](https://img.shields.io/github/last-commit/Plecaj/RodEngine)](https://github.com/Plecaj/RodEngine/commits/main)
 
 <p align="center">
   <img src="logo.png" alt="RodEngine Logo" width="400" />
 </p>
 
-**RodEngine** is a custom C++ game engine I'm building from scratch. It's based on some part of [The Cherno's](https://www.youtube.com/@TheCherno) game engine series, which serves as the foundation for learning and early development. Now I expand the engine with my own architecture, features, and tools.  
+**RodEngine** is a custom C++ game engine focused on real-time rendering, editor tooling, and modern engine architecture. Originally inspired by parts of The Cherno's game engine series, the project has evolved into an independent engine with its own systems, tools, and long-term vision.
 
-##  Development Status
->  RodEngine is in early development. Expect rapid changes, incomplete systems, and experimental features.
- 
+>  RodEngine is currently in early development. APIs, systems, and project structure may change frequently.
+
+---
+
+## Screenshot
+
+<p align="center">
+  <img src="editor.png" alt="RodEngine Editor" width="900"/>
+</p>
+
+*Editor viewport and tooling preview.*
+
+---
+
+## Why RodEngine?
+
+RodEngine is a long-term project created to explore graphics programming, engine architecture, tooling, and modern C++ development through the process of building a game engine from scratch.
+
+The goal is not to compete with established engines such as Unreal Engine or Unity, but to gain a deep understanding of how game engines work internally while creating a fully functional and extensible development platform.
+
+---
+
 ##  Building
 
 ###  Prerequisites
 
 - **Windows**
-- **MSVC** (should be fine in other compilers, but hasnt been tested)
+- **Visual Studio 2022 / MSVC** with the **Desktop development with C++** workload
 - **Git**
-- **Python 3.13+**
-- **CMake 3.30+**
+- **Python 3.x**
+- **CMake 3.25+**
 
 
 ### 1. Clone the repository
@@ -27,7 +47,8 @@
 This project uses Git submodules, so it is **recommended** to clone with:
 
 ```bash
-git clone --recursive <repo_url>
+git clone --recursive https://github.com/Plecaj/RodEngine
+cd RodEngine
 ```
 
 If you already cloned the repository without submodules:
@@ -42,16 +63,16 @@ git submodule update --init --recursive
 
 The project requires additional dependency setup for `shaderc`.
 
-Navigate starting from project root direcotry forwards to:
+Navigate from the project root to the `shaderc` directory:
 
 ```bash
-cd RodEngine/vendor/shaderc/utils
+cd RodEngine/vendor/shaderc
 ```
 
 Run the sync script:
 
 ```bash
-python git-sync-deps
+python utils/git-sync-deps
 ```
 
 > Make sure you have Python 3.x installed.
@@ -60,10 +81,11 @@ python git-sync-deps
 
 ### 3. Generate build files (CMake)
 
-Go back to the root directory and run:
+Go back to the project root directory and run the Visual Studio preset:
 
 ```bash
-cmake -S . -B build
+cd ../../..
+cmake --preset vs
 ```
 
 ---
@@ -71,7 +93,7 @@ cmake -S . -B build
 ### 4. Build the project
 
 ```bash
-cmake --build build
+cmake --build --preset vs-debug
 ```
 
 ---
@@ -80,57 +102,32 @@ cmake --build build
 ###  Notes
 
 - Failing to initialize submodules will result in build errors.
-- Running `git-sync-deps` is required — skipping it may cause missing `shaderc` dependencies.
-
-##  Tech Stack
-
--  **Platform:** Windows  
--  **Language:** C++  
--  **Build System:** CMake  
--  **Rendering:** OpenGL  
--  **Windowing & Input:** GLFW (with minor changes for no windows titlebar support)
--  **Math Library:** GLM  
--  **GUI:** ImGui, ImGuizmo  
--  **ECS Library:** entt  
--  **Logging:** spdlog  
--  **Image Loading:** stb_image  
--  **Shader Compilation:** Shaderc
-
-##  Goals
-
-###  Rendering
-- High-performance 3D rendering with support for meshes, models, materials, and textures  
-- Physically-Based Rendering (PBR) pipeline with real-time lighting and shadows  
-- Support for multiple rendering APIs (OpenGL, Vulkan, DirectX, Metal)  
-- Efficient batching, frustum culling, and draw call optimization  
-- Post-processing effects: bloom, HDR, motion blur, and SSAO  
-
-###  Editor & Tools
-- Built-in 3D scene editor with drag-and-drop functionality  
-- Visual UI editor for interfaces, menus, and HUDs  
-- Real-time preview and live editing of scenes and assets  
-- Asset management for models, textures, shaders, animations, and audio  
-
-###  Platform Support
-- Cross-platform support: Windows, Linux, macOS
-
-###  Audio
-- 3D spatial audio engine with sound positioning  
-- Sound effects and music management with mixing, layering, and attenuation  
-
-###  Scripting
-- C# scripting support with hot-reload capability  
-- Easy-to-use API for engine features and gameplay logic  
-
-###  Physics
-- 3D physics engine with rigid bodies, colliders, and joints  
-- Collision detection, resolution, and physics simulation  
+- Running `git-sync-deps` is required for the default vendored `shaderc` setup — skipping it may cause missing `shaderc` dependencies.
+- The `vs` preset uses **Visual Studio 17 2022**, **x64**, **C++23**, vendored `shaderc`, and generates files into `build/vs`.
+- Available build presets are `vs-debug`, `vs-release`, and `vs-dist`; the main executable target is `Rod-Editor`.
+- Build outputs are written under `build/vs/bin/<Config>/`.
 
 
+## Tech Stack
 
-##  Credits
-
-Special thanks to [The Cherno](https://github.com/thecherno) for the incredible game engine tutorial series, which helped start project.
+| Category | Technology |
+|-----------|------------|
+| Language | C++ |
+| Build System | CMake |
+| Rendering | OpenGL |
+| Windowing & Input | GLFW |
+| GUI | ImGui, ImGuizmo |
+| ECS | entt |
+| Math | GLM |
+| Logging | spdlog |
+| Image Loading | stb_image |
+| Shader Compilation | Shaderc |
 
 ---
 
+
+## License
+
+This project is licensed under the MIT License.
+
+See the [LICENSE](LICENSE) file for more information.

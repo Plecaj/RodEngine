@@ -39,11 +39,44 @@ namespace Rod {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
+	void OpenGLRendererAPI::SetDepthBias(float slopeScaleBias, float constantBias)
+	{
+		glEnable(GL_POLYGON_OFFSET_FILL);
+		glPolygonOffset(slopeScaleBias, constantBias);
+	}
+
+	void OpenGLRendererAPI::ClearDepthBias()
+	{
+		glPolygonOffset(0.0f, 0.0f);
+		glDisable(GL_POLYGON_OFFSET_FILL);
+	}
+
 	void OpenGLRendererAPI::DrawIdexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
 	{
 		uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
-		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+
+	RendererAPI::RendererState OpenGLRendererAPI::GetState() const
+	{
+		GLint framebuffer = 0;
+		GLint viewport[4] = {};
+		glGetIntegerv(GL_FRAMEBUFFER_BINDING, &framebuffer);
+		glGetIntegerv(GL_VIEWPORT, viewport);
+
+		RendererState state;
+		state.FramebufferID = static_cast<uint32_t>(framebuffer);
+		state.ViewportX = viewport[0];
+		state.ViewportY = viewport[1];
+		state.ViewportWidth = static_cast<uint32_t>(viewport[2]);
+		state.ViewportHeight = static_cast<uint32_t>(viewport[3]);
+		return state;
+	}
+
+	void OpenGLRendererAPI::SetState(const RendererState& state)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, state.FramebufferID);
+		glViewport(state.ViewportX, state.ViewportY, state.ViewportWidth, state.ViewportHeight);
 	}
 
 }

@@ -1,28 +1,25 @@
-set(IMGUI_SOURCES
-    ${VENDOR_DIR}/imgui/imconfig.h
-    ${VENDOR_DIR}/imgui/imgui.h
-    ${VENDOR_DIR}/imgui/imgui.cpp
-    ${VENDOR_DIR}/imgui/imgui_draw.cpp
-    ${VENDOR_DIR}/imgui/imgui_internal.h
-    ${VENDOR_DIR}/imgui/imgui_tables.cpp
-    ${VENDOR_DIR}/imgui/imgui_widgets.cpp
-    ${VENDOR_DIR}/imgui/imstb_rectpack.h
-    ${VENDOR_DIR}/imgui/imstb_textedit.h
-    ${VENDOR_DIR}/imgui/imstb_truetype.h
-    ${VENDOR_DIR}/imgui/imgui_demo.cpp
+set(ROD_IMGUI_SOURCES
+    "${ROD_VENDOR_DIR}/imgui/imgui.cpp"
+    "${ROD_VENDOR_DIR}/imgui/imgui_draw.cpp"
+    "${ROD_VENDOR_DIR}/imgui/imgui_tables.cpp"
+    "${ROD_VENDOR_DIR}/imgui/imgui_widgets.cpp"
+    "${ROD_VENDOR_DIR}/imgui/backends/imgui_impl_glfw.cpp"
+    "${ROD_VENDOR_DIR}/imgui/backends/imgui_impl_opengl3.cpp"
 )
 
-add_library(ImGui STATIC ${IMGUI_SOURCES})
-
-target_include_directories(ImGui PUBLIC ${INCLUDE_DIR_IMGUI})
-
-if(WIN32)
-    set_property(TARGET ImGui PROPERTY CXX_STANDARD 17)
+if(ROD_IMGUI_DEMO)
+    list(APPEND ROD_IMGUI_SOURCES "${ROD_VENDOR_DIR}/imgui/imgui_demo.cpp")
 endif()
 
-string(TOLOWER "${CMAKE_SYSTEM_NAME}" SYSTEM_NAME_LOWER)
-set_target_properties(ImGui PROPERTIES
-    ARCHIVE_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/bin/Debug-${SYSTEM_NAME_LOWER}-${CMAKE_ARCHITECTURE}/ImGui"
-    ARCHIVE_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin/Release-${SYSTEM_NAME_LOWER}-${CMAKE_ARCHITECTURE}/ImGui"
-    ARCHIVE_OUTPUT_DIRECTORY_DIST "${CMAKE_BINARY_DIR}/bin/Dist-${SYSTEM_NAME_LOWER}-${CMAKE_ARCHITECTURE}/ImGui"
+add_library(RodImGui STATIC ${ROD_IMGUI_SOURCES})
+add_library(Rod::ImGui ALIAS RodImGui)
+
+target_compile_features(RodImGui PUBLIC cxx_std_17)
+target_compile_definitions(RodImGui PRIVATE IMGUI_IMPL_OPENGL_LOADER_GLAD)
+target_include_directories(RodImGui SYSTEM PUBLIC
+    "${ROD_VENDOR_DIR}/imgui"
+    "${ROD_VENDOR_DIR}/imgui/backends"
 )
+target_link_libraries(RodImGui PUBLIC Rod::Glad Rod::GLFW)
+
+rod_set_common_output_directories(RodImGui)

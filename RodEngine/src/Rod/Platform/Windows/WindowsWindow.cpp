@@ -192,54 +192,67 @@ namespace Rod {
 	{
 		RD_PROFILE_FUNCTION();
 
+		UpdateWindowDrag();
 		glfwPollEvents();
 		m_Context->SwapBuffers();
 	}
 
 	void WindowsWindow::Minimalize() const
 	{
+		m_WindowDragActive = false;
 		glfwIconifyWindow(m_Window);
 	}
 
 	void WindowsWindow::Maximalize() const
 	{
+		m_WindowDragActive = false;
 		glfwMaximizeWindow(m_Window);
 	}
 
 	void WindowsWindow::Restore() const
 	{
+		m_WindowDragActive = false;
 		glfwRestoreWindow(m_Window);
 	}
 
 	void WindowsWindow::BeginWindowDrag() const
 	{
-		static bool dragging = false;
-		static glm::vec2 dragOffset;
-
-		if (!dragging)
+		if (glfwGetMouseButton(m_Window, GLFW_MOUSE_BUTTON_LEFT) != GLFW_PRESS)
 		{
-			double mouseX, mouseY;
-			glfwGetCursorPos(m_Window, &mouseX, &mouseY);
-
-			int winX, winY;
-			glfwGetWindowPos(m_Window, &winX, &winY);
-
-			dragOffset = glm::vec2((float)mouseX, (float)mouseY);
-			dragging = true;
+			m_WindowDragActive = false;
+			return;
 		}
 
-		int mouseScreenX, mouseScreenY;
-		glfwGetWindowPos(m_Window, &mouseScreenX, &mouseScreenY);
-		double localMouseX, localMouseY;
-		glfwGetCursorPos(m_Window, &localMouseX, &localMouseY);
+		if (glfwGetWindowAttrib(m_Window, GLFW_MAXIMIZED))
+			glfwRestoreWindow(m_Window);
 
-		int newWinX = mouseScreenX + (int)(localMouseX - dragOffset.x);
-		int newWinY = mouseScreenY + (int)(localMouseY - dragOffset.y);
+		int windowX, windowY;
+		double mouseX, mouseY;
+		glfwGetWindowPos(m_Window, &windowX, &windowY);
+		glfwGetCursorPos(m_Window, &mouseX, &mouseY);
 
+		glm::vec2 mouseScreen = { (float)windowX + (float)mouseX, (float)windowY + (float)mouseY };
+
+		if (!m_WindowDragActive)
+		{
+			m_WindowDragStartMouseScreen = mouseScreen;
+			m_WindowDragStartPosition = { windowX, windowY };
+			m_WindowDragActive = true;
+		}
+
+		glm::vec2 dragDelta = mouseScreen - m_WindowDragStartMouseScreen;
+		int newWinX = m_WindowDragStartPosition.x + (int)dragDelta.x;
+		int newWinY = m_WindowDragStartPosition.y + (int)dragDelta.y;
 		glfwSetWindowPos(m_Window, newWinX, newWinY);
+	}
 
-		if (!glfwGetMouseButton(m_Window, GLFW_MOUSE_BUTTON_LEFT))
-			dragging = false;
+	void WindowsWindow::UpdateWindowDrag() const
+	{
+		if (!m_WindowDragActive)
+			return;
+
+		if (glfwGetMouseButton(m_Window, GLFW_MOUSE_BUTTON_LEFT) != GLFW_PRESS || !glfwGetWindowAttrib(m_Window, GLFW_FOCUSED))
+			m_WindowDragActive = false;
 	}	
 
 	void WindowsWindow::SetVSync(bool enabled)

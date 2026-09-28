@@ -1,5 +1,8 @@
 #pragma once
 
+#include <filesystem>
+#include <functional>
+
 #include "Rod.h"
 #include "Rod/Renderer/EditorCamera.h"
 #include "../SceneState.h"

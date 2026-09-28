@@ -112,6 +112,31 @@ namespace Rod {
 		return entityDeleted;
 	}
 
+	static bool DrawMoreOptionsButton(const char* id, const ImVec2& size)
+	{
+		ImGui::InvisibleButton(id, size);
+
+		bool hovered = ImGui::IsItemHovered();
+		bool active = ImGui::IsItemActive();
+
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+		ImVec2 min = ImGui::GetItemRectMin();
+		ImVec2 max = ImGui::GetItemRectMax();
+		ImU32 background = active ? IM_COL32(40, 45, 53, 255) : hovered ? IM_COL32(50, 56, 66, 255) : IM_COL32(0, 0, 0, 0);
+		ImU32 dotColor = IM_COL32(220, 225, 232, 255);
+
+		drawList->AddRectFilled(min, max, background, 3.0f);
+
+		ImVec2 center = ImVec2((min.x + max.x) * 0.5f, (min.y + max.y) * 0.5f);
+		float spacing = 4.0f;
+		float radius = 1.6f;
+		drawList->AddCircleFilled(ImVec2(center.x - spacing, center.y), radius, dotColor);
+		drawList->AddCircleFilled(center, radius, dotColor);
+		drawList->AddCircleFilled(ImVec2(center.x + spacing, center.y), radius, dotColor);
+
+		return ImGui::IsItemClicked(ImGuiMouseButton_Left);
+	}
+
 	static void DrawVec3Control(const std::string& label, glm::vec3& values, const float speed = 0.1f,
 		const float minBound = 0.0f, const float maxBound = 0.0f, float resetValue = 0.0f, float columnWidth = 100.0f)
 	{
@@ -196,10 +221,10 @@ namespace Rod {
 			auto typeHash = typeid(T).hash_code();
 			bool open = ImGui::TreeNodeEx((void*)typeHash, treeNodeFlags, name.c_str());
 			ImGui::PopStyleVar();
-			ImGui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
+			ImGui::SameLine(contentRegionAvailable.x - lineHeight * 0.6f);
 			std::string popupId = "ComponentSettings" + std::to_string(typeHash);
-			std::string buttonId = "+##" + std::to_string(typeid(T).hash_code());
-			if (ImGui::Button(buttonId.c_str(), ImVec2{ lineHeight , lineHeight }))
+			std::string buttonId = "##ComponentSettings" + std::to_string(typeid(T).hash_code());
+			if (DrawMoreOptionsButton(buttonId.c_str(), ImVec2{ lineHeight, lineHeight }))
 			{
 				ImGui::OpenPopup(popupId.c_str());
 			}
@@ -216,7 +241,9 @@ namespace Rod {
 
 			if (open)
 			{
+				ImGui::Dummy(ImVec2(0.0f, 4.0f));
 				uiFunction(component);
+				ImGui::Dummy(ImVec2(0.0f, 4.0f));
 				ImGui::TreePop();
 			}
 
@@ -248,16 +275,19 @@ namespace Rod {
 		memset(buffer, 0, sizeof(buffer));
 		strcpy_s(buffer, sizeof(buffer), tag.c_str());
 
+		float addComponentWidth = 132.0f;
+		float availableWidth = ImGui::GetContentRegionAvail().x;
+		ImGui::PushItemWidth(ImMax(100.0f, availableWidth - addComponentWidth - 10.0f));
 		if (ImGui::InputText("##", buffer, sizeof(buffer)))
 			tag = std::string(buffer);
+		ImGui::PopItemWidth();
 	}
 
 
 	void SceneHierarchyPanel::DrawAddComponentButton(Entity entity)
 	{
-		ImGui::SameLine();
-		ImGui::PushItemWidth(-1);
-		if (ImGui::Button("Add Component"))
+		ImGui::SameLine(0.0f, 10.0f);
+		if (ImGui::Button("Add Component", ImVec2(132.0f, 0.0f)))
 			ImGui::OpenPopup("AddComponent");
 
 		if (ImGui::BeginPopup("AddComponent"))
@@ -288,7 +318,7 @@ namespace Rod {
 
 			ImGui::EndPopup();
 		}
-		ImGui::PopItemWidth();
+		ImGui::Dummy(ImVec2(0.0f, 6.0f));
 	}
 
 	void SceneHierarchyPanel::DrawTransformComponent(Entity entity)
@@ -399,7 +429,7 @@ namespace Rod {
 				std::string meshPath = component.Mesh ? component.Mesh->GetPath() : "None";
 				ImGui::Text("Asset: %s", meshPath.c_str());
 
-				if (ImGui::Button("Clear Mesh", ImVec2(100.0f, 0.0f)))
+				if (ImGui::Button("Mesh", ImVec2(100.0f, 0.0f)))
 				{
 					component.Mesh = nullptr;
 					return;

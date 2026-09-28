@@ -29,7 +29,7 @@ namespace Rod {
 		std::function<void(const std::filesystem::path&)> onOpenScene)
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
-		ImGui::Begin("Viewport");
+		ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoTitleBar);
 
 		auto viewportOffset = ImGui::GetCursorPos();
 

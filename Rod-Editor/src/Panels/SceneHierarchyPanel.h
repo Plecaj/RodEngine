@@ -33,6 +33,7 @@ namespace Rod {
 		void DrawMeshComponent(Entity entity);
 		void DrawMaterialComponent(Entity entity);
 		void DrawDirectionalLightComponent(Entity entity);
+		void DrawScriptComponent(Entity entity);
 
 		void DrawComponents(Entity entity);
 	private:

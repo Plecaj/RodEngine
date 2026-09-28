@@ -9,6 +9,7 @@
 #include <chrono>
 
 #include "Rod/Utils/PlatformUtils.h"
+#include "Rod/Scripting/ScriptEngine.h"
 
 
 namespace Rod {
@@ -101,15 +102,20 @@ namespace Rod {
 
 		m_PlayButton = Texture2D::Create("assets/textures/PlayButton.png");
 		m_StopButton = Texture2D::Create("assets/textures/StopButton.png");
+
+		ScriptEngine::Init();
 	}
 
 	void EditorLayer::OnDetach()
 	{
 		RD_PROFILE_FUNCTION();
+		ScriptEngine::Shutdown();
 	}
 
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
+		ScriptEngine::OnUpdate();
+
 		if (m_ViewportSize != m_PendingViewportSize)
 		{
 			m_ViewportSize = m_PendingViewportSize;
@@ -412,10 +418,12 @@ namespace Rod {
 		m_SceneState = SceneState::Play;
 		m_GuizmoType = -1;
 		m_EditorCamera.SetControlsEnabled(false);
+		m_ActiveScene->OnRuntimeStart();
 	}
 
 	void EditorLayer::OnSceneStop()
 	{
+		m_ActiveScene->OnRuntimeStop();
 		m_SceneState = SceneState::Edit;
 		m_GuizmoType = -1;
 		m_EditorCamera.SetControlsEnabled(true);

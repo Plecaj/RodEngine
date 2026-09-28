@@ -38,7 +38,10 @@ target_link_libraries(RodEngine
         $<$<PLATFORM_ID:Windows>:opengl32>
 )
 
-target_compile_definitions(RodEngine PRIVATE _CRT_SECURE_NO_WARNINGS)
+target_compile_definitions(RodEngine PRIVATE
+    _CRT_SECURE_NO_WARNINGS
+    ROD_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+)
 
 if(ROD_ENABLE_PCH)
     target_precompile_headers(RodEngine PRIVATE src/rdpch.h)

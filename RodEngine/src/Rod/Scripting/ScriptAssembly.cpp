@@ -51,7 +51,7 @@ namespace Rod {
 					field.Type = ScriptFieldTypeFromString(field.TypeName);
 
 					if (field.Type != ScriptFieldType::None)
-						scriptClass.GetFields()[field.Name] = { field, "" };
+						scriptClass.GetFields()[field.Name] = { field, fieldJson.value("defaultValue", "") };
 				}
 
 				if (!fullName.empty())

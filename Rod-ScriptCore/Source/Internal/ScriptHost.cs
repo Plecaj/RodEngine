@@ -157,21 +157,77 @@ public static unsafe class ScriptHost
 
         var classes = GetLoadableTypes(s_GameAssembly)
             .Where(type => type.IsClass && !type.IsAbstract && typeof(ScriptBehaviour).IsAssignableFrom(type))
-            .Select(type => new
-            {
-                fullName = type.FullName ?? type.Name,
-                @namespace = type.Namespace ?? string.Empty,
-                name = type.Name,
-                fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-                    .Where(IsSerializableField)
-                    .Select(field => new
-                    {
-                        name = field.Name,
-                        type = GetFieldTypeName(field.FieldType)
-                    })
-            });
+            .Select(BuildClassMetadata);
 
         return JsonSerializer.Serialize(new { classes });
+    }
+
+    private static object BuildClassMetadata(Type type)
+    {
+        object? defaultInstance = CreateDefaultInstance(type);
+
+        return new
+        {
+            fullName = type.FullName ?? type.Name,
+            @namespace = type.Namespace ?? string.Empty,
+            name = type.Name,
+            fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .Where(IsSerializableField)
+                .Select(field => new
+                {
+                    name = field.Name,
+                    type = GetFieldTypeName(field.FieldType),
+                    defaultValue = GetFieldDefaultValue(defaultInstance, field)
+                })
+        };
+    }
+
+    private static object? CreateDefaultInstance(Type type)
+    {
+        try
+        {
+            return Activator.CreateInstance(type, nonPublic: true);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static string GetFieldDefaultValue(object? instance, FieldInfo field)
+    {
+        if (instance == null)
+            return string.Empty;
+
+        try
+        {
+            return FieldValueToString(field.GetValue(instance));
+        }
+        catch
+        {
+            return string.Empty;
+        }
+    }
+
+    private static string FieldValueToString(object? value)
+    {
+        if (value == null)
+            return string.Empty;
+        if (value is bool boolValue)
+            return boolValue ? "true" : "false";
+        if (value is string stringValue)
+            return stringValue;
+        if (value is Vector2 vector2)
+            return string.Join(',', vector2.X.ToString(CultureInfo.InvariantCulture), vector2.Y.ToString(CultureInfo.InvariantCulture));
+        if (value is Vector3 vector3)
+            return string.Join(',', vector3.X.ToString(CultureInfo.InvariantCulture), vector3.Y.ToString(CultureInfo.InvariantCulture), vector3.Z.ToString(CultureInfo.InvariantCulture));
+        if (value is Vector4 vector4)
+            return string.Join(',', vector4.X.ToString(CultureInfo.InvariantCulture), vector4.Y.ToString(CultureInfo.InvariantCulture), vector4.Z.ToString(CultureInfo.InvariantCulture), vector4.W.ToString(CultureInfo.InvariantCulture));
+        if (value is Entity entity)
+            return entity.ID.ToString(CultureInfo.InvariantCulture);
+        if (value is IFormattable formattable)
+            return formattable.ToString(null, CultureInfo.InvariantCulture);
+        return value.ToString() ?? string.Empty;
     }
 
     private static IEnumerable<Type> GetLoadableTypes(Assembly assembly)

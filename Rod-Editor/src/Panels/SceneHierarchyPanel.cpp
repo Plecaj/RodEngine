@@ -538,7 +538,7 @@ namespace Rod {
 		{
 			auto existingField = currentFields.find(name);
 			component.Fields[name] = field;
-			if (existingField != currentFields.end())
+			if (existingField != currentFields.end() && !existingField->second.Value.empty())
 				component.Fields[name].Value = existingField->second.Value;
 		}
 	}

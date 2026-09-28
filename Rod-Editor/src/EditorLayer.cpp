@@ -368,9 +368,11 @@ namespace Rod {
 
 	void EditorLayer::NewScene()
 	{
-		m_ActiveScene = CreateRef<Scene>();
+		m_EditorScene = CreateRef<Scene>();
+		m_ActiveScene = m_EditorScene;
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		m_SceneOutputFilepath.clear();
 	}
 
 	void EditorLayer::OpenScene()
@@ -415,6 +417,14 @@ namespace Rod {
 
 	void EditorLayer::OnScenePlay()
 	{
+		if (m_SceneState != SceneState::Edit)
+			return;
+
+		m_EditorScene = m_ActiveScene;
+		m_ActiveScene = Scene::Copy(m_EditorScene);
+		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
 		m_SceneState = SceneState::Play;
 		m_GuizmoType = -1;
 		m_EditorCamera.SetControlsEnabled(false);
@@ -423,7 +433,12 @@ namespace Rod {
 
 	void EditorLayer::OnSceneStop()
 	{
+		if (m_SceneState != SceneState::Play)
+			return;
+
 		m_ActiveScene->OnRuntimeStop();
+		m_ActiveScene = m_EditorScene;
+		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 		m_SceneState = SceneState::Edit;
 		m_GuizmoType = -1;
 		m_EditorCamera.SetControlsEnabled(true);

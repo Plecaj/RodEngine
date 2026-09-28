@@ -44,6 +44,7 @@ namespace Rod {
 		void OnSceneStop();
 	private:
 		Ref<Scene> m_ActiveScene;
+		Ref<Scene> m_EditorScene;
 		Entity m_CameraEntity;
 
 		EditorCamera m_EditorCamera;

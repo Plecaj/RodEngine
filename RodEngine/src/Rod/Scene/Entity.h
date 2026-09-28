@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Scene.h"
+#include "Rod/Core/UUID.h"
 #include "entt.hpp"
 
 namespace Rod {
@@ -35,6 +36,12 @@ namespace Rod {
 		}
 
 		template<typename T>
+		bool HasComponent() const
+		{
+			return m_Scene->m_Registry.all_of<T>(m_EntityHandle);
+		}
+
+		template<typename T>
 		void RemoveComponent()
 		{
 			RD_CORE_ASSERT(HasComponent<T>(), "Entity already does not have component");
@@ -44,6 +51,9 @@ namespace Rod {
 		operator bool() const { return m_EntityHandle != entt::null && m_Scene != nullptr && m_Scene->m_Registry.valid(m_EntityHandle); }
 		operator uint32_t() const { return (uint32_t)m_EntityHandle; }
 		operator entt::entity() const { return m_EntityHandle; }
+
+		UUID GetUUID();
+		const std::string& GetName();
 
 		bool operator==(const Entity& other) const
 		{

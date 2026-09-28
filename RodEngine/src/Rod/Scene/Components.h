@@ -6,12 +6,24 @@
 #include "Rod/Scene/SceneCamera.h"
 #include "ScriptableEntity.h"
 
+#include "Rod/Core/UUID.h"
 #include "Rod/Renderer/Texture.h"
 #include "Rod/Renderer/Mesh.h"
 #include "Rod/Renderer/Shader.h"
 #include "Rod/Renderer/Material.h"
+#include "Rod/Scripting/ScriptField.h"
 
 namespace Rod {
+
+	struct IDComponent
+	{
+		UUID ID;
+
+		IDComponent() = default;
+		IDComponent(const IDComponent&) = default;
+		IDComponent(UUID id)
+			: ID(id) {}
+	};
 
 	struct TagComponent
 	{
@@ -99,6 +111,17 @@ namespace Rod {
 			InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
 			DestroyScript = [](NativeScriptComponent* nsc) {delete nsc->Instance; nsc->Instance = nullptr; };
 		}
+	};
+
+	struct ScriptComponent
+	{
+		std::string ClassName;
+		ScriptFieldMap Fields;
+
+		ScriptComponent() = default;
+		ScriptComponent(const ScriptComponent&) = default;
+		ScriptComponent(const std::string& className)
+			: ClassName(className) {}
 	};
 
 }

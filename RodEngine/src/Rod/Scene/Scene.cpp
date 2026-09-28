@@ -3,6 +3,7 @@
 
 #include "Rod/Renderer/Renderer2D.h"
 #include "Rod/Renderer/Renderer.h"
+#include "Rod/Scripting/ScriptEngine.h"
 
 #include <glm/glm.hpp>
 
@@ -23,7 +24,13 @@ namespace Rod {
 
 	Entity Scene::CreateEntity(const std::string& name)
 	{
+		return CreateEntityWithUUID(UUID(), name);
+	}
+
+	Entity Scene::CreateEntityWithUUID(UUID uuid, const std::string& name)
+	{
 		Entity entity = { m_Registry.create(), this };
+		entity.AddComponent<IDComponent>(uuid);
 		entity.AddComponent<TransformComponent>();
 		auto& tag = entity.AddComponent<TagComponent>();
 		tag.Tag = name.empty() ? "Entity" : name;
@@ -33,6 +40,16 @@ namespace Rod {
 	void Scene::DestroyEntity(Entity entity)
 	{
 		m_Registry.destroy(entity);
+	}
+
+	void Scene::OnRuntimeStart()
+	{
+		ScriptEngine::OnRuntimeStart(this);
+	}
+
+	void Scene::OnRuntimeStop()
+	{
+		ScriptEngine::OnRuntimeStop();
 	}
 
 	void Scene::OnUpdateRuntime(Timestep& ts)
@@ -52,6 +69,8 @@ namespace Rod {
 				ncs.Instance->OnUpdate(ts);
 			});
 		}
+
+		ScriptEngine::OnRuntimeUpdate(ts);
 
 		Camera* mainCamera = nullptr;
 		glm::mat4 cameraTransform;
@@ -183,6 +202,30 @@ namespace Rod {
 		return {};
 	}
 
+	Entity Scene::FindEntityByUUID(UUID uuid)
+	{
+		auto view = m_Registry.view<IDComponent>();
+		for (auto entity : view)
+		{
+			const auto& id = view.get<IDComponent>(entity);
+			if (id.ID == uuid)
+				return Entity{ entity, this };
+		}
+		return {};
+	}
+
+	Entity Scene::FindEntityByName(const std::string& name)
+	{
+		auto view = m_Registry.view<TagComponent>();
+		for (auto entity : view)
+		{
+			const auto& tag = view.get<TagComponent>(entity);
+			if (tag.Tag == name)
+				return Entity{ entity, this };
+		}
+		return {};
+	}
+
 	template<typename T>
 	void Scene::OnComponentAdded(Entity entity, T& component)
 	{
@@ -191,6 +234,11 @@ namespace Rod {
 
 	template<>
 	void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component)
 	{
 	}
 
@@ -222,6 +270,11 @@ namespace Rod {
 
 	template<>
 	void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component)
+	{
+	}
+
+	template<>
+	void Scene::OnComponentAdded<ScriptComponent>(Entity entity, ScriptComponent& component)
 	{
 	}
 }

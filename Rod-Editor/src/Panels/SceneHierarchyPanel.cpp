@@ -3,10 +3,12 @@
 #include <imgui_internal.h>
 
 #include "Rod/Scene/Components.h"
+#include "Rod/Scripting/ScriptEngine.h"
 
 #include <glm/gtc/type_ptr.hpp>
 
 #include  <filesystem>
+#include <sstream>
 
 namespace Rod {
 
@@ -262,6 +264,7 @@ namespace Rod {
 		DrawSpriteRendererComponent(entity);
 		DrawMeshComponent(entity);
 		DrawDirectionalLightComponent(entity);
+		DrawScriptComponent(entity);
 	}
 
 	void SceneHierarchyPanel::DrawTag(Entity entity)
@@ -313,6 +316,12 @@ namespace Rod {
 			if (ImGui::MenuItem("Directional Light") && !entity.HasComponent<DirectionalLightComponent>())
 			{
 				entity.AddComponent<DirectionalLightComponent>();
+				ImGui::CloseCurrentPopup();
+			}
+
+			if (ImGui::MenuItem("Script") && !entity.HasComponent<ScriptComponent>())
+			{
+				entity.AddComponent<ScriptComponent>();
 				ImGui::CloseCurrentPopup();
 			}
 
@@ -477,6 +486,196 @@ namespace Rod {
 				component.Direction = glm::normalize(component.Direction);
 				ImGui::ColorEdit3("Color", glm::value_ptr(component.Color));
 				ImGui::DragFloat("Intensity", &component.Intensity, 0.01f, 0.0f, 1.0f);
+			});
+	}
+
+	static std::string VecToFieldValue(const glm::vec2& value)
+	{
+		return std::to_string(value.x) + "," + std::to_string(value.y);
+	}
+
+	static std::string VecToFieldValue(const glm::vec3& value)
+	{
+		return std::to_string(value.x) + "," + std::to_string(value.y) + "," + std::to_string(value.z);
+	}
+
+	static std::string VecToFieldValue(const glm::vec4& value)
+	{
+		return std::to_string(value.x) + "," + std::to_string(value.y) + "," + std::to_string(value.z) + "," + std::to_string(value.w);
+	}
+
+	static glm::vec2 FieldValueToVec2(const std::string& value)
+	{
+		glm::vec2 result(0.0f);
+		sscanf_s(value.c_str(), "%f,%f", &result.x, &result.y);
+		return result;
+	}
+
+	static glm::vec3 FieldValueToVec3(const std::string& value)
+	{
+		glm::vec3 result(0.0f);
+		sscanf_s(value.c_str(), "%f,%f,%f", &result.x, &result.y, &result.z);
+		return result;
+	}
+
+	static glm::vec4 FieldValueToVec4(const std::string& value)
+	{
+		glm::vec4 result(0.0f);
+		sscanf_s(value.c_str(), "%f,%f,%f,%f", &result.x, &result.y, &result.z, &result.w);
+		return result;
+	}
+
+	static void SyncScriptFields(ScriptComponent& component)
+	{
+		ScriptClass* scriptClass = ScriptEngine::GetScriptClass(component.ClassName);
+		if (!scriptClass)
+			return;
+
+		ScriptFieldMap currentFields = component.Fields;
+		component.Fields.clear();
+
+		for (const auto& [name, field] : scriptClass->GetFields())
+		{
+			auto existingField = currentFields.find(name);
+			component.Fields[name] = field;
+			if (existingField != currentFields.end() && !existingField->second.Value.empty())
+				component.Fields[name].Value = existingField->second.Value;
+		}
+	}
+
+	static void PushRuntimeScriptField(Entity entity, const std::string& fieldName)
+	{
+		if (ScriptEngine::IsRuntimeRunning())
+			ScriptEngine::SetRuntimeFieldValue(entity, fieldName);
+	}
+
+	void SceneHierarchyPanel::DrawScriptComponent(Entity entity)
+	{
+		DrawComponent<ScriptComponent>("Script", entity, [entity](auto& component)
+			{
+				const auto& scriptClasses = ScriptEngine::GetScriptClasses();
+				const char* currentClassName = component.ClassName.empty() ? "None" : component.ClassName.c_str();
+
+				if (ImGui::BeginCombo("Class", currentClassName))
+				{
+					for (const auto& [className, scriptClass] : scriptClasses)
+					{
+						bool isSelected = component.ClassName == className;
+						if (ImGui::Selectable(className.c_str(), isSelected))
+						{
+							component.ClassName = className;
+							SyncScriptFields(component);
+						}
+
+						if (isSelected)
+							ImGui::SetItemDefaultFocus();
+					}
+					ImGui::EndCombo();
+				}
+
+				if (!component.ClassName.empty())
+					SyncScriptFields(component);
+
+				for (auto& [name, field] : component.Fields)
+				{
+					switch (field.Field.Type)
+					{
+						case ScriptFieldType::Float:
+						{
+							float value = field.Value.empty() ? 0.0f : std::stof(field.Value);
+							if (ImGui::DragFloat(name.c_str(), &value, 0.1f))
+							{
+								field.Value = std::to_string(value);
+								PushRuntimeScriptField(entity, name);
+							}
+							break;
+						}
+						case ScriptFieldType::Double:
+						{
+							float value = field.Value.empty() ? 0.0f : (float)std::stod(field.Value);
+							if (ImGui::DragFloat(name.c_str(), &value, 0.1f))
+							{
+								field.Value = std::to_string(value);
+								PushRuntimeScriptField(entity, name);
+							}
+							break;
+						}
+						case ScriptFieldType::Bool:
+						{
+							bool value = field.Value == "true" || field.Value == "1";
+							if (ImGui::Checkbox(name.c_str(), &value))
+							{
+								field.Value = value ? "true" : "false";
+								PushRuntimeScriptField(entity, name);
+							}
+							break;
+						}
+						case ScriptFieldType::Char:
+						case ScriptFieldType::Byte:
+						case ScriptFieldType::Short:
+						case ScriptFieldType::Int:
+						case ScriptFieldType::Long:
+						case ScriptFieldType::UByte:
+						case ScriptFieldType::UShort:
+						case ScriptFieldType::UInt:
+						case ScriptFieldType::ULong:
+						case ScriptFieldType::Entity:
+						{
+							int value = field.Value.empty() ? 0 : std::stoi(field.Value);
+							if (ImGui::DragInt(name.c_str(), &value))
+							{
+								field.Value = std::to_string(value);
+								PushRuntimeScriptField(entity, name);
+							}
+							break;
+						}
+						case ScriptFieldType::Vector2:
+						{
+							glm::vec2 value = FieldValueToVec2(field.Value);
+							if (ImGui::DragFloat2(name.c_str(), glm::value_ptr(value), 0.1f))
+							{
+								field.Value = VecToFieldValue(value);
+								PushRuntimeScriptField(entity, name);
+							}
+							break;
+						}
+						case ScriptFieldType::Vector3:
+						{
+							glm::vec3 value = FieldValueToVec3(field.Value);
+							if (ImGui::DragFloat3(name.c_str(), glm::value_ptr(value), 0.1f))
+							{
+								field.Value = VecToFieldValue(value);
+								PushRuntimeScriptField(entity, name);
+							}
+							break;
+						}
+						case ScriptFieldType::Vector4:
+						{
+							glm::vec4 value = FieldValueToVec4(field.Value);
+							if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(value), 0.1f))
+							{
+								field.Value = VecToFieldValue(value);
+								PushRuntimeScriptField(entity, name);
+							}
+							break;
+						}
+						case ScriptFieldType::String:
+						{
+							char buffer[256];
+							memset(buffer, 0, sizeof(buffer));
+							strcpy_s(buffer, sizeof(buffer), field.Value.c_str());
+							if (ImGui::InputText(name.c_str(), buffer, sizeof(buffer)))
+							{
+								field.Value = buffer;
+								PushRuntimeScriptField(entity, name);
+							}
+							break;
+						}
+						default:
+							ImGui::Text("%s: unsupported type '%s'", name.c_str(), field.Field.TypeName.c_str());
+							break;
+					}
+				}
 			});
 	}
 }

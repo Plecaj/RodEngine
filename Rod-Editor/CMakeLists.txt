@@ -25,6 +25,26 @@ target_link_libraries(Rod-Editor PRIVATE
 
 rod_set_common_output_directories(Rod-Editor)
 
+find_program(DOTNET_EXE dotnet)
+if(DOTNET_EXE)
+    add_custom_target(RodScriptCore-Build
+        COMMAND ${DOTNET_EXE} build "${CMAKE_SOURCE_DIR}/Rod-ScriptCore/Rod.ScriptCore.csproj" --nologo
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Building Rod C# script core"
+    )
+
+    add_custom_target(RodGameScripts-Build
+        COMMAND ${DOTNET_EXE} build "${CMAKE_CURRENT_SOURCE_DIR}/assets/Scripts/RodGame.csproj" --nologo /p:BuildProjectReferences=false
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        COMMENT "Building Rod game scripts"
+    )
+
+    add_dependencies(RodGameScripts-Build RodScriptCore-Build)
+    add_dependencies(Rod-Editor RodGameScripts-Build)
+else()
+    message(WARNING "dotnet was not found. C# scripting projects will not be built by CMake.")
+endif()
+
 add_custom_command(TARGET Rod-Editor POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_CURRENT_SOURCE_DIR}/assets"

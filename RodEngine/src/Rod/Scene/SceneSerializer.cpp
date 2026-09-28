@@ -86,7 +86,7 @@ namespace Rod {
 	static void SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
 		out << YAML::BeginMap; // Entity
-		out << YAML::Key << "Entity" << YAML::Value << (uint32_t)entity; 
+		out << YAML::Key << "Entity" << YAML::Value << (uint64_t)entity.GetUUID();
 
 		if (entity.HasComponent<TagComponent>())
 		{
@@ -190,6 +190,28 @@ namespace Rod {
 			out << YAML::EndMap; // DirectionalLightComponent
 		}
 
+		if (entity.HasComponent<ScriptComponent>())
+		{
+			out << YAML::Key << "ScriptComponent";
+			out << YAML::BeginMap;
+
+			auto& script = entity.GetComponent<ScriptComponent>();
+			out << YAML::Key << "ClassName" << YAML::Value << script.ClassName;
+			out << YAML::Key << "Fields" << YAML::Value << YAML::BeginSeq;
+			for (const auto& [name, field] : script.Fields)
+			{
+				out << YAML::BeginMap;
+				out << YAML::Key << "Name" << YAML::Value << name;
+				out << YAML::Key << "Type" << YAML::Value << (int)field.Field.Type;
+				out << YAML::Key << "TypeName" << YAML::Value << field.Field.TypeName;
+				out << YAML::Key << "Value" << YAML::Value << field.Value;
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
+
+			out << YAML::EndMap;
+		}
+
 		out << YAML::EndMap; // Entity
 	}
 
@@ -249,7 +271,7 @@ namespace Rod {
 
 				RD_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
 
-				Entity deserializedEntity = m_Scene->CreateEntity(name);
+				Entity deserializedEntity = m_Scene->CreateEntityWithUUID(uuid, name);
 
 				auto transformComponent = entity["TransformComponent"];
 				if (transformComponent)
@@ -318,6 +340,30 @@ namespace Rod {
 					light.Direction = directionalLightComponent["Direction"].as<glm::vec3>();
 					light.Color = directionalLightComponent["Color"].as<glm::vec3>();
 					light.Intensity = directionalLightComponent["Intensity"].as<float>();
+				}
+
+				auto scriptComponent = entity["ScriptComponent"];
+				if (scriptComponent)
+				{
+					auto& script = deserializedEntity.AddComponent<ScriptComponent>();
+					script.ClassName = scriptComponent["ClassName"] ? scriptComponent["ClassName"].as<std::string>() : "";
+
+					auto fields = scriptComponent["Fields"];
+					if (fields)
+					{
+						for (auto fieldNode : fields)
+						{
+							ScriptField field;
+							field.Name = fieldNode["Name"].as<std::string>();
+							field.Type = (ScriptFieldType)fieldNode["Type"].as<int>();
+							field.TypeName = fieldNode["TypeName"] ? fieldNode["TypeName"].as<std::string>() : "";
+
+							ScriptFieldInstance instance;
+							instance.Field = field;
+							instance.Value = fieldNode["Value"] ? fieldNode["Value"].as<std::string>() : "";
+							script.Fields[field.Name] = instance;
+						}
+					}
 				}
 			}
 		}

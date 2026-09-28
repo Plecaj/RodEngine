@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Rod/Core/UUID.h"
 #include "Rod/Renderer/EditorCamera.h"
 #include "Rod/Core/Timestep.h"
 
@@ -16,13 +17,18 @@ namespace Rod {
 		~Scene();
 
 		Entity CreateEntity(const std::string& name = "");
+		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = "");
 		void DestroyEntity(Entity entity);
 
+		void OnRuntimeStart();
+		void OnRuntimeStop();
 		void OnUpdateRuntime(Timestep& ts);
 		void OnUpdateEditor(Timestep& ts, EditorCamera& camera);
 		void OnViewportResize(uint32_t width, uint32_t height);
 
 		Entity GetPrimaryCameraEntity();
+		Entity FindEntityByUUID(UUID uuid);
+		Entity FindEntityByName(const std::string& name);
 	private:
 		template<typename T>
 		void OnComponentAdded(Entity entity, T& component);
@@ -33,6 +39,7 @@ namespace Rod {
 		friend class Entity;
 		friend class SceneSerializer;
 		friend class SceneHierarchyPanel;
+		friend class ScriptEngine;
 	};
 
 }

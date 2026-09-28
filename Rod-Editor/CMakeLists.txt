@@ -49,5 +49,8 @@ add_custom_command(TARGET Rod-Editor POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_CURRENT_SOURCE_DIR}/assets"
         "$<TARGET_FILE_DIR:Rod-Editor>/assets"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/Rod-ScriptCore/bin/Debug/net9.0"
+        "$<TARGET_FILE_DIR:Rod-Editor>/assets/Scripts/Core"
     COMMENT "Copying editor assets"
 )

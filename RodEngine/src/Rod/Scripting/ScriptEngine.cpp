@@ -4,6 +4,7 @@
 #include "ScriptBuilder.h"
 #include "ScriptGlue.h"
 #include "ScriptRuntime.h"
+#include "Rod/Core/Application.h"
 #include "Rod/Scene/Components.h"
 #include "Rod/Scene/Entity.h"
 
@@ -108,6 +109,22 @@ namespace Rod {
 		return candidates[0];
 	}
 
+	static std::filesystem::path SelectPackagedAssembly(const std::vector<std::filesystem::path>& candidates, const std::string& requiredSidecar = "")
+	{
+		for (const auto& candidate : candidates)
+		{
+			if (!std::filesystem::exists(candidate))
+				continue;
+
+			if (!requiredSidecar.empty() && !std::filesystem::exists(candidate.parent_path() / requiredSidecar))
+				continue;
+
+			return candidate;
+		}
+
+		return candidates.empty() ? std::filesystem::path() : candidates[0];
+	}
+
 	static std::filesystem::path CreateAssemblyCachePath(const std::filesystem::path& assemblyPath)
 	{
 		std::filesystem::create_directories(s_Data->ScriptCacheDirectory);
@@ -151,10 +168,26 @@ namespace Rod {
 
 		std::filesystem::path root = GetSourceRoot();
 		std::filesystem::path editorRoot = GetEditorRoot();
-		s_Data->CoreAssemblyPath = GetManagedAssemblyPath(root / "Rod-ScriptCore" / "Rod.ScriptCore.csproj", "Rod.ScriptCore.runtimeconfig.json");
+		bool editorMode = Application::Get().IsEditor();
+		std::filesystem::path sourceCoreAssemblyPath = GetManagedAssemblyPath(root / "Rod-ScriptCore" / "Rod.ScriptCore.csproj", "Rod.ScriptCore.runtimeconfig.json");
+		std::filesystem::path packagedCoreAssemblyPath = SelectPackagedAssembly({
+			editorRoot / "assets" / "Scripts" / "Core" / "Rod.ScriptCore.dll",
+			editorRoot / "assets" / "Scripts" / "bin" / "Debug" / "net9.0" / "Rod.ScriptCore.dll"
+		}, "Rod.ScriptCore.runtimeconfig.json");
+
+		s_Data->CoreAssemblyPath = editorMode || !std::filesystem::exists(packagedCoreAssemblyPath)
+			? sourceCoreAssemblyPath
+			: packagedCoreAssemblyPath;
 		s_Data->RuntimeConfigPath = s_Data->CoreAssemblyPath.parent_path() / "Rod.ScriptCore.runtimeconfig.json";
 		s_Data->ScriptProjectPath = root / "Rod-Editor" / "assets" / "Scripts" / "RodGame.csproj";
 		s_Data->ScriptAssemblyPath = GetManagedAssemblyPath(s_Data->ScriptProjectPath);
+		if (!editorMode && !std::filesystem::exists(s_Data->ScriptAssemblyPath))
+		{
+			s_Data->ScriptAssemblyPath = SelectPackagedAssembly({
+				editorRoot / "assets" / "Scripts" / "App" / "RodGame.dll",
+				editorRoot / "assets" / "Scripts" / "bin" / "Debug" / "net9.0" / "RodGame.dll"
+			});
+		}
 		s_Data->ScriptSourceDirectory = root / "Rod-Editor" / "assets" / "Scripts" / "Source";
 		s_Data->ScriptCacheDirectory = editorRoot / "assets" / "Scripts" / "Cache";
 
@@ -229,6 +262,15 @@ namespace Rod {
 	{
 		if (!s_Data)
 			Init();
+
+		if (!std::filesystem::exists(s_Data->ScriptProjectPath))
+		{
+			if (std::filesystem::exists(s_Data->ScriptAssemblyPath))
+			{
+				RD_CORE_TRACE("Script project is not available. Using packaged script assembly: {}", s_Data->ScriptAssemblyPath.string());
+				return true;
+			}
+		}
 
 		ScriptBuildResult result = ScriptBuilder::BuildProject(s_Data->ScriptProjectPath);
 		if (!result.Success)

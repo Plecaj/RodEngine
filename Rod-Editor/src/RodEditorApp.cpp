@@ -21,6 +21,8 @@ namespace Rod {
 
 		}
 
+		bool IsEditor() const override { return true; }
+
 	};
 
 	Application* CreateApplication()

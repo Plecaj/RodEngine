@@ -12,11 +12,11 @@ namespace Rod {
 		RGBA8,
 		RED_INTEGER,
 
+		// Depth
+		DEPTH24,
+
 		// Depth/Stencil
 		DEPTH24STENCIL8,
-
-		// Defaults
-		Depth = DEPTH24STENCIL8
 	};
 
 	struct FramebufferTextureSpecification
@@ -60,6 +60,8 @@ namespace Rod {
 		virtual void ClearColorAttachment(uint32_t attachmentIndex, int value) = 0;
 
 		virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const = 0;
+		virtual uint32_t GetDepthAttachmentRendererID() const = 0;
+		virtual void BindDepthAttachment(uint32_t slot = 0) const = 0;
 
 		virtual const FramebufferSpecification& GetSpecification() const = 0;
 

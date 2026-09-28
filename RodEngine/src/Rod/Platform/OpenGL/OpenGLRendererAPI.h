@@ -11,8 +11,13 @@ namespace Rod {
 		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 		virtual void SetClearColor(const glm::vec4& color) override;
 		virtual void Clear() override;
+		virtual void SetDepthBias(float slopeScaleBias, float constantBias) override;
+		virtual void ClearDepthBias() override;
 
 		virtual void DrawIdexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0) override;
+
+		virtual RendererState GetState() const override;
+		virtual void SetState(const RendererState& state) override;
 	};
 
 }

@@ -85,6 +85,9 @@ namespace Rod {
 
 	void Application::BeginWindowDrag()
 	{
+		if (m_Maximalized)
+			RestoreWindow();
+
 		m_Window->BeginWindowDrag();
 	}
 

@@ -9,6 +9,8 @@ namespace Rod {
 	{
 		ImGui::Begin("Other");
 
+		ImGui::TextDisabled("Selection");
+
 		const char* guizmoMode = "None";
 		switch (guizmoType)
 		{
@@ -19,8 +21,6 @@ namespace Rod {
 		}
 		ImGui::Text("Current Guizmo mode: %s", guizmoMode);
 
-		ImGui::Separator();
-
 		std::string name = "None";
 		if (hoveredEntity)
 			name = hoveredEntity.GetComponent<TagComponent>().Tag;
@@ -28,14 +28,20 @@ namespace Rod {
 		ImGui::Text("Hovered Entity: %s", name.c_str());
 
 		ImGui::Separator();
+		ImGui::TextDisabled("Profiling");
 
-		if (!profiling && ImGui::Button("Start Profiling")) {
+		const char* profilingButtonText = profiling ? "Stop Profiling" : "Start Profiling";
+		if (ImGui::Button(profilingButtonText)) {
+			if (profiling)
+			{
+				profiling = false;
+				RD_PROFILE_END_SESSION();
+				ImGui::End();
+				return;
+			}
+
 			profiling = true;
 			RD_PROFILE_BEGIN_SESSION("Runtime", "RodProfile-Runtime.json");
-		}
-		if (profiling && ImGui::Button("Stop Profiling")) {
-			profiling = false;
-			RD_PROFILE_END_SESSION();
 		}
 
 		ImGui::End();

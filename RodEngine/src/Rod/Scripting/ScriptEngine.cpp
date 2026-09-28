@@ -80,20 +80,30 @@ namespace Rod {
 			projectPath.parent_path() / "bin" / "x64" / "Debug" / "net9.0" / assemblyName
 		};
 
-		if (!requiredSidecar.empty())
+		std::filesystem::path newestCandidate;
+		std::filesystem::file_time_type newestWriteTime = std::filesystem::file_time_type::min();
+
+		auto trySelectCandidate = [&](const std::filesystem::path& candidate)
 		{
-			for (const auto& candidate : candidates)
+			if (!std::filesystem::exists(candidate))
+				return;
+
+			if (!requiredSidecar.empty() && !std::filesystem::exists(candidate.parent_path() / requiredSidecar))
+				return;
+
+			auto writeTime = std::filesystem::last_write_time(candidate);
+			if (newestCandidate.empty() || writeTime > newestWriteTime)
 			{
-				if (std::filesystem::exists(candidate) && std::filesystem::exists(candidate.parent_path() / requiredSidecar))
-					return candidate;
+				newestCandidate = candidate;
+				newestWriteTime = writeTime;
 			}
-		}
+		};
 
 		for (const auto& candidate : candidates)
-		{
-			if (std::filesystem::exists(candidate))
-				return candidate;
-		}
+			trySelectCandidate(candidate);
+
+		if (!newestCandidate.empty())
+			return newestCandidate;
 
 		return candidates[0];
 	}

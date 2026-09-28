@@ -17,6 +17,7 @@ public readonly struct NativeCall
 public static unsafe class ScriptHost
 {
     private static AssemblyLoadContext? s_LoadContext;
+    private static AssemblyDependencyResolver? s_AssemblyResolver;
     private static Assembly? s_GameAssembly;
     private static readonly Dictionary<ulong, ScriptBehaviour> s_Instances = new();
 
@@ -46,6 +47,8 @@ public static unsafe class ScriptHost
 
         UnloadAssemblyInternal();
         s_LoadContext = new AssemblyLoadContext("RodGameScripts", isCollectible: true);
+        s_AssemblyResolver = new AssemblyDependencyResolver(path);
+        s_LoadContext.Resolving += ResolveScriptAssembly;
         s_GameAssembly = s_LoadContext.LoadFromAssemblyPath(path);
 
         return Marshal.StringToCoTaskMemUTF8(BuildMetadataJson());
@@ -64,12 +67,27 @@ public static unsafe class ScriptHost
 
         s_Instances.Clear();
         s_GameAssembly = null;
+        s_AssemblyResolver = null;
 
         if (s_LoadContext != null)
         {
+            s_LoadContext.Resolving -= ResolveScriptAssembly;
             s_LoadContext.Unload();
             s_LoadContext = null;
         }
+    }
+
+    private static Assembly? ResolveScriptAssembly(AssemblyLoadContext context, AssemblyName assemblyName)
+    {
+        Assembly scriptCoreAssembly = typeof(ScriptBehaviour).Assembly;
+        if (AssemblyName.ReferenceMatchesDefinition(scriptCoreAssembly.GetName(), assemblyName))
+            return scriptCoreAssembly;
+
+        string? assemblyPath = s_AssemblyResolver?.ResolveAssemblyToPath(assemblyName);
+        if (assemblyPath != null)
+            return context.LoadFromAssemblyPath(assemblyPath);
+
+        return null;
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
@@ -137,7 +155,7 @@ public static unsafe class ScriptHost
         if (s_GameAssembly == null)
             return "{\"classes\":[]}";
 
-        var classes = s_GameAssembly.GetTypes()
+        var classes = GetLoadableTypes(s_GameAssembly)
             .Where(type => type.IsClass && !type.IsAbstract && typeof(ScriptBehaviour).IsAssignableFrom(type))
             .Select(type => new
             {
@@ -154,6 +172,18 @@ public static unsafe class ScriptHost
             });
 
         return JsonSerializer.Serialize(new { classes });
+    }
+
+    private static IEnumerable<Type> GetLoadableTypes(Assembly assembly)
+    {
+        try
+        {
+            return assembly.GetTypes();
+        }
+        catch (ReflectionTypeLoadException e)
+        {
+            return e.Types.Where(type => type != null)!;
+        }
     }
 
     private static bool IsSerializableField(FieldInfo field)

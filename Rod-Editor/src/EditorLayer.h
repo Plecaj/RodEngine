@@ -39,6 +39,7 @@ namespace Rod {
 		void OpenScene(const std::filesystem::path& path);
 		void SaveScene();
 		void SaveSceneAs();
+		void ExportGame();
 
 		void OnScenePlay();
 		void OnSceneStop();

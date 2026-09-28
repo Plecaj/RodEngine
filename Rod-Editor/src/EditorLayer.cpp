@@ -97,6 +97,7 @@ namespace Rod {
 		m_TitlebarPanel.SetOpenSceneCallback([this]() { OpenScene(); });
 		m_TitlebarPanel.SetSaveSceneCallback([this]() { SaveScene(); });
 		m_TitlebarPanel.SetSaveSceneAsCallback([this]() { SaveSceneAs(); });
+		m_TitlebarPanel.SetExportGameCallback([this]() { ExportGame(); });
 
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 1.0f, 1000.0f);
 
@@ -355,6 +356,8 @@ namespace Rod {
 					m_GuizmoType = ImGuizmo::OPERATION::SCALE;
 				break;
 		}
+
+		return false;
 	}
 
 	bool EditorLayer::OnMouseButtonPressed(MouseButtonPressedEvent& e)
@@ -399,6 +402,8 @@ namespace Rod {
 	{
 		if (m_SceneOutputFilepath.empty())
 			SaveSceneAs();
+		if (m_SceneOutputFilepath.empty())
+			return;
 
 		SceneSerializer serializer(m_ActiveScene);
 		serializer.SerializeText(m_SceneOutputFilepath);
@@ -413,6 +418,54 @@ namespace Rod {
 			SceneSerializer serializer(m_ActiveScene);
 			serializer.SerializeText(filepath);
 		}
+	}
+
+	void EditorLayer::ExportGame()
+	{
+		Ref<Scene> sceneToExport = m_SceneState == SceneState::Play ? m_EditorScene : m_ActiveScene;
+		if (!sceneToExport)
+		{
+			RD_CORE_ERROR("Cannot export game without an active scene.");
+			return;
+		}
+
+		std::filesystem::path workingDirectory = std::filesystem::current_path();
+		std::filesystem::path runtimeExecutable = workingDirectory / "Rod-Runtime.exe";
+		if (!std::filesystem::exists(runtimeExecutable))
+		{
+			RD_CORE_ERROR("Cannot export game. Runtime executable was not found: {}", runtimeExecutable.string());
+			return;
+		}
+
+		std::filesystem::path exportRoot = workingDirectory / "exports" / "RodGame";
+		std::filesystem::path exportAssets = exportRoot / "assets";
+
+		std::error_code error;
+		std::filesystem::create_directories(exportAssets / "scenes", error);
+		if (error)
+		{
+			RD_CORE_ERROR("Failed to create game export directory '{}': {}", exportRoot.string(), error.message());
+			return;
+		}
+
+		std::filesystem::copy_file(runtimeExecutable, exportRoot / "RodGame.exe", std::filesystem::copy_options::overwrite_existing, error);
+		if (error)
+		{
+			RD_CORE_ERROR("Failed to copy runtime executable: {}", error.message());
+			return;
+		}
+
+		std::filesystem::copy(workingDirectory / "assets", exportAssets,
+			std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing, error);
+		if (error)
+		{
+			RD_CORE_ERROR("Failed to copy game assets: {}", error.message());
+			return;
+		}
+
+		SceneSerializer serializer(sceneToExport);
+		serializer.SerializeText((exportAssets / "scenes" / "Startup.rod").string());
+		RD_CORE_INFO("Exported game package to '{}'.", exportRoot.string());
 	}
 
 	void EditorLayer::OnScenePlay()

@@ -40,3 +40,7 @@ endif()
 if(ROD_BUILD_RUNTIME)
   add_subdirectory(Rod-Runtime)
 endif()
+
+if(ROD_BUILD_EDITOR AND ROD_BUILD_RUNTIME)
+  add_dependencies(Rod-Editor Rod-Runtime)
+endif()

@@ -72,13 +72,22 @@ namespace Rod {
 #endif
 	}
 
-	static std::filesystem::path GetManagedAssemblyPath(const std::filesystem::path& projectPath)
+	static std::filesystem::path GetManagedAssemblyPath(const std::filesystem::path& projectPath, const std::string& requiredSidecar = "")
 	{
 		std::string assemblyName = projectPath.stem().string() + ".dll";
 		std::array<std::filesystem::path, 2> candidates = {
 			projectPath.parent_path() / "bin" / "Debug" / "net9.0" / assemblyName,
 			projectPath.parent_path() / "bin" / "x64" / "Debug" / "net9.0" / assemblyName
 		};
+
+		if (!requiredSidecar.empty())
+		{
+			for (const auto& candidate : candidates)
+			{
+				if (std::filesystem::exists(candidate) && std::filesystem::exists(candidate.parent_path() / requiredSidecar))
+					return candidate;
+			}
+		}
 
 		for (const auto& candidate : candidates)
 		{
@@ -132,7 +141,7 @@ namespace Rod {
 
 		std::filesystem::path root = GetSourceRoot();
 		std::filesystem::path editorRoot = GetEditorRoot();
-		s_Data->CoreAssemblyPath = GetManagedAssemblyPath(root / "Rod-ScriptCore" / "Rod.ScriptCore.csproj");
+		s_Data->CoreAssemblyPath = GetManagedAssemblyPath(root / "Rod-ScriptCore" / "Rod.ScriptCore.csproj", "Rod.ScriptCore.runtimeconfig.json");
 		s_Data->RuntimeConfigPath = s_Data->CoreAssemblyPath.parent_path() / "Rod.ScriptCore.runtimeconfig.json";
 		s_Data->ScriptProjectPath = root / "Rod-Editor" / "assets" / "Scripts" / "RodGame.csproj";
 		s_Data->ScriptAssemblyPath = GetManagedAssemblyPath(s_Data->ScriptProjectPath);
@@ -142,6 +151,12 @@ namespace Rod {
 		if (!std::filesystem::exists(s_Data->CoreAssemblyPath))
 		{
 			RD_CORE_WARN("Script core assembly is missing. Build Rod.ScriptCore before using scripts: {}", s_Data->CoreAssemblyPath.string());
+			return;
+		}
+
+		if (!std::filesystem::exists(s_Data->RuntimeConfigPath))
+		{
+			RD_CORE_WARN("Script core runtime config is missing. Build Rod.ScriptCore before using scripts: {}", s_Data->RuntimeConfigPath.string());
 			return;
 		}
 

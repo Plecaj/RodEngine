@@ -543,9 +543,15 @@ namespace Rod {
 		}
 	}
 
+	static void PushRuntimeScriptField(Entity entity, const std::string& fieldName)
+	{
+		if (ScriptEngine::IsRuntimeRunning())
+			ScriptEngine::SetRuntimeFieldValue(entity, fieldName);
+	}
+
 	void SceneHierarchyPanel::DrawScriptComponent(Entity entity)
 	{
-		DrawComponent<ScriptComponent>("Script", entity, [](auto& component)
+		DrawComponent<ScriptComponent>("Script", entity, [entity](auto& component)
 			{
 				const auto& scriptClasses = ScriptEngine::GetScriptClasses();
 				const char* currentClassName = component.ClassName.empty() ? "None" : component.ClassName.c_str();
@@ -578,21 +584,30 @@ namespace Rod {
 						{
 							float value = field.Value.empty() ? 0.0f : std::stof(field.Value);
 							if (ImGui::DragFloat(name.c_str(), &value, 0.1f))
+							{
 								field.Value = std::to_string(value);
+								PushRuntimeScriptField(entity, name);
+							}
 							break;
 						}
 						case ScriptFieldType::Double:
 						{
 							float value = field.Value.empty() ? 0.0f : (float)std::stod(field.Value);
 							if (ImGui::DragFloat(name.c_str(), &value, 0.1f))
+							{
 								field.Value = std::to_string(value);
+								PushRuntimeScriptField(entity, name);
+							}
 							break;
 						}
 						case ScriptFieldType::Bool:
 						{
 							bool value = field.Value == "true" || field.Value == "1";
 							if (ImGui::Checkbox(name.c_str(), &value))
+							{
 								field.Value = value ? "true" : "false";
+								PushRuntimeScriptField(entity, name);
+							}
 							break;
 						}
 						case ScriptFieldType::Char:
@@ -608,28 +623,40 @@ namespace Rod {
 						{
 							int value = field.Value.empty() ? 0 : std::stoi(field.Value);
 							if (ImGui::DragInt(name.c_str(), &value))
+							{
 								field.Value = std::to_string(value);
+								PushRuntimeScriptField(entity, name);
+							}
 							break;
 						}
 						case ScriptFieldType::Vector2:
 						{
 							glm::vec2 value = FieldValueToVec2(field.Value);
 							if (ImGui::DragFloat2(name.c_str(), glm::value_ptr(value), 0.1f))
+							{
 								field.Value = VecToFieldValue(value);
+								PushRuntimeScriptField(entity, name);
+							}
 							break;
 						}
 						case ScriptFieldType::Vector3:
 						{
 							glm::vec3 value = FieldValueToVec3(field.Value);
 							if (ImGui::DragFloat3(name.c_str(), glm::value_ptr(value), 0.1f))
+							{
 								field.Value = VecToFieldValue(value);
+								PushRuntimeScriptField(entity, name);
+							}
 							break;
 						}
 						case ScriptFieldType::Vector4:
 						{
 							glm::vec4 value = FieldValueToVec4(field.Value);
 							if (ImGui::DragFloat4(name.c_str(), glm::value_ptr(value), 0.1f))
+							{
 								field.Value = VecToFieldValue(value);
+								PushRuntimeScriptField(entity, name);
+							}
 							break;
 						}
 						case ScriptFieldType::String:
@@ -638,7 +665,10 @@ namespace Rod {
 							memset(buffer, 0, sizeof(buffer));
 							strcpy_s(buffer, sizeof(buffer), field.Value.c_str());
 							if (ImGui::InputText(name.c_str(), buffer, sizeof(buffer)))
+							{
 								field.Value = buffer;
+								PushRuntimeScriptField(entity, name);
+							}
 							break;
 						}
 						default:

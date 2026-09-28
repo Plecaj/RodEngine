@@ -351,6 +351,20 @@ namespace Rod {
 		s_Data->UpdateScript(entity.GetUUID(), ts.GetSeconds());
 	}
 
+	void ScriptEngine::SetRuntimeFieldValue(Entity entity, const std::string& fieldName)
+	{
+		if (!s_Data || !s_Data->RuntimeRunning || !s_Data->SetFieldValue || !entity || !entity.HasComponent<ScriptComponent>())
+			return;
+
+		auto& script = entity.GetComponent<ScriptComponent>();
+		auto fieldIt = script.Fields.find(fieldName);
+		if (fieldIt == script.Fields.end())
+			return;
+
+		const auto& field = fieldIt->second;
+		s_Data->SetFieldValue(entity.GetUUID(), fieldName.c_str(), (int32_t)field.Field.Type, field.Value.c_str());
+	}
+
 	bool ScriptEngine::IsInitialized()
 	{
 		return s_Data && s_Data->Initialized;

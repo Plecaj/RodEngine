@@ -28,6 +28,7 @@ namespace Rod {
 		static void OnCreateEntity(Entity entity);
 		static void OnDestroyEntity(Entity entity);
 		static void OnUpdateEntity(Entity entity, Timestep ts);
+		static void SetRuntimeFieldValue(Entity entity, const std::string& fieldName);
 
 		static bool IsInitialized();
 		static bool IsRuntimeRunning();

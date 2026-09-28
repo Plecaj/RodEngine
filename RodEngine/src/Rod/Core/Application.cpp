@@ -28,8 +28,11 @@ namespace Rod {
 
 		Renderer::Init();
 
-		m_ImGuiLayer = new ImGuiLayer;
-		PushOverlay(m_ImGuiLayer);
+		if (_isEditor)
+		{
+			m_ImGuiLayer = new ImGuiLayer;
+			PushOverlay(m_ImGuiLayer);
+		}
 
 	}
 
@@ -129,15 +132,18 @@ namespace Rod {
 					}
 				}
 			}
-			m_ImGuiLayer->Begin();
+			if (m_ImGuiLayer)
 			{
-				RD_PROFILE_SCOPE("ImGui OnUpdate");
-
-				for (Layer* layer : m_LayerStack)
+				m_ImGuiLayer->Begin();
 				{
-					layer->OnImGuiRender();
+					RD_PROFILE_SCOPE("ImGui OnUpdate");
+
+					for (Layer* layer : m_LayerStack)
+					{
+						layer->OnImGuiRender();
+					}
+					m_ImGuiLayer->End();
 				}
-				m_ImGuiLayer->End();
 			}
 
 			m_Window->OnUpdate();

@@ -279,8 +279,8 @@ namespace Rod {
     {
         if (src.Texture)
             DrawQuad(transform, src.Texture, src.TilingFactor, src.Color, entityID);
-
-        DrawQuad(transform, src.Color, entityID);
+        else
+            DrawQuad(transform, src.Color, entityID);
     }
 
     void Renderer2D::ResetStats()

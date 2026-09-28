@@ -165,8 +165,9 @@ namespace Rod {
 			else
 				out << YAML::Key << "Path" << YAML::Value << "None";
 			
-			if (auto mat = meshComponent.Mesh->GetMaterial())
+			if (meshComponent.Mesh && meshComponent.Mesh->GetMaterial())
 			{
+				auto mat = meshComponent.Mesh->GetMaterial();
 				out << YAML::Key << "Albedo" << YAML::Value << mat->GetAlbedo();
 				out << YAML::Key << "Emissive" << YAML::Value << mat->GetEmissive();
 				out << YAML::Key << "Roughness" << YAML::Value << mat->GetRoughness();
@@ -322,14 +323,17 @@ namespace Rod {
 					if (meshPath != "None")
 						mc.Mesh = Mesh::Create(meshPath);
 
-					if (meshComponent["Albedo"])
-						mc.Mesh->GetMaterial()->SetAlbedo(meshComponent["Albedo"].as<glm::vec4>());
-					if (meshComponent["Emissive"])
-						mc.Mesh->GetMaterial()->SetEmissive(meshComponent["Emissive"].as<glm::vec3>());
-					if (meshComponent["Roughness"])
-						mc.Mesh->GetMaterial()->SetRoughness(meshComponent["Roughness"].as<float>());
-					if (meshComponent["Metallic"])
-						mc.Mesh->GetMaterial()->SetMetallic(meshComponent["Metallic"].as<float>());
+					if (mc.Mesh && mc.Mesh->GetMaterial())
+					{
+						if (meshComponent["Albedo"])
+							mc.Mesh->GetMaterial()->SetAlbedo(meshComponent["Albedo"].as<glm::vec4>());
+						if (meshComponent["Emissive"])
+							mc.Mesh->GetMaterial()->SetEmissive(meshComponent["Emissive"].as<glm::vec3>());
+						if (meshComponent["Roughness"])
+							mc.Mesh->GetMaterial()->SetRoughness(meshComponent["Roughness"].as<float>());
+						if (meshComponent["Metallic"])
+							mc.Mesh->GetMaterial()->SetMetallic(meshComponent["Metallic"].as<float>());
+					}
 
 				}
 

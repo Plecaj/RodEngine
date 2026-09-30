@@ -3,10 +3,10 @@
 #include "Rod/Renderer/ShaderCacheDatabase.h"
 
 #include <fstream>
-#include <array>
+#include <sstream>
 
 #include <glad/glad.h>
-#include <glm/gtc/type_ptr.hpp>;
+#include <glm/gtc/type_ptr.hpp>
 #include <shaderc/shaderc.hpp>
 
 
@@ -14,26 +14,10 @@ namespace Rod {
 
 	namespace Utils {
 
-		static shaderc_shader_kind ShadercTypeFromString(const std::string& type) {
-			if (type == "vertex")
-				return shaderc_vertex_shader;
-			if (type == "fragment" || type == "pixel")
-				return shaderc_fragment_shader;
-			if (type == "geometry")
-				return shaderc_geometry_shader;
-			if (type == "tess_control" || type == "hull")
-				return shaderc_tess_control_shader;
-			if (type == "tess_evaluation" || type == "domain")
-				return shaderc_tess_evaluation_shader;
-			if (type == "compute")
-				return shaderc_compute_shader;
-
-			RD_CORE_ASSERT(false, "Invalid shader type specified");
-			return shaderc_glsl_infer_from_source;
-		}
-
-		static std::string ShaderExtensionFromType(shaderc_shader_kind type) {
-			switch (type) {
+		static std::string ShaderExtensionFromType(shaderc_shader_kind type)
+		{
+			switch (type)
+			{
 				case shaderc_vertex_shader:          return "vert";
 				case shaderc_fragment_shader:        return "frag";
 				case shaderc_geometry_shader:        return "geom";
@@ -44,6 +28,57 @@ namespace Rod {
 					RD_CORE_ASSERT(false, "Invalid shaderc_shader_kind");
 					return "unknown";
 			}
+		}
+
+		static std::string OptimizationName(Shader::OptimizationLevel level)
+		{
+			switch (level)
+			{
+				case Shader::OptimizationLevel::None: return "none";
+				case Shader::OptimizationLevel::Performance: return "performance";
+				case Shader::OptimizationLevel::Size: return "size";
+			}
+
+			RD_CORE_ASSERT(false, "Invalid shader optimization level");
+			return "unknown";
+		}
+
+		static std::string HashToString(size_t hash)
+		{
+			std::stringstream stream;
+			stream << std::hex << hash;
+			return stream.str();
+		}
+
+		static std::string CreateShaderCacheKey(
+			const std::string& shaderName,
+			shaderc_shader_kind kind,
+			const std::string& source,
+			const Shader::ShaderOptions& options)
+		{
+			std::string hashInput;
+			hashInput += shaderName;
+			hashInput += '|';
+			hashInput += Utils::ShaderExtensionFromType(kind);
+			hashInput += '|';
+			hashInput += source;
+			hashInput += '|';
+			hashInput += OptimizationName(options.OptimizationLevel);
+			hashInput += '|';
+			hashInput += options.GenerateDebugInfo ? "debug" : "nodebug";
+
+			std::vector<std::pair<std::string, std::string>> macros(options.Macros.begin(), options.Macros.end());
+			std::sort(macros.begin(), macros.end());
+			for (const auto& [key, value] : macros)
+			{
+				hashInput += '|';
+				hashInput += key;
+				hashInput += '=';
+				hashInput += value;
+			}
+
+			size_t hash = std::hash<std::string>{}(hashInput);
+			return shaderName + "." + Utils::ShaderExtensionFromType(kind) + "." + HashToString(hash);
 		}
 
 		static GLenum OpenGLShaderKind(shaderc_shader_kind kind)
@@ -64,21 +99,21 @@ namespace Rod {
 
 	}
 
-	OpenGLShader::OpenGLShader(std::unordered_map<shaderc_shader_kind, std::string> shaders, std::string name, const ShaderOptions& options )
+	OpenGLShader::OpenGLShader(std::unordered_map<shaderc_shader_kind, std::string> shaders, std::string name, const ShaderOptions& options)
 	{
 		RD_PROFILE_FUNCTION();
 		m_Name = name;
 		
 		shaderc::Compiler compiler;
-		shaderc::CompileOptions compileOptions;                 
+		shaderc::CompileOptions compileOptions;
 
 		compileOptions.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
 
 		switch (options.OptimizationLevel)
 		{
-		case Shader::OptimalizationLevel::None: 			compileOptions.SetOptimizationLevel(shaderc_optimization_level_zero); break;
-		case Shader::OptimalizationLevel::Performance: 		compileOptions.SetOptimizationLevel(shaderc_optimization_level_performance); break;
-		case Shader::OptimalizationLevel::Size: 			compileOptions.SetOptimizationLevel(shaderc_optimization_level_size); break;
+		case Shader::OptimizationLevel::None: 			compileOptions.SetOptimizationLevel(shaderc_optimization_level_zero); break;
+		case Shader::OptimizationLevel::Performance: 	compileOptions.SetOptimizationLevel(shaderc_optimization_level_performance); break;
+		case Shader::OptimizationLevel::Size: 			compileOptions.SetOptimizationLevel(shaderc_optimization_level_size); break;
 		}
 
 		for (auto&& [key, value] : options.Macros)
@@ -91,18 +126,20 @@ namespace Rod {
 		{
 			RD_CORE_ASSERT(m_SPIRV.find(kind) == m_SPIRV.end(), "2 Shaders of same kind defined");
 			
-			size_t hash = std::hash<std::string>{}(source);
-			if(ShaderCacheDatabase::Get().IsHashInside(hash))
-				if (OpenSpirv(kind, source, hash))
+			std::string cacheKey = Utils::CreateShaderCacheKey(m_Name, kind, source, options);
+			if (ShaderCacheDatabase::Get().Contains(cacheKey))
+			{
+				if (OpenSpirv(kind, cacheKey))
 				{
 					RD_CORE_TRACE("Loaded shader {}.{} from cache!", m_Name, Utils::ShaderExtensionFromType(kind));
-					ShaderCacheDatabase::Get().AddValidHash(hash);
+					ShaderCacheDatabase::Get().AddValidKey(cacheKey);
 					continue;
 				}
+			}
 
-			std::vector<uint32_t> res = CompileSpirv(kind, source, compiler);
-			if (!ShaderCacheDatabase::Get().CacheShader(hash, res))
-				RD_CORE_WARN("Couldnt cache shader {}.{}", m_Name, Utils::ShaderExtensionFromType(kind));
+			std::vector<uint32_t> res = CompileSpirv(kind, source, compiler, compileOptions);
+			if (!ShaderCacheDatabase::Get().CacheShader(cacheKey, res))
+				RD_CORE_WARN("Could not cache shader {}.{}", m_Name, Utils::ShaderExtensionFromType(kind));
 		}
 		LoadSpirv();
 	}
@@ -114,32 +151,46 @@ namespace Rod {
 		glDeleteProgram(m_RendererID);
 	}
 
-	bool OpenGLShader::OpenSpirv(const shaderc_shader_kind& kind, const std::string& source, size_t hash)
+	bool OpenGLShader::OpenSpirv(const shaderc_shader_kind& kind, const std::string& cacheKey)
 	{
-		std::filesystem::path filename = m_CacheDirectory / std::to_string(hash);
+		std::filesystem::path filename = m_CacheDirectory / cacheKey;
 		std::ifstream in(filename, std::ios::binary | std::ios::ate);
-		if (!in) 
+		if (!in)
 		{
 			RD_CORE_ERROR("Failed to open cached shader file: {}", filename.string());
-			return false; 
+			return false;
 		}
 		std::streamsize size = in.tellg();
+		if (size <= 0 || size % sizeof(uint32_t) != 0)
+		{
+			RD_CORE_WARN("Cached shader file is invalid: {}", filename.string());
+			return false;
+		}
+
 		in.seekg(0, std::ios::beg);
 
-		size_t count = static_cast<size_t>((size + 3) / 4);
+		size_t count = static_cast<size_t>(size) / sizeof(uint32_t);
 		std::vector<uint32_t> buffer(count);
 
-		if (size > 0)
-			in.read(reinterpret_cast<char*>(buffer.data()), size);
+		in.read(reinterpret_cast<char*>(buffer.data()), size);
+		if (!in)
+		{
+			RD_CORE_WARN("Could not read cached shader file: {}", filename.string());
+			return false;
+		}
 
 		m_SPIRV[kind] = buffer;
 
 		return true;
 	}
 
-	std::vector<uint32_t> OpenGLShader::CompileSpirv(const shaderc_shader_kind& kind, const std::string& source, shaderc::Compiler& compiler)
+	std::vector<uint32_t> OpenGLShader::CompileSpirv(
+		const shaderc_shader_kind& kind,
+		const std::string& source,
+		shaderc::Compiler& compiler,
+		const shaderc::CompileOptions& options)
 	{
-		shaderc::SpvCompilationResult res = compiler.CompileGlslToSpv(source, kind, m_Name.c_str());
+		shaderc::SpvCompilationResult res = compiler.CompileGlslToSpv(source, kind, m_Name.c_str(), options);
 		std::string messages = res.GetErrorMessage();
 		if (!messages.empty())
 			RD_CORE_WARN("Shader compilation messages:\n{0}", messages);
@@ -164,7 +215,7 @@ namespace Rod {
 		{
 			GLuint shader = glCreateShader(Utils::OpenGLShaderKind(kind));
 
-			glShaderBinary(1, &shader, GL_SHADER_BINARY_FORMAT_SPIR_V, spirvBinary.data(), spirvBinary.size() * sizeof(uint32_t));
+			glShaderBinary(1, &shader, GL_SHADER_BINARY_FORMAT_SPIR_V, spirvBinary.data(), (GLsizei)(spirvBinary.size() * sizeof(uint32_t)));
 			glSpecializeShader(shader, "main", 0, nullptr, nullptr); 
 
 			GLint isCompiled = 0;
@@ -242,7 +293,7 @@ namespace Rod {
 		UploadUniformInt(name, value);
 	}
 
-	void OpenGLShader::SetIntArray(const std::string& name, int* values, uint32_t count)
+	void OpenGLShader::SetIntArray(const std::string& name, const int* values, uint32_t count)
 	{
 		RD_PROFILE_FUNCTION();
 
@@ -283,7 +334,7 @@ namespace Rod {
 		glUniform1i(location, value);
 	}
 
-	void OpenGLShader::UploadUniformIntArray(const std::string& name, int* values, uint32_t count)
+	void OpenGLShader::UploadUniformIntArray(const std::string& name, const int* values, uint32_t count)
 	{
 		GLint location = GetUniformLocation(name);
 		glUniform1iv(location, count, values);

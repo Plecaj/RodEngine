@@ -65,7 +65,7 @@ namespace Rod {
     void Renderer2D::InitShader()
     {
         Shader::ShaderOptions shaderOptions;
-        shaderOptions.OptimizationLevel = Shader::OptimalizationLevel::Performance;
+        shaderOptions.OptimizationLevel = Shader::OptimizationLevel::Performance;
         shaderOptions.GenerateDebugInfo = false;
 
         s_Data->TextureShader = Shader::Create("assets/shaders/Texture.glsl", shaderOptions);

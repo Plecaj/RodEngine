@@ -9,7 +9,18 @@ namespace Rod {
 
 	namespace Utils {
 
-		static shaderc_shader_kind ShadercTypeFromString(const std::string& type) {
+		static std::string Trim(const std::string& value)
+		{
+			const size_t begin = value.find_first_not_of(" \t\r\n");
+			if (begin == std::string::npos)
+				return {};
+
+			const size_t end = value.find_last_not_of(" \t\r\n");
+			return value.substr(begin, end - begin + 1);
+		}
+
+		static shaderc_shader_kind ShadercTypeFromString(const std::string& type)
+		{
 			if (type == "vertex")
 				return shaderc_vertex_shader;
 			if (type == "fragment" || type == "pixel")
@@ -32,6 +43,7 @@ namespace Rod {
     {
        std::string source = Shader::ReadFile(filepath); 
 	   std::unordered_map<shaderc_shader_kind, std::string> processed = Shader::PreProcess(source);
+	   RD_CORE_ASSERT(!processed.empty(), "Shader file contains no shader stages");
 
 	   std::filesystem::path file(filepath);
 	   std::string name = file.stem().string();
@@ -51,9 +63,14 @@ namespace Rod {
 
 		std::string result;
 		std::ifstream in(filepath, std::ios::in | std::ios::binary);
-		if (in) {
+		if (in)
+		{
 			in.seekg(0, std::ios::end);
-			result.resize(in.tellg());
+			auto size = in.tellg();
+			if (size <= 0)
+				return {};
+
+			result.resize((size_t)size);
 			in.seekg(0, std::ios::beg);
 			in.read(&result[0], result.size());
 			in.close();
@@ -62,6 +79,7 @@ namespace Rod {
 			RD_CORE_ERROR("Could not open file '{0}'", filepath);
 		}
 
+		RD_CORE_ASSERT(!result.empty(), "Shader source is empty");
 		return result;
 	}
 
@@ -78,9 +96,10 @@ namespace Rod {
 			size_t eol = source.find_first_of("\r\n", pos);
 			RD_CORE_ASSERT(eol != std::string::npos, "Syntax Error");
 			size_t begin = pos + typeTokenLength + 1;
-			std::string type = source.substr(begin, eol - begin);
+			std::string type = Utils::Trim(source.substr(begin, eol - begin));
 
 			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
+			RD_CORE_ASSERT(nextLinePos != std::string::npos, "Shader stage has no source");
 			pos = source.find(typeToken, nextLinePos);
 
 			size_t shaderEnd = (pos == std::string::npos) ? source.size() : pos;

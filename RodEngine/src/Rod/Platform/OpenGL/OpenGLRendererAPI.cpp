@@ -19,9 +19,9 @@ namespace Rod {
 
 	const int OpenGLRendererAPI::GetMaxTextureSlots() const
 	{
-		int TexSlots;
-		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &TexSlots);
-		return TexSlots;
+		int textureSlots;
+		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &textureSlots);
+		return textureSlots;
 	}
 
 	void OpenGLRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
@@ -51,7 +51,7 @@ namespace Rod {
 		glDisable(GL_POLYGON_OFFSET_FILL);
 	}
 
-	void OpenGLRendererAPI::DrawIdexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
+	void OpenGLRendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount)
 	{
 		uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
 		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);

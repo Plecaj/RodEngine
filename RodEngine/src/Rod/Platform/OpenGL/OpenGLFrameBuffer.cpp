@@ -88,7 +88,7 @@ namespace Rod {
 				case FramebufferTextureFormat::RGBA8:			return GL_RGBA8;
 				case FramebufferTextureFormat::RED_INTEGER:		return GL_RED_INTEGER;
 			}
-			RD_CORE_ASSERT(false, "Couldnt translate format");
+			RD_CORE_ASSERT(false, "Could not translate format");
 			return 0;
 		}
 
@@ -98,12 +98,12 @@ namespace Rod {
 	OpenGLFramebuffer::OpenGLFramebuffer(const FramebufferSpecification& spec)
 		:m_Specification(spec)
 	{
-		for (auto spec : m_Specification.Attachments.Attachments)
+		for (auto attachmentSpec : m_Specification.Attachments.Attachments)
 		{
-			if(Utils::IsDepthFormat(spec.TextureFormat))
-				m_DepthAttachmentSpecification = spec.TextureFormat;
+			if(Utils::IsDepthFormat(attachmentSpec.TextureFormat))
+				m_DepthAttachmentSpecification = attachmentSpec.TextureFormat;
 			else
-				m_ColorAttachmentSpecifications.emplace_back(spec.TextureFormat);
+				m_ColorAttachmentSpecifications.emplace_back(attachmentSpec.TextureFormat);
 
 		}
 
@@ -113,7 +113,7 @@ namespace Rod {
 	OpenGLFramebuffer::~OpenGLFramebuffer()
 	{
 		glDeleteFramebuffers(1, &m_RendererID);
-		glDeleteTextures(m_ColorAttachments.size(), m_ColorAttachments.data());
+		glDeleteTextures((GLsizei)m_ColorAttachments.size(), m_ColorAttachments.data());
 		glDeleteTextures(1, &m_DepthAttachment);
 	}
 
@@ -122,7 +122,7 @@ namespace Rod {
 		if (m_RendererID)
 		{
 			glDeleteFramebuffers(1, &m_RendererID);
-			glDeleteTextures(m_ColorAttachments.size(), m_ColorAttachments.data());
+			glDeleteTextures((GLsizei)m_ColorAttachments.size(), m_ColorAttachments.data());
 			glDeleteTextures(1, &m_DepthAttachment);
 
 			m_ColorAttachments.clear();
@@ -137,7 +137,7 @@ namespace Rod {
 		if (m_ColorAttachmentSpecifications.size())
 		{
 			m_ColorAttachments.resize(m_ColorAttachmentSpecifications.size());
-			Utils::CreateTextures(multisample, m_ColorAttachments.data(), m_ColorAttachments.size());
+			Utils::CreateTextures(multisample, m_ColorAttachments.data(), (uint32_t)m_ColorAttachments.size());
 
 			for (size_t i = 0; i < m_ColorAttachments.size(); i++)
 			{
@@ -146,12 +146,12 @@ namespace Rod {
 				{
 					case FramebufferTextureFormat::RGBA8:
 					{
-						Utils::AttachColorTexture(m_ColorAttachments[i], m_Specification.Samples, GL_RGBA8, GL_RGBA, m_Specification.Width, m_Specification.Height, i);
+						Utils::AttachColorTexture(m_ColorAttachments[i], m_Specification.Samples, GL_RGBA8, GL_RGBA, m_Specification.Width, m_Specification.Height, (int)i);
 						break;
 					}
 					case FramebufferTextureFormat::RED_INTEGER:
 					{
-						Utils::AttachColorTexture(m_ColorAttachments[i], m_Specification.Samples, GL_R32I, GL_RED_INTEGER, m_Specification.Width, m_Specification.Height, i);
+						Utils::AttachColorTexture(m_ColorAttachments[i], m_Specification.Samples, GL_R32I, GL_RED_INTEGER, m_Specification.Width, m_Specification.Height, (int)i);
 					}
 				}
 			}
@@ -180,7 +180,7 @@ namespace Rod {
 		{
 			RD_CORE_ASSERT(m_ColorAttachments.size() <= 4, "Only 4 color attachment are supported");
 			GLenum buffers[4] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
-			glDrawBuffers(m_ColorAttachments.size(), buffers);
+			glDrawBuffers((GLsizei)m_ColorAttachments.size(), buffers);
 		}
 		else if (m_ColorAttachments.empty())
 		{
@@ -210,7 +210,7 @@ namespace Rod {
 	{
 		if (width == 0 || height == 0 || width > s_MaxFramebufferSize || height > s_MaxFramebufferSize)
 		{
-			RD_CORE_WARN("Attemted to change framebuffer size to: {0}, {1}", width, height);
+			RD_CORE_WARN("Attempted to change framebuffer size to: {0}, {1}", width, height);
 			return;
 		}
 

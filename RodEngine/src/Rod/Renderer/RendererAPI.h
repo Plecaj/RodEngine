@@ -23,7 +23,7 @@ namespace Rod {
 		virtual void SetDepthBias(float slopeScaleBias, float constantBias) = 0;
 		virtual void ClearDepthBias() = 0;
 
-		virtual void DrawIdexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0) = 0;
+		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0) = 0;
 
 		struct RendererState
 		{
@@ -37,7 +37,7 @@ namespace Rod {
 		virtual RendererState GetState() const = 0;
 		virtual void SetState(const RendererState& state) = 0;
 
-		inline static API GetAPI() { return s_API; };
+		inline static API GetAPI() { return s_API; }
 	private:
 		static API s_API;
 	};

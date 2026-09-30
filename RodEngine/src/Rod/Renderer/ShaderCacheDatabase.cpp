@@ -8,7 +8,7 @@ namespace Rod {
 		if (!std::filesystem::exists(m_CacheDirectory))
 		{
 			bool created = std::filesystem::create_directories(m_CacheDirectory);
-			if(!created)
+			if (!created)
 				RD_CORE_ERROR("Directory for shader cache could not be created");
 		}
 
@@ -31,25 +31,27 @@ namespace Rod {
 		SaveDatabase();
 	}
 
-	bool ShaderCacheDatabase::CacheShader(size_t hash, std::vector<uint32_t> data)
+	bool ShaderCacheDatabase::CacheShader(const std::string& key, const std::vector<uint32_t>& data)
 	{
-		m_ValidHashes.insert(hash);
+		m_ValidKeys.insert(key);
 
-		std::filesystem::path filename = m_CacheDirectory / std::to_string(hash);
+		std::filesystem::path filename = m_CacheDirectory / key;
 		std::ofstream fout(filename, std::ios::binary | std::ios::out | std::ios::trunc);
 		if (!fout)
 			return false;
 
 		fout.write(reinterpret_cast<const char*>(data.data()), data.size() * sizeof(uint32_t));
-		m_CacheData["Hashes"].push_back(std::to_string(hash));
+		if (!Contains(key))
+			m_CacheData["Hashes"].push_back(key);
 		return true;
 	}
 
-	bool ShaderCacheDatabase::IsHashInside(size_t hash)
+	bool ShaderCacheDatabase::Contains(const std::string& key) const
 	{
 		for (auto hashEntry : m_CacheData["Hashes"])
 		{
-			if (hashEntry.as<size_t>() == hash) return true;
+			if (hashEntry.as<std::string>() == key)
+				return true;
 		}
 		return false;
 	}
@@ -82,31 +84,27 @@ namespace Rod {
 		std::unordered_set<std::string> allowedFiles;
 		allowedFiles.insert(m_CacheDatabase.filename().string());
 
-		// Delete yaml entries that shouldnt be in database anymore
-		// Coresponding file is missing or Shader is changed and its outdated
 		if (m_CacheData["Hashes"])
 		{
 			YAML::Node newHashes(YAML::NodeType::Sequence);
 
 			for (const auto& hashNode : m_CacheData["Hashes"])
 			{
-				std::string hashStr = hashNode.as<std::string>();
-				size_t hash = std::stoull(hashStr);
-				if (existingFiles.find(hashStr) != existingFiles.end() && m_ValidHashes.find(hash) != m_ValidHashes.end())
+				std::string key = hashNode.as<std::string>();
+				if (existingFiles.find(key) != existingFiles.end() && m_ValidKeys.find(key) != m_ValidKeys.end())
 				{
-					allowedFiles.insert(hashStr);
-					newHashes.push_back(hashStr);
+					allowedFiles.insert(key);
+					newHashes.push_back(key);
 				}
 				else
 				{
-					RD_CORE_WARN("Removing hash {} from YAML cache because file is missing or is outdated", hashStr);
+					RD_CORE_WARN("Removing shader cache key {} because file is missing or is outdated", key);
 				}
 			}
 
 			m_CacheData["Hashes"] = newHashes;
 		}
 
-		// Delete files not listed in yaml
 		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CacheDirectory))
 		{
 			std::string name = directoryEntry.path().filename().string();
@@ -117,7 +115,7 @@ namespace Rod {
 				else
 					std::filesystem::remove(directoryEntry.path());
 
-				RD_CORE_WARN("Removing {} because there is no coresponding YAML entry", directoryEntry.path().string());
+				RD_CORE_WARN("Removing {} because there is no corresponding YAML entry", directoryEntry.path().string());
 			}
 		}
 	}

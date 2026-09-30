@@ -6,24 +6,19 @@
 #include <unordered_map>
 #include <filesystem>
 
-#include <yaml-cpp/yaml.h>
-
-// TODO: REMOVE
-typedef unsigned int GLenum;
-
 namespace Rod {
 
 	class OpenGLShader : public Shader
 	{
 	public:
-		OpenGLShader(std::unordered_map<shaderc_shader_kind, std::string> shaders, std::string namem, const ShaderOptions& options = ShaderOptions());
+		OpenGLShader(std::unordered_map<shaderc_shader_kind, std::string> shaders, std::string name, const ShaderOptions& options = ShaderOptions());
 		virtual	~OpenGLShader();
 
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
 
 		virtual void SetInt(const std::string& name, int value) override;
-		virtual void SetIntArray(const std::string& name, int* values, uint32_t count) override;
+		virtual void SetIntArray(const std::string& name, const int* values, uint32_t count) override;
 		virtual void SetFloat(const std::string& name, const float value) override;
 		virtual void SetFloat3(const std::string& name, const glm::vec3& value) override;
 		virtual void SetFloat4(const std::string& name, const glm::vec4& value) override;
@@ -32,7 +27,7 @@ namespace Rod {
 		virtual const std::string& GetName() const override { return m_Name; };
 
 		void UploadUniformInt(const std::string& name, int value);
-		void UploadUniformIntArray(const std::string& name, int* values, uint32_t count);
+		void UploadUniformIntArray(const std::string& name, const int* values, uint32_t count);
 
 		void UploadUniformFloat(const std::string& name, float value);
 		void UploadUniformFloat2(const std::string& name, const glm::vec2& values);
@@ -44,8 +39,12 @@ namespace Rod {
 	private:
 		int GetUniformLocation(const std::string& name) const;
 
-		bool OpenSpirv(const shaderc_shader_kind& kind, const std::string& source, size_t hash);
-		std::vector<uint32_t> CompileSpirv(const shaderc_shader_kind& kind, const std::string& source, shaderc::Compiler& compiler);
+		bool OpenSpirv(const shaderc_shader_kind& kind, const std::string& cacheKey);
+		std::vector<uint32_t> CompileSpirv(
+			const shaderc_shader_kind& kind,
+			const std::string& source,
+			shaderc::Compiler& compiler,
+			const shaderc::CompileOptions& options);
 		void LoadSpirv();
 	private:
 		uint32_t m_RendererID;

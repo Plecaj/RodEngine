@@ -19,7 +19,7 @@ namespace Rod {
 		Entity selectedEntity,
 		EditorCamera& editorCamera,
 		SceneState sceneState,
-		int& guizmoType,
+		int& gizmoType,
 		glm::vec2& viewportSize,
 		glm::vec2& pendingViewportSize,
 		glm::vec2 viewportBounds[2],
@@ -61,7 +61,7 @@ namespace Rod {
 		viewportBounds[0] = { minBound.x, minBound.y };
 		viewportBounds[1] = { maxBound.x, maxBound.y };
 
-		if (selectedEntity && guizmoType != -1)
+		if (selectedEntity && gizmoType != -1)
 		{
 			glm::mat4 cameraView, cameraProjection;
 
@@ -97,13 +97,13 @@ namespace Rod {
 			glm::mat4 transform = tc.GetTransform();
 
 			bool snap = Input::IsKeyPressed(Key::LeftControl);
-			float snapValue = (guizmoType == ImGuizmo::OPERATION::ROTATE) ? 45.0f : 0.5f;
+			float snapValue = (gizmoType == ImGuizmo::OPERATION::ROTATE) ? 45.0f : 0.5f;
 			float snapValues[3] = { snapValue, snapValue, snapValue };
 
 			ImGuizmo::Manipulate(
 				glm::value_ptr(cameraView),
 				glm::value_ptr(cameraProjection),
-				(ImGuizmo::OPERATION)guizmoType,
+				(ImGuizmo::OPERATION)gizmoType,
 				ImGuizmo::MODE::LOCAL,
 				glm::value_ptr(transform),
 				nullptr,

@@ -42,19 +42,41 @@ namespace Rod {
 		void ExportGame();
 
 		void OnScenePlay();
-		void OnSceneStop();
+		void OnSceneStop(); 
+
+		void CreateFramebuffer();
+		void LoadEditorResources();
+		void SetupTitlebarCallbacks();
+
+		void ResizeViewportIfNeeded();
+		void RenderScene(Timestep ts);
+		void UpdateHoveredEntity();
+
+		void RenderTitlebar();
+		void RenderDockspace();
+		void RenderPanels();
+
+		bool DeserializeScene(const std::filesystem::path& path);
+		void SerializeScene(const std::filesystem::path& path);
+
+		std::filesystem::path GetRuntimeExecutablePath() const;
+		std::filesystem::path GetExportRootPath() const;
+		bool PrepareExportFolders(const std::filesystem::path& exportAssetsPath);
+		bool CopyRuntimeExecutable(const std::filesystem::path& runtimeExecutable, const std::filesystem::path& exportRoot);
+		bool CopyGameAssets(const std::filesystem::path& exportAssetsPath);
 	private:
 		Ref<Scene> m_ActiveScene;
 		Ref<Scene> m_EditorScene;
-		Entity m_CameraEntity;
 
 		EditorCamera m_EditorCamera;
 
 		Ref<Framebuffer> m_Framebuffer;
 
-		bool m_ViewportFocused, m_ViewportHovered = false;
-		glm::vec2 m_ViewportSize, m_PendingViewportSize;
-		glm::vec2 m_ViewportBounds[2];
+		bool m_ViewportFocused = false;
+		bool m_ViewportHovered = false;
+		glm::vec2 m_ViewportSize = { 1280.0f, 720.0f };
+		glm::vec2 m_PendingViewportSize = { 1280.0f, 720.0f };
+		glm::vec2 m_ViewportBounds[2] = {};
 
 		bool m_Profiling = false;
 
@@ -62,13 +84,17 @@ namespace Rod {
 
 		Entity m_HoveredEntity;
 
-		int m_GuizmoType = -1;
+		int m_GizmoType = -1;
 
 		float m_LastDeltaTime = 0.0f;
 
 		SceneState m_SceneState = SceneState::Edit;
 
-		// Panels
+		Ref<Texture2D> m_PlayButton, m_StopButton;
+		bool m_DockLayoutInitialized = false;
+		ImGuiID m_ToolbarDockID = 0;
+
+	private:
 		TitlebarPanel m_TitlebarPanel;
 		friend class TitlebarPanel;
 		SceneHierarchyPanel	m_SceneHierarchyPanel;
@@ -78,12 +104,6 @@ namespace Rod {
 		GuidePanel m_GuidePanel;
 		ViewportPanel m_ViewportPanel;
 		ToolbarPanel m_ToolbarPanel;
-
-
-		// Editor Resources
-		Ref<Texture2D> m_PlayButton, m_StopButton;
-		bool m_DockLayoutInitialized = false;
-		ImGuiID m_ToolbarDockID = 0;
 	};
 
 }

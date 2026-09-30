@@ -7,9 +7,9 @@ namespace Rod {
 	{
 		ImGui::Begin("Guide");
 
-		if (ImGui::CollapsingHeader("Guizmos"))
+		if (ImGui::CollapsingHeader("Gizmos"))
 		{
-			ImGui::Text("Guizmos Shortcut Keys:");
+			ImGui::Text("Gizmo Shortcut Keys:");
 			ImGui::Separator();
 			ImGui::Text("Q = None");
 			ImGui::Text("W = Translate");

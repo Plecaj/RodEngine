@@ -23,7 +23,7 @@ namespace Rod {
 			Entity selectedEntity,
 			EditorCamera& editorCamera,
 			SceneState sceneState,
-			int& guizmoType,
+			int& gizmoType,
 			glm::vec2& viewportSize,
 			glm::vec2& pendingViewportSize,
 			glm::vec2 viewportBounds[2],

@@ -77,6 +77,12 @@ namespace Rod{
 		return ImGui::IsItemClicked(ImGuiMouseButton_Left);
 	}
 
+	static void RunCallback(const std::function<void()>& callback)
+	{
+		if (callback)
+			callback();
+	}
+
 	TitlebarPanel::TitlebarPanel()
 	{
 		m_Logo = Texture2D::Create("assets/textures/titlebarLogo.png");
@@ -131,16 +137,16 @@ namespace Rod{
 		if (ImGui::BeginPopup("FileMenuPopup"))
 		{
 			if (ImGui::MenuItem("New", "Ctrl+N"))           
-				m_NewScene();
+				RunCallback(m_NewScene);
 			if (ImGui::MenuItem("Open...", "Ctrl+O"))       
-				m_OpenScene();
+				RunCallback(m_OpenScene);
 			if (ImGui::MenuItem("Save", "Ctrl+S"))          
-				m_SaveScene();
+				RunCallback(m_SaveScene);
 			if (ImGui::MenuItem("Save as...", "Ctrl+Shift+S")) 
-				m_SaveSceneAs();
+				RunCallback(m_SaveSceneAs);
 			ImGui::Separator();
 			if (ImGui::MenuItem("Export game"))
-				m_ExportGame();
+				RunCallback(m_ExportGame);
 			ImGui::Separator();
 			if (ImGui::MenuItem("Exit"))                    
 				Application::Get().Close();

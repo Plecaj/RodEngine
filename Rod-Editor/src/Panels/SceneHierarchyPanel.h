@@ -22,7 +22,7 @@ namespace Rod {
 
 		void DrawEntityNode(Entity entity);
 		void HandleHierarchyBlankSpace();
-		bool HandleEntityContextMenu(Entity entity);
+		bool HandleEntityContextMenu();
 
 		void DrawTag(Entity entity);
 		void DrawAddComponentButton(Entity entity);
@@ -31,7 +31,6 @@ namespace Rod {
 		void DrawCameraComponent(Entity entity);
 		void DrawSpriteRendererComponent(Entity entity);
 		void DrawMeshComponent(Entity entity);
-		void DrawMaterialComponent(Entity entity);
 		void DrawDirectionalLightComponent(Entity entity);
 		void DrawScriptComponent(Entity entity);
 

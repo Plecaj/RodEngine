@@ -7,7 +7,7 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
-#include  <filesystem>
+#include <filesystem>
 #include <sstream>
 
 namespace Rod {
@@ -71,7 +71,7 @@ namespace Rod {
 		if (ImGui::IsItemClicked())
 			m_SelectionContext = entity;
 
-		bool entityDeleted = HandleEntityContextMenu(entity);
+		bool entityDeleted = HandleEntityContextMenu();
 
 		if (opened)
 		{
@@ -102,7 +102,7 @@ namespace Rod {
 		}
 	}
 
-	bool SceneHierarchyPanel::HandleEntityContextMenu(Entity entity)
+	bool SceneHierarchyPanel::HandleEntityContextMenu()
 	{
 		bool entityDeleted = false;
 		if (ImGui::BeginPopupContextItem(0, 1 | ImGuiPopupFlags_NoOpenOverItems))
@@ -182,7 +182,7 @@ namespace Rod {
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		ImGui::DragFloat("##Y", &values.y, 0.1f, minBound, maxBound, "%.2f");
+		ImGui::DragFloat("##Y", &values.y, speed, minBound, maxBound, "%.2f");
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 
@@ -196,7 +196,7 @@ namespace Rod {
 		ImGui::PopStyleColor(3);
 
 		ImGui::SameLine();
-		ImGui::DragFloat("##Z", &values.z, 0.1f, minBound, maxBound, "%.2f");
+		ImGui::DragFloat("##Z", &values.z, speed, minBound, maxBound, "%.2f");
 		ImGui::PopItemWidth();
 
 		ImGui::PopStyleVar();
@@ -210,7 +210,7 @@ namespace Rod {
 	static void DrawComponent(const std::string& name, Entity entity, UIFunction uiFunction)
 	{
 		ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth;
-		treeNodeFlags |= ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding |ImGuiTreeNodeFlags_AllowItemOverlap;
+		treeNodeFlags |= ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 
 		if (entity.HasComponent<T>())
 		{
@@ -332,7 +332,7 @@ namespace Rod {
 
 	void SceneHierarchyPanel::DrawTransformComponent(Entity entity)
 	{
-		DrawComponent<TransformComponent>("Transform", entity, [this](auto& component)
+		DrawComponent<TransformComponent>("Transform", entity, [](auto& component)
 			{
 				DrawVec3Control("Translation", component.Translation);
 
@@ -482,7 +482,7 @@ namespace Rod {
 	{
 		DrawComponent<DirectionalLightComponent>("Directional Light", entity, [](auto& component)
 			{
-				DrawVec3Control("Direction", component.Direction, 0.01, -1.0f, 1.0f);
+				DrawVec3Control("Direction", component.Direction, 0.01f, -1.0f, 1.0f);
 				component.Direction = glm::normalize(component.Direction);
 				ImGui::ColorEdit3("Color", glm::value_ptr(component.Color));
 				ImGui::DragFloat("Intensity", &component.Intensity, 0.01f, 0.0f, 1.0f);

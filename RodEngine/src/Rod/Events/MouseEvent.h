@@ -2,6 +2,8 @@
 
 #include "Event.h"
 
+#include <sstream>
+
 namespace Rod {
 
 	class MouseMovedEvent : public Event

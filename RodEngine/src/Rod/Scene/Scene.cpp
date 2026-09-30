@@ -1,8 +1,7 @@
 #include "rdpch.h"
 #include "Scene.h"
 
-#include "Rod/Renderer/Renderer2D.h"
-#include "Rod/Renderer/Renderer.h"
+#include "Rod/Renderer/SceneRenderer.h"
 #include "Rod/Scripting/ScriptEngine.h"
 
 #include <glm/glm.hpp>
@@ -10,17 +9,13 @@
 #include "Entity.h"
 #include "Components.h"
 
-
 namespace Rod {
 
 	Scene::Scene()
 	{
-		
 	}
 
-	Scene::~Scene()
-	{
-	}
+	Scene::~Scene() = default;
 
 	template<typename... Components>
 	static void CopyComponent(entt::registry& dst, entt::registry& src, const std::unordered_map<uint64_t, entt::entity>& entityMap)
@@ -87,6 +82,9 @@ namespace Rod {
 
 	void Scene::DestroyEntity(Entity entity)
 	{
+		if (entity.HasComponent<NativeScriptComponent>())
+			DestroyNativeScript(entity.GetComponent<NativeScriptComponent>());
+
 		m_Registry.destroy(entity);
 	}
 
@@ -97,129 +95,59 @@ namespace Rod {
 
 	void Scene::OnRuntimeStop()
 	{
+		DestroyNativeScripts();
 		ScriptEngine::OnRuntimeStop();
 	}
 
 	void Scene::OnUpdateRuntime(Timestep& ts)
 	{
-		// Update scripts - TODO: move to Scene::OnScenePlay
-		// TODO: also should be calling Instance->OnDetroy on scene stop
-		{
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& ncs)
-			{
-				if (!ncs.Instance)
-				{
-					ncs.Instance = ncs.InstantiateScript();
-					ncs.Instance->m_Entity = Entity{ entity, this };
-					ncs.Instance->OnCreate();
-				}
-
-				ncs.Instance->OnUpdate(ts);
-			});
-		}
-
+		UpdateNativeScripts(ts);
 		ScriptEngine::OnRuntimeUpdate(ts);
-
-		Camera* mainCamera = nullptr;
-		glm::mat4 cameraTransform;
-		{
-			auto view = m_Registry.view<CameraComponent, TransformComponent>();
-			view.each([&](auto entity, CameraComponent& camera, TransformComponent& transform) {
-				if (camera.Primary)
-				{
-					mainCamera = &camera.Camera;
-					cameraTransform = transform.GetTransform();
-				}
-			});
-		}
-
-		if (!mainCamera) return;
-
-		std::vector<DirectionalLightComponent> lightSources;
-
-		{
-			auto view = m_Registry.view<DirectionalLightComponent>();
-			view.each([&](auto entity, DirectionalLightComponent& light) {
-				lightSources.push_back(light);
-				});
-		}
-
-		Renderer::BeginScene(*mainCamera, cameraTransform, lightSources);
-
-		{
-			auto view = m_Registry.view<TransformComponent, MeshComponent>();
-
-			view.each([&](auto entity, TransformComponent& transform, MeshComponent& mesh) {
-				if (mesh.Mesh != nullptr)
-				{
-					Renderer::Submit(
-						mesh.Mesh->GetVAO(),
-						transform.GetTransform(),
-						mesh.Mesh->GetMaterial(),
-						(int)entity
-				);
-
-				}
-			});
-		}
-
-		Renderer::EndScene();
-
-		Renderer2D::BeginScene(mainCamera->GetProjection(), cameraTransform);
-		
-		{
-			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
-			view.each([&](auto entity, TransformComponent& transform, SpriteRendererComponent& sprite) {
-				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
-				});
-		}
-
-		Renderer2D::EndScene();
+		SceneRenderer::RenderRuntime(*this);
 	}
 
 	void Scene::OnUpdateEditor(Timestep& ts, EditorCamera& camera)
 	{
-		std::vector<DirectionalLightComponent> lightSources;
+		(void)ts;
 
+		SceneRenderer::RenderEditor(*this, camera);
+	}
+
+	void Scene::DestroyNativeScripts()
+	{
+		m_Registry.view<NativeScriptComponent>().each([this](auto, auto& script)
 		{
-			auto view = m_Registry.view<DirectionalLightComponent>();
-			view.each([&](auto entity, DirectionalLightComponent& light) {
-				lightSources.push_back(light);
-				});
-		}		
+			DestroyNativeScript(script);
+		});
+	}
 
-		Renderer::BeginScene(camera, lightSources);
+	void Scene::DestroyNativeScript(NativeScriptComponent& script)
+	{
+		if (!script.Instance)
+			return;
 
+		script.Instance->OnDestroy();
+		if (script.DestroyScript)
+			script.DestroyScript(&script);
+		else
+			script.Instance = nullptr;
+	}
+
+	void Scene::UpdateNativeScripts(Timestep& ts)
+	{
+		m_Registry.view<NativeScriptComponent>().each([this, &ts](auto entity, auto& script)
 		{
-			auto view = m_Registry.view<TransformComponent, MeshComponent>();
+			if (!script.Instance)
+			{
+				RD_CORE_ASSERT(script.InstantiateScript, "Native script is not bound");
 
-			view.each([&](auto entity, TransformComponent& transform, MeshComponent& mesh) {
-				if (mesh.Mesh != nullptr)
-				{
-					Renderer::Submit(
-						mesh.Mesh->GetVAO(),
-						transform.GetTransform(),
-						mesh.Mesh->GetMaterial(),
-						(int)entity
-				);
-				}
-			});
-		}
+				script.Instance = script.InstantiateScript();
+				script.Instance->m_Entity = Entity{ entity, this };
+				script.Instance->OnCreate();
+			}
 
-		Renderer::EndScene();
-
-		
-		Renderer2D::BeginScene(camera);
-
-		{
-			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
-			view.each([&](auto entity, TransformComponent& transform, SpriteRendererComponent& sprite) {
-				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
-				});
-		}
-
-		Renderer2D::EndScene();
-
+			script.Instance->OnUpdate(ts);
+		});
 	}
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)
@@ -231,11 +159,11 @@ namespace Rod {
 		for (auto entity : view)
 		{
 			auto& cameraComponent = view.get<CameraComponent>(entity);
-			if (cameraComponent.FixedAspectRatio) continue;
+			if (cameraComponent.FixedAspectRatio)
+				continue;
 
 			cameraComponent.Camera.SetViewportSize(width, height);
 		}
-		
 	}
 
 	Entity Scene::GetPrimaryCameraEntity()
@@ -277,52 +205,52 @@ namespace Rod {
 	template<typename T>
 	void Scene::OnComponentAdded(Entity entity, T& component)
 	{
-		static_assert(false);
+		static_assert(false, "Unsupported component type");
 	}
 
 	template<>
-	void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent& component)
+	void Scene::OnComponentAdded<TransformComponent>(Entity, TransformComponent&)
 	{
 	}
 
 	template<>
-	void Scene::OnComponentAdded<IDComponent>(Entity entity, IDComponent& component)
+	void Scene::OnComponentAdded<IDComponent>(Entity, IDComponent&)
 	{
 	}
 
 	template<>
-	void Scene::OnComponentAdded<CameraComponent>(Entity entity, CameraComponent& component)
+	void Scene::OnComponentAdded<CameraComponent>(Entity, CameraComponent& component)
 	{
 		component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
 	}
 
 	template<>
-	void Scene::OnComponentAdded<SpriteRendererComponent>(Entity entity, SpriteRendererComponent& component)
+	void Scene::OnComponentAdded<SpriteRendererComponent>(Entity, SpriteRendererComponent&)
 	{
 	}
 
 	template<>
-	void Scene::OnComponentAdded<MeshComponent>(Entity entity, MeshComponent& component)
+	void Scene::OnComponentAdded<MeshComponent>(Entity, MeshComponent&)
 	{
 	}
 
 	template<>
-	void Scene::OnComponentAdded<DirectionalLightComponent>(Entity entity, DirectionalLightComponent& component)
+	void Scene::OnComponentAdded<DirectionalLightComponent>(Entity, DirectionalLightComponent&)
 	{
 	}
 
 	template<>
-	void Scene::OnComponentAdded<TagComponent>(Entity entity, TagComponent& component)
+	void Scene::OnComponentAdded<TagComponent>(Entity, TagComponent&)
 	{
 	}
 
 	template<>
-	void Scene::OnComponentAdded<NativeScriptComponent>(Entity entity, NativeScriptComponent& component)
+	void Scene::OnComponentAdded<NativeScriptComponent>(Entity, NativeScriptComponent&)
 	{
 	}
 
 	template<>
-	void Scene::OnComponentAdded<ScriptComponent>(Entity entity, ScriptComponent& component)
+	void Scene::OnComponentAdded<ScriptComponent>(Entity, ScriptComponent&)
 	{
 	}
 }

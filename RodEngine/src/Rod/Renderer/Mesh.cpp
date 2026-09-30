@@ -45,7 +45,7 @@ namespace Rod {
 		RD_PROFILE_FUNCTION();
 
 		auto posIt = primitive.attributes.find("POSITION");
-		RD_CORE_ASSERT(posIt != primitive.attributes.end(), "Couldnt find position in mesh primitive");
+		RD_CORE_ASSERT(posIt != primitive.attributes.end(), "Could not find position in mesh primitive");
 
 		const auto& posAccessor = model.accessors[posIt->second];
 		const auto& posView = model.bufferViews[posAccessor.bufferView];

@@ -21,19 +21,19 @@ namespace Rod {
 
 	void SceneCamera::SetPerspective(float verticalFOV, float nearClip, float farClip)
 	{
-		SetProjectionType(ProjectionType::Perspective);
+		m_ProjectionType = ProjectionType::Perspective;
 		m_PerspectiveFOV = verticalFOV;
 		m_PerspectiveNear = nearClip;
 		m_PerspectiveFar = farClip;
 		RecalculateProjection();
 	}
 
-	void SceneCamera::SetOrthographic(float size, float nearClip, float farCLip)
+	void SceneCamera::SetOrthographic(float size, float nearClip, float farClip)
 	{
-		SetProjectionType(ProjectionType::Orthographic);
+		m_ProjectionType = ProjectionType::Orthographic;
 		m_OrthographicSize = size;
 		m_OrthographicNear = nearClip;
-		m_OrthographicFar = farCLip;
+		m_OrthographicFar = farClip;
 		RecalculateProjection();
 	}
 

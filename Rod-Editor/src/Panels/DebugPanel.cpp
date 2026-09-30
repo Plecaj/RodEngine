@@ -5,21 +5,21 @@
 
 namespace Rod {
 
-	void DebugPanel::OnImGuiRender(int guizmoType, Entity hoveredEntity, bool& profiling)
+	void DebugPanel::OnImGuiRender(int gizmoType, Entity hoveredEntity, bool& profiling)
 	{
 		ImGui::Begin("Other");
 
 		ImGui::TextDisabled("Selection");
 
-		const char* guizmoMode = "None";
-		switch (guizmoType)
+		const char* gizmoMode = "None";
+		switch (gizmoType)
 		{
-		case -1:                                guizmoMode = "None";      break;
-		case ImGuizmo::OPERATION::TRANSLATE:    guizmoMode = "Translate"; break;
-		case ImGuizmo::OPERATION::ROTATE:       guizmoMode = "Rotate";    break;
-		case ImGuizmo::OPERATION::SCALE:        guizmoMode = "Scale";     break;
+		case -1:                                gizmoMode = "None";      break;
+		case ImGuizmo::OPERATION::TRANSLATE:    gizmoMode = "Translate"; break;
+		case ImGuizmo::OPERATION::ROTATE:       gizmoMode = "Rotate";    break;
+		case ImGuizmo::OPERATION::SCALE:        gizmoMode = "Scale";     break;
 		}
-		ImGui::Text("Current Guizmo mode: %s", guizmoMode);
+		ImGui::Text("Current Gizmo mode: %s", gizmoMode);
 
 		std::string name = "None";
 		if (hoveredEntity)

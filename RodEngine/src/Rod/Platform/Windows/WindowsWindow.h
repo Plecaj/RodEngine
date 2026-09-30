@@ -12,31 +12,40 @@ namespace Rod {
 	{
 	public:
 		WindowsWindow(const WindowProps& props);
-		virtual ~WindowsWindow();
+		~WindowsWindow() override;
 
 		void OnUpdate() override;
 
 		inline unsigned int GetWidth() const override { return m_Data.Width; }
 		inline unsigned int GetHeight() const override { return m_Data.Height; }
 
-		virtual void Minimalize() const override;
-		virtual void Maximalize() const override;
-		virtual void Restore() const override;
-		virtual void BeginWindowDrag() const override;
+		void Minimize() const override;
+		void Maximize() const override;
+		void Restore() const override;
+		void BeginWindowDrag() const override;
 
 		// Window attributes
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
 		void SetVSync(bool enabled) override;
 		bool IsVSync() const override;
 
-		inline virtual void* GetNativeWindow() const { return m_Window; };
+		inline void* GetNativeWindow() const override { return m_Window; };
 	private:
-		virtual void Init(const WindowProps& props);
-		virtual void Shutdown();
+		void Init(const WindowProps& props);
+		void Shutdown();
+		void InitGLFW();
+		void CreateNativeWindow(const WindowProps& props);
+		void SetGLFWCallbacks();
+		void SetWindowCallbacks();
+		void SetKeyboardCallbacks();
+		void SetMouseCallbacks();
+		void SetTaskbarIcon(const std::string& iconFilepath) const;
+		void ResetWindowDrag() const;
 		void UpdateWindowDrag() const;
+		glm::vec2 GetMouseScreenPosition() const;
 	private:
-		GLFWwindow* m_Window;
-		GraphicsContext* m_Context;
+		GLFWwindow* m_Window = nullptr;
+		Scope<GraphicsContext> m_Context;
 		mutable bool m_WindowDragActive = false;
 		mutable glm::vec2 m_WindowDragStartMouseScreen = { 0.0f, 0.0f };
 		mutable glm::ivec2 m_WindowDragStartPosition = { 0, 0 };
@@ -51,6 +60,8 @@ namespace Rod {
 		};
 
 		WindowData m_Data;
+
+		static WindowData& GetWindowData(GLFWwindow* window);
 
 	};
 

@@ -2,7 +2,9 @@
 
 #include <algorithm>
 #include <chrono>
+#include <cstdint>
 #include <fstream>
+#include <memory>
 #include <string>
 
 #include <thread>
@@ -11,7 +13,7 @@ namespace Rod {
 struct ProfileResult {
   std::string Name;
   long long Start, End;
-  uint32_t ThreadID;
+  size_t ThreadID;
 };
 
 struct InstrumentationSession {
@@ -20,28 +22,33 @@ struct InstrumentationSession {
 
 class Instrumentor {
 private:
-  InstrumentationSession *m_CurrentSession;
+  std::unique_ptr<InstrumentationSession> m_CurrentSession;
   std::ofstream m_OutputStream;
-  int m_ProfileCount;
+  int m_ProfileCount = 0;
   bool m_Enabled = false;
 
 public:
-  Instrumentor() : m_CurrentSession(nullptr), m_ProfileCount(0) {}
+  Instrumentor() = default;
 
   void BeginSession(const std::string &name,
                     const std::string &filepath = "results.json") {
+    if (m_CurrentSession)
+      EndSession();
+
     m_Enabled = true;
     m_OutputStream.open(filepath);
     WriteHeader();
-    m_CurrentSession = new InstrumentationSession{name};
+    m_CurrentSession = std::make_unique<InstrumentationSession>(InstrumentationSession{name});
   }
 
   void EndSession() {
+    if (!m_CurrentSession)
+      return;
+
     m_Enabled = false;
     WriteFooter();
     m_OutputStream.close();
-    delete m_CurrentSession;
-    m_CurrentSession = nullptr;
+    m_CurrentSession.reset();
     m_ProfileCount = 0;
   }
 
@@ -107,8 +114,7 @@ public:
             .time_since_epoch()
             .count();
 
-    uint32_t threadID =
-        std::hash<std::thread::id>{}(std::this_thread::get_id());
+    size_t threadID = std::hash<std::thread::id>{}(std::this_thread::get_id());
     Instrumentor::Get().WriteProfile({m_Name, start, end, threadID});
 
     m_Stopped = true;
@@ -139,7 +145,7 @@ private:
 #define RD_PROFILE_FUNCTION() RD_PROFILE_SCOPE(RD_PROFILE_FUNC_SIG)
 #else
 #define RD_PROFILE_BEGIN_SESSION(name, filepath)
-#define RD_PROFILE_BEGIN_SESSION()
+#define RD_PROFILE_END_SESSION()
 #define RD_PROFILE_FUNCTION()
 #define RD_PROFILE_SCOPE(name)
 #endif

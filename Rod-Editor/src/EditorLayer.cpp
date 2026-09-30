@@ -14,7 +14,6 @@
 
 namespace Rod {
 
-	// Temporary 
 	extern const std::filesystem::path g_AssetsPath;
 
 	void EditorLayer::SetupDefaultDockLayout(ImGuiID dockspaceID)
@@ -81,30 +80,38 @@ namespace Rod {
 	{
 		RD_PROFILE_FUNCTION();
 
+		CreateFramebuffer();
+		NewScene();
+		DeserializeScene("assets/scenes/Example3D.rod");
+		SetupTitlebarCallbacks();
+		LoadEditorResources();
+		ScriptEngine::Init();
+	}
+
+	void EditorLayer::CreateFramebuffer()
+	{
 		FramebufferSpecification fbSpec;
 		fbSpec.Attachments = { FramebufferTextureFormat::RGBA8, FramebufferTextureFormat::RED_INTEGER, FramebufferTextureFormat::DEPTH24 };
 		fbSpec.Width = 1280;
 		fbSpec.Height = 720;
 		m_Framebuffer = Framebuffer::Create(fbSpec);
+	}
 
-		NewScene();
-		SceneSerializer serializer(m_ActiveScene);
-		serializer.DeserializeText("assets/scenes/Example3D.rod");
-
-		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-
+	void EditorLayer::SetupTitlebarCallbacks()
+	{
 		m_TitlebarPanel.SetNewSceneCallback([this]() { NewScene(); });
 		m_TitlebarPanel.SetOpenSceneCallback([this]() { OpenScene(); });
 		m_TitlebarPanel.SetSaveSceneCallback([this]() { SaveScene(); });
 		m_TitlebarPanel.SetSaveSceneAsCallback([this]() { SaveSceneAs(); });
 		m_TitlebarPanel.SetExportGameCallback([this]() { ExportGame(); });
+	}
 
+	void EditorLayer::LoadEditorResources()
+	{
 		m_EditorCamera = EditorCamera(30.0f, 1.778f, 1.0f, 1000.0f);
 
 		m_PlayButton = Texture2D::Create("assets/textures/PlayButton.png");
 		m_StopButton = Texture2D::Create("assets/textures/StopButton.png");
-
-		ScriptEngine::Init();
 	}
 
 	void EditorLayer::OnDetach()
@@ -116,24 +123,34 @@ namespace Rod {
 	void EditorLayer::OnUpdate(Timestep ts)
 	{
 		ScriptEngine::OnUpdate();
-
-		if (m_ViewportSize != m_PendingViewportSize)
-		{
-			m_ViewportSize = m_PendingViewportSize;
-			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-			m_EditorCamera.SetViewportSize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		}
-
-		m_EditorCamera.OnUpdate(ts);
+		ResizeViewportIfNeeded();
 
 		m_Framebuffer->Bind();
 		Renderer2D::ResetStats();
 		RenderCommand::SetClearColor({ 0.15f, 0.15f, 0.15f, 1 });
 		RenderCommand::Clear();
-
 		m_Framebuffer->ClearColorAttachment(1, -1);
 
+		RenderScene(ts);
+		UpdateHoveredEntity();
+
+		m_Framebuffer->Unbind();
+		m_LastDeltaTime = ts;
+	}
+
+	void EditorLayer::ResizeViewportIfNeeded()
+	{
+		if (m_ViewportSize != m_PendingViewportSize)
+		{
+			m_ViewportSize = m_PendingViewportSize;
+			m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
+		}
+	}
+
+	void EditorLayer::RenderScene(Timestep ts)
+	{
 		switch (m_SceneState)
 		{
 			case SceneState::Edit:
@@ -149,8 +166,10 @@ namespace Rod {
 				break;
 			}
 		}
+	}
 
-
+	void EditorLayer::UpdateHoveredEntity()
+	{
 		auto [mx, my] = ImGui::GetMousePos();
 		mx -= m_ViewportBounds[0].x;
 		my -= m_ViewportBounds[0].y;
@@ -163,13 +182,15 @@ namespace Rod {
 			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
 			m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, m_ActiveScene.get());
 		}
-
-		m_Framebuffer->Unbind();
-
-		m_LastDeltaTime = ts;
 	}
 
 	void EditorLayer::OnImGuiRender()
+	{
+		RenderTitlebar();
+		RenderDockspace();
+	}
+
+	void EditorLayer::RenderTitlebar()
 	{
 		float titlebarHeight = (float)m_TitlebarPanel.GetHeight();
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
@@ -194,11 +215,17 @@ namespace Rod {
 
 		ImGui::End();
 		ImGui::PopStyleVar(3);
+	}
 
+	void EditorLayer::RenderDockspace()
+	{
 		static bool dockspaceOpen = true;
-		static bool opt_fullscreen = true;
-		static bool opt_padding = false;
-		static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+		static bool fullscreen = true;
+		static bool padding = false;
+		static ImGuiDockNodeFlags dockspaceFlags = ImGuiDockNodeFlags_None;
+
+		float titlebarHeight = (float)m_TitlebarPanel.GetHeight();
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
 
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoSavedSettings;
 
@@ -209,7 +236,7 @@ namespace Rod {
 		ImGui::SetNextWindowSize(dockSize);
 		ImGui::SetNextWindowViewport(viewport->ID);
 
-		if (opt_fullscreen)
+		if (fullscreen)
 		{
 			ImGui::SetNextWindowPos(dockPos);
 			ImGui::SetNextWindowSize(dockSize);
@@ -221,22 +248,21 @@ namespace Rod {
 		}
 		else
 		{
-			dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
+			dockspaceFlags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
 		}
 
-		if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+		if (dockspaceFlags & ImGuiDockNodeFlags_PassthruCentralNode)
 			window_flags |= ImGuiWindowFlags_NoBackground;
 
-		if (!opt_padding)
+		if (!padding)
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 		ImGui::Begin("Dockspace", &dockspaceOpen, window_flags);
-		if (!opt_padding)
+		if (!padding)
 			ImGui::PopStyleVar();
 			
-		if (opt_fullscreen)
+		if (fullscreen)
 			ImGui::PopStyleVar(2);
 
-		// Submit the DockSpace
 		ImGuiIO& io = ImGui::GetIO();
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.WindowMinSize.x = 370.0f;
@@ -244,7 +270,7 @@ namespace Rod {
 		{
 			ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
 
-			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+			ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspaceFlags);
 
 			if (!m_DockLayoutInitialized)
 			{
@@ -255,11 +281,18 @@ namespace Rod {
 
 		style.WindowMinSize.x = 32.0f;
 
+		RenderPanels();
+
+		ImGui::End();
+	}
+
+	void EditorLayer::RenderPanels()
+	{
 		m_SceneHierarchyPanel.OnImGuiRender();
 		m_ContentBrowserPanel.OnImGuiRender();
 
 		m_PerformancePanel.OnImGuiRender(m_LastDeltaTime);
-		m_DebugPanel.OnImGuiRender(m_GuizmoType, m_HoveredEntity, m_Profiling);
+		m_DebugPanel.OnImGuiRender(m_GizmoType, m_HoveredEntity, m_Profiling);
 		m_GuidePanel.OnImGuiRender();
 
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
@@ -269,7 +302,7 @@ namespace Rod {
 			selectedEntity,
 			m_EditorCamera,
 			m_SceneState,
-			m_GuizmoType,
+			m_GizmoType,
 			m_ViewportSize,
 			m_PendingViewportSize,
 			m_ViewportBounds,
@@ -287,8 +320,6 @@ namespace Rod {
 			[this]() { OnScenePlay(); },
 			[this]() { OnSceneStop(); }
 		);
-
-		ImGui::End();
 	}
 
 	void EditorLayer::OnEvent(Event& event)
@@ -338,22 +369,21 @@ namespace Rod {
 				break;
 			}
 
-			// Guizmos
 			case Key::Q:
 				if(!ImGuizmo::IsUsing())
-					m_GuizmoType = -1;
+					m_GizmoType = -1;
 				break;
 			case Key::W:
 				if (!ImGuizmo::IsUsing())
-					m_GuizmoType = ImGuizmo::OPERATION::TRANSLATE;
+					m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
 				break;
 			case Key::E:
 				if (!ImGuizmo::IsUsing())
-					m_GuizmoType = ImGuizmo::OPERATION::ROTATE;
+					m_GizmoType = ImGuizmo::OPERATION::ROTATE;
 				break;
 			case Key::R:
 				if (!ImGuizmo::IsUsing())
-					m_GuizmoType = ImGuizmo::OPERATION::SCALE;
+					m_GizmoType = ImGuizmo::OPERATION::SCALE;
 				break;
 		}
 
@@ -382,20 +412,13 @@ namespace Rod {
 	{
 		std::string filepath = FileDialogs::OpenFile("Rod Scene (*.rod)\0*.rod\0");
 		if (!filepath.empty())
-		{
-			NewScene();
-
-			SceneSerializer serializer(m_ActiveScene);
-			serializer.DeserializeText(filepath);
-		}
+			OpenScene(filepath);
 	}
 
 	void EditorLayer::OpenScene(const std::filesystem::path& path)
 	{
-		NewScene();
-
-		SceneSerializer serializer(m_ActiveScene);
-		serializer.DeserializeText(path.string());
+		if (DeserializeScene(path))
+			m_SceneOutputFilepath = path.string();
 	}
 
 	void EditorLayer::SaveScene()
@@ -405,19 +428,31 @@ namespace Rod {
 		if (m_SceneOutputFilepath.empty())
 			return;
 
-		SceneSerializer serializer(m_ActiveScene);
-		serializer.SerializeText(m_SceneOutputFilepath);
+		SerializeScene(m_SceneOutputFilepath);
 	}
 
 	void EditorLayer::SaveSceneAs()
 	{
 		std::string filepath = FileDialogs::SaveFile("Rod Scene (*.rod)\0*.rod\0");
-		m_SceneOutputFilepath = filepath;
 		if (!filepath.empty())
 		{
-			SceneSerializer serializer(m_ActiveScene);
-			serializer.SerializeText(filepath);
+			m_SceneOutputFilepath = filepath;
+			SerializeScene(filepath);
 		}
+	}
+
+	bool EditorLayer::DeserializeScene(const std::filesystem::path& path)
+	{
+		NewScene();
+
+		SceneSerializer serializer(m_ActiveScene);
+		return serializer.DeserializeText(path.string());
+	}
+
+	void EditorLayer::SerializeScene(const std::filesystem::path& path)
+	{
+		SceneSerializer serializer(m_ActiveScene);
+		serializer.SerializeText(path.string());
 	}
 
 	void EditorLayer::ExportGame()
@@ -425,47 +460,82 @@ namespace Rod {
 		Ref<Scene> sceneToExport = m_SceneState == SceneState::Play ? m_EditorScene : m_ActiveScene;
 		if (!sceneToExport)
 		{
-			RD_CORE_ERROR("Cannot export game without an active scene.");
+			RD_CORE_ERROR("No scene to export");
 			return;
 		}
 
-		std::filesystem::path workingDirectory = std::filesystem::current_path();
-		std::filesystem::path runtimeExecutable = workingDirectory / "Rod-Runtime.exe";
+		std::filesystem::path runtimeExecutable = GetRuntimeExecutablePath();
 		if (!std::filesystem::exists(runtimeExecutable))
 		{
-			RD_CORE_ERROR("Cannot export game. Runtime executable was not found: {}", runtimeExecutable.string());
+			RD_CORE_ERROR("Runtime not found: {}", runtimeExecutable.string());
 			return;
 		}
 
-		std::filesystem::path exportRoot = workingDirectory / "exports" / "RodGame";
+		std::filesystem::path exportRoot = GetExportRootPath();
 		std::filesystem::path exportAssets = exportRoot / "assets";
 
-		std::error_code error;
-		std::filesystem::create_directories(exportAssets / "scenes", error);
-		if (error)
-		{
-			RD_CORE_ERROR("Failed to create game export directory '{}': {}", exportRoot.string(), error.message());
+		if (!PrepareExportFolders(exportAssets))
 			return;
-		}
 
-		std::filesystem::copy_file(runtimeExecutable, exportRoot / "RodGame.exe", std::filesystem::copy_options::overwrite_existing, error);
-		if (error)
-		{
-			RD_CORE_ERROR("Failed to copy runtime executable: {}", error.message());
+		if (!CopyRuntimeExecutable(runtimeExecutable, exportRoot))
 			return;
-		}
 
-		std::filesystem::copy(workingDirectory / "assets", exportAssets,
-			std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing, error);
-		if (error)
-		{
-			RD_CORE_ERROR("Failed to copy game assets: {}", error.message());
+		if (!CopyGameAssets(exportAssets))
 			return;
-		}
 
 		SceneSerializer serializer(sceneToExport);
 		serializer.SerializeText((exportAssets / "scenes" / "Startup.rod").string());
-		RD_CORE_INFO("Exported game package to '{}'.", exportRoot.string());
+		RD_CORE_INFO("Exported game to {}", exportRoot.string());
+	}
+
+	std::filesystem::path EditorLayer::GetRuntimeExecutablePath() const
+	{
+		return std::filesystem::current_path() / "Rod-Runtime.exe";
+	}
+
+	std::filesystem::path EditorLayer::GetExportRootPath() const
+	{
+		return std::filesystem::current_path() / "exports" / "RodGame";
+	}
+
+	bool EditorLayer::PrepareExportFolders(const std::filesystem::path& exportAssetsPath)
+	{
+		std::error_code error;
+		std::filesystem::create_directories(exportAssetsPath / "scenes", error);
+		if (error)
+		{
+			RD_CORE_ERROR("Export folder failed: {}", error.message());
+			return false;
+		}
+
+		return true;
+	}
+
+	bool EditorLayer::CopyRuntimeExecutable(const std::filesystem::path& runtimeExecutable, const std::filesystem::path& exportRoot)
+	{
+		std::error_code error;
+		std::filesystem::copy_file(runtimeExecutable, exportRoot / "RodGame.exe", std::filesystem::copy_options::overwrite_existing, error);
+		if (error)
+		{
+			RD_CORE_ERROR("Runtime copy failed: {}", error.message());
+			return false;
+		}
+
+		return true;
+	}
+
+	bool EditorLayer::CopyGameAssets(const std::filesystem::path& exportAssetsPath)
+	{
+		std::error_code error;
+		std::filesystem::copy(std::filesystem::current_path() / "assets", exportAssetsPath,
+			std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing, error);
+		if (error)
+		{
+			RD_CORE_ERROR("Asset copy failed: {}", error.message());
+			return false;
+		}
+
+		return true;
 	}
 
 	void EditorLayer::OnScenePlay()
@@ -479,7 +549,7 @@ namespace Rod {
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
 		m_SceneState = SceneState::Play;
-		m_GuizmoType = -1;
+		m_GizmoType = -1;
 		m_EditorCamera.SetControlsEnabled(false);
 		m_ActiveScene->OnRuntimeStart();
 	}
@@ -493,7 +563,7 @@ namespace Rod {
 		m_ActiveScene = m_EditorScene;
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 		m_SceneState = SceneState::Edit;
-		m_GuizmoType = -1;
+		m_GizmoType = -1;
 		m_EditorCamera.SetControlsEnabled(true);
 	}
 

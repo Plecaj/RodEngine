@@ -9,6 +9,7 @@
 namespace Rod {
 
 	class Entity;
+	struct NativeScriptComponent;
 
 	class Scene
 	{
@@ -32,6 +33,10 @@ namespace Rod {
 		Entity FindEntityByUUID(UUID uuid);
 		Entity FindEntityByName(const std::string& name);
 	private:
+		void DestroyNativeScripts();
+		void DestroyNativeScript(NativeScriptComponent& script);
+		void UpdateNativeScripts(Timestep& ts);
+
 		template<typename T>
 		void OnComponentAdded(Entity entity, T& component);
 	private:
@@ -42,6 +47,7 @@ namespace Rod {
 		friend class SceneSerializer;
 		friend class SceneHierarchyPanel;
 		friend class ScriptEngine;
+		friend class SceneRenderer;
 	};
 
 }

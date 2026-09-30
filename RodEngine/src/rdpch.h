@@ -18,7 +18,3 @@
 #include "Rod/Core/Log.h"
 
 #include "Rod/Debug/Instrumentator.h"
-
-#ifdef RD_PLATFORM_WINDOWS
-	#include <Windows.h>
-#endif

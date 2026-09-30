@@ -3,14 +3,15 @@
 
 namespace Rod {
 
-	LayerStack::LayerStack()
-	{
-	}
+	LayerStack::LayerStack() = default;
 	
 	LayerStack::~LayerStack()
 	{
 		for (Layer* layer : m_Layers)
+		{
+			layer->OnDetach();
 			delete layer;
+		}
 	}
 
 	void LayerStack::PushLayer(Layer* layer)
@@ -26,9 +27,11 @@ namespace Rod {
 
 	void LayerStack::PopLayer(Layer* layer)
 	{
-		auto it = std::find(m_Layers.begin(), m_Layers.end(), layer);
-		if (it != m_Layers.end())
+		auto layerEnd = m_Layers.begin() + m_LayerInsertIndex;
+		auto it = std::find(m_Layers.begin(), layerEnd, layer);
+		if (it != layerEnd)
 		{
+			layer->OnDetach();
 			m_Layers.erase(it);
 			m_LayerInsertIndex--;
 		}
@@ -36,9 +39,13 @@ namespace Rod {
 
 	void LayerStack::PopOverlay(Layer* layer)
 	{
-		auto it = std::find(m_Layers.begin(), m_Layers.end(), layer);
+		auto overlayBegin = m_Layers.begin() + m_LayerInsertIndex;
+		auto it = std::find(overlayBegin, m_Layers.end(), layer);
 		if (it != m_Layers.end()) 
+		{
+			layer->OnDetach();
 			m_Layers.erase(it);
+		}
 	}
 
 }

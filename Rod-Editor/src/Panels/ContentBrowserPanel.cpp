@@ -129,34 +129,21 @@ namespace Rod {
     void ContentBrowserPanel::HandleDragDrop(const std::filesystem::path& path, const std::filesystem::path& relativePath, const std::string& filename)
     {
         if (path.extension() == ".rod")
-        {
-            if (ImGui::BeginDragDropSource())
-            {
-                std::string itemPath = relativePath.string();
-                ImGui::SetDragDropPayload("CONTENT_BROWSER_SCENE_ITEM", itemPath.c_str(), itemPath.size() + 1);
-                ImGui::Text("%s", filename.c_str());
-                ImGui::EndDragDropSource();
-            }
-        }
+            BeginAssetDragDrop("CONTENT_BROWSER_SCENE_ITEM", relativePath, filename);
         else if (path.extension() == ".png")
-        {
-            if (ImGui::BeginDragDropSource())
-            {
-                std::string itemPath = relativePath.string();
-                ImGui::SetDragDropPayload("CONTENT_BROWSER_TEXTURE_ITEM", itemPath.c_str(), itemPath.size() + 1);
-                ImGui::Text("%s", filename.c_str());
-                ImGui::EndDragDropSource();
-            }
-        }
+            BeginAssetDragDrop("CONTENT_BROWSER_TEXTURE_ITEM", relativePath, filename);
         else if (path.extension() == ".glb")
+            BeginAssetDragDrop("CONTENT_BROWSER_MESH_ITEM", relativePath, filename);
+    }
+
+    void ContentBrowserPanel::BeginAssetDragDrop(const char* payloadType, const std::filesystem::path& relativePath, const std::string& filename)
+    {
+        if (ImGui::BeginDragDropSource())
         {
-            if (ImGui::BeginDragDropSource())
-            {
-                std::string itemPath = relativePath.string();
-                ImGui::SetDragDropPayload("CONTENT_BROWSER_MESH_ITEM", itemPath.c_str(), itemPath.size() + 1);
-                ImGui::Text("%s", filename.c_str());
-                ImGui::EndDragDropSource();
-            }
+            std::string itemPath = relativePath.string();
+            ImGui::SetDragDropPayload(payloadType, itemPath.c_str(), itemPath.size() + 1);
+            ImGui::Text("%s", filename.c_str());
+            ImGui::EndDragDropSource();
         }
     }
 

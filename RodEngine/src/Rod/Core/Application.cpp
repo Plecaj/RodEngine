@@ -1,18 +1,16 @@
 #include "rdpch.h"
 
-#include "Rod/Renderer/Renderer.h"
+#include "Rod/Renderer/SceneRenderer.h"
 #include "Application.h"
 #include "Log.h"
-#include "Input.h"
-
-#include <GLFW/glfw3.h>
+#include "Rod/Utils/PlatformUtils.h"
 
 
 namespace Rod {
 		
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application(const std::string& name, const std::string& iconFilepath, bool _isEditor)
+	Application::Application(const std::string& name, const std::string& iconFilepath, bool isEditor)
 	{
 		RD_PROFILE_FUNCTION();
 		RD_CORE_ASSERT(!s_Instance, "Application already exists!")
@@ -20,15 +18,15 @@ namespace Rod {
 		
 		WindowProps props;
 		props.Title = name;
-		props._IsEditor = _isEditor;
+		props.IsEditor = isEditor;
 		props.TaskbarIconFilepath = iconFilepath;
-		m_Window = Scope<Window>(Window::Create(props));
+		m_Window = Window::Create(props);
 		m_Window->SetEventCallback(RD_BIND_EVENT_FN(Application::OnEvent));
 		m_Window->SetVSync(false);
 
-		Renderer::Init();
+		SceneRenderer::Init();
 
-		if (_isEditor)
+		if (isEditor)
 		{
 			m_ImGuiLayer = new ImGuiLayer;
 			PushOverlay(m_ImGuiLayer);
@@ -40,7 +38,7 @@ namespace Rod {
 	{
 		RD_PROFILE_FUNCTION();
 
-		Renderer::Shutdown();
+		SceneRenderer::Shutdown();
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -66,29 +64,28 @@ namespace Rod {
 		m_Running = false;
 	}
 
-	void Application::Minimalize()
+	void Application::Minimize()
 	{
 		m_Minimized = true;
-		m_Window->Minimalize();
+		m_Window->Minimize();
 	}
 
-	void Application::Maximalize()
+	void Application::Maximize()
 	{
-		m_Maximalized = true;
-		m_Window->Maximalize();
+		m_Maximized = true;
+		m_Window->Maximize();
 	}
 
 	void Application::RestoreWindow()
 	{
-		if(m_Maximalized)
-			m_Maximalized = false;
+		m_Maximized = false;
 
 		m_Window->Restore();
 	}
 
 	void Application::BeginWindowDrag()
 	{
-		if (m_Maximalized)
+		if (m_Maximized)
 			RestoreWindow();
 
 		m_Window->BeginWindowDrag();
@@ -118,40 +115,54 @@ namespace Rod {
 		{
 			RD_PROFILE_SCOPE("Run loop");
 
-			float time = (float)glfwGetTime();  //TODO: Platform::GetTime()
-			Timestep timestep = time - m_LastFrameTime;
-			m_LastFrameTime = time;
-
-			if (!m_Minimized) {
-				{
-					RD_PROFILE_SCOPE("Layers OnUpdate");
-
-					for (Layer* layer : m_LayerStack)
-					{
-						layer->OnUpdate(timestep);
-					}
-				}
-			}
-			if (m_ImGuiLayer)
-			{
-				m_ImGuiLayer->Begin();
-				{
-					RD_PROFILE_SCOPE("ImGui OnUpdate");
-
-					for (Layer* layer : m_LayerStack)
-					{
-						layer->OnImGuiRender();
-					}
-					m_ImGuiLayer->End();
-				}
-			}
-
+			Timestep timestep = CalculateTimestep();
+			UpdateLayers(timestep);
+			RenderImGui();
 			m_Window->OnUpdate();
-		};
+		}
+	}
+
+	Timestep Application::CalculateTimestep()
+	{
+		float time = Platform::GetTime();
+		Timestep timestep = time - m_LastFrameTime;
+		m_LastFrameTime = time;
+
+		return timestep;
+	}
+
+	void Application::UpdateLayers(Timestep timestep)
+	{
+		if (m_Minimized)
+			return;
+
+		RD_PROFILE_SCOPE("Layers OnUpdate");
+
+		for (Layer* layer : m_LayerStack)
+			layer->OnUpdate(timestep);
+	}
+
+	void Application::RenderImGui()
+	{
+		if (!m_ImGuiLayer)
+			return;
+
+		m_ImGuiLayer->Begin();
+
+		{
+			RD_PROFILE_SCOPE("ImGui OnUpdate");
+
+			for (Layer* layer : m_LayerStack)
+				layer->OnImGuiRender();
+		}
+
+		m_ImGuiLayer->End();
 	}
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)
 	{
+		(void)e;
+
 		Close();
 		return true;
 	}
@@ -160,12 +171,14 @@ namespace Rod {
 	{
 		RD_PROFILE_FUNCTION();
 
-		if (e.GetWidth() == 0 || e.GetHeight() == 0) {
+		if (e.GetWidth() == 0 || e.GetHeight() == 0)
+		{
 			m_Minimized = true;
 			return false;
 		}
+
 		m_Minimized = false;
-		Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
+		SceneRenderer::OnViewportResize(e.GetWidth(), e.GetHeight());
 
 		return false;
 	}

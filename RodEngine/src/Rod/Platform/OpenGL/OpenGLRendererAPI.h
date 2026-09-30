@@ -14,7 +14,7 @@ namespace Rod {
 		virtual void SetDepthBias(float slopeScaleBias, float constantBias) override;
 		virtual void ClearDepthBias() override;
 
-		virtual void DrawIdexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0) override;
+		virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0) override;
 
 		virtual RendererState GetState() const override;
 		virtual void SetState(const RendererState& state) override;

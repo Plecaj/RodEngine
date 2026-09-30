@@ -17,6 +17,7 @@ namespace Rod{
 		void DrawDirectoryContents(float thumbnailSize);
 		void DrawIconButton(const std::string& id, Ref<Texture2D> icon, float size);
 		void HandleDragDrop(const std::filesystem::path& path, const std::filesystem::path& relativePath, const std::string& filename);
+		void BeginAssetDragDrop(const char* payloadType, const std::filesystem::path& relativePath, const std::string& filename);
 
 	private:
 		std::filesystem::path m_CurrentDirectory;

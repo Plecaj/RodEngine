@@ -4,7 +4,6 @@
 #include "VertexArray.h"
 #include "Shader.h"
 #include "RenderCommand.h"
-#include "Renderer.h"
 #include "RendererLimits.h"
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -20,7 +19,6 @@ namespace Rod {
         float TexIdx;
         float TilingFactor;
 
-        // TODO: EnitytID should be stripped in runtime due to pointless performance overhead
         int EntityID = 0;
     };
 
@@ -38,7 +36,7 @@ namespace Rod {
         Ref<Texture2D> WhiteTexture;
 
         uint32_t QuadIndexCount = 0;
-        QuadVertex* QuadVertexBufferBase = nullptr;
+        std::vector<QuadVertex> QuadVertexBufferBase;
         QuadVertex* QuadVertexBufferPtr = nullptr;
 
         std::vector<Ref<Texture2D>> TextureSlots;
@@ -67,7 +65,7 @@ namespace Rod {
     void Renderer2D::InitShader()
     {
         Shader::ShaderOptions shaderOptions;
-        shaderOptions.OptimizationLevel = Shader::OptimalizationLevel::Performance;
+        shaderOptions.OptimizationLevel = Shader::OptimizationLevel::Performance;
         shaderOptions.GenerateDebugInfo = false;
 
         s_Data->TextureShader = Shader::Create("assets/shaders/Texture.glsl", shaderOptions);
@@ -76,14 +74,12 @@ namespace Rod {
 
     void Renderer2D::InitSamplers()
     {
-        int* samplers = new int[s_Data->MAX_TEXTURE_SLOTS];
-        for (int i = 0; i < s_Data->MAX_TEXTURE_SLOTS; i++)
+        std::array<int, Renderer2DData::MAX_TEXTURE_SLOTS> samplers;
+        for (int i = 0; i < Renderer2DData::MAX_TEXTURE_SLOTS; i++)
             samplers[i] = i;
 
         s_Data->TextureShader->Bind();
-        s_Data->TextureShader->SetIntArray("u_Textures", samplers, s_Data->MAX_TEXTURE_SLOTS);
-
-        delete[] samplers;
+        s_Data->TextureShader->SetIntArray("u_Textures", samplers.data(), (uint32_t)samplers.size());
     }
 
     void Renderer2D::InitQuadVertexArray()
@@ -102,12 +98,11 @@ namespace Rod {
             });
 
         s_Data->QuadVertexArray->AddVertexBuffer(s_Data->QuadVertexBuffer);
-        s_Data->QuadVertexBufferBase = new QuadVertex[s_Data->MAX_VERTICES_COUNT];
+        s_Data->QuadVertexBufferBase.resize(Renderer2DData::MAX_VERTICES_COUNT);
 
-        // Generate indices
-        uint32_t* quadIndices = new uint32_t[s_Data->MAX_INDICES_COUNT];
+        std::vector<uint32_t> quadIndices(Renderer2DData::MAX_INDICES_COUNT);
         uint32_t offset = 0;
-        for (uint32_t i = 0; i < s_Data->MAX_INDICES_COUNT; i += 6)
+        for (uint32_t i = 0; i < Renderer2DData::MAX_INDICES_COUNT; i += 6)
         {
             quadIndices[i + 0] = offset + 0;
             quadIndices[i + 1] = offset + 1;
@@ -120,9 +115,8 @@ namespace Rod {
             offset += 4;
         }
 
-        Ref<IndexBuffer> QuadIB = IndexBuffer::Create(quadIndices, s_Data->MAX_INDICES_COUNT);
+        Ref<IndexBuffer> QuadIB = IndexBuffer::Create(quadIndices.data(), Renderer2DData::MAX_INDICES_COUNT);
         s_Data->QuadVertexArray->SetIndexBuffer(QuadIB);
-        delete[] quadIndices;
     }
 
     void Renderer2D::InitWhiteTexture()
@@ -299,15 +293,15 @@ namespace Rod {
 
         s_Data->TextureSlotIndex = 1;
         s_Data->QuadIndexCount = 0;
-        s_Data->QuadVertexBufferPtr = s_Data->QuadVertexBufferBase;
+        s_Data->QuadVertexBufferPtr = s_Data->QuadVertexBufferBase.data();
     }
 
     void Renderer2D::EndBatch()
     {
         RD_PROFILE_FUNCTION();
 
-        uint32_t dataSize = (uint8_t*)s_Data->QuadVertexBufferPtr - (uint8_t*)s_Data->QuadVertexBufferBase;
-        s_Data->QuadVertexBuffer->SetData(s_Data->QuadVertexBufferBase, dataSize);
+        auto dataSize = (uint32_t)((uint8_t*)s_Data->QuadVertexBufferPtr - (uint8_t*)s_Data->QuadVertexBufferBase.data());
+        s_Data->QuadVertexBuffer->SetData(s_Data->QuadVertexBufferBase.data(), dataSize);
     }
 
     void Renderer2D::Flush()

@@ -15,14 +15,14 @@ int main(int argc, char** argv)
 	RD_CORE_WARN("Initialized Log!");
 
 	RD_PROFILE_BEGIN_SESSION("Startup", "RodProfile-Startup.json");
-	auto app = Rod::CreateApplication();
+	Rod::Scope<Rod::Application> app(Rod::CreateApplication());
 	RD_PROFILE_END_SESSION();
 
 	app->Run();
 
 	RD_PROFILE_END_SESSION();
 	RD_PROFILE_BEGIN_SESSION("Shutdown", "RodProfile-Shutdown.json");
-	delete app;
+	app.reset();
 	RD_PROFILE_END_SESSION();
 
 	return 0;

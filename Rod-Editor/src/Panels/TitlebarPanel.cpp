@@ -152,7 +152,7 @@ namespace Rod{
 	void TitlebarPanel::DrawButtons()
 	{
 		if (DrawTitlebarButton("##Minimize", TitlebarButtonIcon::Minimize, m_ButtonSize))
-			Application::Get().Minimalize();
+			Application::Get().Minimize();
 
 		ImGui::SameLine(0.0f, 0.0f);
 		TitlebarButtonIcon maximizeIcon = Application::Get().IsMaximized() ? TitlebarButtonIcon::Restore : TitlebarButtonIcon::Maximize;
@@ -161,7 +161,7 @@ namespace Rod{
 			if (Application::Get().IsMaximized()) 
 				Application::Get().RestoreWindow(); 
 			else 
-				Application::Get().Maximalize(); 
+				Application::Get().Maximize();
 		}
 
 		ImGui::SameLine(0.0f, 0.0f);

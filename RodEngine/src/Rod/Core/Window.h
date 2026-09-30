@@ -2,6 +2,7 @@
 
 #include "rdpch.h"
 
+#include "Rod/Core/Core.h"
 #include "Rod/Events/Event.h"
 
 #include <glm/glm.hpp>
@@ -15,16 +16,14 @@ namespace Rod {
 		unsigned int Height;
 
 		std::string TaskbarIconFilepath;
-
-		// _IsEditor is internal, shoudnt be changed ever to true by user
-		bool _IsEditor;
+		bool IsEditor;
 
 		WindowProps(const std::string& title = "Rod Engine",
 			uint32_t width = 1600,
 			uint32_t height = 900,
 			std::string taskbarIconFilepath = "",
-			bool _Editor = false)
-			: Title(title), Width(width), Height(height), _IsEditor(_Editor), TaskbarIconFilepath(taskbarIconFilepath)
+			bool isEditor = false)
+			: Title(title), Width(width), Height(height), TaskbarIconFilepath(taskbarIconFilepath), IsEditor(isEditor)
 		{
 		}
 	};
@@ -41,8 +40,8 @@ namespace Rod {
 		virtual unsigned int GetWidth() const = 0;
 		virtual unsigned int GetHeight() const = 0;
 
-		virtual void Minimalize() const = 0;
-		virtual void Maximalize() const = 0;
+		virtual void Minimize() const = 0;
+		virtual void Maximize() const = 0;
 		virtual void Restore() const = 0;
 		virtual void BeginWindowDrag() const = 0;
 
@@ -52,7 +51,7 @@ namespace Rod {
 
 		virtual void* GetNativeWindow() const = 0;
 
-		static Window* Create(const WindowProps& props = WindowProps());
+		static Scope<Window> Create(const WindowProps& props = WindowProps());
 	};
 
 }

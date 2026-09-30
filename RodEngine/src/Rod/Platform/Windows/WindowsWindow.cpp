@@ -19,9 +19,9 @@ namespace Rod {
 		RD_CORE_ERROR("GLFW Error ({0}): {1}", error, description);
 	}
 
-	Window* Window::Create(const WindowProps& props) 
+	Scope<Window> Window::Create(const WindowProps& props)
 	{
-		return new WindowsWindow(props);
+		return CreateScope<WindowsWindow>(props);
 	}
 
 	WindowsWindow::WindowsWindow(const WindowProps& props)
@@ -44,36 +44,54 @@ namespace Rod {
 
 		RD_CORE_INFO("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
 
-		if (!s_GLFWInitialized)
-		{
-			// TODO: glfwTerminate on system shutdown
-			RD_PROFILE_SCOPE("glfw init");
-			int succes = glfwInit();
-			RD_CORE_ASSERT(succes, "Could not initialize GLFW!");
-			glfwSetErrorCallback(GLFWErrorCallback);
+		InitGLFW();
+		CreateNativeWindow(props);
 
-			s_GLFWInitialized = true;
-		}
-
-		{
-			RD_PROFILE_SCOPE("glfw create window");
-			
-			if(props._IsEditor)
-				glfwWindowHint(GLFW_TITLEBAR, false);
-
-			m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
-		}
-
-		m_Context = new OpenGLContext(m_Window);
+		m_Context = CreateScope<OpenGLContext>(m_Window);
 		m_Context->Init();
 
 		glfwSetWindowUserPointer(m_Window, &m_Data);
 		SetVSync(true);
+		SetGLFWCallbacks();
+		SetTaskbarIcon(props.TaskbarIconFilepath);
+	}
 
-		// Set GLFW callbacks
+	void WindowsWindow::InitGLFW()
+	{
+		if (s_GLFWInitialized)
+			return;
+
+		RD_PROFILE_SCOPE("glfw init");
+		int success = glfwInit();
+		RD_CORE_ASSERT(success, "Could not initialize GLFW!");
+		glfwSetErrorCallback(GLFWErrorCallback);
+
+		s_GLFWInitialized = true;
+	}
+
+	void WindowsWindow::CreateNativeWindow(const WindowProps& props)
+	{
+		RD_PROFILE_SCOPE("glfw create window");
+
+		if (props.IsEditor)
+			glfwWindowHint(GLFW_TITLEBAR, false);
+
+		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
+		RD_CORE_ASSERT(m_Window, "Could not create GLFW window!");
+	}
+
+	void WindowsWindow::SetGLFWCallbacks()
+	{
+		SetWindowCallbacks();
+		SetKeyboardCallbacks();
+		SetMouseCallbacks();
+	}
+
+	void WindowsWindow::SetWindowCallbacks()
+	{
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			WindowData& data = GetWindowData(window);
 			data.Width = width;
 			data.Height = height;
 
@@ -83,15 +101,18 @@ namespace Rod {
 
 		glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
 		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			WindowData& data = GetWindowData(window);
 
 			WindowCloseEvent event;
 			data.EventCallback(event);
 		});
+	}
 
+	void WindowsWindow::SetKeyboardCallbacks()
+	{
 		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
 		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			WindowData& data = GetWindowData(window);
 
 			switch (action)
 			{
@@ -119,16 +140,19 @@ namespace Rod {
 
 
 		glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int keycode)
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				KeyTypedEvent event(keycode);
-				data.EventCallback(event);
+		{
+			WindowData& data = GetWindowData(window);
+			KeyTypedEvent event(keycode);
+			data.EventCallback(event);
 
-			});
+		});
+	}
 
+	void WindowsWindow::SetMouseCallbacks()
+	{
 		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
 		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			WindowData& data = GetWindowData(window);
 
 			switch (action)
 			{
@@ -149,27 +173,30 @@ namespace Rod {
 
 		glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
 		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			WindowData& data = GetWindowData(window);
 			
 			MouseScrolledEvent event((float)xOffset, (float)yOffset);
 			data.EventCallback(event);
 		});
-		
+
 		glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xPos, double yPos)
 		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			WindowData& data = GetWindowData(window);
 
 			MouseMovedEvent event((float)xPos, (float)yPos);				
 			data.EventCallback(event);
 		});
+	}
 
-		if (props.TaskbarIconFilepath.empty())
+	void WindowsWindow::SetTaskbarIcon(const std::string& iconFilepath) const
+	{
+		if (iconFilepath.empty())
 			return;
 
 		GLFWimage icon;
 
 		int width, height, channels;
-		auto data = stbi_load(props.TaskbarIconFilepath.c_str(), &width, &height, &channels, 4);
+		auto data = stbi_load(iconFilepath.c_str(), &width, &height, &channels, 4);
 
 		RD_CORE_ASSERT(data, "Failed to load taskbar icon image");
 
@@ -181,11 +208,17 @@ namespace Rod {
 		stbi_image_free(data);
 	}
 
+	WindowsWindow::WindowData& WindowsWindow::GetWindowData(GLFWwindow* window)
+	{
+		return *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+	}
+
 	void WindowsWindow::Shutdown()
 	{
 		RD_PROFILE_FUNCTION();
 
-		glfwDestroyWindow(m_Window);
+		if (m_Window)
+			glfwDestroyWindow(m_Window);
 	}
 
 	void WindowsWindow::OnUpdate()
@@ -197,21 +230,21 @@ namespace Rod {
 		m_Context->SwapBuffers();
 	}
 
-	void WindowsWindow::Minimalize() const
+	void WindowsWindow::Minimize() const
 	{
-		m_WindowDragActive = false;
+		ResetWindowDrag();
 		glfwIconifyWindow(m_Window);
 	}
 
-	void WindowsWindow::Maximalize() const
+	void WindowsWindow::Maximize() const
 	{
-		m_WindowDragActive = false;
+		ResetWindowDrag();
 		glfwMaximizeWindow(m_Window);
 	}
 
 	void WindowsWindow::Restore() const
 	{
-		m_WindowDragActive = false;
+		ResetWindowDrag();
 		glfwRestoreWindow(m_Window);
 	}
 
@@ -219,7 +252,7 @@ namespace Rod {
 	{
 		if (glfwGetMouseButton(m_Window, GLFW_MOUSE_BUTTON_LEFT) != GLFW_PRESS)
 		{
-			m_WindowDragActive = false;
+			ResetWindowDrag();
 			return;
 		}
 
@@ -227,11 +260,9 @@ namespace Rod {
 			glfwRestoreWindow(m_Window);
 
 		int windowX, windowY;
-		double mouseX, mouseY;
 		glfwGetWindowPos(m_Window, &windowX, &windowY);
-		glfwGetCursorPos(m_Window, &mouseX, &mouseY);
 
-		glm::vec2 mouseScreen = { (float)windowX + (float)mouseX, (float)windowY + (float)mouseY };
+		glm::vec2 mouseScreen = GetMouseScreenPosition();
 
 		if (!m_WindowDragActive)
 		{
@@ -246,14 +277,29 @@ namespace Rod {
 		glfwSetWindowPos(m_Window, newWinX, newWinY);
 	}
 
+	void WindowsWindow::ResetWindowDrag() const
+	{
+		m_WindowDragActive = false;
+	}
+
 	void WindowsWindow::UpdateWindowDrag() const
 	{
 		if (!m_WindowDragActive)
 			return;
 
 		if (glfwGetMouseButton(m_Window, GLFW_MOUSE_BUTTON_LEFT) != GLFW_PRESS || !glfwGetWindowAttrib(m_Window, GLFW_FOCUSED))
-			m_WindowDragActive = false;
+			ResetWindowDrag();
 	}	
+
+	glm::vec2 WindowsWindow::GetMouseScreenPosition() const
+	{
+		int windowX, windowY;
+		double mouseX, mouseY;
+		glfwGetWindowPos(m_Window, &windowX, &windowY);
+		glfwGetCursorPos(m_Window, &mouseX, &mouseY);
+
+		return { (float)windowX + (float)mouseX, (float)windowY + (float)mouseY };
+	}
 
 	void WindowsWindow::SetVSync(bool enabled)
 	{

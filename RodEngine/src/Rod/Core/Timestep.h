@@ -13,7 +13,7 @@ namespace Rod {
 		operator float() const { return m_Time; };
 
 		float GetSeconds() const { return m_Time; };
-		float GeatMilliseconds() const { return m_Time * 1000.0f; };
+		float GetMilliseconds() const { return m_Time * 1000.0f; };
 	private:
 		float m_Time;	
 	};

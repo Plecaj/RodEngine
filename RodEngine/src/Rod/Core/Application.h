@@ -16,8 +16,7 @@ namespace Rod {
 	class Application
 	{
 	public:
-		// _IsEditor is internal, shoudnt be changed ever to true by user
-		Application(const std::string& name = "Rod App", const std::string& iconFilepath = "", bool _isEditor = false);
+		Application(const std::string& name = "Rod App", const std::string& iconFilepath = "", bool isEditor = false);
 		virtual ~Application();
 
 		void Run();
@@ -31,11 +30,11 @@ namespace Rod {
 
 		void Close();
 
-		void Minimalize();
-		bool isMinimalized() { return m_Minimized; }
+		void Minimize();
+		bool IsMinimized() const { return m_Minimized; }
 
-		void Maximalize();
-		bool IsMaximized() { return m_Maximalized; }
+		void Maximize();
+		bool IsMaximized() const { return m_Maximized; }
 
 		void RestoreWindow();
 		void BeginWindowDrag();
@@ -46,12 +45,16 @@ namespace Rod {
 
 		static inline Application& Get() { return *s_Instance; };
 	private:
+		Timestep CalculateTimestep();
+		void UpdateLayers(Timestep timestep);
+		void RenderImGui();
+
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
 	private:
 		Scope<Window> m_Window;
 		ImGuiLayer* m_ImGuiLayer = nullptr;
-		bool m_Running = true, m_Minimized = false, m_Maximalized = false;
+		bool m_Running = true, m_Minimized = false, m_Maximized = false;
 		LayerStack m_LayerStack;
 		float m_LastFrameTime = 0.0f;
 	private:

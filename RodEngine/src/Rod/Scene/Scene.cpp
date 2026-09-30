@@ -1,8 +1,7 @@
 #include "rdpch.h"
 #include "Scene.h"
 
-#include "Rod/Renderer/Renderer2D.h"
-#include "Rod/Renderer/Renderer.h"
+#include "Rod/Renderer/SceneRenderer.h"
 #include "Rod/Scripting/ScriptEngine.h"
 
 #include <glm/glm.hpp>
@@ -102,124 +101,31 @@ namespace Rod {
 
 	void Scene::OnUpdateRuntime(Timestep& ts)
 	{
-		// Update scripts - TODO: move to Scene::OnScenePlay
-		// TODO: also should be calling Instance->OnDetroy on scene stop
-		{
-			m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& ncs)
-			{
-				if (!ncs.Instance)
-				{
-					ncs.Instance = ncs.InstantiateScript();
-					ncs.Instance->m_Entity = Entity{ entity, this };
-					ncs.Instance->OnCreate();
-				}
-
-				ncs.Instance->OnUpdate(ts);
-			});
-		}
-
+		UpdateNativeScripts(ts);
 		ScriptEngine::OnRuntimeUpdate(ts);
-
-		Camera* mainCamera = nullptr;
-		glm::mat4 cameraTransform;
-		{
-			auto view = m_Registry.view<CameraComponent, TransformComponent>();
-			view.each([&](auto entity, CameraComponent& camera, TransformComponent& transform) {
-				if (camera.Primary)
-				{
-					mainCamera = &camera.Camera;
-					cameraTransform = transform.GetTransform();
-				}
-			});
-		}
-
-		if (!mainCamera) return;
-
-		std::vector<DirectionalLightComponent> lightSources;
-
-		{
-			auto view = m_Registry.view<DirectionalLightComponent>();
-			view.each([&](auto entity, DirectionalLightComponent& light) {
-				lightSources.push_back(light);
-				});
-		}
-
-		Renderer::BeginScene(*mainCamera, cameraTransform, lightSources);
-
-		{
-			auto view = m_Registry.view<TransformComponent, MeshComponent>();
-
-			view.each([&](auto entity, TransformComponent& transform, MeshComponent& mesh) {
-				if (mesh.Mesh != nullptr)
-				{
-					Renderer::Submit(
-						mesh.Mesh->GetVAO(),
-						transform.GetTransform(),
-						mesh.Mesh->GetMaterial(),
-						(int)entity
-				);
-
-				}
-			});
-		}
-
-		Renderer::EndScene();
-
-		Renderer2D::BeginScene(mainCamera->GetProjection(), cameraTransform);
-		
-		{
-			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
-			view.each([&](auto entity, TransformComponent& transform, SpriteRendererComponent& sprite) {
-				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
-				});
-		}
-
-		Renderer2D::EndScene();
+		SceneRenderer::RenderRuntime(*this);
 	}
 
 	void Scene::OnUpdateEditor(Timestep& ts, EditorCamera& camera)
 	{
-		std::vector<DirectionalLightComponent> lightSources;
+		(void)ts;
 
+		SceneRenderer::RenderEditor(*this, camera);
+	}
+
+	void Scene::UpdateNativeScripts(Timestep& ts)
+	{
+		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& ncs)
 		{
-			auto view = m_Registry.view<DirectionalLightComponent>();
-			view.each([&](auto entity, DirectionalLightComponent& light) {
-				lightSources.push_back(light);
-				});
-		}		
+			if (!ncs.Instance)
+			{
+				ncs.Instance = ncs.InstantiateScript();
+				ncs.Instance->m_Entity = Entity{ entity, this };
+				ncs.Instance->OnCreate();
+			}
 
-		Renderer::BeginScene(camera, lightSources);
-
-		{
-			auto view = m_Registry.view<TransformComponent, MeshComponent>();
-
-			view.each([&](auto entity, TransformComponent& transform, MeshComponent& mesh) {
-				if (mesh.Mesh != nullptr)
-				{
-					Renderer::Submit(
-						mesh.Mesh->GetVAO(),
-						transform.GetTransform(),
-						mesh.Mesh->GetMaterial(),
-						(int)entity
-				);
-				}
-			});
-		}
-
-		Renderer::EndScene();
-
-		
-		Renderer2D::BeginScene(camera);
-
-		{
-			auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
-			view.each([&](auto entity, TransformComponent& transform, SpriteRendererComponent& sprite) {
-				Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
-				});
-		}
-
-		Renderer2D::EndScene();
-
+			ncs.Instance->OnUpdate(ts);
+		});
 	}
 
 	void Scene::OnViewportResize(uint32_t width, uint32_t height)

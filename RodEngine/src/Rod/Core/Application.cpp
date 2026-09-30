@@ -1,6 +1,6 @@
 #include "rdpch.h"
 
-#include "Rod/Renderer/Renderer.h"
+#include "Rod/Renderer/SceneRenderer.h"
 #include "Application.h"
 #include "Log.h"
 #include "Rod/Utils/PlatformUtils.h"
@@ -24,7 +24,7 @@ namespace Rod {
 		m_Window->SetEventCallback(RD_BIND_EVENT_FN(Application::OnEvent));
 		m_Window->SetVSync(false);
 
-		Renderer::Init();
+		SceneRenderer::Init();
 
 		if (isEditor)
 		{
@@ -38,7 +38,7 @@ namespace Rod {
 	{
 		RD_PROFILE_FUNCTION();
 
-		Renderer::Shutdown();
+		SceneRenderer::Shutdown();
 	}
 
 	void Application::PushLayer(Layer* layer)
@@ -161,6 +161,8 @@ namespace Rod {
 
 	bool Application::OnWindowClose(WindowCloseEvent& e)
 	{
+		(void)e;
+
 		Close();
 		return true;
 	}
@@ -176,7 +178,7 @@ namespace Rod {
 		}
 
 		m_Minimized = false;
-		Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
+		SceneRenderer::OnViewportResize(e.GetWidth(), e.GetHeight());
 
 		return false;
 	}

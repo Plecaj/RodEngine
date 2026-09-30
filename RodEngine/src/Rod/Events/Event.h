@@ -1,8 +1,9 @@
 #pragma once
 
-#include "rdpch.h"
-
 #include "Rod/Core/Core.h"
+
+#include <ostream>
+#include <string>
 
 namespace Rod {
 
@@ -43,7 +44,7 @@ namespace Rod {
 		virtual int GetCategoryFlags() const = 0;
 		virtual std::string ToString() const { return GetName(); }
 
-		bool IsInCategory (EventCategory category) const
+		bool IsInCategory(EventCategory category) const
 		{
 			return GetCategoryFlags() & category;
 		}

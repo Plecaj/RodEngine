@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Entity.h"	
+#include "Entity.h"
 #include "Rod/Core/Timestep.h"
 
 namespace Rod {
 
-	class ScriptableEntity 
+	class ScriptableEntity
 	{
 	public:
 		virtual ~ScriptableEntity() = default;
@@ -18,7 +18,7 @@ namespace Rod {
 	protected:
 		virtual void OnCreate() {};
 		virtual void OnDestroy() {};
-		virtual void OnUpdate(Timestep ts) {};
+		virtual void OnUpdate(Timestep) {};
 	private:
 		Entity m_Entity;
 		friend class Scene;

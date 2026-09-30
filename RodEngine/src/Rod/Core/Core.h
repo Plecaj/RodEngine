@@ -1,6 +1,8 @@
 #pragma once
 
+#include <functional>
 #include <memory>
+#include <utility>
 
 #ifdef RD_PLATFORM_WINDOWS
 #if RD_DYNAMIC_LINK

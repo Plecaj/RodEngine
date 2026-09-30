@@ -25,14 +25,15 @@ namespace Rod {
 		template<typename T>
 		T& GetComponent()
 		{
-			RD_CORE_ASSERT(HasComponent<T>(), "Entity already does not have component");
+			RD_CORE_ASSERT(HasComponent<T>(), "Entity does not have component");
 			return m_Scene->m_Registry.get<T>(m_EntityHandle);
 		}
 
 		template<typename T>
-		bool HasComponent()
+		const T& GetComponent() const
 		{
-			return m_Scene->m_Registry.all_of<T>(m_EntityHandle);
+			RD_CORE_ASSERT(HasComponent<T>(), "Entity does not have component");
+			return m_Scene->m_Registry.get<T>(m_EntityHandle);
 		}
 
 		template<typename T>
@@ -44,7 +45,7 @@ namespace Rod {
 		template<typename T>
 		void RemoveComponent()
 		{
-			RD_CORE_ASSERT(HasComponent<T>(), "Entity already does not have component");
+			RD_CORE_ASSERT(HasComponent<T>(), "Entity does not have component");
 			m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		}
 
@@ -52,8 +53,8 @@ namespace Rod {
 		operator uint32_t() const { return (uint32_t)m_EntityHandle; }
 		operator entt::entity() const { return m_EntityHandle; }
 
-		UUID GetUUID();
-		const std::string& GetName();
+		UUID GetUUID() const;
+		const std::string& GetName() const;
 
 		bool operator==(const Entity& other) const
 		{

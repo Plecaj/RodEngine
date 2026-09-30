@@ -1,17 +1,16 @@
 #pragma once
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-#include "Rod/Scene/SceneCamera.h"
-#include "ScriptableEntity.h"
-
 #include "Rod/Core/UUID.h"
-#include "Rod/Renderer/Texture.h"
+#include "Rod/Renderer/Material.h"
 #include "Rod/Renderer/Mesh.h"
 #include "Rod/Renderer/Shader.h"
-#include "Rod/Renderer/Material.h"
+#include "Rod/Renderer/Texture.h"
+#include "Rod/Scene/SceneCamera.h"
 #include "Rod/Scripting/ScriptField.h"
+#include "ScriptableEntity.h"
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace Rod {
 
@@ -32,7 +31,7 @@ namespace Rod {
 		TagComponent() = default;
 		TagComponent(const TagComponent&) = default;
 		TagComponent(const std::string& tag)
-			:Tag(tag) {}
+			: Tag(tag) {}
 	};
 
 	struct TransformComponent
@@ -44,7 +43,7 @@ namespace Rod {
 		TransformComponent() = default;
 		TransformComponent(const TransformComponent&) = default;
 		TransformComponent(const glm::vec3& translation)
-			:Translation(translation) {}
+			: Translation(translation) {}
 
 		glm::mat4 GetTransform() const
 		{
@@ -67,7 +66,7 @@ namespace Rod {
 		SpriteRendererComponent() = default;
 		SpriteRendererComponent(const SpriteRendererComponent&) = default;
 		SpriteRendererComponent(const glm::vec4& color)
-			:Color(color) {}
+			: Color(color) {}
 	};
 
 	struct MeshComponent
@@ -90,7 +89,7 @@ namespace Rod {
 	struct CameraComponent
 	{
 		SceneCamera Camera;
-		bool Primary = true;  // TODO: Should be on scene
+		bool Primary = true;
 		bool FixedAspectRatio = false;
 
 		CameraComponent() = default;
@@ -99,17 +98,20 @@ namespace Rod {
 
 	struct NativeScriptComponent
 	{
-
 		ScriptableEntity* Instance = nullptr;
 
-		ScriptableEntity* (*InstantiateScript)();
-		void (*DestroyScript)(NativeScriptComponent*);
+		ScriptableEntity* (*InstantiateScript)() = nullptr;
+		void (*DestroyScript)(NativeScriptComponent*) = nullptr;
 
 		template<typename T>
 		void Bind()
 		{
 			InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
-			DestroyScript = [](NativeScriptComponent* nsc) {delete nsc->Instance; nsc->Instance = nullptr; };
+			DestroyScript = [](NativeScriptComponent* nsc)
+			{
+				delete nsc->Instance;
+				nsc->Instance = nullptr;
+			};
 		}
 	};
 

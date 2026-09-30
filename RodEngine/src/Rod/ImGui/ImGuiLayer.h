@@ -1,10 +1,6 @@
 #pragma once
 
-#include "Rod/Core/layer.h"
-
-#include "Rod/Events/KeyEvent.h"
-#include "Rod/Events/MouseEvent.h"
-#include "Rod/Events/ApplicationEvent.h"
+#include "Rod/Core/Layer.h"
 
 namespace Rod {
 
@@ -25,10 +21,9 @@ namespace Rod {
 
 		void SetDarkThemeColors();
 
-		void SetBlockEvents(bool block) { m_BlockEvents = block; };
+		void SetBlockEvents(bool block) { m_BlockEvents = block; }
 	private:
 		bool m_BlockEvents = true;
-		float m_Time = 0.0f;
 	};
 
 }

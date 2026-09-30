@@ -7,10 +7,10 @@ namespace Rod {
 	class SceneCamera : public Camera
 	{
 	public:
-		enum class ProjectionType {Perspective = 0, Orthographic = 1};
+		enum class ProjectionType { Perspective = 0, Orthographic = 1 };
 	public:
 		SceneCamera();
-		virtual ~SceneCamera() = default;
+		~SceneCamera() override = default;
 
 		void SetViewportSize(uint32_t width, uint32_t height);
 
@@ -18,9 +18,6 @@ namespace Rod {
 		void SetProjectionType(ProjectionType type) { m_ProjectionType = type; RecalculateProjection(); }
 		ProjectionType GetProjectionType() const { return m_ProjectionType; }
 
-		//===========================
-		// Perspective
-		//===========================
 		void SetPerspective(float verticalFOV, float nearClip, float farClip);
 
 		float GetPerspectiveVerticalFOV() const { return m_PerspectiveFOV; }
@@ -32,10 +29,7 @@ namespace Rod {
 		float GetPerspectiveFarClip() const { return m_PerspectiveFar; }
 		void SetPerspectiveFarClip(float farClip) { m_PerspectiveFar = farClip; RecalculateProjection(); }
 
-		//===========================
-		//			Ortho
-		//===========================
-		void SetOrthographic(float size, float nearClip, float farCLip);
+		void SetOrthographic(float size, float nearClip, float farClip);
 
 		float GetOrthographicSize() const { return m_OrthographicSize; }
 		void SetOrthographicSize(float size) { m_OrthographicSize = size; RecalculateProjection(); }

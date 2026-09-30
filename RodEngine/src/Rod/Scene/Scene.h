@@ -16,6 +16,8 @@ namespace Rod {
 		Scene();
 		~Scene();
 
+		static Ref<Scene> Copy(const Ref<Scene>& other);
+
 		Entity CreateEntity(const std::string& name = "");
 		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = "");
 		void DestroyEntity(Entity entity);

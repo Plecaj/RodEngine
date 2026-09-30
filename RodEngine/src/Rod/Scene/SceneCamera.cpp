@@ -12,6 +12,9 @@ namespace Rod {
 
 	void SceneCamera::SetViewportSize(uint32_t width, uint32_t height)
 	{
+		if (width == 0 || height == 0)
+			return;
+
 		m_AspectRatio = (float)width / (float)height;
 		RecalculateProjection();
 	}

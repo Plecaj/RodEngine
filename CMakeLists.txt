@@ -21,6 +21,7 @@ option(ROD_ENABLE_PCH "Enable RodEngine precompiled headers." ON)
 option(ROD_USE_SYSTEM_SHADERC "Use shaderc from the active toolchain instead of building the vendored copy." OFF)
 option(ROD_IMGUI_DEMO "Compile Dear ImGui demo window support." ON)
 option(ROD_BUILD_EDITOR "Build the Rod editor executable." ON)
+option(ROD_BUILD_RUNTIME "Build the standalone Rod runtime executable." ON)
 option(ROD_WARNINGS_AS_ERRORS "Treat RodEngine warnings as errors." OFF)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -34,4 +35,12 @@ add_subdirectory(RodEngine)
 
 if(ROD_BUILD_EDITOR)
   add_subdirectory(Rod-Editor)
+endif()
+
+if(ROD_BUILD_RUNTIME)
+  add_subdirectory(Rod-Runtime)
+endif()
+
+if(ROD_BUILD_EDITOR AND ROD_BUILD_RUNTIME)
+  add_dependencies(Rod-Editor Rod-Runtime)
 endif()

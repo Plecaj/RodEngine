@@ -139,6 +139,9 @@ namespace Rod{
 			if (ImGui::MenuItem("Save as...", "Ctrl+Shift+S")) 
 				m_SaveSceneAs();
 			ImGui::Separator();
+			if (ImGui::MenuItem("Export game"))
+				m_ExportGame();
+			ImGui::Separator();
 			if (ImGui::MenuItem("Exit"))                    
 				Application::Get().Close();
 			ImGui::EndPopup();

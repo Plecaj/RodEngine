@@ -39,11 +39,13 @@ namespace Rod {
 		void OpenScene(const std::filesystem::path& path);
 		void SaveScene();
 		void SaveSceneAs();
+		void ExportGame();
 
 		void OnScenePlay();
 		void OnSceneStop();
 	private:
 		Ref<Scene> m_ActiveScene;
+		Ref<Scene> m_EditorScene;
 		Entity m_CameraEntity;
 
 		EditorCamera m_EditorCamera;

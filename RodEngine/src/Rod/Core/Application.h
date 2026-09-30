@@ -50,7 +50,7 @@ namespace Rod {
 		bool OnWindowResize(WindowResizeEvent& e);
 	private:
 		Scope<Window> m_Window;
-		ImGuiLayer* m_ImGuiLayer;
+		ImGuiLayer* m_ImGuiLayer = nullptr;
 		bool m_Running = true, m_Minimized = false, m_Maximalized = false;
 		LayerStack m_LayerStack;
 		float m_LastFrameTime = 0.0f;

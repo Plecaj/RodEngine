@@ -8,6 +8,8 @@
 #include "Rod/Scene/Components.h"
 #include "Rod/Scene/Entity.h"
 
+#include <memory>
+
 #ifdef RD_PLATFORM_WINDOWS
 	#include <objbase.h>
 #endif
@@ -52,7 +54,7 @@ namespace Rod {
 		SetFieldValueFn SetFieldValue = nullptr;
 	};
 
-	static ScriptEngineData* s_Data = nullptr;
+	static std::unique_ptr<ScriptEngineData> s_Data;
 
 	static std::filesystem::path GetEditorRoot()
 	{
@@ -159,16 +161,30 @@ namespace Rod {
 		return result;
 	}
 
-	void ScriptEngine::Init()
+	static bool BindHostFunctions()
 	{
-		if (s_Data)
-			return;
+		const std::wstring scriptHostType = L"Rod.Internal.ScriptHost, Rod.ScriptCore";
+		s_Data->Initialize = (ScriptEngineData::InitializeFn)s_Data->Runtime.GetFunction(scriptHostType, L"Initialize");
+		s_Data->Shutdown = (ScriptEngineData::ShutdownFn)s_Data->Runtime.GetFunction(scriptHostType, L"Shutdown");
+		s_Data->LoadAssembly = (ScriptEngineData::LoadAssemblyFn)s_Data->Runtime.GetFunction(scriptHostType, L"LoadAssembly");
+		s_Data->UnloadAssembly = (ScriptEngineData::UnloadAssemblyFn)s_Data->Runtime.GetFunction(scriptHostType, L"UnloadAssembly");
+		s_Data->CreateScript = (ScriptEngineData::CreateScriptFn)s_Data->Runtime.GetFunction(scriptHostType, L"CreateScript");
+		s_Data->StartScript = (ScriptEngineData::StartScriptFn)s_Data->Runtime.GetFunction(scriptHostType, L"StartScript");
+		s_Data->DestroyScript = (ScriptEngineData::DestroyScriptFn)s_Data->Runtime.GetFunction(scriptHostType, L"DestroyScript");
+		s_Data->UpdateScript = (ScriptEngineData::UpdateScriptFn)s_Data->Runtime.GetFunction(scriptHostType, L"UpdateScript");
+		s_Data->SetFieldValue = (ScriptEngineData::SetFieldValueFn)s_Data->Runtime.GetFunction(scriptHostType, L"SetFieldValue");
 
-		s_Data = new ScriptEngineData();
+		return s_Data->Initialize && s_Data->LoadAssembly && s_Data->CreateScript
+			&& s_Data->StartScript && s_Data->DestroyScript && s_Data->UpdateScript
+			&& s_Data->SetFieldValue;
+	}
 
+	static void InitializeScriptPaths()
+	{
 		std::filesystem::path root = GetSourceRoot();
 		std::filesystem::path editorRoot = GetEditorRoot();
 		bool editorMode = Application::Get().IsEditor();
+
 		std::filesystem::path sourceCoreAssemblyPath = GetManagedAssemblyPath(root / "Rod-ScriptCore" / "Rod.ScriptCore.csproj", "Rod.ScriptCore.runtimeconfig.json");
 		std::filesystem::path packagedCoreAssemblyPath = SelectPackagedAssembly({
 			editorRoot / "assets" / "Scripts" / "Core" / "Rod.ScriptCore.dll",
@@ -190,40 +206,56 @@ namespace Rod {
 		}
 		s_Data->ScriptSourceDirectory = root / "Rod-Editor" / "assets" / "Scripts" / "Source";
 		s_Data->ScriptCacheDirectory = editorRoot / "assets" / "Scripts" / "Cache";
+	}
+
+	static void ClearFailedInit()
+	{
+		if (!s_Data)
+			return;
+
+		s_Data->Runtime.Shutdown();
+		s_Data.reset();
+	}
+
+	void ScriptEngine::Init()
+	{
+		if (s_Data)
+			return;
+
+		s_Data = std::make_unique<ScriptEngineData>();
+		InitializeScriptPaths();
 
 		if (!std::filesystem::exists(s_Data->CoreAssemblyPath))
 		{
 			RD_CORE_WARN("Script core assembly is missing. Build Rod.ScriptCore before using scripts: {}", s_Data->CoreAssemblyPath.string());
+			ClearFailedInit();
 			return;
 		}
 
 		if (!std::filesystem::exists(s_Data->RuntimeConfigPath))
 		{
 			RD_CORE_WARN("Script core runtime config is missing. Build Rod.ScriptCore before using scripts: {}", s_Data->RuntimeConfigPath.string());
+			ClearFailedInit();
 			return;
 		}
 
 		if (!s_Data->Runtime.Initialize(s_Data->RuntimeConfigPath, s_Data->CoreAssemblyPath))
+		{
+			ClearFailedInit();
 			return;
+		}
 
-		const std::wstring scriptHostType = L"Rod.Internal.ScriptHost, Rod.ScriptCore";
-		s_Data->Initialize = (ScriptEngineData::InitializeFn)s_Data->Runtime.GetFunction(scriptHostType, L"Initialize");
-		s_Data->Shutdown = (ScriptEngineData::ShutdownFn)s_Data->Runtime.GetFunction(scriptHostType, L"Shutdown");
-		s_Data->LoadAssembly = (ScriptEngineData::LoadAssemblyFn)s_Data->Runtime.GetFunction(scriptHostType, L"LoadAssembly");
-		s_Data->UnloadAssembly = (ScriptEngineData::UnloadAssemblyFn)s_Data->Runtime.GetFunction(scriptHostType, L"UnloadAssembly");
-		s_Data->CreateScript = (ScriptEngineData::CreateScriptFn)s_Data->Runtime.GetFunction(scriptHostType, L"CreateScript");
-		s_Data->StartScript = (ScriptEngineData::StartScriptFn)s_Data->Runtime.GetFunction(scriptHostType, L"StartScript");
-		s_Data->DestroyScript = (ScriptEngineData::DestroyScriptFn)s_Data->Runtime.GetFunction(scriptHostType, L"DestroyScript");
-		s_Data->UpdateScript = (ScriptEngineData::UpdateScriptFn)s_Data->Runtime.GetFunction(scriptHostType, L"UpdateScript");
-		s_Data->SetFieldValue = (ScriptEngineData::SetFieldValueFn)s_Data->Runtime.GetFunction(scriptHostType, L"SetFieldValue");
-
-		if (!s_Data->Initialize || !s_Data->LoadAssembly || !s_Data->CreateScript || !s_Data->StartScript || !s_Data->DestroyScript || !s_Data->UpdateScript)
+		if (!BindHostFunctions())
+		{
+			ClearFailedInit();
 			return;
+		}
 
 		std::vector<NativeCall> nativeCalls = ScriptGlue::GetNativeCalls();
 		if (s_Data->Initialize(nativeCalls.data(), (int32_t)nativeCalls.size()) != 0)
 		{
 			RD_CORE_ERROR("Managed script host initialization failed.");
+			ClearFailedInit();
 			return;
 		}
 
@@ -244,8 +276,7 @@ namespace Rod {
 			s_Data->Shutdown();
 
 		s_Data->Runtime.Shutdown();
-		delete s_Data;
-		s_Data = nullptr;
+		s_Data.reset();
 	}
 
 	void ScriptEngine::SetScriptProject(const std::filesystem::path& projectPath)

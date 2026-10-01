@@ -14,7 +14,7 @@ public readonly struct Entity
     public string Name
     {
         get => NativeApi.EntityGetName(ID);
-        init => NativeApi.EntitySetName(ID, value);
+        set => NativeApi.EntitySetName(ID, value);
     }
 
     public void SetName(string name)

@@ -4,6 +4,8 @@
 #include "ScriptAssembly.h"
 
 #include <filesystem>
+#include <string>
+#include <unordered_map>
 
 namespace Rod {
 

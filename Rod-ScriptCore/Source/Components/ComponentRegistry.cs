@@ -14,17 +14,22 @@ internal enum ComponentType
 
 internal static class ComponentRegistry
 {
+    private static readonly Dictionary<Type, ComponentType> s_ComponentTypes = new()
+    {
+        [typeof(TagComponent)] = ComponentType.Tag,
+        [typeof(TransformComponent)] = ComponentType.Transform,
+        [typeof(CameraComponent)] = ComponentType.Camera,
+        [typeof(SpriteRendererComponent)] = ComponentType.SpriteRenderer,
+        [typeof(MeshComponent)] = ComponentType.Mesh,
+        [typeof(DirectionalLightComponent)] = ComponentType.DirectionalLight,
+        [typeof(ScriptComponent)] = ComponentType.Script
+    };
+
     public static int GetComponentType<T>() where T : Component
     {
         Type type = typeof(T);
-
-        if (type == typeof(TagComponent)) return (int)ComponentType.Tag;
-        if (type == typeof(TransformComponent)) return (int)ComponentType.Transform;
-        if (type == typeof(CameraComponent)) return (int)ComponentType.Camera;
-        if (type == typeof(SpriteRendererComponent)) return (int)ComponentType.SpriteRenderer;
-        if (type == typeof(MeshComponent)) return (int)ComponentType.Mesh;
-        if (type == typeof(DirectionalLightComponent)) return (int)ComponentType.DirectionalLight;
-        if (type == typeof(ScriptComponent)) return (int)ComponentType.Script;
+        if (s_ComponentTypes.TryGetValue(type, out ComponentType componentType))
+            return (int)componentType;
 
         throw new NotSupportedException($"Component '{type.FullName}' is not exposed to Rod scripts.");
     }

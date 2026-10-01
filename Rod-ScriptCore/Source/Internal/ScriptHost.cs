@@ -20,6 +20,45 @@ public static unsafe class ScriptHost
     private static AssemblyDependencyResolver? s_AssemblyResolver;
     private static Assembly? s_GameAssembly;
     private static readonly Dictionary<ulong, ScriptBehaviour> s_Instances = new();
+    private static readonly Dictionary<Type, string> s_FieldTypeNames = new()
+    {
+        [typeof(float)] = "Single",
+        [typeof(double)] = "Double",
+        [typeof(bool)] = "Boolean",
+        [typeof(char)] = "Char",
+        [typeof(byte)] = "Byte",
+        [typeof(short)] = "Int16",
+        [typeof(int)] = "Int32",
+        [typeof(long)] = "Int64",
+        [typeof(sbyte)] = "SByte",
+        [typeof(ushort)] = "UInt16",
+        [typeof(uint)] = "UInt32",
+        [typeof(ulong)] = "UInt64",
+        [typeof(Vector2)] = "Vector2",
+        [typeof(Vector3)] = "Vector3",
+        [typeof(Vector4)] = "Vector4",
+        [typeof(Entity)] = "Entity",
+        [typeof(string)] = "String"
+    };
+    private static readonly Dictionary<Type, Func<string, object>> s_FieldParsers = new()
+    {
+        [typeof(float)] = value => float.Parse(value, CultureInfo.InvariantCulture),
+        [typeof(double)] = value => double.Parse(value, CultureInfo.InvariantCulture),
+        [typeof(bool)] = value => bool.Parse(value),
+        [typeof(byte)] = value => byte.Parse(value, CultureInfo.InvariantCulture),
+        [typeof(short)] = value => short.Parse(value, CultureInfo.InvariantCulture),
+        [typeof(int)] = value => int.Parse(value, CultureInfo.InvariantCulture),
+        [typeof(long)] = value => long.Parse(value, CultureInfo.InvariantCulture),
+        [typeof(sbyte)] = value => sbyte.Parse(value, CultureInfo.InvariantCulture),
+        [typeof(ushort)] = value => ushort.Parse(value, CultureInfo.InvariantCulture),
+        [typeof(uint)] = value => uint.Parse(value, CultureInfo.InvariantCulture),
+        [typeof(ulong)] = value => ulong.Parse(value, CultureInfo.InvariantCulture),
+        [typeof(string)] = value => value,
+        [typeof(Entity)] = value => new Entity(ulong.Parse(value, CultureInfo.InvariantCulture)),
+        [typeof(Vector2)] = value => ParseVector2(value),
+        [typeof(Vector3)] = value => ParseVector3(value),
+        [typeof(Vector4)] = value => ParseVector4(value)
+    };
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     public static int Initialize(NativeCall* calls, int count)
@@ -253,47 +292,16 @@ public static unsafe class ScriptHost
 
     private static string GetFieldTypeName(Type type)
     {
-        if (type == typeof(float)) return "Single";
-        if (type == typeof(double)) return "Double";
-        if (type == typeof(bool)) return "Boolean";
-        if (type == typeof(char)) return "Char";
-        if (type == typeof(byte)) return "Byte";
-        if (type == typeof(short)) return "Int16";
-        if (type == typeof(int)) return "Int32";
-        if (type == typeof(long)) return "Int64";
-        if (type == typeof(sbyte)) return "SByte";
-        if (type == typeof(ushort)) return "UInt16";
-        if (type == typeof(uint)) return "UInt32";
-        if (type == typeof(ulong)) return "UInt64";
-        if (type == typeof(Vector2)) return "Vector2";
-        if (type == typeof(Vector3)) return "Vector3";
-        if (type == typeof(Vector4)) return "Vector4";
-        if (type == typeof(Entity)) return "Entity";
-        if (type == typeof(string)) return "String";
-        return type.Name;
+        return s_FieldTypeNames.TryGetValue(type, out string? name) ? name : type.Name;
     }
 
     private static object? ConvertStringToFieldValue(Type type, string value)
     {
         try
         {
-            if (type == typeof(float)) return float.Parse(value, CultureInfo.InvariantCulture);
-            if (type == typeof(double)) return double.Parse(value, CultureInfo.InvariantCulture);
-            if (type == typeof(bool)) return bool.Parse(value);
             if (type == typeof(char)) return string.IsNullOrEmpty(value) ? '\0' : value[0];
-            if (type == typeof(byte)) return byte.Parse(value, CultureInfo.InvariantCulture);
-            if (type == typeof(short)) return short.Parse(value, CultureInfo.InvariantCulture);
-            if (type == typeof(int)) return int.Parse(value, CultureInfo.InvariantCulture);
-            if (type == typeof(long)) return long.Parse(value, CultureInfo.InvariantCulture);
-            if (type == typeof(sbyte)) return sbyte.Parse(value, CultureInfo.InvariantCulture);
-            if (type == typeof(ushort)) return ushort.Parse(value, CultureInfo.InvariantCulture);
-            if (type == typeof(uint)) return uint.Parse(value, CultureInfo.InvariantCulture);
-            if (type == typeof(ulong)) return ulong.Parse(value, CultureInfo.InvariantCulture);
-            if (type == typeof(string)) return value;
-            if (type == typeof(Entity)) return new Entity(ulong.Parse(value, CultureInfo.InvariantCulture));
-            if (type == typeof(Vector2)) return ParseVector2(value);
-            if (type == typeof(Vector3)) return ParseVector3(value);
-            if (type == typeof(Vector4)) return ParseVector4(value);
+            if (s_FieldParsers.TryGetValue(type, out Func<string, object>? parser))
+                return parser(value);
         }
         catch
         {

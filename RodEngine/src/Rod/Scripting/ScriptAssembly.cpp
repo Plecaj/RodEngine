@@ -2,29 +2,41 @@
 #include "ScriptAssembly.h"
 
 #include <json.hpp>
+#include <unordered_map>
 
 namespace Rod {
 
 	static ScriptFieldType ScriptFieldTypeFromString(const std::string& type)
 	{
-		if (type == "Single" || type == "float") return ScriptFieldType::Float;
-		if (type == "Double" || type == "double") return ScriptFieldType::Double;
-		if (type == "Boolean" || type == "bool") return ScriptFieldType::Bool;
-		if (type == "Char" || type == "char") return ScriptFieldType::Char;
-		if (type == "Byte") return ScriptFieldType::Byte;
-		if (type == "Int16") return ScriptFieldType::Short;
-		if (type == "Int32" || type == "int") return ScriptFieldType::Int;
-		if (type == "Int64" || type == "long") return ScriptFieldType::Long;
-		if (type == "SByte") return ScriptFieldType::UByte;
-		if (type == "UInt16") return ScriptFieldType::UShort;
-		if (type == "UInt32") return ScriptFieldType::UInt;
-		if (type == "UInt64") return ScriptFieldType::ULong;
-		if (type == "Vector2") return ScriptFieldType::Vector2;
-		if (type == "Vector3") return ScriptFieldType::Vector3;
-		if (type == "Vector4") return ScriptFieldType::Vector4;
-		if (type == "Entity") return ScriptFieldType::Entity;
-		if (type == "String" || type == "string") return ScriptFieldType::String;
-		return ScriptFieldType::None;
+		static const std::unordered_map<std::string, ScriptFieldType> fieldTypes = {
+			{ "Single", ScriptFieldType::Float },
+			{ "float", ScriptFieldType::Float },
+			{ "Double", ScriptFieldType::Double },
+			{ "double", ScriptFieldType::Double },
+			{ "Boolean", ScriptFieldType::Bool },
+			{ "bool", ScriptFieldType::Bool },
+			{ "Char", ScriptFieldType::Char },
+			{ "char", ScriptFieldType::Char },
+			{ "Byte", ScriptFieldType::Byte },
+			{ "Int16", ScriptFieldType::Short },
+			{ "Int32", ScriptFieldType::Int },
+			{ "int", ScriptFieldType::Int },
+			{ "Int64", ScriptFieldType::Long },
+			{ "long", ScriptFieldType::Long },
+			{ "SByte", ScriptFieldType::UByte },
+			{ "UInt16", ScriptFieldType::UShort },
+			{ "UInt32", ScriptFieldType::UInt },
+			{ "UInt64", ScriptFieldType::ULong },
+			{ "Vector2", ScriptFieldType::Vector2 },
+			{ "Vector3", ScriptFieldType::Vector3 },
+			{ "Vector4", ScriptFieldType::Vector4 },
+			{ "Entity", ScriptFieldType::Entity },
+			{ "String", ScriptFieldType::String },
+			{ "string", ScriptFieldType::String }
+		};
+
+		auto it = fieldTypes.find(type);
+		return it != fieldTypes.end() ? it->second : ScriptFieldType::None;
 	}
 
 	bool ScriptAssembly::Load(const std::filesystem::path& assemblyPath, const std::string& metadataJson)

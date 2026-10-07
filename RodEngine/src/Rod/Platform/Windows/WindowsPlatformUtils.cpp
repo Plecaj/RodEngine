@@ -11,11 +11,6 @@
 
 namespace Rod {
 
-	float Platform::GetTime()
-	{
-		return (float)glfwGetTime();
-	}
-
 	static HWND GetOwnerWindow()
 	{
 		auto* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());

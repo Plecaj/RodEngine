@@ -1,5 +1,5 @@
 #include "rdpch.h"
-#include "WindowsWindow.h"
+#include "GLFWWindow.h"
 
 #include "Rod/Events/Event.h"
 #include "Rod/Events/KeyEvent.h"
@@ -9,10 +9,11 @@
 #include "Rod/Platform/OpenGL/OpenGLContext.h"
 
 #include <stb_image.h>
+#include <stdexcept>
 
 namespace Rod {
 
-	static bool s_GLFWInitialized = false;
+	static uint32_t s_WindowCount = 0;
 
 	static void GLFWErrorCallback(int error, const char* description)
 	{
@@ -21,20 +22,20 @@ namespace Rod {
 
 	Scope<Window> Window::Create(const WindowProps& props)
 	{
-		return CreateScope<WindowsWindow>(props);
+		return CreateScope<GLFWWindow>(props);
 	}
 
-	WindowsWindow::WindowsWindow(const WindowProps& props)
+	GLFWWindow::GLFWWindow(const WindowProps& props)
 	{
 		Init(props);
 	}
 
-	WindowsWindow::~WindowsWindow()
+	GLFWWindow::~GLFWWindow()
 	{
 		Shutdown();
 	}
 
-	void WindowsWindow::Init(const WindowProps& props)
+	void GLFWWindow::Init(const WindowProps& props)
 	{
 		RD_PROFILE_FUNCTION();
 
@@ -56,38 +57,50 @@ namespace Rod {
 		SetTaskbarIcon(props.TaskbarIconFilepath);
 	}
 
-	void WindowsWindow::InitGLFW()
+	void GLFWWindow::InitGLFW()
 	{
-		if (s_GLFWInitialized)
+		if (s_WindowCount > 0)
 			return;
 
 		RD_PROFILE_SCOPE("glfw init");
-		int success = glfwInit();
-		RD_CORE_ASSERT(success, "Could not initialize GLFW!");
 		glfwSetErrorCallback(GLFWErrorCallback);
-
-		s_GLFWInitialized = true;
+		if (!glfwInit())
+			throw std::runtime_error("Could not initialize GLFW.");
 	}
 
-	void WindowsWindow::CreateNativeWindow(const WindowProps& props)
+	void GLFWWindow::CreateNativeWindow(const WindowProps& props)
 	{
 		RD_PROFILE_SCOPE("glfw create window");
 
+		glfwDefaultWindowHints();
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		if (props.IsEditor)
-			glfwWindowHint(GLFW_TITLEBAR, false);
+#ifdef RD_PLATFORM_WINDOWS
+			glfwWindowHint(GLFW_TITLEBAR, GLFW_FALSE);
+#else
+			glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+#endif
 
 		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
-		RD_CORE_ASSERT(m_Window, "Could not create GLFW window!");
+		if (!m_Window)
+		{
+			if (s_WindowCount == 0)
+				glfwTerminate();
+			throw std::runtime_error("Could not create an OpenGL 4.6 GLFW window.");
+		}
+		++s_WindowCount;
 	}
 
-	void WindowsWindow::SetGLFWCallbacks()
+	void GLFWWindow::SetGLFWCallbacks()
 	{
 		SetWindowCallbacks();
 		SetKeyboardCallbacks();
 		SetMouseCallbacks();
 	}
 
-	void WindowsWindow::SetWindowCallbacks()
+	void GLFWWindow::SetWindowCallbacks()
 	{
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 		{
@@ -108,9 +121,9 @@ namespace Rod {
 		});
 	}
 
-	void WindowsWindow::SetKeyboardCallbacks()
+	void GLFWWindow::SetKeyboardCallbacks()
 	{
-		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
+		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int, int action, int)
 		{
 			WindowData& data = GetWindowData(window);
 
@@ -148,9 +161,9 @@ namespace Rod {
 		});
 	}
 
-	void WindowsWindow::SetMouseCallbacks()
+	void GLFWWindow::SetMouseCallbacks()
 	{
-		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
+		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int)
 		{
 			WindowData& data = GetWindowData(window);
 
@@ -188,7 +201,7 @@ namespace Rod {
 		});
 	}
 
-	void WindowsWindow::SetTaskbarIcon(const std::string& iconFilepath) const
+	void GLFWWindow::SetTaskbarIcon(const std::string& iconFilepath) const
 	{
 		if (iconFilepath.empty())
 			return;
@@ -198,7 +211,11 @@ namespace Rod {
 		int width, height, channels;
 		auto data = stbi_load(iconFilepath.c_str(), &width, &height, &channels, 4);
 
-		RD_CORE_ASSERT(data, "Failed to load taskbar icon image");
+		if (!data)
+		{
+			RD_CORE_WARN("Failed to load taskbar icon '{}'.", iconFilepath);
+			return;
+		}
 
 		icon.width = width;
 		icon.height = height;
@@ -208,20 +225,26 @@ namespace Rod {
 		stbi_image_free(data);
 	}
 
-	WindowsWindow::WindowData& WindowsWindow::GetWindowData(GLFWwindow* window)
+	GLFWWindow::WindowData& GLFWWindow::GetWindowData(GLFWwindow* window)
 	{
 		return *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 	}
 
-	void WindowsWindow::Shutdown()
+	void GLFWWindow::Shutdown()
 	{
 		RD_PROFILE_FUNCTION();
 
+		m_Context.reset();
 		if (m_Window)
+		{
 			glfwDestroyWindow(m_Window);
+			m_Window = nullptr;
+			if (--s_WindowCount == 0)
+				glfwTerminate();
+		}
 	}
 
-	void WindowsWindow::OnUpdate()
+	void GLFWWindow::OnUpdate()
 	{
 		RD_PROFILE_FUNCTION();
 
@@ -230,25 +253,25 @@ namespace Rod {
 		m_Context->SwapBuffers();
 	}
 
-	void WindowsWindow::Minimize() const
+	void GLFWWindow::Minimize() const
 	{
 		ResetWindowDrag();
 		glfwIconifyWindow(m_Window);
 	}
 
-	void WindowsWindow::Maximize() const
+	void GLFWWindow::Maximize() const
 	{
 		ResetWindowDrag();
 		glfwMaximizeWindow(m_Window);
 	}
 
-	void WindowsWindow::Restore() const
+	void GLFWWindow::Restore() const
 	{
 		ResetWindowDrag();
 		glfwRestoreWindow(m_Window);
 	}
 
-	void WindowsWindow::BeginWindowDrag() const
+	void GLFWWindow::BeginWindowDrag() const
 	{
 		if (glfwGetMouseButton(m_Window, GLFW_MOUSE_BUTTON_LEFT) != GLFW_PRESS)
 		{
@@ -277,12 +300,12 @@ namespace Rod {
 		glfwSetWindowPos(m_Window, newWinX, newWinY);
 	}
 
-	void WindowsWindow::ResetWindowDrag() const
+	void GLFWWindow::ResetWindowDrag() const
 	{
 		m_WindowDragActive = false;
 	}
 
-	void WindowsWindow::UpdateWindowDrag() const
+	void GLFWWindow::UpdateWindowDrag() const
 	{
 		if (!m_WindowDragActive)
 			return;
@@ -291,7 +314,7 @@ namespace Rod {
 			ResetWindowDrag();
 	}	
 
-	glm::vec2 WindowsWindow::GetMouseScreenPosition() const
+	glm::vec2 GLFWWindow::GetMouseScreenPosition() const
 	{
 		int windowX, windowY;
 		double mouseX, mouseY;
@@ -301,7 +324,7 @@ namespace Rod {
 		return { (float)windowX + (float)mouseX, (float)windowY + (float)mouseY };
 	}
 
-	void WindowsWindow::SetVSync(bool enabled)
+	void GLFWWindow::SetVSync(bool enabled)
 	{
 		RD_PROFILE_FUNCTION();
 
@@ -313,7 +336,7 @@ namespace Rod {
 		m_Data.VSync = enabled;
 	}
 
-	bool WindowsWindow::IsVSync() const
+	bool GLFWWindow::IsVSync() const
 	{
 		return m_Data.VSync;
 	}

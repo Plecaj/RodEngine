@@ -8,11 +8,11 @@
 
 namespace Rod {
 
-	class WindowsWindow : public Window
+	class GLFWWindow : public Window
 	{
 	public:
-		WindowsWindow(const WindowProps& props);
-		~WindowsWindow() override;
+		GLFWWindow(const WindowProps& props);
+		~GLFWWindow() override;
 
 		void OnUpdate() override;
 
@@ -24,7 +24,6 @@ namespace Rod {
 		void Restore() const override;
 		void BeginWindowDrag() const override;
 
-		// Window attributes
 		inline void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
 		void SetVSync(bool enabled) override;
 		bool IsVSync() const override;

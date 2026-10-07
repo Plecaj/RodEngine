@@ -33,6 +33,8 @@ include(RodDependencies)
 
 add_subdirectory(RodEngine)
 
+include(RodScripts)
+
 if(ROD_BUILD_EDITOR)
   add_subdirectory(Rod-Editor)
 endif()

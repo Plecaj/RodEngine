@@ -490,7 +490,7 @@ namespace Rod {
 
 	std::filesystem::path EditorLayer::GetRuntimeExecutablePath() const
 	{
-		return std::filesystem::current_path() / "Rod-Runtime.exe";
+		return std::filesystem::current_path() / "Rod-Runtime" ROD_EXECUTABLE_SUFFIX;
 	}
 
 	std::filesystem::path EditorLayer::GetExportRootPath() const
@@ -514,7 +514,7 @@ namespace Rod {
 	bool EditorLayer::CopyRuntimeExecutable(const std::filesystem::path& runtimeExecutable, const std::filesystem::path& exportRoot)
 	{
 		std::error_code error;
-		std::filesystem::copy_file(runtimeExecutable, exportRoot / "RodGame.exe", std::filesystem::copy_options::overwrite_existing, error);
+		std::filesystem::copy_file(runtimeExecutable, exportRoot / "RodGame" ROD_EXECUTABLE_SUFFIX, std::filesystem::copy_options::overwrite_existing, error);
 		if (error)
 		{
 			RD_CORE_ERROR("Runtime copy failed: {}", error.message());

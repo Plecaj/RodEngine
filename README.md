@@ -96,7 +96,7 @@ It is not intended to compete with engines like Unity or Unreal. The project is 
 
 | Area | Current limitation |
 | --- | --- |
-| Platform | Windows is the main supported platform right now. Several systems use Windows-specific paths or APIs. |
+| Platform | Windows and Linux (X11/XWayland). Native Wayland window management is not supported yet. |
 | Rendering backend | The renderer abstraction exists, but OpenGL is the only implemented backend. |
 | Asset pipeline | Asset handling is still simple. The editor currently works with scene files, PNG textures, and GLB meshes. |
 | Mesh loading | GLB loading is focused on static mesh data and basic material values. It is not a full glTF asset pipeline yet. |
@@ -123,7 +123,7 @@ It is not intended to compete with engines like Unity or Unreal. The project is 
 | Area | Technology |
 | --- | --- |
 | Language | C++23, C# |
-| Build | CMake, Visual Studio 2022, .NET SDK |
+| Build | CMake, MSVC or Clang, Ninja, .NET SDK |
 | Rendering | OpenGL, shaderc, SPIR-V |
 | UI | Dear ImGui, ImGuizmo |
 | ECS | entt |
@@ -133,66 +133,66 @@ It is not intended to compete with engines like Unity or Unreal. The project is 
 
 ## Build
 
-RodEngine is currently Windows-first.
-
 ### Requirements
 
-- Windows
-- Visual Studio 2022 with the Desktop development with C++ workload
-- CMake 3.25+
-- Git
-- Python 3.x
-- .NET 9 SDK
+Both platforms need **CMake 3.25+**, **Git**, **Python 3**, and **.NET 9 SDK** for C# scripting. Running the engine requires **OpenGL 4.6**.
 
-### Clone
+| Platform | Build tools and dependencies |
+| --- | --- |
+| Windows | Visual Studio 2022 with Desktop development with C++ |
+| Linux | Clang, a C++23 standard library with `std::format`, Ninja, X11 development headers (Xrandr, Xinerama, Xcursor, XInput), OpenGL development headers, and Zenity for file dialogs |
+
+Linux uses X11, including XWayland on Wayland desktops. Native Wayland support is pending.
+
+<details>
+<summary>Install Linux dependencies on Fedora</summary>
 
 ```bash
-git clone --recursive https://github.com/Plecaj/RodEngine
+sudo dnf install clang cmake ninja-build libstdc++-devel libX11-devel libXrandr-devel libXinerama-devel libXcursor-devel libXi-devel mesa-libGL-devel dotnet-sdk-9.0 zenity
+```
+
+</details>
+
+### Get the sources
+
+Choose HTTPS or SSH; SSH requires a GitHub SSH key.
+
+| Protocol | Clone command |
+| --- | --- |
+| HTTPS | `git clone https://github.com/Plecaj/RodEngine.git` |
+| SSH | `git clone git@github.com:Plecaj/RodEngine.git` |
+
+Then initialize the submodules and sync shaderc's dependencies. Run these steps for an existing clone too:
+
+```bash
 cd RodEngine
-```
-
-If the repository was cloned without submodules:
-
-```bash
 git submodule update --init --recursive
+python RodEngine/vendor/shaderc/utils/git-sync-deps
 ```
 
-### Sync shaderc
+### Build and run
 
-The vendored `shaderc` dependency needs its own dependency sync:
+Run CMake from the repository root:
 
-```bash
-cd RodEngine/vendor/shaderc
-python utils/git-sync-deps
-cd ../../..
-```
+| Platform | Configure | Debug build | Output directory | Editor executable |
+| --- | --- | --- | --- | --- |
+| Windows | `cmake --preset vs` | `cmake --build --preset vs-debug` | `build/vs/bin/Debug` | `Rod-Editor.exe` |
+| Linux | `cmake --preset linux-clang` | `cmake --build --preset linux-clang-debug` | `build/linux-clang/bin/Debug` | `Rod-Editor` |
 
-### Configure and build
+Run the editor from its output directory so it can find the copied assets. Both builds also produce `Rod-Runtime` (`.exe` on Windows) and build the C# projects when `dotnet` is available.
 
-```bash
-cmake --preset vs
-cmake --build --preset vs-debug
-```
+For other configurations, replace `-debug` with `-release` or `-dist` in the build preset. The output directory changes to `Release` or `Dist`.
 
-The debug editor executable is written to:
+### Runtime and export
 
-```text
-build/vs/bin/Debug/Rod-Editor.exe
-```
+For a runtime-only build, append `-DROD_BUILD_EDITOR=OFF` to either configure command.
 
-Other presets are available:
+| Platform | Export a Debug game package |
+| --- | --- |
+| Windows | `cmake --build build/vs --config Debug --target RodGame-Export` |
+| Linux | `cmake --build build/linux-clang --config Debug --target RodGame-Export` |
 
-```bash
-cmake --build --preset vs-release
-cmake --build --preset vs-dist
-```
-
-## Notes
-
-- The main target is `Rod-Editor`.
-- Building the editor also builds `Rod-Runtime` when runtime builds are enabled.
-- The editor copies its assets after build.
-- The C# script core and game scripts are built by CMake when `dotnet` is available.
+Packages go to `<build-directory>/export/RodGame`, containing assets and `RodGame.exe` on Windows or `RodGame` on Linux. Run the game from that directory. Use `--config Release` or `--config Dist` for other configurations.
 
 ## License
 

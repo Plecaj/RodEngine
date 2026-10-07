@@ -25,19 +25,7 @@ target_link_libraries(Rod-Runtime PRIVATE
 
 rod_set_common_output_directories(Rod-Runtime)
 
-if(TARGET RodGameScripts-Build)
-    add_dependencies(Rod-Runtime RodGameScripts-Build)
-endif()
-
-add_custom_command(TARGET Rod-Runtime POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/Rod-Editor/assets"
-        "$<TARGET_FILE_DIR:Rod-Runtime>/assets"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/Rod-ScriptCore/bin/Debug/net9.0"
-        "$<TARGET_FILE_DIR:Rod-Runtime>/assets/Scripts/Core"
-    COMMENT "Copying runtime assets"
-)
+rod_copy_assets(Rod-Runtime)
 
 set(ROD_GAME_EXPORT_DIR "${CMAKE_BINARY_DIR}/export/RodGame")
 
@@ -46,17 +34,14 @@ add_custom_target(RodGame-Export
         "${ROD_GAME_EXPORT_DIR}"
     COMMAND ${CMAKE_COMMAND} -E copy
         "$<TARGET_FILE:Rod-Runtime>"
-        "${ROD_GAME_EXPORT_DIR}/RodGame.exe"
+        "${ROD_GAME_EXPORT_DIR}/RodGame${CMAKE_EXECUTABLE_SUFFIX}"
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/Rod-Editor/assets"
+        "$<TARGET_FILE_DIR:Rod-Runtime>/assets"
         "${ROD_GAME_EXPORT_DIR}/assets"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/Rod-ScriptCore/bin/Debug/net9.0"
-        "${ROD_GAME_EXPORT_DIR}/assets/Scripts/Core"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${CMAKE_SOURCE_DIR}/Rod-Editor/assets/scenes/Example3D.rod"
         "${ROD_GAME_EXPORT_DIR}/assets/scenes/Startup.rod"
     DEPENDS Rod-Runtime
-    COMMENT "Exporting standalone Rod game package"
+    VERBATIM
 )
 

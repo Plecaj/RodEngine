@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <string>
 
 namespace Rod {
 
@@ -10,14 +11,12 @@ namespace Rod {
 		bool Initialize(const std::filesystem::path& runtimeConfigPath, const std::filesystem::path& coreAssemblyPath);
 		void Shutdown();
 
-		void* GetFunction(const std::wstring& typeName, const std::wstring& methodName);
+		void* GetFunction(const std::string& typeName, const std::string& methodName);
 
 		bool IsInitialized() const { return m_LoadAssemblyAndGetFunctionPointer != nullptr; }
 	private:
-		void* LoadHostFxr();
-	private:
-		void* m_HostFxr = nullptr;
 		void* m_LoadAssemblyAndGetFunctionPointer = nullptr;
 		std::filesystem::path m_CoreAssemblyPath;
 	};
+
 }

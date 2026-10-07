@@ -5,7 +5,7 @@
 #include "Rod/Core/KeyCodes.h"
 #include "Rod/Core/MouseButtonCodes.h"
 
-#include <glfw/glfw3.h>
+#include <GLFW/glfw3.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>

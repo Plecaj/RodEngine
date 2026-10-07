@@ -18,11 +18,14 @@ target_compile_definitions(RodProjectOptions INTERFACE
     $<$<CONFIG:Dist>:RD_DIST>
 )
 
+target_compile_definitions(RodProjectOptions INTERFACE GLFW_INCLUDE_NONE)
+
 if(WIN32)
-    target_compile_definitions(RodProjectOptions INTERFACE
-        RD_PLATFORM_WINDOWS
-        GLFW_INCLUDE_NONE
-    )
+    target_compile_definitions(RodProjectOptions INTERFACE RD_PLATFORM_WINDOWS)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    target_compile_definitions(RodProjectOptions INTERFACE RD_PLATFORM_LINUX)
+else()
+    message(FATAL_ERROR "RodEngine supports Windows and Linux.")
 endif()
 
 if(MSVC)
@@ -44,10 +47,15 @@ if(MSVC)
         $<$<CONFIG:Release>:/DEBUG>
         $<$<CONFIG:Dist>:/LTCG>
     )
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
+    target_compile_options(RodProjectWarnings INTERFACE -Wall -Wextra -Wpedantic)
 else()
-    message(FATAL_ERROR "RodEngine CMake setup is MSVC-first. Configure with Visual Studio/MSVC.")
+    message(FATAL_ERROR "RodEngine requires MSVC, Clang, or GCC.")
 endif()
 
 if(ROD_WARNINGS_AS_ERRORS)
-    target_compile_options(RodProjectWarnings INTERFACE /WX)
+    target_compile_options(RodProjectWarnings INTERFACE
+        $<$<CXX_COMPILER_ID:MSVC>:/WX>
+        $<$<CXX_COMPILER_ID:Clang,GNU>:-Werror>
+    )
 endif()

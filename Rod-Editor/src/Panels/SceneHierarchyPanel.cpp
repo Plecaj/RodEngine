@@ -7,6 +7,7 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+#include <cstdio>
 #include <filesystem>
 #include <sstream>
 
@@ -274,9 +275,8 @@ namespace Rod {
 
 		auto& tag = entity.GetComponent<TagComponent>().Tag;
 
-		char buffer[256];
-		memset(buffer, 0, sizeof(buffer));
-		strcpy_s(buffer, sizeof(buffer), tag.c_str());
+		char buffer[256] = {};
+		tag.copy(buffer, sizeof(buffer) - 1);
 
 		float addComponentWidth = 132.0f;
 		float availableWidth = ImGui::GetContentRegionAvail().x;
@@ -507,21 +507,21 @@ namespace Rod {
 	static glm::vec2 FieldValueToVec2(const std::string& value)
 	{
 		glm::vec2 result(0.0f);
-		sscanf_s(value.c_str(), "%f,%f", &result.x, &result.y);
+		std::sscanf(value.c_str(), "%f,%f", &result.x, &result.y);
 		return result;
 	}
 
 	static glm::vec3 FieldValueToVec3(const std::string& value)
 	{
 		glm::vec3 result(0.0f);
-		sscanf_s(value.c_str(), "%f,%f,%f", &result.x, &result.y, &result.z);
+		std::sscanf(value.c_str(), "%f,%f,%f", &result.x, &result.y, &result.z);
 		return result;
 	}
 
 	static glm::vec4 FieldValueToVec4(const std::string& value)
 	{
 		glm::vec4 result(0.0f);
-		sscanf_s(value.c_str(), "%f,%f,%f,%f", &result.x, &result.y, &result.z, &result.w);
+		std::sscanf(value.c_str(), "%f,%f,%f,%f", &result.x, &result.y, &result.z, &result.w);
 		return result;
 	}
 
@@ -661,9 +661,8 @@ namespace Rod {
 						}
 						case ScriptFieldType::String:
 						{
-							char buffer[256];
-							memset(buffer, 0, sizeof(buffer));
-							strcpy_s(buffer, sizeof(buffer), field.Value.c_str());
+							char buffer[256] = {};
+							field.Value.copy(buffer, sizeof(buffer) - 1);
 							if (ImGui::InputText(name.c_str(), buffer, sizeof(buffer)))
 							{
 								field.Value = buffer;

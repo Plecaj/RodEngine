@@ -124,13 +124,19 @@ namespace Rod {
 		out << YAML::EndMap;
 	}
 
+	static std::string NormalizeAssetPath(std::string path)
+	{
+		std::replace(path.begin(), path.end(), '\\', '/');
+		return path;
+	}
+
 	static void SerializeSpriteRendererComponent(YAML::Emitter& out, const SpriteRendererComponent& sprite)
 	{
 		out << YAML::Key << "SpriteRendererComponent";
 		out << YAML::BeginMap;
 		out << YAML::Key << "Color" << YAML::Value << sprite.Color;
 		out << YAML::Key << "TilingFactor" << YAML::Value << sprite.TilingFactor;
-		out << YAML::Key << "Texture" << YAML::Value << (sprite.Texture ? sprite.Texture->GetPath() : "None");
+		out << YAML::Key << "Texture" << YAML::Value << (sprite.Texture ? NormalizeAssetPath(sprite.Texture->GetPath()) : "None");
 		out << YAML::EndMap;
 	}
 
@@ -138,7 +144,7 @@ namespace Rod {
 	{
 		out << YAML::Key << "MeshComponent";
 		out << YAML::BeginMap;
-		out << YAML::Key << "Path" << YAML::Value << (meshComponent.Mesh ? meshComponent.Mesh->GetPath() : "None");
+		out << YAML::Key << "Path" << YAML::Value << (meshComponent.Mesh ? NormalizeAssetPath(meshComponent.Mesh->GetPath()) : "None");
 
 		if (meshComponent.Mesh && meshComponent.Mesh->GetMaterial())
 		{
@@ -279,7 +285,7 @@ namespace Rod {
 		sprite.Color = spriteRendererComponent["Color"].as<glm::vec4>();
 		sprite.TilingFactor = spriteRendererComponent["TilingFactor"].as<float>();
 
-		std::string texturePath = spriteRendererComponent["Texture"].as<std::string>();
+		std::string texturePath = NormalizeAssetPath(spriteRendererComponent["Texture"].as<std::string>());
 		if (texturePath != "None")
 			sprite.Texture = Texture2D::Create(texturePath);
 	}
@@ -291,7 +297,7 @@ namespace Rod {
 			return;
 
 		auto& mesh = entity.AddComponent<MeshComponent>();
-		std::string meshPath = meshComponent["Path"].as<std::string>();
+		std::string meshPath = NormalizeAssetPath(meshComponent["Path"].as<std::string>());
 		if (meshPath != "None")
 			mesh.Mesh = Mesh::Create(meshPath);
 

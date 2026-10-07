@@ -1,5 +1,6 @@
 #pragma once
 
+#include <csignal>
 #include <functional>
 #include <memory>
 #include <utility>
@@ -14,8 +15,18 @@
 #else
 	#define ROD_API 
 #endif
+#elif defined(RD_PLATFORM_LINUX)
+	#define ROD_API
 #else
-	#error Rod only supports Windows.
+	#error Rod only supports Windows and Linux.
+#endif
+
+#ifdef RD_PLATFORM_WINDOWS
+	#define RD_DEBUGBREAK() __debugbreak()
+	#define RD_CDECL __cdecl
+#else
+	#define RD_DEBUGBREAK() std::raise(SIGTRAP)
+	#define RD_CDECL
 #endif
 
 #ifdef RD_DEBUG
@@ -23,8 +34,8 @@
 #endif
 
 #ifdef RD_ENABLE_ASSERTS
-	#define RD_ASSERT(x, ...) {if(!(x)) {RD_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); }}
-	#define RD_CORE_ASSERT(x, ...) {if(!(x)) {RD_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak(); }}
+	#define RD_ASSERT(x, ...) {if(!(x)) {RD_ERROR("Assertion Failed: {0}", __VA_ARGS__); RD_DEBUGBREAK(); }}
+	#define RD_CORE_ASSERT(x, ...) {if(!(x)) {RD_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); RD_DEBUGBREAK(); }}
 #else
 	#define RD_ASSERT(x, ...)
 	#define RD_CORE_ASSERT(x, ...)

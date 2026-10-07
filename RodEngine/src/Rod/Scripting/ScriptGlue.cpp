@@ -1,6 +1,9 @@
 #include "rdpch.h"
 #include "ScriptGlue.h"
 
+#include <cstdlib>
+#include <cstring>
+
 #include "Rod/Core/Input.h"
 #include "Rod/Renderer/Mesh.h"
 #include "Rod/Renderer/Texture.h"
@@ -42,11 +45,12 @@ namespace Rod {
 	{
 #ifdef RD_PLATFORM_WINDOWS
 		char* buffer = (char*)CoTaskMemAlloc(value.size() + 1);
-		memcpy(buffer, value.c_str(), value.size() + 1);
-		return buffer;
 #else
-		return nullptr;
+		char* buffer = (char*)std::malloc(value.size() + 1);
 #endif
+		if (buffer)
+			std::memcpy(buffer, value.c_str(), value.size() + 1);
+		return buffer;
 	}
 
 	static glm::vec3 ToGLM(ScriptVec3 value)
@@ -71,7 +75,7 @@ namespace Rod {
 
 	extern "C" {
 
-	static void __cdecl Log_Message(int32_t level, const char* message)
+	static void RD_CDECL Log_Message(int32_t level, const char* message)
 	{
 		switch (level)
 		{
@@ -83,23 +87,23 @@ namespace Rod {
 		}
 	}
 
-	static bool __cdecl Input_IsKeyPressed(int32_t keycode)
+	static bool RD_CDECL Input_IsKeyPressed(int32_t keycode)
 	{
 		return Input::IsKeyPressed(keycode);
 	}
 
-	static bool __cdecl Input_IsMouseButtonPressed(int32_t button)
+	static bool RD_CDECL Input_IsMouseButtonPressed(int32_t button)
 	{
 		return Input::IsMouseButtonPressed(button);
 	}
 
-	static ScriptVec2 __cdecl Input_GetMousePosition()
+	static ScriptVec2 RD_CDECL Input_GetMousePosition()
 	{
 		auto [x, y] = Input::GetMousePosition();
 		return { x, y };
 	}
 
-	static uint64_t __cdecl Entity_Create(const char* name)
+	static uint64_t RD_CDECL Entity_Create(const char* name)
 	{
 		Scene* scene = ScriptGlue::GetSceneContext();
 		if (!scene)
@@ -108,14 +112,14 @@ namespace Rod {
 		return entity.GetUUID();
 	}
 
-	static void __cdecl Entity_Destroy(uint64_t entityID)
+	static void RD_CDECL Entity_Destroy(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity)
 			ScriptGlue::GetSceneContext()->DestroyEntity(entity);
 	}
 
-	static uint64_t __cdecl Entity_FindByName(const char* name)
+	static uint64_t RD_CDECL Entity_FindByName(const char* name)
 	{
 		Scene* scene = ScriptGlue::GetSceneContext();
 		if (!scene || !name)
@@ -124,20 +128,20 @@ namespace Rod {
 		return entity ? (uint64_t)entity.GetUUID() : 0;
 	}
 
-	static void* __cdecl Entity_GetName(uint64_t entityID)
+	static void* RD_CDECL Entity_GetName(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		return AllocateString(entity ? entity.GetName() : "");
 	}
 
-	static void __cdecl Entity_SetName(uint64_t entityID, const char* name)
+	static void RD_CDECL Entity_SetName(uint64_t entityID, const char* name)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && name)
 			entity.GetComponent<TagComponent>().Tag = name;
 	}
 
-	static bool __cdecl Entity_HasComponent(uint64_t entityID, int32_t componentType)
+	static bool RD_CDECL Entity_HasComponent(uint64_t entityID, int32_t componentType)
 	{
 		Entity entity = GetEntity(entityID);
 		if (!entity)
@@ -157,7 +161,7 @@ namespace Rod {
 		return false;
 	}
 
-	static void __cdecl Entity_AddComponent(uint64_t entityID, int32_t componentType)
+	static void RD_CDECL Entity_AddComponent(uint64_t entityID, int32_t componentType)
 	{
 		Entity entity = GetEntity(entityID);
 		if (!entity)
@@ -174,7 +178,7 @@ namespace Rod {
 		}
 	}
 
-	static void __cdecl Entity_RemoveComponent(uint64_t entityID, int32_t componentType)
+	static void RD_CDECL Entity_RemoveComponent(uint64_t entityID, int32_t componentType)
 	{
 		Entity entity = GetEntity(entityID);
 		if (!entity)
@@ -191,189 +195,189 @@ namespace Rod {
 		}
 	}
 
-	static bool __cdecl Camera_GetPrimary(uint64_t entityID)
+	static bool RD_CDECL Camera_GetPrimary(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>() ? entity.GetComponent<CameraComponent>().Primary : false;
 	}
 
-	static void __cdecl Camera_SetPrimary(uint64_t entityID, bool value)
+	static void RD_CDECL Camera_SetPrimary(uint64_t entityID, bool value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<CameraComponent>())
 			entity.GetComponent<CameraComponent>().Primary = value;
 	}
 
-	static bool __cdecl Camera_GetFixedAspectRatio(uint64_t entityID)
+	static bool RD_CDECL Camera_GetFixedAspectRatio(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>() ? entity.GetComponent<CameraComponent>().FixedAspectRatio : false;
 	}
 
-	static void __cdecl Camera_SetFixedAspectRatio(uint64_t entityID, bool value)
+	static void RD_CDECL Camera_SetFixedAspectRatio(uint64_t entityID, bool value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<CameraComponent>())
 			entity.GetComponent<CameraComponent>().FixedAspectRatio = value;
 	}
 
-	static int32_t __cdecl Camera_GetProjectionType(uint64_t entityID)
+	static int32_t RD_CDECL Camera_GetProjectionType(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>() ? (int32_t)entity.GetComponent<CameraComponent>().Camera.GetProjectionType() : 0;
 	}
 
-	static void __cdecl Camera_SetProjectionType(uint64_t entityID, int32_t value)
+	static void RD_CDECL Camera_SetProjectionType(uint64_t entityID, int32_t value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<CameraComponent>())
 			entity.GetComponent<CameraComponent>().Camera.SetProjectionType((SceneCamera::ProjectionType)value);
 	}
 
-	static float __cdecl Camera_GetPerspectiveVerticalFOV(uint64_t entityID)
+	static float RD_CDECL Camera_GetPerspectiveVerticalFOV(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>() ? entity.GetComponent<CameraComponent>().Camera.GetPerspectiveVerticalFOV() : 0.0f;
 	}
 
-	static void __cdecl Camera_SetPerspectiveVerticalFOV(uint64_t entityID, float value)
+	static void RD_CDECL Camera_SetPerspectiveVerticalFOV(uint64_t entityID, float value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<CameraComponent>())
 			entity.GetComponent<CameraComponent>().Camera.SetPerspectiveVerticalFOV(value);
 	}
 
-	static float __cdecl Camera_GetPerspectiveNearClip(uint64_t entityID)
+	static float RD_CDECL Camera_GetPerspectiveNearClip(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>() ? entity.GetComponent<CameraComponent>().Camera.GetPerspectiveNearClip() : 0.0f;
 	}
 
-	static void __cdecl Camera_SetPerspectiveNearClip(uint64_t entityID, float value)
+	static void RD_CDECL Camera_SetPerspectiveNearClip(uint64_t entityID, float value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<CameraComponent>())
 			entity.GetComponent<CameraComponent>().Camera.SetPerspectiveNearClip(value);
 	}
 
-	static float __cdecl Camera_GetPerspectiveFarClip(uint64_t entityID)
+	static float RD_CDECL Camera_GetPerspectiveFarClip(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>() ? entity.GetComponent<CameraComponent>().Camera.GetPerspectiveFarClip() : 0.0f;
 	}
 
-	static void __cdecl Camera_SetPerspectiveFarClip(uint64_t entityID, float value)
+	static void RD_CDECL Camera_SetPerspectiveFarClip(uint64_t entityID, float value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<CameraComponent>())
 			entity.GetComponent<CameraComponent>().Camera.SetPerspectiveFarClip(value);
 	}
 
-	static float __cdecl Camera_GetOrthographicSize(uint64_t entityID)
+	static float RD_CDECL Camera_GetOrthographicSize(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>() ? entity.GetComponent<CameraComponent>().Camera.GetOrthographicSize() : 0.0f;
 	}
 
-	static void __cdecl Camera_SetOrthographicSize(uint64_t entityID, float value)
+	static void RD_CDECL Camera_SetOrthographicSize(uint64_t entityID, float value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<CameraComponent>())
 			entity.GetComponent<CameraComponent>().Camera.SetOrthographicSize(value);
 	}
 
-	static float __cdecl Camera_GetOrthographicNearClip(uint64_t entityID)
+	static float RD_CDECL Camera_GetOrthographicNearClip(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>() ? entity.GetComponent<CameraComponent>().Camera.GetOrthographicNearClip() : 0.0f;
 	}
 
-	static void __cdecl Camera_SetOrthographicNearClip(uint64_t entityID, float value)
+	static void RD_CDECL Camera_SetOrthographicNearClip(uint64_t entityID, float value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<CameraComponent>())
 			entity.GetComponent<CameraComponent>().Camera.SetOrthographicNearClip(value);
 	}
 
-	static float __cdecl Camera_GetOrthographicFarClip(uint64_t entityID)
+	static float RD_CDECL Camera_GetOrthographicFarClip(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>() ? entity.GetComponent<CameraComponent>().Camera.GetOrthographicFarClip() : 0.0f;
 	}
 
-	static void __cdecl Camera_SetOrthographicFarClip(uint64_t entityID, float value)
+	static void RD_CDECL Camera_SetOrthographicFarClip(uint64_t entityID, float value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<CameraComponent>())
 			entity.GetComponent<CameraComponent>().Camera.SetOrthographicFarClip(value);
 	}
 
-	static ScriptVec3 __cdecl Transform_GetTranslation(uint64_t entityID)
+	static ScriptVec3 RD_CDECL Transform_GetTranslation(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<TransformComponent>() ? ToScript(entity.GetComponent<TransformComponent>().Translation) : ScriptVec3{};
 	}
 
-	static void __cdecl Transform_SetTranslation(uint64_t entityID, ScriptVec3 value)
+	static void RD_CDECL Transform_SetTranslation(uint64_t entityID, ScriptVec3 value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<TransformComponent>())
 			entity.GetComponent<TransformComponent>().Translation = ToGLM(value);
 	}
 
-	static ScriptVec3 __cdecl Transform_GetRotation(uint64_t entityID)
+	static ScriptVec3 RD_CDECL Transform_GetRotation(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<TransformComponent>() ? ToScript(entity.GetComponent<TransformComponent>().Rotation) : ScriptVec3{};
 	}
 
-	static void __cdecl Transform_SetRotation(uint64_t entityID, ScriptVec3 value)
+	static void RD_CDECL Transform_SetRotation(uint64_t entityID, ScriptVec3 value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<TransformComponent>())
 			entity.GetComponent<TransformComponent>().Rotation = ToGLM(value);
 	}
 
-	static ScriptVec3 __cdecl Transform_GetScale(uint64_t entityID)
+	static ScriptVec3 RD_CDECL Transform_GetScale(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<TransformComponent>() ? ToScript(entity.GetComponent<TransformComponent>().Scale) : ScriptVec3{ 1.0f, 1.0f, 1.0f };
 	}
 
-	static void __cdecl Transform_SetScale(uint64_t entityID, ScriptVec3 value)
+	static void RD_CDECL Transform_SetScale(uint64_t entityID, ScriptVec3 value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<TransformComponent>())
 			entity.GetComponent<TransformComponent>().Scale = ToGLM(value);
 	}
 
-	static ScriptVec4 __cdecl SpriteRenderer_GetColor(uint64_t entityID)
+	static ScriptVec4 RD_CDECL SpriteRenderer_GetColor(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<SpriteRendererComponent>() ? ToScript(entity.GetComponent<SpriteRendererComponent>().Color) : ScriptVec4{ 1.0f, 1.0f, 1.0f, 1.0f };
 	}
 
-	static void __cdecl SpriteRenderer_SetColor(uint64_t entityID, ScriptVec4 value)
+	static void RD_CDECL SpriteRenderer_SetColor(uint64_t entityID, ScriptVec4 value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<SpriteRendererComponent>())
 			entity.GetComponent<SpriteRendererComponent>().Color = ToGLM(value);
 	}
 
-	static float __cdecl SpriteRenderer_GetTilingFactor(uint64_t entityID)
+	static float RD_CDECL SpriteRenderer_GetTilingFactor(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<SpriteRendererComponent>() ? entity.GetComponent<SpriteRendererComponent>().TilingFactor : 1.0f;
 	}
 
-	static void __cdecl SpriteRenderer_SetTilingFactor(uint64_t entityID, float value)
+	static void RD_CDECL SpriteRenderer_SetTilingFactor(uint64_t entityID, float value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<SpriteRendererComponent>())
 			entity.GetComponent<SpriteRendererComponent>().TilingFactor = value;
 	}
 
-	static void* __cdecl SpriteRenderer_GetTexturePath(uint64_t entityID)
+	static void* RD_CDECL SpriteRenderer_GetTexturePath(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		if (!entity || !entity.HasComponent<SpriteRendererComponent>() || !entity.GetComponent<SpriteRendererComponent>().Texture)
@@ -381,7 +385,7 @@ namespace Rod {
 		return AllocateString(entity.GetComponent<SpriteRendererComponent>().Texture->GetPath());
 	}
 
-	static void __cdecl SpriteRenderer_SetTexturePath(uint64_t entityID, const char* path)
+	static void RD_CDECL SpriteRenderer_SetTexturePath(uint64_t entityID, const char* path)
 	{
 		Entity entity = GetEntity(entityID);
 		if (!entity || !entity.HasComponent<SpriteRendererComponent>())
@@ -390,7 +394,7 @@ namespace Rod {
 		sprite.Texture = path && path[0] ? Texture2D::Create(path) : nullptr;
 	}
 
-	static void* __cdecl Mesh_GetPath(uint64_t entityID)
+	static void* RD_CDECL Mesh_GetPath(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		if (!entity || !entity.HasComponent<MeshComponent>() || !entity.GetComponent<MeshComponent>().Mesh)
@@ -398,7 +402,7 @@ namespace Rod {
 		return AllocateString(entity.GetComponent<MeshComponent>().Mesh->GetPath());
 	}
 
-	static void __cdecl Mesh_SetPath(uint64_t entityID, const char* path)
+	static void RD_CDECL Mesh_SetPath(uint64_t entityID, const char* path)
 	{
 		Entity entity = GetEntity(entityID);
 		if (!entity || !entity.HasComponent<MeshComponent>())
@@ -407,7 +411,7 @@ namespace Rod {
 		mesh.Mesh = path && path[0] ? Mesh::Create(path) : nullptr;
 	}
 
-	static ScriptVec4 __cdecl Mesh_GetAlbedo(uint64_t entityID)
+	static ScriptVec4 RD_CDECL Mesh_GetAlbedo(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		if (!entity || !entity.HasComponent<MeshComponent>() || !entity.GetComponent<MeshComponent>().Mesh)
@@ -415,14 +419,14 @@ namespace Rod {
 		return ToScript(entity.GetComponent<MeshComponent>().Mesh->GetMaterial()->GetAlbedo());
 	}
 
-	static void __cdecl Mesh_SetAlbedo(uint64_t entityID, ScriptVec4 value)
+	static void RD_CDECL Mesh_SetAlbedo(uint64_t entityID, ScriptVec4 value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<MeshComponent>() && entity.GetComponent<MeshComponent>().Mesh)
 			entity.GetComponent<MeshComponent>().Mesh->GetMaterial()->SetAlbedo(ToGLM(value));
 	}
 
-	static ScriptVec3 __cdecl Mesh_GetEmissive(uint64_t entityID)
+	static ScriptVec3 RD_CDECL Mesh_GetEmissive(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		if (!entity || !entity.HasComponent<MeshComponent>() || !entity.GetComponent<MeshComponent>().Mesh)
@@ -430,79 +434,79 @@ namespace Rod {
 		return ToScript(entity.GetComponent<MeshComponent>().Mesh->GetMaterial()->GetEmissive());
 	}
 
-	static void __cdecl Mesh_SetEmissive(uint64_t entityID, ScriptVec3 value)
+	static void RD_CDECL Mesh_SetEmissive(uint64_t entityID, ScriptVec3 value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<MeshComponent>() && entity.GetComponent<MeshComponent>().Mesh)
 			entity.GetComponent<MeshComponent>().Mesh->GetMaterial()->SetEmissive(ToGLM(value));
 	}
 
-	static float __cdecl Mesh_GetRoughness(uint64_t entityID)
+	static float RD_CDECL Mesh_GetRoughness(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<MeshComponent>() && entity.GetComponent<MeshComponent>().Mesh ? entity.GetComponent<MeshComponent>().Mesh->GetMaterial()->GetRoughness() : 1.0f;
 	}
 
-	static void __cdecl Mesh_SetRoughness(uint64_t entityID, float value)
+	static void RD_CDECL Mesh_SetRoughness(uint64_t entityID, float value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<MeshComponent>() && entity.GetComponent<MeshComponent>().Mesh)
 			entity.GetComponent<MeshComponent>().Mesh->GetMaterial()->SetRoughness(value);
 	}
 
-	static float __cdecl Mesh_GetMetallic(uint64_t entityID)
+	static float RD_CDECL Mesh_GetMetallic(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<MeshComponent>() && entity.GetComponent<MeshComponent>().Mesh ? entity.GetComponent<MeshComponent>().Mesh->GetMaterial()->GetMetallic() : 0.0f;
 	}
 
-	static void __cdecl Mesh_SetMetallic(uint64_t entityID, float value)
+	static void RD_CDECL Mesh_SetMetallic(uint64_t entityID, float value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<MeshComponent>() && entity.GetComponent<MeshComponent>().Mesh)
 			entity.GetComponent<MeshComponent>().Mesh->GetMaterial()->SetMetallic(value);
 	}
 
-	static ScriptVec3 __cdecl DirectionalLight_GetDirection(uint64_t entityID)
+	static ScriptVec3 RD_CDECL DirectionalLight_GetDirection(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<DirectionalLightComponent>() ? ToScript(entity.GetComponent<DirectionalLightComponent>().Direction) : ScriptVec3{};
 	}
 
-	static void __cdecl DirectionalLight_SetDirection(uint64_t entityID, ScriptVec3 value)
+	static void RD_CDECL DirectionalLight_SetDirection(uint64_t entityID, ScriptVec3 value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<DirectionalLightComponent>())
 			entity.GetComponent<DirectionalLightComponent>().Direction = glm::normalize(ToGLM(value));
 	}
 
-	static ScriptVec3 __cdecl DirectionalLight_GetColor(uint64_t entityID)
+	static ScriptVec3 RD_CDECL DirectionalLight_GetColor(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<DirectionalLightComponent>() ? ToScript(entity.GetComponent<DirectionalLightComponent>().Color) : ScriptVec3{ 1.0f, 1.0f, 1.0f };
 	}
 
-	static void __cdecl DirectionalLight_SetColor(uint64_t entityID, ScriptVec3 value)
+	static void RD_CDECL DirectionalLight_SetColor(uint64_t entityID, ScriptVec3 value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<DirectionalLightComponent>())
 			entity.GetComponent<DirectionalLightComponent>().Color = ToGLM(value);
 	}
 
-	static float __cdecl DirectionalLight_GetIntensity(uint64_t entityID)
+	static float RD_CDECL DirectionalLight_GetIntensity(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<DirectionalLightComponent>() ? entity.GetComponent<DirectionalLightComponent>().Intensity : 1.0f;
 	}
 
-	static void __cdecl DirectionalLight_SetIntensity(uint64_t entityID, float value)
+	static void RD_CDECL DirectionalLight_SetIntensity(uint64_t entityID, float value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<DirectionalLightComponent>())
 			entity.GetComponent<DirectionalLightComponent>().Intensity = value;
 	}
 
-	static void* __cdecl Script_GetClassName(uint64_t entityID)
+	static void* RD_CDECL Script_GetClassName(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
 		if (!entity || !entity.HasComponent<ScriptComponent>())
@@ -510,7 +514,7 @@ namespace Rod {
 		return AllocateString(entity.GetComponent<ScriptComponent>().ClassName);
 	}
 
-	static void __cdecl Script_SetClassName(uint64_t entityID, const char* className)
+	static void RD_CDECL Script_SetClassName(uint64_t entityID, const char* className)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<ScriptComponent>())

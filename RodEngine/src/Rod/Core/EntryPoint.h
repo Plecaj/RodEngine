@@ -2,8 +2,6 @@
 
 #include "Rod/Debug/Instrumentator.h"
 
-#ifdef RD_PLATFORM_WINDOWS
-
 extern Rod::Application* Rod::CreateApplication();
 
 int main(int argc, char** argv)
@@ -27,4 +25,3 @@ int main(int argc, char** argv)
 
 	return 0;
 }
-#endif

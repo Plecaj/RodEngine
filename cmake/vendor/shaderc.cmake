@@ -21,6 +21,17 @@ else()
   set(SKIP_SPIRV_TOOLS_INSTALL ON CACHE BOOL "Skip SPIRV-Tools installation" FORCE)
   set(SPIRV_WERROR OFF CACHE BOOL "Enable error on warning" FORCE)
 
+  set(SPIRV-Headers_SOURCE_DIR "${ROD_VENDOR_DIR}/shaderc/third_party/spirv-headers")
+  add_subdirectory(
+        "${ROD_VENDOR_DIR}/shaderc/third_party/spirv-tools"
+        "${CMAKE_BINARY_DIR}/_deps/spirv-tools"
+        EXCLUDE_FROM_ALL
+    )
+  add_subdirectory(
+        "${ROD_VENDOR_DIR}/shaderc/third_party/glslang"
+        "${CMAKE_BINARY_DIR}/_deps/glslang"
+        EXCLUDE_FROM_ALL
+    )
   add_subdirectory(
         "${ROD_VENDOR_DIR}/shaderc"
         "${CMAKE_BINARY_DIR}/_deps/shaderc"

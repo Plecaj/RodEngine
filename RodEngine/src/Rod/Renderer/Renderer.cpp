@@ -1,5 +1,6 @@
 #include "rdpch.h"
 #include "Renderer.h"
+#include "ShaderCacheDatabase.h"
 
 namespace Rod {
 
@@ -13,6 +14,7 @@ namespace Rod {
 	void Renderer::Shutdown()
 	{
 		RD_PROFILE_FUNCTION();
+		ShaderCacheDatabase::Get().Flush();
 	}
 
 	void Renderer::OnWindowResize(uint32_t width, uint32_t height)

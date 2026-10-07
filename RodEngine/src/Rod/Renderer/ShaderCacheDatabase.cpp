@@ -25,7 +25,7 @@ namespace Rod {
 
 	}
 
-	ShaderCacheDatabase::~ShaderCacheDatabase()
+	void ShaderCacheDatabase::Flush()
 	{
 		ValidateCache();
 		SaveDatabase();

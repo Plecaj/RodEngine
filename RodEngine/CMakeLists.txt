@@ -8,6 +8,12 @@ rod_configure_cpp_standard(RodEngine)
 rod_collect_sources(ROD_ENGINE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src")
 rod_collect_headers(ROD_ENGINE_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
+if(WIN32)
+    list(FILTER ROD_ENGINE_SOURCES EXCLUDE REGEX "/Platform/Linux/")
+else()
+    list(FILTER ROD_ENGINE_SOURCES EXCLUDE REGEX "/Platform/Windows/")
+endif()
+
 target_sources(RodEngine PRIVATE ${ROD_ENGINE_SOURCES})
 
 target_sources(RodEngine PUBLIC
@@ -35,16 +41,19 @@ target_link_libraries(RodEngine
         Rod::Stb
         Rod::TinyGltf
     PRIVATE
-        $<$<PLATFORM_ID:Windows>:opengl32>
+        $<$<PLATFORM_ID:Windows>:opengl32;comdlg32;ole32>
+        ${CMAKE_DL_LIBS}
 )
 
 target_compile_definitions(RodEngine PRIVATE
-    _CRT_SECURE_NO_WARNINGS
+    $<$<PLATFORM_ID:Windows>:_CRT_SECURE_NO_WARNINGS>
     ROD_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
 )
 
 if(ROD_ENABLE_PCH)
     target_precompile_headers(RodEngine PRIVATE src/rdpch.h)
 endif()
+
+include(RodDotnet)
 
 rod_set_common_output_directories(RodEngine)

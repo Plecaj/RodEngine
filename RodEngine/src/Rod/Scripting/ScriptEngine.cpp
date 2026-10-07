@@ -9,6 +9,7 @@
 #include "Rod/Scene/Entity.h"
 
 #include <memory>
+#include <cstdlib>
 
 #ifdef RD_PLATFORM_WINDOWS
 	#include <objbase.h>
@@ -33,15 +34,15 @@ namespace Rod {
 		bool Initialized = false;
 		std::filesystem::file_time_type LastSourceWriteTime = std::filesystem::file_time_type::min();
 
-		using InitializeFn = int32_t(__cdecl*)(NativeCall*, int32_t);
-		using ShutdownFn = void(__cdecl*)();
-		using LoadAssemblyFn = void*(__cdecl*)(const char*);
-		using UnloadAssemblyFn = void(__cdecl*)();
-		using CreateScriptFn = int32_t(__cdecl*)(uint64_t, const char*);
-		using StartScriptFn = void(__cdecl*)(uint64_t);
-		using DestroyScriptFn = void(__cdecl*)(uint64_t);
-		using UpdateScriptFn = void(__cdecl*)(uint64_t, float);
-		using SetFieldValueFn = void(__cdecl*)(uint64_t, const char*, int32_t, const char*);
+		using InitializeFn = int32_t(RD_CDECL*)(NativeCall*, int32_t);
+		using ShutdownFn = void(RD_CDECL*)();
+		using LoadAssemblyFn = void*(RD_CDECL*)(const char*);
+		using UnloadAssemblyFn = void(RD_CDECL*)();
+		using CreateScriptFn = int32_t(RD_CDECL*)(uint64_t, const char*);
+		using StartScriptFn = void(RD_CDECL*)(uint64_t);
+		using DestroyScriptFn = void(RD_CDECL*)(uint64_t);
+		using UpdateScriptFn = void(RD_CDECL*)(uint64_t, float);
+		using SetFieldValueFn = void(RD_CDECL*)(uint64_t, const char*, int32_t, const char*);
 
 		InitializeFn Initialize = nullptr;
 		ShutdownFn Shutdown = nullptr;
@@ -157,22 +158,24 @@ namespace Rod {
 		std::string result = text;
 #ifdef RD_PLATFORM_WINDOWS
 		CoTaskMemFree(value);
+#else
+		std::free(value);
 #endif
 		return result;
 	}
 
 	static bool BindHostFunctions()
 	{
-		const std::wstring scriptHostType = L"Rod.Internal.ScriptHost, Rod.ScriptCore";
-		s_Data->Initialize = (ScriptEngineData::InitializeFn)s_Data->Runtime.GetFunction(scriptHostType, L"Initialize");
-		s_Data->Shutdown = (ScriptEngineData::ShutdownFn)s_Data->Runtime.GetFunction(scriptHostType, L"Shutdown");
-		s_Data->LoadAssembly = (ScriptEngineData::LoadAssemblyFn)s_Data->Runtime.GetFunction(scriptHostType, L"LoadAssembly");
-		s_Data->UnloadAssembly = (ScriptEngineData::UnloadAssemblyFn)s_Data->Runtime.GetFunction(scriptHostType, L"UnloadAssembly");
-		s_Data->CreateScript = (ScriptEngineData::CreateScriptFn)s_Data->Runtime.GetFunction(scriptHostType, L"CreateScript");
-		s_Data->StartScript = (ScriptEngineData::StartScriptFn)s_Data->Runtime.GetFunction(scriptHostType, L"StartScript");
-		s_Data->DestroyScript = (ScriptEngineData::DestroyScriptFn)s_Data->Runtime.GetFunction(scriptHostType, L"DestroyScript");
-		s_Data->UpdateScript = (ScriptEngineData::UpdateScriptFn)s_Data->Runtime.GetFunction(scriptHostType, L"UpdateScript");
-		s_Data->SetFieldValue = (ScriptEngineData::SetFieldValueFn)s_Data->Runtime.GetFunction(scriptHostType, L"SetFieldValue");
+		const std::string scriptHostType = "Rod.Internal.ScriptHost, Rod.ScriptCore";
+		s_Data->Initialize = (ScriptEngineData::InitializeFn)s_Data->Runtime.GetFunction(scriptHostType, "Initialize");
+		s_Data->Shutdown = (ScriptEngineData::ShutdownFn)s_Data->Runtime.GetFunction(scriptHostType, "Shutdown");
+		s_Data->LoadAssembly = (ScriptEngineData::LoadAssemblyFn)s_Data->Runtime.GetFunction(scriptHostType, "LoadAssembly");
+		s_Data->UnloadAssembly = (ScriptEngineData::UnloadAssemblyFn)s_Data->Runtime.GetFunction(scriptHostType, "UnloadAssembly");
+		s_Data->CreateScript = (ScriptEngineData::CreateScriptFn)s_Data->Runtime.GetFunction(scriptHostType, "CreateScript");
+		s_Data->StartScript = (ScriptEngineData::StartScriptFn)s_Data->Runtime.GetFunction(scriptHostType, "StartScript");
+		s_Data->DestroyScript = (ScriptEngineData::DestroyScriptFn)s_Data->Runtime.GetFunction(scriptHostType, "DestroyScript");
+		s_Data->UpdateScript = (ScriptEngineData::UpdateScriptFn)s_Data->Runtime.GetFunction(scriptHostType, "UpdateScript");
+		s_Data->SetFieldValue = (ScriptEngineData::SetFieldValueFn)s_Data->Runtime.GetFunction(scriptHostType, "SetFieldValue");
 
 		return s_Data->Initialize && s_Data->LoadAssembly && s_Data->CreateScript
 			&& s_Data->StartScript && s_Data->DestroyScript && s_Data->UpdateScript

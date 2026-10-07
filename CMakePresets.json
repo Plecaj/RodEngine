@@ -29,6 +29,29 @@
             "useCompilerDefaults": true
           }
         }
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "linux-clang",
+      "displayName": "Linux Clang",
+      "generator": "Ninja Multi-Config",
+      "binaryDir": "${sourceDir}/build/linux-clang",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "ROD_CXX_STANDARD": "23",
+        "GLFW_BUILD_X11": "ON",
+        "GLFW_BUILD_WAYLAND": "OFF"
       }
     }
   ],
@@ -59,6 +82,24 @@
       "targets": [
         "Rod-Editor"
       ]
+    },
+    {
+      "name": "linux-clang-debug",
+      "displayName": "Linux Clang Debug",
+      "configurePreset": "linux-clang",
+      "configuration": "Debug"
+    },
+    {
+      "name": "linux-clang-release",
+      "displayName": "Linux Clang Release",
+      "configurePreset": "linux-clang",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux-clang-dist",
+      "displayName": "Linux Clang Dist",
+      "configurePreset": "linux-clang",
+      "configuration": "Dist"
     }
   ]
 }

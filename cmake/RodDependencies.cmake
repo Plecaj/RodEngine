@@ -14,6 +14,8 @@ target_include_directories(RodJson SYSTEM INTERFACE "${ROD_VENDOR_DIR}/json")
 
 add_library(RodSpdlog INTERFACE)
 add_library(Rod::Spdlog ALIAS RodSpdlog)
+target_compile_features(RodSpdlog INTERFACE cxx_std_20)
+target_compile_definitions(RodSpdlog INTERFACE SPDLOG_USE_STD_FORMAT)
 target_include_directories(RodSpdlog SYSTEM INTERFACE "${ROD_VENDOR_DIR}/spdlog/include")
 
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)

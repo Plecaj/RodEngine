@@ -23,7 +23,7 @@ namespace Rod{
 			return instance;
 		};
 
-		~ShaderCacheDatabase();
+		void Flush();
 	private:
 		ShaderCacheDatabase();
 

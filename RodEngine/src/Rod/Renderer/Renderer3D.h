@@ -2,7 +2,7 @@
 
 #include "Rod/Renderer/Camera.h"
 #include "Rod/Renderer/EditorCamera.h"
-#include "Rod/Renderer/Framebuffer.h"
+#include "Rod/Renderer/FrameBuffer.h"
 #include "Rod/Renderer/Shader.h"
 #include "Rod/Scene/Components.h"
 

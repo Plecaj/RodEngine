@@ -60,6 +60,8 @@ namespace Rod {
 
 	void EditorCamera::OnUpdate(Timestep ts)
 	{
+		(void)ts;
+
 		if (Input::IsKeyPressed(Key::LeftAlt) && m_ControlsEnabled)
 		{
 			const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };

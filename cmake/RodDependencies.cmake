@@ -32,6 +32,10 @@ set(YAML_CPP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(YAML_CPP_INSTALL OFF CACHE BOOL "" FORCE)
 set(YAML_MSVC_SHARED_RT OFF CACHE BOOL "" FORCE)
 add_subdirectory("${ROD_VENDOR_DIR}/yaml-cpp" "${CMAKE_BINARY_DIR}/_deps/yaml-cpp" EXCLUDE_FROM_ALL)
+target_compile_options(yaml-cpp PRIVATE
+    $<$<CXX_COMPILER_ID:MSVC>:/wd4244 /wd4267>
+    $<$<COMPILE_LANG_AND_ID:CXX,Clang,GNU>:-w>
+)
 add_library(Rod::YamlCpp ALIAS yaml-cpp)
 
 include(vendor/Glad)

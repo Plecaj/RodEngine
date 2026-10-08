@@ -14,8 +14,13 @@ namespace Rod {
 		RD_PROFILE_FUNCTION();
 
 		glfwMakeContextCurrent(m_windowHandle);
-		int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+		const int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 		RD_CORE_ASSERT(status, "Failed to initialize Glad!");
+		if (!status)
+		{
+			RD_CORE_ERROR("Failed to initialize Glad!");
+			return;
+		}
 
 		RD_CORE_INFO("OpenGL Info:");
 		RD_CORE_INFO("	Vendor: {0}", (const char*)glGetString(GL_VENDOR));
@@ -24,7 +29,7 @@ namespace Rod {
 
 		glEnable(GL_DEBUG_OUTPUT);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-		glDebugMessageCallback([](GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+		glDebugMessageCallback([](GLenum, GLenum, GLuint, GLenum severity, GLsizei, const GLchar* message, const void*) {
 			if (severity == GL_DEBUG_SEVERITY_HIGH)
 				RD_CORE_ERROR("GL DEBUG HIGH: {0}", message);
 			else if (severity == GL_DEBUG_SEVERITY_MEDIUM)

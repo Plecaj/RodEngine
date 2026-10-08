@@ -7,7 +7,6 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
-#include <cstdio>
 #include <filesystem>
 #include <sstream>
 
@@ -507,21 +506,36 @@ namespace Rod {
 	static glm::vec2 FieldValueToVec2(const std::string& value)
 	{
 		glm::vec2 result(0.0f);
-		std::sscanf(value.c_str(), "%f,%f", &result.x, &result.y);
+		char separator = '\0';
+		std::istringstream stream(value);
+		if (!(stream >> result.x >> separator >> result.y) || separator != ',')
+			return glm::vec2(0.0f);
 		return result;
 	}
 
 	static glm::vec3 FieldValueToVec3(const std::string& value)
 	{
 		glm::vec3 result(0.0f);
-		std::sscanf(value.c_str(), "%f,%f,%f", &result.x, &result.y, &result.z);
+		char firstSeparator = '\0';
+		char secondSeparator = '\0';
+		std::istringstream stream(value);
+		if (!(stream >> result.x >> firstSeparator >> result.y >> secondSeparator >> result.z) || firstSeparator != ',' || secondSeparator != ',')
+			return glm::vec3(0.0f);
 		return result;
 	}
 
 	static glm::vec4 FieldValueToVec4(const std::string& value)
 	{
 		glm::vec4 result(0.0f);
-		std::sscanf(value.c_str(), "%f,%f,%f,%f", &result.x, &result.y, &result.z, &result.w);
+		char firstSeparator = '\0';
+		char secondSeparator = '\0';
+		char thirdSeparator = '\0';
+		std::istringstream stream(value);
+		if (!(stream >> result.x >> firstSeparator >> result.y >> secondSeparator >> result.z >> thirdSeparator >> result.w)
+			|| firstSeparator != ',' || secondSeparator != ',' || thirdSeparator != ',')
+		{
+			return glm::vec4(0.0f);
+		}
 		return result;
 	}
 

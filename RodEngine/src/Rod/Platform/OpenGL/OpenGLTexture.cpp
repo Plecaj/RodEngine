@@ -76,8 +76,16 @@ namespace Rod {
 	void OpenGLTexture2D::SetData(void* data, uint32_t size)
 	{
 		
-		uint32_t bytesPerPixel = m_DataFormat == GL_RGBA ? 4 : 3;
-		RD_CORE_ASSERT(size == m_Width * m_Height * bytesPerPixel, "Data must be entire texture");
+		const uint32_t bytesPerPixel = m_DataFormat == GL_RGBA ? 4 : 3;
+		const uint32_t dataSize = m_Width * m_Height * bytesPerPixel;
+		const bool isCompleteTexture = size == dataSize;
+		RD_CORE_ASSERT(isCompleteTexture, "Data must be entire texture");
+		if (!isCompleteTexture)
+		{
+			RD_CORE_ERROR("Texture data size mismatch. Expected {0} bytes, got {1}.", dataSize, size);
+			return;
+		}
+
 		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 	}
 

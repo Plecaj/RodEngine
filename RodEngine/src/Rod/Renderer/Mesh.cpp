@@ -1,6 +1,8 @@
 #include "rdpch.h"
 #include "Mesh.h"
 
+#include <limits>
+
 namespace Rod {
 
 	Ref<Mesh> Mesh::Create(const std::string& glbPath)
@@ -22,10 +24,12 @@ namespace Rod {
 		tinygltf::Model model;
 		std::string err, warn;
 
-		bool ok = loader.LoadBinaryFromFile(&model, &err, &warn, path);
+		const bool loaded = loader.LoadBinaryFromFile(&model, &err, &warn, path);
 		if (!warn.empty()) RD_CORE_WARN(warn);
 		if (!err.empty())  RD_CORE_ERROR(err);
-		RD_CORE_ASSERT(ok, "Failed to load GLB");
+		RD_CORE_ASSERT(loaded, "Failed to load GLB");
+		if (!loaded)
+			return;
 
 		RD_CORE_ASSERT(!model.meshes.empty(), "Meshes are empty");
 
@@ -33,11 +37,13 @@ namespace Rod {
 		m_VAO = VertexArray::Create();
 
 		const auto& mesh = model.meshes[0];
-		for (const auto& primitive : mesh.primitives) {
-			ProcessPrimitive(model, primitive);
-			ProcessMaterial(model, primitive);
-			break;
-		}
+		RD_CORE_ASSERT(!mesh.primitives.empty(), "Mesh has no primitives");
+		if (mesh.primitives.empty())
+			return;
+
+		const auto& primitive = mesh.primitives.front();
+		ProcessPrimitive(model, primitive);
+		ProcessMaterial(model, primitive);
 	}
 
 	void Mesh::ProcessPrimitive(const tinygltf::Model& model, const tinygltf::Primitive& primitive)
@@ -94,10 +100,16 @@ namespace Rod {
 			}
 		}
 
-		auto vertexBuffer = VertexBuffer::Create(
-			vertexData.data(),
-			vertexData.size() * sizeof(float)
-		);
+		const size_t vertexBufferSize = vertexData.size() * sizeof(float);
+		const bool vertexBufferFits = vertexBufferSize <= std::numeric_limits<uint32_t>::max();
+		RD_CORE_ASSERT(vertexBufferFits, "Mesh vertex buffer is too large");
+		if (!vertexBufferFits)
+		{
+			RD_CORE_ERROR("Mesh vertex buffer is too large: {0} bytes.", vertexBufferSize);
+			return;
+		}
+
+		auto vertexBuffer = VertexBuffer::Create(vertexData.data(), static_cast<uint32_t>(vertexBufferSize));
 		BufferLayout layout = {
 			{ ShaderDataType::Float3, "a_Position" },
 			{ ShaderDataType::Float3, "a_Normal" }
@@ -135,7 +147,15 @@ namespace Rod {
 			}
 		}
 
-		auto indexBuffer = IndexBuffer::Create(indices.data(), indices.size());
+		const bool indexBufferFits = indices.size() <= std::numeric_limits<uint32_t>::max();
+		RD_CORE_ASSERT(indexBufferFits, "Mesh index buffer is too large");
+		if (!indexBufferFits)
+		{
+			RD_CORE_ERROR("Mesh index buffer is too large: {0} indices.", indices.size());
+			return;
+		}
+
+		auto indexBuffer = IndexBuffer::Create(indices.data(), static_cast<uint32_t>(indices.size()));
 		m_VAO->AddVertexBuffer(vertexBuffer);
 		m_VAO->SetIndexBuffer(indexBuffer);
 	}

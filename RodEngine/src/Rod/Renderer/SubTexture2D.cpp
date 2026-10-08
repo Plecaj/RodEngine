@@ -15,7 +15,8 @@ namespace Rod {
 
 	Ref<SubTexture2D> SubTexture2D::CreateFromCoords(const Ref<Texture2D>& texture, glm::vec2 coords, const glm::vec2 cellSize, const glm::vec2 spriteSize)
 	{
-		float sheetWidth = texture.get()->GetWidth(), sheetHeight = texture.get()->GetHeight();
+		const float sheetWidth = static_cast<float>(texture->GetWidth());
+		const float sheetHeight = static_cast<float>(texture->GetHeight());
 
 		glm::vec2 min = { (coords.x * cellSize.x) / sheetWidth, (coords.y * cellSize.y) / sheetHeight };
 		glm::vec2 max = { ((coords.x + spriteSize.x) * cellSize.x) / sheetWidth, ((coords.y + spriteSize.y) * cellSize.y) / sheetHeight };

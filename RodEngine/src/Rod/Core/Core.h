@@ -34,11 +34,11 @@
 #endif
 
 #ifdef RD_ENABLE_ASSERTS
-	#define RD_ASSERT(x, ...) {if(!(x)) {RD_ERROR("Assertion Failed: {0}", __VA_ARGS__); RD_DEBUGBREAK(); }}
-	#define RD_CORE_ASSERT(x, ...) {if(!(x)) {RD_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); RD_DEBUGBREAK(); }}
+	#define RD_ASSERT(x, ...) do { if (!(x)) { RD_ERROR("Assertion Failed: {0}", __VA_ARGS__); RD_DEBUGBREAK(); } } while (false);
+	#define RD_CORE_ASSERT(x, ...) do { if (!(x)) { RD_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); RD_DEBUGBREAK(); } } while (false);
 #else
-	#define RD_ASSERT(x, ...)
-	#define RD_CORE_ASSERT(x, ...)
+	#define RD_ASSERT(x, ...) do { (void)sizeof(x); } while (false);
+	#define RD_CORE_ASSERT(x, ...) do { (void)sizeof(x); } while (false);
 #endif
 
 #define BIT(x) (1 << x)

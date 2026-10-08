@@ -24,6 +24,7 @@ target_link_libraries(Rod-Runtime PRIVATE
 )
 
 rod_set_common_output_directories(Rod-Runtime)
+rod_copy_dotnet_host(Rod-Runtime)
 
 rod_copy_assets(Rod-Runtime)
 

@@ -24,6 +24,7 @@ target_link_libraries(Rod-Editor PRIVATE
 )
 
 rod_set_common_output_directories(Rod-Editor)
+rod_copy_dotnet_host(Rod-Editor)
 
 target_compile_definitions(Rod-Editor PRIVATE ROD_EXECUTABLE_SUFFIX="${CMAKE_EXECUTABLE_SUFFIX}")
 

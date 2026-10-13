@@ -51,8 +51,6 @@ namespace Rod {
 	namespace Utils {
 		constexpr float MAX_SHADOW_DISTANCE = 100.0f;
 		constexpr float SHADOW_DEPTH_MARGIN = 10.0f;
-		constexpr float SHADOW_SLOPE_SCALE_BIAS = 2.0f;
-		constexpr float SHADOW_CONSTANT_BIAS = 4.0f;
 
 		static inline std::array<glm::vec3, 8> GetFrustumCornersWorldSpace(const glm::mat4& viewProjection)
 		{
@@ -96,24 +94,28 @@ namespace Rod {
 			nearCenter *= 0.25f;
 			farCenter *= 0.25f;
 
-			glm::vec3 viewDirection = farCenter - nearCenter;
-			if (glm::dot(viewDirection, viewDirection) <= 0.0001f)
+			const glm::vec3 viewVector = farCenter - nearCenter;
+			if (glm::dot(viewVector, viewVector) <= 0.0001f)
 				return;
 
-			viewDirection = glm::normalize(viewDirection);
+			const glm::vec3 viewDirection = glm::normalize(viewVector);
 
-			for (auto& corner : corners)
+			// Corners are emitted as near/far pairs because z is the innermost loop.
+			for (size_t i = 0; i < corners.size(); i += 2)
 			{
-				float depth = glm::dot(corner - nearCenter, viewDirection);
-				if (depth > maxDistance)
-					corner += viewDirection * (maxDistance - depth);
+				const glm::vec3 nearCorner = corners[i];
+				const glm::vec3 farOffset = corners[i + 1] - nearCorner;
+				const float farDepth = glm::dot(farOffset, viewDirection);
+
+				if (farDepth <= maxDistance || farDepth <= 0.0001f)
+					continue;
+
+				corners[i + 1] = nearCorner + farOffset * (maxDistance / farDepth);
 			}
 		}
 
-		static inline SceneMatrices CreateDirectionalLightMatrices(const glm::vec3& lightDirection, const glm::mat4& cameraViewProjection)
+		static inline glm::mat4 CreateDirectionalLightViewProjection(const glm::vec3& lightDirection, const glm::mat4& cameraViewProjection)
 		{
-			SceneMatrices matrices{};
-
 			auto corners = GetFrustumCornersWorldSpace(cameraViewProjection);
 			LimitFrustumDepth(corners, MAX_SHADOW_DISTANCE);
 
@@ -155,16 +157,7 @@ namespace Rod {
 				nearPlane,
 				farPlane);
 
-			matrices.ViewProjection = lightProj * lightView;
-
-			glm::mat4 bias(
-				0.5f, 0.0f, 0.0f, 0.0f,
-				0.0f, 0.5f, 0.0f, 0.0f,
-				0.0f, 0.0f, 0.5f, 0.0f,
-				0.5f, 0.5f, 0.5f, 1.0f);
-
-			matrices.Transform = bias * matrices.ViewProjection;
-			return matrices;
+			return lightProj * lightView;
 		}
 	}
 
@@ -301,7 +294,7 @@ namespace Rod {
 			lightData.Lights[i] = data;
 
 			s_SceneData->LightsDirections[i] = lights[i].Direction;
-			s_SceneData->LightSpaceMatrices[i] = Utils::CreateDirectionalLightMatrices(lights[i].Direction, s_SceneData->ViewProjection).ViewProjection;
+			s_SceneData->LightSpaceMatrices[i] = Utils::CreateDirectionalLightViewProjection(lights[i].Direction, s_SceneData->ViewProjection);
 			shadowData.LightSpaceMatrices[i] = s_SceneData->LightSpaceMatrices[i];
 		}
 		lightData.Count = lightCount;
@@ -321,7 +314,6 @@ namespace Rod {
 		auto previousState = RenderCommand::GetState();
 
 		s_SceneData->ShadowShader->Bind();
-		RenderCommand::SetDepthBias(Utils::SHADOW_SLOPE_SCALE_BIAS, Utils::SHADOW_CONSTANT_BIAS);
 
 		for (size_t i = 0; i < s_SceneData->LightSpaceMatrices.size(); i++)
 		{
@@ -344,7 +336,6 @@ namespace Rod {
 			}
 		}
 
-		RenderCommand::ClearDepthBias();
 		RenderCommand::SetState(previousState);
 	}
 }

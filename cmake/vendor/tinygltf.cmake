@@ -1,5 +1,5 @@
 add_library(RodTinyGltf STATIC
-    "${ROD_VENDOR_DIR}/tinygltf/tiny_gltf.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/tiny_gltf.cpp"
 )
 add_library(Rod::TinyGltf ALIAS RodTinyGltf)
 

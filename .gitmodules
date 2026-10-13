@@ -10,3 +10,28 @@
 [submodule "RodEngine/vendor/shaderc"]
 	path = RodEngine/vendor/shaderc
 	url = https://github.com/google/shaderc
+[submodule "RodEngine/vendor/GLFW"]
+	path = RodEngine/vendor/GLFW
+	url = https://github.com/Plecaj/glfw
+[submodule "RodEngine/vendor/imgui"]
+	path = RodEngine/vendor/imgui
+	url = https://github.com/ocornut/imgui
+	branch = docking
+[submodule "RodEngine/vendor/yaml-cpp"]
+	path = RodEngine/vendor/yaml-cpp
+	url = https://github.com/jbeder/yaml-cpp
+[submodule "RodEngine/vendor/entt"]
+	path = RodEngine/vendor/entt
+	url = https://github.com/skypjack/entt
+[submodule "RodEngine/vendor/json"]
+	path = RodEngine/vendor/json
+	url = https://github.com/nlohmann/json
+[submodule "RodEngine/vendor/stb_image"]
+	path = RodEngine/vendor/stb_image
+	url = https://github.com/nothings/stb
+[submodule "RodEngine/vendor/tinygltf"]
+	path = RodEngine/vendor/tinygltf
+	url = https://github.com/syoyo/tinygltf
+[submodule "RodEngine/vendor/Glad"]
+	path = RodEngine/vendor/Glad
+	url = https://github.com/Plecaj/rodengine-glad.git

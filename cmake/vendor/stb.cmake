@@ -1,5 +1,5 @@
 add_library(RodStb STATIC
-    "${ROD_VENDOR_DIR}/stb_image/stb_image.cpp"
+    "${CMAKE_CURRENT_LIST_DIR}/stb_image.cpp"
 )
 add_library(Rod::Stb ALIAS RodStb)
 

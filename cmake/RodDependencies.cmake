@@ -6,11 +6,17 @@ target_include_directories(RodGlm SYSTEM INTERFACE "${ROD_VENDOR_DIR}/glm")
 
 add_library(RodEntt INTERFACE)
 add_library(Rod::Entt ALIAS RodEntt)
-target_include_directories(RodEntt SYSTEM INTERFACE "${ROD_VENDOR_DIR}/entt")
+target_include_directories(RodEntt SYSTEM INTERFACE
+    "${ROD_VENDOR_DIR}/entt/single_include"
+    "${ROD_VENDOR_DIR}/entt/single_include/entt"
+)
 
 add_library(RodJson INTERFACE)
 add_library(Rod::Json ALIAS RodJson)
-target_include_directories(RodJson SYSTEM INTERFACE "${ROD_VENDOR_DIR}/json")
+target_include_directories(RodJson SYSTEM INTERFACE
+    "${ROD_VENDOR_DIR}/json/single_include"
+    "${ROD_VENDOR_DIR}/json/single_include/nlohmann"
+)
 
 add_library(RodSpdlog INTERFACE)
 add_library(Rod::Spdlog ALIAS RodSpdlog)

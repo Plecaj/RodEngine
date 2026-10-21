@@ -5,6 +5,19 @@ if(ROD_USE_SYSTEM_SHADERC)
   add_library(RodShaderc INTERFACE)
   target_link_libraries(RodShaderc INTERFACE PkgConfig::SHADERC)
 else()
+  set(SHADERC_THIRD_PARTY_ROOT_DIR "${ROD_VENDOR_DIR}/shaderc/third_party")
+  foreach(dependency IN ITEMS spirv-headers spirv-tools glslang)
+    if(NOT EXISTS "${SHADERC_THIRD_PARTY_ROOT_DIR}/${dependency}/CMakeLists.txt")
+      message(FATAL_ERROR
+        "Missing shaderc dependency: ${dependency}.\n"
+        "Run from the repository root:\n"
+        "  git submodule update --init --recursive\n"
+        "  python RodEngine/vendor/shaderc/utils/git-sync-deps\n"
+        "Then run CMake again."
+      )
+    endif()
+  endforeach()
+
   set(SHADERC_SKIP_TESTS ON CACHE BOOL "Skip shaderc tests" FORCE)
   set(SHADERC_SKIP_EXAMPLES ON CACHE BOOL "Skip shaderc examples" FORCE)
   set(SHADERC_SKIP_EXECUTABLES ON CACHE BOOL "Skip glslc executable" FORCE)
@@ -21,14 +34,18 @@ else()
   set(SKIP_SPIRV_TOOLS_INSTALL ON CACHE BOOL "Skip SPIRV-Tools installation" FORCE)
   set(SPIRV_WERROR OFF CACHE BOOL "Enable error on warning" FORCE)
 
-  set(SPIRV-Headers_SOURCE_DIR "${ROD_VENDOR_DIR}/shaderc/third_party/spirv-headers")
+  set(SHADERC_SPIRV_HEADERS_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/spirv-headers")
+  set(SHADERC_SPIRV_TOOLS_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/spirv-tools")
+  set(SHADERC_GLSLANG_DIR "${SHADERC_THIRD_PARTY_ROOT_DIR}/glslang")
+  set(SPIRV-Headers_SOURCE_DIR "${SHADERC_SPIRV_HEADERS_DIR}")
+
   add_subdirectory(
-        "${ROD_VENDOR_DIR}/shaderc/third_party/spirv-tools"
+        "${SHADERC_SPIRV_TOOLS_DIR}"
         "${CMAKE_BINARY_DIR}/_deps/spirv-tools"
         EXCLUDE_FROM_ALL
     )
   add_subdirectory(
-        "${ROD_VENDOR_DIR}/shaderc/third_party/glslang"
+        "${SHADERC_GLSLANG_DIR}"
         "${CMAKE_BINARY_DIR}/_deps/glslang"
         EXCLUDE_FROM_ALL
     )

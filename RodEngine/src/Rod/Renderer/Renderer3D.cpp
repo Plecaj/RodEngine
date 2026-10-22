@@ -270,6 +270,8 @@ namespace Rod {
 
 		if (s_SceneData->DepthMaps.size() < lightCount)
 		{
+			auto previousState = RenderCommand::GetState();
+
 			for (uint32_t i = (uint32_t)s_SceneData->DepthMaps.size(); i < lightCount; i++)
 			{
 				FramebufferSpecification fbspec;
@@ -278,6 +280,8 @@ namespace Rod {
 				fbspec.Width = 2048;
 				s_SceneData->DepthMaps.push_back(Framebuffer::Create(fbspec));
 			}
+
+			RenderCommand::SetState(previousState);
 		}
 
 		LightsData lightData{};

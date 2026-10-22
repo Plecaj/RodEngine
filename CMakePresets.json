@@ -17,7 +17,6 @@
       "cacheVariables": {
         "ROD_CXX_STANDARD": "23",
         "ROD_ENABLE_PCH": "ON",
-        "ROD_USE_SYSTEM_SHADERC": "OFF",
         "ROD_BUILD_EDITOR": "ON"
       },
       "vendor": {

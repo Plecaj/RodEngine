@@ -18,11 +18,13 @@ set(ROD_CXX_STANDARD 23 CACHE STRING "C++ standard used by RodEngine targets.")
 set_property(CACHE ROD_CXX_STANDARD PROPERTY STRINGS 20 23)
 
 option(ROD_ENABLE_PCH "Enable RodEngine precompiled headers." ON)
-option(ROD_USE_SYSTEM_SHADERC "Use shaderc from the active toolchain instead of building the vendored copy." OFF)
-option(ROD_IMGUI_DEMO "Compile Dear ImGui demo window support." ON)
+option(ROD_IMGUI_DEMO "Compile Dear ImGui demo window support." OFF)
 option(ROD_BUILD_EDITOR "Build the Rod editor executable." ON)
 option(ROD_BUILD_RUNTIME "Build the standalone Rod runtime executable." ON)
 option(ROD_WARNINGS_AS_ERRORS "Treat RodEngine warnings as errors." OFF)
+option(BUILD_TESTING "Build RodEngine tests." OFF)
+
+include(CTest)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -45,4 +47,8 @@ endif()
 
 if(ROD_BUILD_EDITOR AND ROD_BUILD_RUNTIME)
   add_dependencies(Rod-Editor Rod-Runtime)
+endif()
+
+if(BUILD_TESTING)
+  add_subdirectory(tests)
 endif()

@@ -181,7 +181,37 @@ Run CMake from the repository root:
 
 Run the editor from its output directory so it can find the copied assets. Both builds also produce `Rod-Runtime` (`.exe` on Windows) and build the C# projects when `dotnet` is available.
 
-For other configurations, replace `-debug` with `-release` or `-dist` in the build preset. The output directory changes to `Release` or `Dist`.
+### Configuration
+
+Build presets use `<platform>-<configuration>`, for example `vs-release` or `linux-clang-dist`. Output goes to `<build-directory>/bin/<configuration>`.
+
+| Configuration | Preset suffix | Purpose |
+| --- | --- | --- |
+| `Debug` | `debug` | Development and debugging |
+| `Release` | `release` | Optimized build |
+| `Dist` | `dist` | Distribution build based on Release |
+
+Append `-D<name>=<value>` to a configure command to override a CMake option.
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `ROD_CXX_STANDARD` | `23` | C++ standard: `20` or `23` |
+| `ROD_ENABLE_PCH` | `ON` | Use precompiled headers for the engine |
+| `ROD_BUILD_EDITOR` | `ON` | Build `Rod-Editor` |
+| `ROD_BUILD_RUNTIME` | `ON` | Build `Rod-Runtime` |
+| `ROD_IMGUI_DEMO` | `OFF` | Include the Dear ImGui demo window |
+| `ROD_WARNINGS_AS_ERRORS` | `OFF` | Treat project warnings as errors |
+| `BUILD_TESTING` | `OFF` | Build `RodEngineTests` and register tests with CTest |
+
+### Tests
+
+Tests are optional and use Catch2 v3.8.1, fetched once per build directory when enabled. Add test sources under `tests/` and list them in `tests/CMakeLists.txt`
+
+| Step | Windows | Linux |
+| --- | --- | --- |
+| Configure | `cmake --preset vs -DBUILD_TESTING=ON` | `cmake --preset linux-clang -DBUILD_TESTING=ON` |
+| Build | `cmake --build build/vs --config Debug --target RodEngineTests` | `cmake --build build/linux-clang --config Debug --target RodEngineTests` |
+| Run | `ctest --test-dir build/vs -C Debug --output-on-failure` | `ctest --test-dir build/linux-clang -C Debug --output-on-failure` |
 
 ### Runtime and export
 

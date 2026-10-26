@@ -13,15 +13,15 @@ namespace Rod {
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
 
-		virtual void AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer) override;
-		virtual void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer) override;
+		virtual void AddVertexBuffer(Scope<VertexBuffer> vertexBuffer) override;
+		virtual void SetIndexBuffer(Scope<IndexBuffer> indexBuffer) override;
 
-		virtual const std::vector<Ref<VertexBuffer>>& GetVertexBuffers() const { return m_VertexBuffers;  };
-		virtual const Ref<IndexBuffer>& GetIndexBuffer() const { return m_IndexBuffer; };
+		virtual const std::vector<Scope<VertexBuffer>>& GetVertexBuffers() const override { return m_VertexBuffers; }
+		virtual const IndexBuffer* GetIndexBuffer() const override { return m_IndexBuffer.get(); }
 	private:
 		uint32_t m_RendererID;
-		std::vector<Ref<VertexBuffer>> m_VertexBuffers;
-		Ref<IndexBuffer> m_IndexBuffer;
+		std::vector<Scope<VertexBuffer>> m_VertexBuffers;
+		Scope<IndexBuffer> m_IndexBuffer;
 
 		int m_VertexBufferIndex = 0;
 	};

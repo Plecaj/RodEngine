@@ -14,12 +14,12 @@ namespace Rod {
 
 	extern const std::filesystem::path g_AssetsPath;
 
-	SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& scene)
+	SceneHierarchyPanel::SceneHierarchyPanel(Scene* scene)
 	{
 		SetContext(scene);
 	}
 
-	void SceneHierarchyPanel::SetContext(const Ref<Scene>& scene)
+	void SceneHierarchyPanel::SetContext(Scene* scene)
 	{
 		m_Context = scene;
 		m_SelectionContext = {};
@@ -34,10 +34,15 @@ namespace Rod {
 	void SceneHierarchyPanel::DrawSceneHierarchy()
 	{
 		ImGui::Begin("Scene Hierarchy");
+		if (!m_Context)
+		{
+			ImGui::End();
+			return;
+		}
 
 		for (auto entityID : m_Context->m_Registry.storage<entt::entity>())
 		{
-			Entity entity{ entityID, m_Context.get() };
+			Entity entity{ entityID, m_Context };
 			DrawEntityNode(entity);
 		}
 
@@ -439,7 +444,7 @@ namespace Rod {
 
 				if (ImGui::Button("Mesh", ImVec2(100.0f, 0.0f)))
 				{
-					component.Mesh = nullptr;
+					component.SetMesh(nullptr);
 					return;
 				}
 
@@ -449,30 +454,27 @@ namespace Rod {
 					{
 						const char* path = (const char*)payload->Data;
 						std::filesystem::path meshAssetPath = std::filesystem::path(g_AssetsPath) / path;
-						component.Mesh = Mesh::Create(meshAssetPath.string());
+						component.SetMesh(CreateRef<Mesh>(meshAssetPath.string()));
 					}
 					ImGui::EndDragDropTarget();
 				}
 				if (!component.Mesh) return;
 
-				if (!component.Mesh->GetMaterial())
-					component.Mesh->GetMaterial() = Material::Create();
-
-				auto material = component.Mesh->GetMaterial();
-				glm::vec4 albedo = material->GetAlbedo();
-				glm::vec3 emissive = material->GetEmissive();
-				float roughness = material->GetRoughness();
-				float metallic = material->GetMetallic();
+				auto& material = component.Material;
+				glm::vec4 albedo = material.GetAlbedo();
+				glm::vec3 emissive = material.GetEmissive();
+				float roughness = material.GetRoughness();
+				float metallic = material.GetMetallic();
 
 				ImGui::ColorEdit4("Albedo", glm::value_ptr(albedo));
 				ImGui::ColorEdit3("Emissive", glm::value_ptr(emissive));
 				ImGui::DragFloat("Roughness", &roughness, 0.01f, 0.0f, 1.0f);
 				ImGui::DragFloat("Metallic", &metallic, 0.01f, 0.0f, 1.0f);
 
-				material->SetAlbedo(albedo);
-				material->SetEmissive(emissive);
-				material->SetRoughness(roughness);
-				material->SetMetallic(metallic);
+				material.SetAlbedo(albedo);
+				material.SetEmissive(emissive);
+				material.SetRoughness(roughness);
+				material.SetMetallic(metallic);
 
 			});
 	}

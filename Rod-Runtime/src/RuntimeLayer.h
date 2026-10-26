@@ -23,7 +23,7 @@ namespace Rod {
 		std::filesystem::path ResolveStartupScenePath() const;
 
 	private:
-		Ref<Scene> m_Scene;
+		Scope<Scene> m_Scene;
 		bool m_RunningScene = false;
 	};
 

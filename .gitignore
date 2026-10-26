@@ -11,3 +11,5 @@ __cmake_systeminformation/
 *.user
 Sandbox/RodProfile-*.json
 Rod-Editor/RodProfile-*.json
+
+compile_commands.json

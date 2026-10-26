@@ -65,12 +65,13 @@ namespace Rod {
 		bool CopyRuntimeExecutable(const std::filesystem::path& runtimeExecutable, const std::filesystem::path& exportRoot);
 		bool CopyGameAssets(const std::filesystem::path& exportAssetsPath);
 	private:
-		Ref<Scene> m_ActiveScene;
-		Ref<Scene> m_EditorScene;
+		Scope<Scene> m_EditorScene;
+		Scope<Scene> m_RuntimeScene;
+		Scene* m_ActiveScene = nullptr;
 
 		EditorCamera m_EditorCamera;
 
-		Ref<Framebuffer> m_Framebuffer;
+		Scope<Framebuffer> m_Framebuffer;
 
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;
@@ -90,7 +91,7 @@ namespace Rod {
 
 		SceneState m_SceneState = SceneState::Edit;
 
-		Ref<Texture2D> m_PlayButton, m_StopButton;
+		Scope<Texture2D> m_PlayButton, m_StopButton;
 		bool m_DockLayoutInitialized = false;
 		ImGuiID m_ToolbarDockID = 0;
 

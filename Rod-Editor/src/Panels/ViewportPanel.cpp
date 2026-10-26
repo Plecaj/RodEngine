@@ -14,8 +14,8 @@
 namespace Rod {
 
 	void ViewportPanel::OnImGuiRender(
-		Ref<Framebuffer> framebuffer,
-		Ref<Scene> activeScene,
+		const Framebuffer& framebuffer,
+		Scene& activeScene,
 		Entity selectedEntity,
 		EditorCamera& editorCamera,
 		SceneState sceneState,
@@ -37,19 +37,19 @@ namespace Rod {
 		viewportHovered = ImGui::IsWindowHovered();
 		Application::Get().GetImGuiLayer()->SetBlockEvents(!viewportFocused && !viewportHovered);
 
-		uint32_t textureID = framebuffer->GetColorAttachmentRendererID();
+		uint32_t textureID = framebuffer.GetColorAttachmentRendererID();
 		ImVec2 viewPortPanelSize = ImGui::GetContentRegionAvail();
 		pendingViewportSize = { viewPortPanelSize.x, viewPortPanelSize.y };
 
 		ImGui::Image((uint64_t)textureID, ImVec2{ viewportSize.x, viewportSize.y }, { 0.0f, 1.0f }, { 1.0f, 0.0f });
 
+		std::filesystem::path sceneToOpen;
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_SCENE_ITEM"))
 			{
 				const char* path = (const char*)payload->Data;
-				if (onOpenScene)
-					onOpenScene(std::filesystem::path(assetsPath) / path);
+				sceneToOpen = assetsPath / path;
 			}
 			ImGui::EndDragDropTarget();
 		}
@@ -72,7 +72,7 @@ namespace Rod {
 			}
 			else if (sceneState == SceneState::Play)
 			{
-				auto cameraEntity = activeScene->GetPrimaryCameraEntity();
+				auto cameraEntity = activeScene.GetPrimaryCameraEntity();
 				if (cameraEntity)
 				{
 					auto& cameraComp = cameraEntity.GetComponent<CameraComponent>().Camera;
@@ -123,6 +123,9 @@ namespace Rod {
 
 		ImGui::End();
 		ImGui::PopStyleVar();
+
+		if (!sceneToOpen.empty() && onOpenScene)
+			onOpenScene(sceneToOpen);
 	}
 
 }

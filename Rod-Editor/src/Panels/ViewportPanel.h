@@ -18,8 +18,8 @@ namespace Rod {
 		~ViewportPanel() = default;
 
 		void OnImGuiRender(
-			Ref<Framebuffer> framebuffer,
-			Ref<Scene> activeScene,
+			const Framebuffer& framebuffer,
+			Scene& activeScene,
 			Entity selectedEntity,
 			EditorCamera& editorCamera,
 			SceneState sceneState,

@@ -31,7 +31,7 @@ namespace Rod {
 				: OptimizationLevel(Shader::OptimizationLevel::Performance), GenerateDebugInfo(false) {}
 		};
 
-		static Ref<Shader> Create(const std::string& filepath, const ShaderOptions& options = ShaderOptions());
+		static Scope<Shader> Create(const std::string& filepath, const ShaderOptions& options = ShaderOptions());
 		virtual ~Shader() = default;
 
 		virtual void SetInt(const std::string& name, int value) = 0;

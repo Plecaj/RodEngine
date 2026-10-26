@@ -13,7 +13,7 @@ namespace Rod {
 		ToolbarPanel() = default;
 		~ToolbarPanel() = default;
 
-		void OnImGuiRender(SceneState sceneState, Ref<Texture2D> playButton, Ref<Texture2D> stopButton, ImGuiID dockID,
+		void OnImGuiRender(SceneState sceneState, const Texture2D& playButton, const Texture2D& stopButton, ImGuiID dockID,
 			std::function<void()> onPlay, std::function<void()> onStop);
 	};
 

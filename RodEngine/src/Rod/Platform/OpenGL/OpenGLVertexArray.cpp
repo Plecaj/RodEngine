@@ -54,13 +54,13 @@ namespace Rod {
 		glBindVertexArray(0);
 	}
 
-	void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
+	void OpenGLVertexArray::AddVertexBuffer(Scope<VertexBuffer> vertexBuffer)
 	{
 		RD_PROFILE_FUNCTION();
 
 		RD_CORE_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer has no layout!")
 
-			glBindVertexArray(m_RendererID);
+		glBindVertexArray(m_RendererID);
 		vertexBuffer->Bind();
 
 		const auto& layout = vertexBuffer->GetLayout();
@@ -107,19 +107,18 @@ namespace Rod {
 				default:
 					RD_CORE_ASSERT(false, "Unknown ShaderDataType!");
 			}
-
-			m_VertexBuffers.push_back(vertexBuffer);
 		}
+		m_VertexBuffers.push_back(std::move(vertexBuffer));
 	}
 
-	void OpenGLVertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
+	void OpenGLVertexArray::SetIndexBuffer(Scope<IndexBuffer> indexBuffer)
 	{
 		RD_PROFILE_FUNCTION();
 
 		glBindVertexArray(m_RendererID);
 		indexBuffer->Bind();
 
-		m_IndexBuffer = indexBuffer;
+		m_IndexBuffer = std::move(indexBuffer);
 	}
 
 }

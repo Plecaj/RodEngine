@@ -18,7 +18,7 @@ namespace Rod {
 	Scene::~Scene() = default;
 
 	template<typename... Components>
-	static void CopyComponent(entt::registry& dst, entt::registry& src, const std::unordered_map<uint64_t, entt::entity>& entityMap)
+	static void CopyComponent(entt::registry& dst, const entt::registry& src, const std::unordered_map<uint64_t, entt::entity>& entityMap)
 	{
 		([&]()
 		{
@@ -33,31 +33,31 @@ namespace Rod {
 		}(), ...);
 	}
 
-	Ref<Scene> Scene::Copy(const Ref<Scene>& other)
+	Scope<Scene> Scene::Copy(const Scene& other)
 	{
-		Ref<Scene> newScene = CreateRef<Scene>();
-		newScene->m_ViewportWidth = other->m_ViewportWidth;
-		newScene->m_ViewportHeight = other->m_ViewportHeight;
+		auto newScene = CreateScope<Scene>();
+		newScene->m_ViewportWidth = other.m_ViewportWidth;
+		newScene->m_ViewportHeight = other.m_ViewportHeight;
 
 		std::unordered_map<uint64_t, entt::entity> entityMap;
-		auto idView = other->m_Registry.view<IDComponent>();
+		auto idView = other.m_Registry.view<IDComponent>();
 		for (auto entityID : idView)
 		{
-			UUID uuid = other->m_Registry.get<IDComponent>(entityID).ID;
-			const auto& name = other->m_Registry.get<TagComponent>(entityID).Tag;
+			UUID uuid = other.m_Registry.get<IDComponent>(entityID).ID;
+			const auto& name = other.m_Registry.get<TagComponent>(entityID).Tag;
 			Entity newEntity = newScene->CreateEntityWithUUID(uuid, name);
 			entityMap[(uint64_t)uuid] = (entt::entity)newEntity;
 		}
 
 		CopyComponent<TransformComponent, SpriteRendererComponent, MeshComponent, DirectionalLightComponent,
-			CameraComponent, ScriptComponent>(newScene->m_Registry, other->m_Registry, entityMap);
+			CameraComponent, ScriptComponent>(newScene->m_Registry, other.m_Registry, entityMap);
 
-		auto nativeScriptView = other->m_Registry.view<NativeScriptComponent, IDComponent>();
+		auto nativeScriptView = other.m_Registry.view<NativeScriptComponent, IDComponent>();
 		for (auto entityID : nativeScriptView)
 		{
-			UUID uuid = other->m_Registry.get<IDComponent>(entityID).ID;
+			UUID uuid = other.m_Registry.get<IDComponent>(entityID).ID;
 			auto dstEntity = entityMap.at((uint64_t)uuid);
-			auto srcComponent = other->m_Registry.get<NativeScriptComponent>(entityID);
+			auto srcComponent = other.m_Registry.get<NativeScriptComponent>(entityID);
 			srcComponent.Instance = nullptr;
 			newScene->m_Registry.emplace_or_replace<NativeScriptComponent>(dstEntity, srcComponent);
 		}

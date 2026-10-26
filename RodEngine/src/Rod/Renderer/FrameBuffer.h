@@ -65,7 +65,7 @@ namespace Rod {
 
 		virtual const FramebufferSpecification& GetSpecification() const = 0;
 
-		static Ref<Framebuffer> Create(const FramebufferSpecification& spec);
+		static Scope<Framebuffer> Create(const FramebufferSpecification& spec);
 	};
 
 }

@@ -39,7 +39,7 @@ namespace Rod {
 		}
 	}
 
-    Ref<Shader> Shader::Create(const std::string& filepath, const ShaderOptions& options)
+    Scope<Shader> Shader::Create(const std::string& filepath, const ShaderOptions& options)
     {
        std::string source = Shader::ReadFile(filepath); 
 	   std::unordered_map<shaderc_shader_kind, std::string> processed = Shader::PreProcess(source);
@@ -49,7 +49,7 @@ namespace Rod {
 	   std::string name = file.stem().string();
        switch (RendererAPI::GetAPI())
        {
-       case RendererAPI::API::OpenGL: return CreateRef<OpenGLShader>(processed, name, options);
+       case RendererAPI::API::OpenGL: return CreateScope<OpenGLShader>(processed, name, options);
        case RendererAPI::API::None:
            RD_CORE_ASSERT(false, "None API is not supported");
            return nullptr;
@@ -124,14 +124,14 @@ namespace Rod {
 
 	Ref<Shader> ShaderLibrary::Load(const std::string& filepath)
 	{
-		auto shader = Shader::Create(filepath);
+		Ref<Shader> shader = Shader::Create(filepath);
 		Add(shader);
 		return shader;
 	}
 
 	Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& filepath)
 	{
-		auto shader = Shader::Create(filepath);
+		Ref<Shader> shader = Shader::Create(filepath);
 		Add(name, shader);
 		return shader;
 	}

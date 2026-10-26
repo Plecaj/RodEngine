@@ -5,11 +5,6 @@
 
 namespace Rod {
 
-	Ref<Mesh> Mesh::Create(const std::string& glbPath)
-	{
-		return std::make_shared<Mesh>(glbPath);
-	}
-
 	Mesh::Mesh(const std::string& glbPath)
 	{
 		LoadGLB(glbPath);
@@ -33,7 +28,6 @@ namespace Rod {
 
 		RD_CORE_ASSERT(!model.meshes.empty(), "Meshes are empty");
 
-		m_Material = Material::Create();
 		m_VAO = VertexArray::Create();
 
 		const auto& mesh = model.meshes[0];
@@ -156,8 +150,8 @@ namespace Rod {
 		}
 
 		auto indexBuffer = IndexBuffer::Create(indices.data(), static_cast<uint32_t>(indices.size()));
-		m_VAO->AddVertexBuffer(vertexBuffer);
-		m_VAO->SetIndexBuffer(indexBuffer);
+		m_VAO->AddVertexBuffer(std::move(vertexBuffer));
+		m_VAO->SetIndexBuffer(std::move(indexBuffer));
 	}
 
 	void Mesh::ProcessMaterial(const tinygltf::Model& model, const tinygltf::Primitive& primitive)
@@ -171,7 +165,7 @@ namespace Rod {
 
 		if (pbr.baseColorFactor.size() == 4)
 		{
-			m_Material->SetAlbedo(glm::vec4(
+			m_Material.SetAlbedo(glm::vec4(
 				static_cast<float>(pbr.baseColorFactor[0]),
 				static_cast<float>(pbr.baseColorFactor[1]),
 				static_cast<float>(pbr.baseColorFactor[2]),
@@ -179,12 +173,12 @@ namespace Rod {
 			));
 		}
 
-		m_Material->SetRoughness(static_cast<float>(pbr.roughnessFactor));
-		m_Material->SetMetallic(static_cast<float>(pbr.metallicFactor));
+		m_Material.SetRoughness(static_cast<float>(pbr.roughnessFactor));
+		m_Material.SetMetallic(static_cast<float>(pbr.metallicFactor));
 
 		if (gltfMaterial.emissiveFactor.size() == 3)
 		{
-			m_Material->SetEmissive(glm::vec3(
+			m_Material.SetEmissive(glm::vec3(
 				static_cast<float>(gltfMaterial.emissiveFactor[0]),
 				static_cast<float>(gltfMaterial.emissiveFactor[1]),
 				static_cast<float>(gltfMaterial.emissiveFactor[2])

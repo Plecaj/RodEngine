@@ -31,7 +31,7 @@ namespace Rod {
 		uint32_t m_Height = 36;
 		ImVec2 m_ButtonSize;
 
-		Ref<Texture2D> m_Logo;
+		Scope<Texture2D> m_Logo;
 		std::function<void()> m_NewScene, m_OpenScene, m_SaveScene, m_SaveSceneAs, m_ExportGame;
 	};
 

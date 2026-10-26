@@ -7,8 +7,6 @@ namespace Rod {
 
 	class Material {
 	public:
-		static Ref<Material> Create() { return CreateRef<Material>(); }
-
 		const glm::vec4& GetAlbedo() const { return m_Albedo; }
 		float GetRoughness() const { return m_Roughness; }
 		float GetMetallic() const { return m_Metallic; }

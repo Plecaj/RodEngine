@@ -8,9 +8,9 @@ namespace Rod {
 	{
 	public:
 		SceneHierarchyPanel() = default;
-		SceneHierarchyPanel(const Ref<Scene>& scene);
+		explicit SceneHierarchyPanel(Scene* scene);
 
-		void SetContext(const Ref<Scene>& scene);
+		void SetContext(Scene* scene);
 
 		void OnImGuiRender();
 
@@ -36,7 +36,7 @@ namespace Rod {
 
 		void DrawComponents(Entity entity);
 	private:
-		Ref<Scene> m_Context;
+		Scene* m_Context = nullptr;
 		Entity m_SelectionContext;
 	};
 

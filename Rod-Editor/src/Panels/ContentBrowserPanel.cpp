@@ -93,7 +93,7 @@ namespace Rod {
             std::string uniqueID = relativePath.string();
             ImGui::PushID(uniqueID.c_str());
 
-            Ref<Texture2D> icon = directoryEntry.is_directory() ? m_DirectoryIcon : m_FileIcon;
+            const Texture2D& icon = directoryEntry.is_directory() ? *m_DirectoryIcon : *m_FileIcon;
 
             DrawIconButton(uniqueID, icon, thumbnailSize);
             HandleDragDrop(path, relativePath, filenameString);
@@ -110,7 +110,7 @@ namespace Rod {
         }
     }
 
-    void ContentBrowserPanel::DrawIconButton(const std::string& id, Ref<Texture2D> icon, float size)
+    void ContentBrowserPanel::DrawIconButton(const std::string& id, const Texture2D& icon, float size)
     {
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.11f, 0.13f, 0.16f, 1.0f));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.18f, 0.21f, 0.25f, 1.0f));
@@ -118,7 +118,7 @@ namespace Rod {
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(8.0f, 8.0f));
         ImGui::ImageButton(
             id.c_str(),
-            (ImTextureID)(uint64_t)icon->GetRendererID(),
+            (ImTextureID)(uint64_t)icon.GetRendererID(),
             { size, size },
             { 0.0f, 1.0f }, { 1.0f, 0.0f }
         );

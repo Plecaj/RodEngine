@@ -408,7 +408,7 @@ namespace Rod {
 		if (!entity || !entity.HasComponent<MeshComponent>())
 			return;
 		auto& mesh = entity.GetComponent<MeshComponent>();
-		mesh.Mesh = path && path[0] ? Mesh::Create(path) : nullptr;
+		mesh.SetMesh(path && path[0] ? CreateRef<Mesh>(path) : nullptr);
 	}
 
 	static ScriptVec4 RD_CDECL Mesh_GetAlbedo(uint64_t entityID)
@@ -416,14 +416,14 @@ namespace Rod {
 		Entity entity = GetEntity(entityID);
 		if (!entity || !entity.HasComponent<MeshComponent>() || !entity.GetComponent<MeshComponent>().Mesh)
 			return { 1.0f, 1.0f, 1.0f, 1.0f };
-		return ToScript(entity.GetComponent<MeshComponent>().Mesh->GetMaterial()->GetAlbedo());
+		return ToScript(entity.GetComponent<MeshComponent>().Material.GetAlbedo());
 	}
 
 	static void RD_CDECL Mesh_SetAlbedo(uint64_t entityID, ScriptVec4 value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<MeshComponent>() && entity.GetComponent<MeshComponent>().Mesh)
-			entity.GetComponent<MeshComponent>().Mesh->GetMaterial()->SetAlbedo(ToGLM(value));
+			entity.GetComponent<MeshComponent>().Material.SetAlbedo(ToGLM(value));
 	}
 
 	static ScriptVec3 RD_CDECL Mesh_GetEmissive(uint64_t entityID)
@@ -431,40 +431,40 @@ namespace Rod {
 		Entity entity = GetEntity(entityID);
 		if (!entity || !entity.HasComponent<MeshComponent>() || !entity.GetComponent<MeshComponent>().Mesh)
 			return {};
-		return ToScript(entity.GetComponent<MeshComponent>().Mesh->GetMaterial()->GetEmissive());
+		return ToScript(entity.GetComponent<MeshComponent>().Material.GetEmissive());
 	}
 
 	static void RD_CDECL Mesh_SetEmissive(uint64_t entityID, ScriptVec3 value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<MeshComponent>() && entity.GetComponent<MeshComponent>().Mesh)
-			entity.GetComponent<MeshComponent>().Mesh->GetMaterial()->SetEmissive(ToGLM(value));
+			entity.GetComponent<MeshComponent>().Material.SetEmissive(ToGLM(value));
 	}
 
 	static float RD_CDECL Mesh_GetRoughness(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
-		return entity && entity.HasComponent<MeshComponent>() && entity.GetComponent<MeshComponent>().Mesh ? entity.GetComponent<MeshComponent>().Mesh->GetMaterial()->GetRoughness() : 1.0f;
+		return entity && entity.HasComponent<MeshComponent>() && entity.GetComponent<MeshComponent>().Mesh ? entity.GetComponent<MeshComponent>().Material.GetRoughness() : 1.0f;
 	}
 
 	static void RD_CDECL Mesh_SetRoughness(uint64_t entityID, float value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<MeshComponent>() && entity.GetComponent<MeshComponent>().Mesh)
-			entity.GetComponent<MeshComponent>().Mesh->GetMaterial()->SetRoughness(value);
+			entity.GetComponent<MeshComponent>().Material.SetRoughness(value);
 	}
 
 	static float RD_CDECL Mesh_GetMetallic(uint64_t entityID)
 	{
 		Entity entity = GetEntity(entityID);
-		return entity && entity.HasComponent<MeshComponent>() && entity.GetComponent<MeshComponent>().Mesh ? entity.GetComponent<MeshComponent>().Mesh->GetMaterial()->GetMetallic() : 0.0f;
+		return entity && entity.HasComponent<MeshComponent>() && entity.GetComponent<MeshComponent>().Mesh ? entity.GetComponent<MeshComponent>().Material.GetMetallic() : 0.0f;
 	}
 
 	static void RD_CDECL Mesh_SetMetallic(uint64_t entityID, float value)
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<MeshComponent>() && entity.GetComponent<MeshComponent>().Mesh)
-			entity.GetComponent<MeshComponent>().Mesh->GetMaterial()->SetMetallic(value);
+			entity.GetComponent<MeshComponent>().Material.SetMetallic(value);
 	}
 
 	static ScriptVec3 RD_CDECL DirectionalLight_GetDirection(uint64_t entityID)

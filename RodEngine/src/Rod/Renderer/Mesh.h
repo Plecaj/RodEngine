@@ -12,11 +12,10 @@
 namespace Rod {
     class Mesh {
     public:
-        static Ref<Mesh> Create(const std::string& glbPath);
-        Mesh(const std::string& glbPath);
+        explicit Mesh(const std::string& glbPath);
 
-        Ref<VertexArray> GetVAO() const { return m_VAO; }
-        Ref<Material> GetMaterial() const { return m_Material; }
+        const VertexArray* GetVAO() const { return m_VAO.get(); }
+        const Material& GetMaterial() const { return m_Material; }
         const std::string& GetPath() const { return m_SourcePath; }
 
     private:
@@ -25,8 +24,8 @@ namespace Rod {
         void ProcessMaterial(const tinygltf::Model& model, const tinygltf::Primitive& primitive);
 
     private:
-        Ref<VertexArray> m_VAO;
-        Ref<Material> m_Material;
+        Scope<VertexArray> m_VAO;
+        Material m_Material;
         std::string m_SourcePath;
     };
 

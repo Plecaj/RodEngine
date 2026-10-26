@@ -21,7 +21,7 @@ namespace Rod {
 		inline static void SetDepthBias(float slopeScaleBias, float constantBias) { s_RendererAPI->SetDepthBias(slopeScaleBias, constantBias); }
 		inline static void ClearDepthBias() { s_RendererAPI->ClearDepthBias(); }
 
-		inline static void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0)
+		inline static void DrawIndexed(const VertexArray& vertexArray, uint32_t indexCount = 0)
 		{
 			s_RendererAPI->DrawIndexed(vertexArray, indexCount);
 		}

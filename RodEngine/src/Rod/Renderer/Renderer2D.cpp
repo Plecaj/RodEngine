@@ -29,10 +29,10 @@ namespace Rod {
         static constexpr int MAX_INDICES_COUNT = MAX_QUAD_COUNT * 6;
         static constexpr int MAX_TEXTURE_SLOTS = 32;
 
-        Ref<VertexArray> QuadVertexArray;
-        Ref<VertexBuffer> QuadVertexBuffer;
-        Ref<UniformBuffer> QuadUniformBuffer;
-        Ref<Shader> TextureShader;
+        Scope<VertexArray> QuadVertexArray;
+        VertexBuffer* QuadVertexBuffer = nullptr; // Owned by QuadVertexArray.
+        Scope<UniformBuffer> QuadUniformBuffer;
+        Scope<Shader> TextureShader;
         Ref<Texture2D> WhiteTexture;
 
         uint32_t QuadIndexCount = 0;
@@ -46,12 +46,12 @@ namespace Rod {
         Renderer2D::Statistics Stats;
     };
 
-    static Renderer2DData* s_Data;
+    static Scope<Renderer2DData> s_Data;
 
     void Renderer2D::Init()
     {
         RD_PROFILE_FUNCTION();
-        s_Data = new Renderer2DData;
+        s_Data = CreateScope<Renderer2DData>();
         s_Data->TextureSlots.resize(s_Data->MAX_TEXTURE_SLOTS);
 
         InitShader();
@@ -86,8 +86,8 @@ namespace Rod {
     {
         s_Data->QuadVertexArray = VertexArray::Create();
 
-        s_Data->QuadVertexBuffer = VertexBuffer::Create(sizeof(QuadVertex) * s_Data->MAX_VERTICES_COUNT);
-        s_Data->QuadVertexBuffer->SetBufferLayout(
+        auto vertexBuffer = VertexBuffer::Create(sizeof(QuadVertex) * s_Data->MAX_VERTICES_COUNT);
+        vertexBuffer->SetBufferLayout(
             {
                 { ShaderDataType::Float3, "a_Position" },
                 { ShaderDataType::Float4, "a_Color"},
@@ -97,7 +97,8 @@ namespace Rod {
                 { ShaderDataType::Int, "a_EntityID"}
             });
 
-        s_Data->QuadVertexArray->AddVertexBuffer(s_Data->QuadVertexBuffer);
+        s_Data->QuadVertexBuffer = vertexBuffer.get();
+        s_Data->QuadVertexArray->AddVertexBuffer(std::move(vertexBuffer));
         s_Data->QuadVertexBufferBase.resize(Renderer2DData::MAX_VERTICES_COUNT);
 
         std::vector<uint32_t> quadIndices(Renderer2DData::MAX_INDICES_COUNT);
@@ -115,8 +116,8 @@ namespace Rod {
             offset += 4;
         }
 
-        Ref<IndexBuffer> QuadIB = IndexBuffer::Create(quadIndices.data(), Renderer2DData::MAX_INDICES_COUNT);
-        s_Data->QuadVertexArray->SetIndexBuffer(QuadIB);
+        auto quadIB = IndexBuffer::Create(quadIndices.data(), Renderer2DData::MAX_INDICES_COUNT);
+        s_Data->QuadVertexArray->SetIndexBuffer(std::move(quadIB));
     }
 
     void Renderer2D::InitWhiteTexture()
@@ -140,7 +141,7 @@ namespace Rod {
     {
         RD_PROFILE_FUNCTION();
 
-        delete s_Data;
+        s_Data.reset();
     }
 
     void Renderer2D::BeginScene(const Camera& camera, const glm::mat4& transform)
@@ -314,7 +315,7 @@ namespace Rod {
         s_Data->QuadVertexArray->Bind();
         s_Data->QuadVertexArray->GetIndexBuffer()->Bind();
 
-        RenderCommand::DrawIndexed(s_Data->QuadVertexArray, s_Data->QuadIndexCount);
+        RenderCommand::DrawIndexed(*s_Data->QuadVertexArray, s_Data->QuadIndexCount);
         s_Data->Stats.DrawCalls++;
     }
 }

@@ -17,7 +17,7 @@ namespace Rod {
 	{
 		ScriptEngine::Init();
 
-		m_Scene = CreateRef<Scene>();
+		m_Scene = CreateScope<Scene>();
 		std::filesystem::path scenePath = ResolveStartupScenePath();
 		if (!std::filesystem::exists(scenePath))
 		{
@@ -26,7 +26,7 @@ namespace Rod {
 			return;
 		}
 
-		SceneSerializer serializer(m_Scene);
+		SceneSerializer serializer(*m_Scene);
 		if (!serializer.DeserializeText(scenePath.string()))
 		{
 			RD_CORE_ERROR("Failed to load runtime scene: {}", scenePath.string());

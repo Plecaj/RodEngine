@@ -56,9 +56,9 @@ namespace Rod {
 				return;
 
 			Renderer3D::Submit(
-				mesh.Mesh->GetVAO(),
+				mesh.Mesh,
 				transform.GetTransform(),
-				mesh.Mesh->GetMaterial(),
+				mesh.Material,
 				(int)entity);
 		});
 	}

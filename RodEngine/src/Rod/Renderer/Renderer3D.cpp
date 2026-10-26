@@ -5,7 +5,7 @@
 
 namespace Rod {
 
-	Renderer3D::SceneData* Renderer3D::s_SceneData = nullptr;
+	Scope<Renderer3D::SceneData> Renderer3D::s_SceneData;
 
 	struct SceneMatrices
 	{
@@ -165,7 +165,7 @@ namespace Rod {
 	{
 		RD_PROFILE_FUNCTION();
 
-		s_SceneData = new SceneData();
+		s_SceneData = CreateScope<SceneData>();
 		s_SceneData->Shader = Shader::Create("assets/shaders/3D.glsl");
 		s_SceneData->ShadowShader = Shader::Create("assets/shaders/Shadow.glsl");
 
@@ -187,8 +187,7 @@ namespace Rod {
 	{
 		RD_PROFILE_FUNCTION();
 
-		delete s_SceneData;
-		s_SceneData = nullptr;
+		s_SceneData.reset();
 	}
 
 	void Renderer3D::BeginScene(const Camera& camera, const glm::mat4& transform, std::vector<DirectionalLightComponent>& lights)
@@ -216,11 +215,13 @@ namespace Rod {
 		s_SceneData->DrawCommands.clear();
 	}
 
-	void Renderer3D::Submit(const Ref<VertexArray>& vertexArray, const glm::mat4& transform, const Ref<Material>& material, int entityID)
+	void Renderer3D::Submit(const Ref<Mesh>& mesh, const glm::mat4& transform, const Material& material, int entityID)
 	{
 		RD_PROFILE_FUNCTION();
 
-		s_SceneData->DrawCommands.push_back({ vertexArray, transform, material, entityID });
+		// Commands retain the shared mesh, which owns its GPU buffers.
+		if (mesh && mesh->GetVAO())
+			s_SceneData->DrawCommands.push_back({ mesh, transform, material, entityID });
 	}
 
 	void Renderer3D::GeometryPass()
@@ -240,16 +241,8 @@ namespace Rod {
 			s_SceneData->SceneUBO->SetData(&matrices, sizeof(SceneMatrices));
 
 			MaterialData materialData;
-			if (command.Material)
-			{
-				materialData.Albedo = command.Material->GetAlbedo();
-				materialData.Emissive = command.Material->GetEmissive();
-			}
-			else
-			{
-				materialData.Albedo = glm::vec4(0.6f, 0.2f, 0.8f, 1.0f);
-				materialData.Emissive = glm::vec3(0.0f);
-			}
+			materialData.Albedo = command.Material.GetAlbedo();
+			materialData.Emissive = command.Material.GetEmissive();
 			s_SceneData->MaterialUBO->BindBase(3);
 			s_SceneData->MaterialUBO->SetData(&materialData, sizeof(MaterialData));
 
@@ -258,9 +251,9 @@ namespace Rod {
 			s_SceneData->DrawUBO->BindBase(4);
 			s_SceneData->DrawUBO->SetData(&drawData, sizeof(DrawData));
 
-			command.VertexArray->Bind();
-			command.VertexArray->GetIndexBuffer()->Bind();
-			RenderCommand::DrawIndexed(command.VertexArray);
+			command.Mesh->GetVAO()->Bind();
+			command.Mesh->GetVAO()->GetIndexBuffer()->Bind();
+			RenderCommand::DrawIndexed(*command.Mesh->GetVAO());
 		}
 	}
 
@@ -334,9 +327,9 @@ namespace Rod {
 				s_SceneData->SceneUBO->BindBase(1);
 				s_SceneData->SceneUBO->SetData(&matrices, sizeof(SceneMatrices));
 
-				command.VertexArray->Bind();
-				command.VertexArray->GetIndexBuffer()->Bind();
-				RenderCommand::DrawIndexed(command.VertexArray);
+				command.Mesh->GetVAO()->Bind();
+				command.Mesh->GetVAO()->GetIndexBuffer()->Bind();
+				RenderCommand::DrawIndexed(*command.Mesh->GetVAO());
 			}
 		}
 

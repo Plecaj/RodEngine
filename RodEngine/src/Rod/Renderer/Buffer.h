@@ -112,8 +112,8 @@ namespace Rod {
 		virtual void SetBufferLayout(const BufferLayout& layout) = 0;
 		virtual const BufferLayout& GetLayout() const = 0;
 
-		static Ref<VertexBuffer> Create(uint32_t size);
-		static Ref<VertexBuffer> Create(float* vertices, uint32_t size);
+		static Scope<VertexBuffer> Create(uint32_t size);
+		static Scope<VertexBuffer> Create(float* vertices, uint32_t size);
 	};
 
 	class IndexBuffer
@@ -126,7 +126,7 @@ namespace Rod {
 
 		virtual uint32_t GetCount() const = 0;
 
-		static Ref<IndexBuffer> Create(uint32_t* indices, uint32_t count);
+		static Scope<IndexBuffer> Create(uint32_t* indices, uint32_t count);
 	};
 
 	class UniformBuffer
@@ -140,6 +140,6 @@ namespace Rod {
 
 		virtual void SetData(void* data, uint32_t size) = 0;
 
-		static Ref<UniformBuffer> Create(uint32_t size);
+		static Scope<UniformBuffer> Create(uint32_t size);
 	};
 }

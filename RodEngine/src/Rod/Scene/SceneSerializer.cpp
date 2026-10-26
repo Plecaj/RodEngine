@@ -79,7 +79,7 @@ namespace Rod {
 		return out;
 	}
 
-	SceneSerializer::SceneSerializer(const Ref<Scene>& scene)
+	SceneSerializer::SceneSerializer(Scene& scene)
 		: m_Scene(scene)
 	{
 	}
@@ -146,13 +146,13 @@ namespace Rod {
 		out << YAML::BeginMap;
 		out << YAML::Key << "Path" << YAML::Value << (meshComponent.Mesh ? NormalizeAssetPath(meshComponent.Mesh->GetPath()) : "None");
 
-		if (meshComponent.Mesh && meshComponent.Mesh->GetMaterial())
+		if (meshComponent.Mesh)
 		{
-			auto material = meshComponent.Mesh->GetMaterial();
-			out << YAML::Key << "Albedo" << YAML::Value << material->GetAlbedo();
-			out << YAML::Key << "Emissive" << YAML::Value << material->GetEmissive();
-			out << YAML::Key << "Roughness" << YAML::Value << material->GetRoughness();
-			out << YAML::Key << "Metallic" << YAML::Value << material->GetMetallic();
+			const auto& material = meshComponent.Material;
+			out << YAML::Key << "Albedo" << YAML::Value << material.GetAlbedo();
+			out << YAML::Key << "Emissive" << YAML::Value << material.GetEmissive();
+			out << YAML::Key << "Roughness" << YAML::Value << material.GetRoughness();
+			out << YAML::Key << "Metallic" << YAML::Value << material.GetMetallic();
 		}
 
 		out << YAML::EndMap;
@@ -217,10 +217,10 @@ namespace Rod {
 		out << YAML::Key << "Scene" << YAML::Value << "Untitled";
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 
-		auto view = m_Scene->m_Registry.view<IDComponent>();
+		auto view = m_Scene.m_Registry.view<IDComponent>();
 		for (auto entityID : view)
 		{
-			Entity entity = { entityID, m_Scene.get() };
+			Entity entity = { entityID, &m_Scene };
 			if (!entity)
 				continue;
 
@@ -299,20 +299,20 @@ namespace Rod {
 		auto& mesh = entity.AddComponent<MeshComponent>();
 		std::string meshPath = NormalizeAssetPath(meshComponent["Path"].as<std::string>());
 		if (meshPath != "None")
-			mesh.Mesh = Mesh::Create(meshPath);
+			mesh.SetMesh(CreateRef<Mesh>(meshPath));
 
-		if (!mesh.Mesh || !mesh.Mesh->GetMaterial())
+		if (!mesh.Mesh)
 			return;
 
-		auto material = mesh.Mesh->GetMaterial();
+		auto& material = mesh.Material;
 		if (meshComponent["Albedo"])
-			material->SetAlbedo(meshComponent["Albedo"].as<glm::vec4>());
+			material.SetAlbedo(meshComponent["Albedo"].as<glm::vec4>());
 		if (meshComponent["Emissive"])
-			material->SetEmissive(meshComponent["Emissive"].as<glm::vec3>());
+			material.SetEmissive(meshComponent["Emissive"].as<glm::vec3>());
 		if (meshComponent["Roughness"])
-			material->SetRoughness(meshComponent["Roughness"].as<float>());
+			material.SetRoughness(meshComponent["Roughness"].as<float>());
 		if (meshComponent["Metallic"])
-			material->SetMetallic(meshComponent["Metallic"].as<float>());
+			material.SetMetallic(meshComponent["Metallic"].as<float>());
 	}
 
 	static void DeserializeDirectionalLightComponent(const YAML::Node& entityNode, Entity entity)
@@ -401,7 +401,7 @@ namespace Rod {
 		for (auto entityNode : entities)
 		{
 			if (entityNode["Entity"])
-				DeserializeEntity(*m_Scene, entityNode);
+				DeserializeEntity(m_Scene, entityNode);
 		}
 
 		return true;

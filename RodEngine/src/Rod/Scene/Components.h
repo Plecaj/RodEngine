@@ -14,116 +14,106 @@
 
 namespace Rod {
 
-	struct IDComponent
-	{
-		UUID ID;
+struct IDComponent {
+  UUID ID;
 
-		IDComponent() = default;
-		IDComponent(const IDComponent&) = default;
-		IDComponent(UUID id)
-			: ID(id) {}
-	};
+  IDComponent() = default;
+  IDComponent(const IDComponent &) = default;
+  IDComponent(UUID id) : ID(id) {}
+};
 
-	struct TagComponent
-	{
-		std::string Tag;
+struct TagComponent {
+  std::string Tag;
 
-		TagComponent() = default;
-		TagComponent(const TagComponent&) = default;
-		TagComponent(const std::string& tag)
-			: Tag(tag) {}
-	};
+  TagComponent() = default;
+  TagComponent(const TagComponent &) = default;
+  TagComponent(const std::string &tag) : Tag(tag) {}
+};
 
-	struct TransformComponent
-	{
-		glm::vec3 Translation = glm::vec3(0.0f);
-		glm::vec3 Rotation = glm::vec3(0.0f);
-		glm::vec3 Scale = glm::vec3(1.0f);
+struct TransformComponent {
+  glm::vec3 Translation = glm::vec3(0.0f);
+  glm::vec3 Rotation = glm::vec3(0.0f);
+  glm::vec3 Scale = glm::vec3(1.0f);
 
-		TransformComponent() = default;
-		TransformComponent(const TransformComponent&) = default;
-		TransformComponent(const glm::vec3& translation)
-			: Translation(translation) {}
+  TransformComponent() = default;
+  TransformComponent(const TransformComponent &) = default;
+  TransformComponent(const glm::vec3 &translation) : Translation(translation) {}
 
-		glm::mat4 GetTransform() const
-		{
-			glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), Rotation.x, {1, 0, 0})
-				* glm::rotate(glm::mat4(1.0f), Rotation.y, { 0, 1, 0 })
-				* glm::rotate(glm::mat4(1.0f), Rotation.z, { 0, 0, 1 });
+  glm::mat4 GetTransform() const {
+    glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), Rotation.x, {1, 0, 0}) *
+                         glm::rotate(glm::mat4(1.0f), Rotation.y, {0, 1, 0}) *
+                         glm::rotate(glm::mat4(1.0f), Rotation.z, {0, 0, 1});
 
-			return glm::translate(glm::mat4(1.0f), Translation)
-				* rotation
-				* glm::scale(glm::mat4(1.0f), Scale);
-		}
-	};
+    return glm::translate(glm::mat4(1.0f), Translation) * rotation *
+           glm::scale(glm::mat4(1.0f), Scale);
+  }
+};
 
-	struct SpriteRendererComponent
-	{
-		glm::vec4 Color = glm::vec4(1.0f);
-		Ref<Texture2D> Texture;
-		float TilingFactor = 1.0f;
+struct SpriteRendererComponent {
+  glm::vec4 Color = glm::vec4(1.0f);
+  Ref<Texture2D> Texture;
+  float TilingFactor = 1.0f;
 
-		SpriteRendererComponent() = default;
-		SpriteRendererComponent(const SpriteRendererComponent&) = default;
-		SpriteRendererComponent(const glm::vec4& color)
-			: Color(color) {}
-	};
+  SpriteRendererComponent() = default;
+  SpriteRendererComponent(const SpriteRendererComponent &) = default;
+  SpriteRendererComponent(const glm::vec4 &color) : Color(color) {}
+};
 
-	struct MeshComponent
-	{
-		Ref<Mesh> Mesh;
-	};
+struct MeshComponent {
+  Ref<Rod::Mesh> Mesh;
+  Rod::Material Material;
 
-	struct DirectionalLightComponent
-	{
-		glm::vec3 Direction = glm::vec3(0.667f, -0.667f, -0.333f);
-		glm::vec3 Color = glm::vec3(1.0f);
-		float Intensity = 1.0f;
-		
-		DirectionalLightComponent() = default;
-		DirectionalLightComponent(const DirectionalLightComponent&) = default;
-		DirectionalLightComponent(const glm::vec3& direction, const glm::vec3& color, float intensity = 1.0f)
-			:Direction(direction), Color(color), Intensity(intensity) {}
-	};
+  void SetMesh(Ref<Rod::Mesh> mesh) {
+    Mesh = std::move(mesh);
+    Material = Mesh ? Mesh->GetMaterial() : Rod::Material{};
+  }
+};
 
-	struct CameraComponent
-	{
-		SceneCamera Camera;
-		bool Primary = true;
-		bool FixedAspectRatio = false;
+struct DirectionalLightComponent {
+  glm::vec3 Direction = glm::vec3(0.667f, -0.667f, -0.333f);
+  glm::vec3 Color = glm::vec3(1.0f);
+  float Intensity = 1.0f;
 
-		CameraComponent() = default;
-		CameraComponent(const CameraComponent&) = default;
-	};
+  DirectionalLightComponent() = default;
+  DirectionalLightComponent(const DirectionalLightComponent &) = default;
+  DirectionalLightComponent(const glm::vec3 &direction, const glm::vec3 &color,
+                            float intensity = 1.0f)
+      : Direction(direction), Color(color), Intensity(intensity) {}
+};
 
-	struct NativeScriptComponent
-	{
-		ScriptableEntity* Instance = nullptr;
+struct CameraComponent {
+  SceneCamera Camera;
+  bool Primary = true;
+  bool FixedAspectRatio = false;
 
-		ScriptableEntity* (*InstantiateScript)() = nullptr;
-		void (*DestroyScript)(NativeScriptComponent*) = nullptr;
+  CameraComponent() = default;
+  CameraComponent(const CameraComponent &) = default;
+};
 
-		template<typename T>
-		void Bind()
-		{
-			InstantiateScript = []() { return static_cast<ScriptableEntity*>(new T()); };
-			DestroyScript = [](NativeScriptComponent* nsc)
-			{
-				delete nsc->Instance;
-				nsc->Instance = nullptr;
-			};
-		}
-	};
+struct NativeScriptComponent {
+  ScriptableEntity *Instance = nullptr;
 
-	struct ScriptComponent
-	{
-		std::string ClassName;
-		ScriptFieldMap Fields;
+  ScriptableEntity *(*InstantiateScript)() = nullptr;
+  void (*DestroyScript)(NativeScriptComponent *) = nullptr;
 
-		ScriptComponent() = default;
-		ScriptComponent(const ScriptComponent&) = default;
-		ScriptComponent(const std::string& className)
-			: ClassName(className) {}
-	};
+  template <typename T> void Bind() {
+    InstantiateScript = []() {
+      return static_cast<ScriptableEntity *>(new T());
+    };
+    DestroyScript = [](NativeScriptComponent *nsc) {
+      delete nsc->Instance;
+      nsc->Instance = nullptr;
+    };
+  }
+};
 
-}
+struct ScriptComponent {
+  std::string ClassName;
+  ScriptFieldMap Fields;
+
+  ScriptComponent() = default;
+  ScriptComponent(const ScriptComponent &) = default;
+  ScriptComponent(const std::string &className) : ClassName(className) {}
+};
+
+} // namespace Rod

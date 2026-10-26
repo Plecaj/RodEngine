@@ -117,6 +117,7 @@ namespace Rod {
 	void EditorLayer::OnDetach()
 	{
 		RD_PROFILE_FUNCTION();
+		OnSceneStop();
 		ScriptEngine::Shutdown();
 	}
 
@@ -180,7 +181,7 @@ namespace Rod {
 		if (mouseX >= 0 && mouseY >= 0 && mouseX < (int)viewportSize.x && mouseY < (int)viewportSize.y)
 		{
 			int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-			m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, m_ActiveScene.get());
+			m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, m_ActiveScene);
 		}
 	}
 
@@ -297,8 +298,8 @@ namespace Rod {
 
 		Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 		m_ViewportPanel.OnImGuiRender(
-			m_Framebuffer,
-			m_ActiveScene,
+			*m_Framebuffer,
+			*m_ActiveScene,
 			selectedEntity,
 			m_EditorCamera,
 			m_SceneState,
@@ -314,8 +315,8 @@ namespace Rod {
 
 		m_ToolbarPanel.OnImGuiRender(
 			m_SceneState,
-			m_PlayButton,
-			m_StopButton,
+			*m_PlayButton,
+			*m_StopButton,
 			m_ToolbarDockID,
 			[this]() { OnScenePlay(); },
 			[this]() { OnSceneStop(); }
@@ -401,8 +402,11 @@ namespace Rod {
 
 	void EditorLayer::NewScene()
 	{
-		m_EditorScene = CreateRef<Scene>();
-		m_ActiveScene = m_EditorScene;
+		OnSceneStop();
+		m_SceneHierarchyPanel.SetContext(nullptr);
+		m_HoveredEntity = {};
+		m_EditorScene = CreateScope<Scene>();
+		m_ActiveScene = m_EditorScene.get();
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 		m_SceneOutputFilepath.clear();
@@ -445,19 +449,19 @@ namespace Rod {
 	{
 		NewScene();
 
-		SceneSerializer serializer(m_ActiveScene);
+		SceneSerializer serializer(*m_ActiveScene);
 		return serializer.DeserializeText(path.string());
 	}
 
 	void EditorLayer::SerializeScene(const std::filesystem::path& path)
 	{
-		SceneSerializer serializer(m_ActiveScene);
+		SceneSerializer serializer(*m_ActiveScene);
 		serializer.SerializeText(path.string());
 	}
 
 	void EditorLayer::ExportGame()
 	{
-		Ref<Scene> sceneToExport = m_SceneState == SceneState::Play ? m_EditorScene : m_ActiveScene;
+		Scene* sceneToExport = m_EditorScene.get();
 		if (!sceneToExport)
 		{
 			RD_CORE_ERROR("No scene to export");
@@ -483,7 +487,7 @@ namespace Rod {
 		if (!CopyGameAssets(exportAssets))
 			return;
 
-		SceneSerializer serializer(sceneToExport);
+		SceneSerializer serializer(*sceneToExport);
 		serializer.SerializeText((exportAssets / "scenes" / "Startup.rod").string());
 		RD_CORE_INFO("Exported game to {}", exportRoot.string());
 	}
@@ -543,8 +547,9 @@ namespace Rod {
 		if (m_SceneState != SceneState::Edit)
 			return;
 
-		m_EditorScene = m_ActiveScene;
-		m_ActiveScene = Scene::Copy(m_EditorScene);
+		m_RuntimeScene = Scene::Copy(*m_EditorScene);
+		m_ActiveScene = m_RuntimeScene.get();
+		m_HoveredEntity = {};
 		m_ActiveScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
@@ -560,8 +565,10 @@ namespace Rod {
 			return;
 
 		m_ActiveScene->OnRuntimeStop();
-		m_ActiveScene = m_EditorScene;
+		m_ActiveScene = m_EditorScene.get();
 		m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+		m_HoveredEntity = {};
+		m_RuntimeScene.reset();
 		m_SceneState = SceneState::Edit;
 		m_GizmoType = -1;
 		m_EditorCamera.SetControlsEnabled(true);

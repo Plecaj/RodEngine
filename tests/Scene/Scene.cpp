@@ -30,7 +30,7 @@ TEST_CASE("Scene finds entities by UUID and name", "[scene]") {
   REQUIRE(scene.FindEntityByName("Player") == player);
   REQUIRE_FALSE(scene.FindEntityByUUID(Rod::UUID{9999}));
   REQUIRE_FALSE(scene.FindEntityByName("Missing"));
-}:
+}
 
 TEST_CASE("Scene destroys only the requested entity", "[scene]") {
   Rod::Scene scene;

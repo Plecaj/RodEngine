@@ -3,6 +3,7 @@ include(vendor/Catch2)
 add_executable(RodEngineTests
     Math/Math.cpp
     Scene/Scene.cpp
+    Scene/Serialization.cpp
 )
 
 rod_configure_cpp_standard(RodEngineTests)

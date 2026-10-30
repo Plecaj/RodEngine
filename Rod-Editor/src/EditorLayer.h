@@ -1,15 +1,15 @@
 #pragma once
 
-#include "Rod.h"
-#include "imgui.h"
-#include "Panels/SceneHierarchyPanel.h"
 #include "Panels/ContentBrowserPanel.h"
-#include "Panels/TitlebarPanel.h"
-#include "Panels/PerformancePanel.h"
 #include "Panels/DebugPanel.h"
 #include "Panels/GuidePanel.h"
-#include "Panels/ViewportPanel.h"
+#include "Panels/PerformancePanel.h"
+#include "Panels/SceneHierarchyPanel.h"
+#include "Panels/TitlebarPanel.h"
 #include "Panels/ToolbarPanel.h"
+#include "Panels/ViewportPanel.h"
+#include "Rod.h"
+#include "imgui.h"
 
 #include "Rod/Renderer/EditorCamera.h"
 
@@ -17,94 +17,97 @@
 
 namespace Rod {
 
-	class EditorLayer : public Rod::Layer {
-	public:
-		EditorLayer();
-		virtual ~EditorLayer() = default;
+class EditorLayer : public Rod::Layer {
+public:
+  EditorLayer();
+  virtual ~EditorLayer() = default;
 
-		virtual void OnAttach() override;
-		virtual void OnDetach() override;
+  virtual void OnAttach() override;
+  virtual void OnDetach() override;
 
-		void OnUpdate(Timestep ts) override;
-		virtual void OnImGuiRender() override;
-		void OnEvent(Event& event) override;
-	private:
-		void SetupDefaultDockLayout(ImGuiID dockspaceID);
+  void OnUpdate(Timestep ts) override;
+  virtual void OnImGuiRender() override;
+  void OnEvent(Event &event) override;
 
-		bool OnKeyPressed(KeyPressedEvent& e);
-		bool OnMouseButtonPressed(MouseButtonPressedEvent& e);
+private:
+  void SetupDefaultDockLayout(ImGuiID dockspaceID);
 
-		void NewScene();
-		void OpenScene();
-		void OpenScene(const std::filesystem::path& path);
-		void SaveScene();
-		void SaveSceneAs();
-		void ExportGame();
+  bool OnKeyPressed(KeyPressedEvent &e);
+  bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
 
-		void OnScenePlay();
-		void OnSceneStop(); 
+  void NewScene();
+  void OpenScene();
+  void OpenScene(const std::filesystem::path &path);
+  void SaveScene();
+  void SaveSceneAs();
+  void ExportGame();
 
-		void CreateFramebuffer();
-		void LoadEditorResources();
-		void SetupTitlebarCallbacks();
+  void OnScenePlay();
+  void OnSceneStop();
 
-		void ResizeViewportIfNeeded();
-		void RenderScene(Timestep ts);
-		void UpdateHoveredEntity();
+  void CreateFramebuffer();
+  void LoadEditorResources();
+  void SetupTitlebarCallbacks();
 
-		void RenderTitlebar();
-		void RenderDockspace();
-		void RenderPanels();
+  void ResizeViewportIfNeeded();
+  void RenderScene(Timestep ts);
+  void UpdateHoveredEntity();
 
-		bool DeserializeScene(const std::filesystem::path& path);
-		void SerializeScene(const std::filesystem::path& path);
+  void RenderTitlebar();
+  void RenderDockspace();
+  void RenderPanels();
 
-		std::filesystem::path GetRuntimeExecutablePath() const;
-		std::filesystem::path GetExportRootPath() const;
-		bool PrepareExportFolders(const std::filesystem::path& exportAssetsPath);
-		bool CopyRuntimeExecutable(const std::filesystem::path& runtimeExecutable, const std::filesystem::path& exportRoot);
-		bool CopyGameAssets(const std::filesystem::path& exportAssetsPath);
-	private:
-		Scope<Scene> m_EditorScene;
-		Scope<Scene> m_RuntimeScene;
-		Scene* m_ActiveScene = nullptr;
+  bool DeserializeScene(const std::filesystem::path &path);
+  void SerializeScene(const std::filesystem::path &path);
 
-		EditorCamera m_EditorCamera;
+  std::filesystem::path GetRuntimeExecutablePath() const;
+  std::filesystem::path GetExportRootPath() const;
+  bool PrepareExportFolders(const std::filesystem::path &exportAssetsPath);
+  bool CopyRuntimeExecutable(const std::filesystem::path &runtimeExecutable,
+                             const std::filesystem::path &exportRoot);
+  bool CopyGameAssets(const std::filesystem::path &exportAssetsPath);
 
-		Scope<Framebuffer> m_Framebuffer;
+private:
+  Scene m_EditorScene;
+  Scene m_RuntimeScene;
+  Scene *m_ActiveScene = nullptr;
 
-		bool m_ViewportFocused = false;
-		bool m_ViewportHovered = false;
-		glm::vec2 m_ViewportSize = { 1280.0f, 720.0f };
-		glm::vec2 m_PendingViewportSize = { 1280.0f, 720.0f };
-		glm::vec2 m_ViewportBounds[2] = {};
+  EditorCamera m_EditorCamera;
 
-		bool m_Profiling = false;
+  Scope<Framebuffer> m_Framebuffer;
 
-		std::string m_SceneOutputFilepath = std::string();
+  bool m_ViewportFocused = false;
+  bool m_ViewportHovered = false;
+  glm::vec2 m_ViewportSize = {1280.0f, 720.0f};
+  glm::vec2 m_PendingViewportSize = {1280.0f, 720.0f};
+  glm::vec2 m_ViewportBounds[2] = {};
 
-		Entity m_HoveredEntity;
+  bool m_Profiling = false;
 
-		int m_GizmoType = -1;
+  std::string m_SceneOutputFilepath = std::string();
 
-		float m_LastDeltaTime = 0.0f;
+  Entity m_HoveredEntity;
 
-		SceneState m_SceneState = SceneState::Edit;
+  int m_GizmoType = -1;
 
-		Scope<Texture2D> m_PlayButton, m_StopButton;
-		bool m_DockLayoutInitialized = false;
-		ImGuiID m_ToolbarDockID = 0;
+  float m_LastDeltaTime = 0.0f;
 
-	private:
-		TitlebarPanel m_TitlebarPanel;
-		friend class TitlebarPanel;
-		SceneHierarchyPanel	m_SceneHierarchyPanel;
-		ContentBrowserPanel	m_ContentBrowserPanel;
-		PerformancePanel m_PerformancePanel;
-		DebugPanel m_DebugPanel;
-		GuidePanel m_GuidePanel;
-		ViewportPanel m_ViewportPanel;
-		ToolbarPanel m_ToolbarPanel;
-	};
+  SceneState m_SceneState = SceneState::Edit;
 
-}
+  Scope<Texture2D> m_PlayButton, m_StopButton;
+  bool m_DockLayoutInitialized = false;
+  ImGuiID m_ToolbarDockID = 0;
+
+private:
+  TitlebarPanel m_TitlebarPanel;
+  friend class TitlebarPanel;
+  SceneHierarchyPanel m_SceneHierarchyPanel;
+  ContentBrowserPanel m_ContentBrowserPanel;
+  PerformancePanel m_PerformancePanel;
+  DebugPanel m_DebugPanel;
+  GuidePanel m_GuidePanel;
+  ViewportPanel m_ViewportPanel;
+  ToolbarPanel m_ToolbarPanel;
+};
+
+} // namespace Rod

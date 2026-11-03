@@ -1,0 +1,88 @@
+name: Unit tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unit-tests:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows MSVC
+            os: windows-2022
+            preset: vs-tests
+          - name: Windows Clang
+            os: windows-2022
+            preset: windows-clang-tests
+          - name: Linux Clang
+            os: ubuntu-24.04
+            preset: linux-clang-tests
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Set up the Windows compiler environment
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vsPath = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          Import-Module "$vsPath\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
+          Enter-VsDevShell -VsInstallPath $vsPath -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
+          foreach ($variable in @('PATH', 'INCLUDE', 'LIB', 'LIBPATH')) {
+            "$variable=$([Environment]::GetEnvironmentVariable($variable))" >> $env:GITHUB_ENV
+          }
+
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang ninja-build libgl1-mesa-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
+
+      - name: Sync shaderc dependencies
+        run: python RodEngine/vendor/shaderc/utils/git-sync-deps
+
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build unit tests
+        run: cmake --build --preset ${{ matrix.preset }} --parallel 2
+
+      - name: Run unit tests
+        run: ctest --preset ${{ matrix.preset }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: unit-tests-${{ matrix.preset }}
+          path: |
+            build/${{ matrix.preset }}/test-results.xml
+            build/${{ matrix.preset }}/Testing/Temporary/*.log
+          if-no-files-found: ignore
+          retention-days: 7

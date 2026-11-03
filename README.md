@@ -113,15 +113,17 @@ Use `build/vs` for MSVC. Output goes to `<build-directory>/export/RodGame`; run 
 
 ## Tests
 
-The test suite covers math, scene operations, and scene serialization. To build and run it with Windows Clang:
+The test suite covers math, scene operations, and scene serialization. Dedicated presets use separate build directories and build only the test executable and its dependencies:
 
 ```powershell
-cmake --preset windows-clang -DBUILD_TESTING=ON
-cmake --build build/clang --config Debug --target RodEngineTests
-ctest --test-dir build/clang -C Debug --output-on-failure
+cmake --preset windows-clang-tests
+cmake --build --preset windows-clang-tests
+ctest --preset windows-clang-tests
 ```
 
-For MSVC, use the `vs` configure preset and `build/vs` directory. For Linux, use `linux-clang` and `build/clang`. Catch2 is fetched during the first configuration with tests enabled.
+Use `vs-tests` for MSVC or `linux-clang-tests` for Linux. Catch2 is fetched during the first test configuration.
+
+GitHub Actions runs the same Debug test presets for all three toolchains on pull requests and pushes to `main`. Test reports and CTest logs are available as workflow artifacts.
 
 ## License
 

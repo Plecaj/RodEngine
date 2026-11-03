@@ -73,6 +73,39 @@
         "GLFW_BUILD_X11": "ON",
         "GLFW_BUILD_WAYLAND": "OFF"
       }
+    },
+    {
+      "name": "vs-tests",
+      "displayName": "MSVC Unit Tests",
+      "inherits": "vs",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "BUILD_TESTING": "ON",
+        "ROD_BUILD_EDITOR": "OFF",
+        "ROD_BUILD_RUNTIME": "OFF"
+      }
+    },
+    {
+      "name": "windows-clang-tests",
+      "displayName": "Windows Clang Unit Tests",
+      "inherits": "windows-clang",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "BUILD_TESTING": "ON",
+        "ROD_BUILD_EDITOR": "OFF",
+        "ROD_BUILD_RUNTIME": "OFF"
+      }
+    },
+    {
+      "name": "linux-clang-tests",
+      "displayName": "Linux Clang Unit Tests",
+      "inherits": "linux-clang",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "BUILD_TESTING": "ON",
+        "ROD_BUILD_EDITOR": "OFF",
+        "ROD_BUILD_RUNTIME": "OFF"
+      }
     }
   ],
   "buildPresets": [
@@ -138,6 +171,56 @@
       "displayName": "Linux Clang Dist",
       "configurePreset": "linux-clang",
       "configuration": "Dist"
+    },
+    {
+      "name": "vs-tests",
+      "configurePreset": "vs-tests",
+      "configuration": "Debug",
+      "targets": ["RodEngineTests"]
+    },
+    {
+      "name": "windows-clang-tests",
+      "configurePreset": "windows-clang-tests",
+      "configuration": "Debug",
+      "targets": ["RodEngineTests"]
+    },
+    {
+      "name": "linux-clang-tests",
+      "configurePreset": "linux-clang-tests",
+      "configuration": "Debug",
+      "targets": ["RodEngineTests"]
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "vs-tests",
+      "configurePreset": "vs-tests",
+      "configuration": "Debug",
+      "output": {
+        "outputOnFailure": true,
+        "outputJUnitFile": "${sourceDir}/build/${presetName}/test-results.xml"
+      },
+      "execution": { "noTestsAction": "error" }
+    },
+    {
+      "name": "windows-clang-tests",
+      "configurePreset": "windows-clang-tests",
+      "configuration": "Debug",
+      "output": {
+        "outputOnFailure": true,
+        "outputJUnitFile": "${sourceDir}/build/${presetName}/test-results.xml"
+      },
+      "execution": { "noTestsAction": "error" }
+    },
+    {
+      "name": "linux-clang-tests",
+      "configurePreset": "linux-clang-tests",
+      "configuration": "Debug",
+      "output": {
+        "outputOnFailure": true,
+        "outputJUnitFile": "${sourceDir}/build/${presetName}/test-results.xml"
+      },
+      "execution": { "noTestsAction": "error" }
     }
   ]
 }

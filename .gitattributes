@@ -1,1 +1,13 @@
 RodEngine/vendor/** linguist-vendored
+
+/RodEngine/src/**/*.cpp text eol=lf
+/RodEngine/src/**/*.h text eol=lf
+/Rod-Editor/src/**/*.cpp text eol=lf
+/Rod-Editor/src/**/*.h text eol=lf
+/Rod-Runtime/src/**/*.cpp text eol=lf
+/Rod-Runtime/src/**/*.h text eol=lf
+/tests/**/*.cpp text eol=lf
+/tests/**/*.h text eol=lf
+/.clang* text eol=lf
+/.editorconfig text eol=lf
+/.gitattributes text eol=lf

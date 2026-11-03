@@ -1,0 +1,125 @@
+InheritParentConfig: false
+Checks: >-
+  -*,
+  clang-analyzer-*,
+  bugprone-assert-side-effect,
+  bugprone-assignment-in-if-condition,
+  bugprone-branch-clone,
+  bugprone-dangling-handle,
+  bugprone-integer-division,
+  bugprone-macro-parentheses,
+  bugprone-macro-repeated-side-effects,
+  bugprone-misplaced-widening-cast,
+  bugprone-multiple-statement-macro,
+  bugprone-narrowing-conversions,
+  bugprone-sizeof-container,
+  bugprone-sizeof-expression,
+  bugprone-suspicious-memset-usage,
+  bugprone-suspicious-semicolon,
+  bugprone-suspicious-string-compare,
+  bugprone-unchecked-optional-access,
+  bugprone-undefined-memory-manipulation,
+  bugprone-unhandled-self-assignment,
+  bugprone-use-after-move,
+  performance-*,
+  cppcoreguidelines-pro-type-const-cast,
+  cppcoreguidelines-pro-type-reinterpret-cast,
+  cppcoreguidelines-special-member-functions,
+  google-explicit-constructor,
+  google-readability-casting,
+  misc-include-cleaner,
+  misc-unconventional-assign-operator,
+  modernize-deprecated-headers,
+  modernize-loop-convert,
+  modernize-redundant-void-arg,
+  modernize-return-braced-init-list,
+  modernize-use-auto,
+  modernize-use-bool-literals,
+  modernize-use-default-member-init,
+  modernize-use-emplace,
+  modernize-use-equals-default,
+  modernize-use-equals-delete,
+  modernize-use-nodiscard,
+  modernize-use-nullptr,
+  modernize-use-override,
+  modernize-use-transparent-functors,
+  modernize-use-using,
+  readability-avoid-const-params-in-decls,
+  readability-container-size-empty,
+  readability-duplicate-include,
+  readability-function-cognitive-complexity,
+  readability-function-size,
+  readability-identifier-naming,
+  readability-implicit-bool-conversion,
+  readability-inconsistent-declaration-parameter-name,
+  readability-magic-numbers,
+  readability-make-member-function-const,
+  readability-misleading-indentation,
+  readability-non-const-parameter,
+  readability-redundant-control-flow,
+  readability-redundant-declaration,
+  readability-redundant-member-init,
+  readability-redundant-smartptr-get,
+  readability-redundant-string-cstr,
+  readability-redundant-string-init,
+  readability-simplify-boolean-expr,
+  readability-simplify-subscript-expr
+WarningsAsErrors: ''
+HeaderFilterRegex: '(^|.*[/\\])(RodEngine[/\\]src|Rod-Editor[/\\]src|Rod-Runtime[/\\]src|tests)[/\\].*'
+SystemHeaders: false
+FormatStyle: file
+CheckOptions:
+  bugprone-assert-side-effect.AssertMacros: 'assert,RD_ASSERT,RD_CORE_ASSERT'
+  bugprone-assert-side-effect.CheckFunctionCalls: true
+  bugprone-narrowing-conversions.WarnOnIntegerNarrowingConversion: true
+  bugprone-narrowing-conversions.WarnOnIntegerToFloatingPointNarrowingConversion: true
+  bugprone-narrowing-conversions.WarnOnFloatingPointNarrowingConversion: true
+  bugprone-narrowing-conversions.WarnOnEquivalentBitWidth: true
+  cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor: false
+  cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions: false
+  cppcoreguidelines-special-member-functions.AllowMissingMoveFunctionsWhenCopyIsDeleted: false
+  cppcoreguidelines-special-member-functions.AllowImplicitlyDeletedCopyOrMove: false
+  misc-include-cleaner.IgnoreHeaders: '(^|[/\\])rdpch\.h$'
+  readability-function-size.LineThreshold: 100
+  readability-function-size.StatementThreshold: 60
+  readability-function-size.BranchThreshold: 12
+  readability-function-size.ParameterThreshold: 6
+  readability-function-size.NestingThreshold: 4
+  readability-function-size.VariableThreshold: 15
+  readability-function-cognitive-complexity.Threshold: 25
+  readability-magic-numbers.IgnoredIntegerValues: '1'
+  readability-magic-numbers.IgnoredFloatingPointValues: '1.0'
+  readability-magic-numbers.IgnorePowersOf2IntegerValues: false
+  readability-identifier-naming.ClassCase: CamelCase
+  readability-identifier-naming.StructCase: CamelCase
+  readability-identifier-naming.EnumCase: CamelCase
+  readability-identifier-naming.EnumConstantCase: CamelCase
+  readability-identifier-naming.TypeAliasCase: CamelCase
+  readability-identifier-naming.TypedefCase: CamelCase
+  readability-identifier-naming.TemplateParameterCase: CamelCase
+  readability-identifier-naming.FunctionCase: CamelCase
+  readability-identifier-naming.FunctionIgnoredRegexp: '^(main|begin|end|cbegin|cend|rbegin|rend|crbegin|crend|size|data|empty|swap)$'
+  readability-identifier-naming.MethodCase: CamelCase
+  readability-identifier-naming.MethodIgnoredRegexp: '^(begin|end|cbegin|cend|rbegin|rend|crbegin|crend|size|data|empty|swap)$'
+  readability-identifier-naming.ClassMethodCase: CamelCase
+  readability-identifier-naming.ClassMethodIgnoredRegexp: '^(encode|decode)$'
+  readability-identifier-naming.VariableCase: camelBack
+  readability-identifier-naming.ParameterCase: camelBack
+  readability-identifier-naming.LocalVariableCase: camelBack
+  readability-identifier-naming.LocalConstantCase: camelBack
+  readability-identifier-naming.PublicMemberCase: CamelCase
+  readability-identifier-naming.PrivateMemberCase: CamelCase
+  readability-identifier-naming.PrivateMemberPrefix: 'm_'
+  readability-identifier-naming.ProtectedMemberCase: CamelCase
+  readability-identifier-naming.ProtectedMemberPrefix: 'm_'
+  readability-identifier-naming.ClassMemberCase: CamelCase
+  readability-identifier-naming.ClassMemberPrefix: 's_'
+  readability-identifier-naming.ClassConstantCase: UPPER_CASE
+  readability-identifier-naming.GlobalVariableCase: CamelCase
+  readability-identifier-naming.GlobalVariablePrefix: 'g_'
+  readability-identifier-naming.GlobalConstantCase: CamelCase
+  readability-identifier-naming.GlobalConstantPrefix: 'g_'
+  readability-identifier-naming.StaticVariableCase: CamelCase
+  readability-identifier-naming.StaticVariablePrefix: 's_'
+  readability-identifier-naming.StaticConstantCase: UPPER_CASE
+  readability-identifier-naming.MacroDefinitionCase: UPPER_CASE

@@ -1,2 +1,16 @@
 CompileFlags:
   CompilationDatabase: build/clang
+Diagnostics:
+  ClangTidy:
+    FastCheckFilter: Strict
+  UnusedIncludes: Strict
+  MissingIncludes: Strict
+  Includes:
+    IgnoreHeader: ['(^|[/\\])rdpch\.h$']
+---
+If:
+  PathMatch: ['RodEngine/vendor/.*', 'build/.*', 'out/.*']
+Diagnostics:
+  Suppress: '*'
+Index:
+  Background: Skip

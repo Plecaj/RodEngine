@@ -1,0 +1,67 @@
+# Tested with the LLVM 19 and 21 clang-format versions used by this project.
+BasedOnStyle: LLVM
+Language: Cpp
+Standard: Latest
+ColumnLimit: 120
+IndentWidth: 4
+TabWidth: 4
+UseTab: ForIndentation
+ContinuationIndentWidth: 4
+NamespaceIndentation: None
+AccessModifierOffset: -4
+IndentCaseLabels: true
+PointerAlignment: Left
+ReferenceAlignment: Left
+DerivePointerAlignment: false
+LineEnding: LF
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterClass: true
+  AfterControlStatement: Always
+  AfterEnum: true
+  AfterFunction: true
+  AfterNamespace: false
+  AfterStruct: true
+  AfterUnion: true
+  BeforeCatch: true
+  BeforeElse: true
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortIfStatementsOnASingleLine: Never
+AllowShortLoopsOnASingleLine: false
+AllowShortBlocksOnASingleLine: Empty
+AllowShortLambdasOnASingleLine: Inline
+InsertBraces: false
+
+BinPackArguments: false
+BinPackParameters: false
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AlignAfterOpenBracket: AlwaysBreak
+AlignConsecutiveAssignments: None
+AlignConsecutiveDeclarations: None
+AlignEscapedNewlines: DontAlign
+ReflowComments: false
+
+# Negative priority keeps the PCH ahead of the automatically detected main header.
+IncludeBlocks: Regroup
+SortIncludes: CaseSensitive
+IncludeCategories:
+  - Regex: '^"rdpch\.h"$'
+    Priority: -100
+  - Regex: '^"(imgui(_internal)?\.h|ImGuizmo\.h|entt\.hpp)"$'
+    Priority: 2
+  - Regex: '^"'
+    Priority: 1
+  - Regex: '^<(glad/|GLFW/|glm/|yaml-cpp/|catch2/|nlohmann/|spdlog/|shaderc/|imgui|ImGuizmo|nethost\.h|hostfxr\.h|coreclr_delegates\.h|Windows\.h)'
+    Priority: 2
+  - Regex: '^<'
+    Priority: 3
+StatementMacros:
+  - RD_ASSERT
+  - RD_CORE_ASSERT
+  - RD_PROFILE_FUNCTION
+  - RD_PROFILE_SCOPE

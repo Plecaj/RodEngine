@@ -75,6 +75,34 @@
       }
     },
     {
+      "name": "windows-clang-analysis",
+      "displayName": "Windows Clang Debug Analysis",
+      "inherits": "windows-clang",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/analysis",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_DISABLE_PRECOMPILE_HEADERS": "ON",
+        "BUILD_TESTING": "ON",
+        "ROD_BUILD_EDITOR": "ON",
+        "ROD_BUILD_RUNTIME": "ON"
+      }
+    },
+    {
+      "name": "linux-clang-analysis",
+      "displayName": "Linux Clang Debug Analysis",
+      "inherits": "linux-clang",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/analysis",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_DISABLE_PRECOMPILE_HEADERS": "ON",
+        "BUILD_TESTING": "ON",
+        "ROD_BUILD_EDITOR": "ON",
+        "ROD_BUILD_RUNTIME": "ON"
+      }
+    },
+    {
       "name": "vs-tests",
       "displayName": "MSVC Unit Tests",
       "inherits": "vs",

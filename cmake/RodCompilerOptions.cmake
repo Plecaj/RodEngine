@@ -31,22 +31,29 @@ endif()
 if(MSVC)
     target_compile_options(RodProjectWarnings INTERFACE /W4 /permissive-)
     target_compile_options(RodProjectOptions INTERFACE
-        /MP
         /EHsc
         /utf-8
         /Zc:__cplusplus
-        /Zc:preprocessor
-        /diagnostics:caret
-        /external:anglebrackets
-        /external:W0
         $<$<CONFIG:Debug>:/Od;/Zi>
         $<$<CONFIG:Release>:/O2;/Zi>
-        $<$<CONFIG:Dist>:/O2;/GL>
+        $<$<CONFIG:Dist>:/O2>
     )
     target_link_options(RodProjectOptions INTERFACE
         $<$<CONFIG:Release>:/DEBUG>
-        $<$<CONFIG:Dist>:/LTCG>
     )
+    if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        target_compile_options(RodProjectOptions INTERFACE
+            /MP
+            /Zc:preprocessor
+            /diagnostics:caret
+            /external:anglebrackets
+            /external:W0
+            $<$<CONFIG:Dist>:/GL>
+        )
+        target_link_options(RodProjectOptions INTERFACE
+            $<$<CONFIG:Dist>:/LTCG>
+        )
+    endif()
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
     target_compile_options(RodProjectWarnings INTERFACE -Wall -Wextra -Wpedantic)
 else()

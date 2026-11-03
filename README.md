@@ -3,8 +3,6 @@
 
   # RodEngine
 
-  Custom C++ game engine and editor focused on rendering, tooling, scripting, and engine architecture.
-
   [![License](https://img.shields.io/github/license/Plecaj/RodEngine?color=green)](LICENSE)
   [![Latest Commit](https://img.shields.io/github/last-commit/Plecaj/RodEngine)](https://github.com/Plecaj/RodEngine/commits/main)
   ![C++23](https://img.shields.io/badge/C%2B%2B-23-blue)
@@ -13,217 +11,118 @@
   ![.NET 9](https://img.shields.io/badge/scripting-.NET%209-purple)
 </div>
 
-RodEngine is a hands-on engine project focused on building the core systems directly: rendering, scene management, editor tools, C# scripting, and the runtime/export pipeline.
+RodEngine is a C++23 game engine and editor with OpenGL rendering and C# scripting. It supports 2D and 3D scenes, editor play mode, and exporting scenes to a standalone runtime.
 
-It is not intended to compete with engines like Unity or Unreal. The project is still in early development, so APIs and workflows may change.
-
-> **Project status:** early development. The editor and runtime are usable, but the API is not stable yet.
+The engine is in early development; physics, audio, animation, and prefabs are not implemented yet.
 
 <p align="center">
-  <img src="editor.png" alt="RodEditor screenshot" width="900" />
+  <img src="editor.png" alt="RodEngine scene editor" width="900" />
 </p>
 
-## At A Glance
+## Implemented systems
 
-| Area | Current state |
-| --- | --- |
-| Editor | Dockable ImGui editor with viewport, hierarchy, properties, content browser, toolbar, debug, guide, and performance panels |
-| Scene system | ECS scenes with UUID entities, serializable components, editor/runtime update paths, and scene copying for play mode |
-| Rendering | Batched 2D renderer, 3D mesh renderer, directional lights, shadow depth passes, GLB loading, and material data |
-| Scripting | .NET 9 C# scripting hosted from C++, with reflected script fields and runtime reload support |
-| Runtime | Separate game runtime executable with editor export into `exports/RodGame` |
+### Editor and scenes
 
-## Highlights
-
-| Feature | Why it matters |
-| --- | --- |
-| Editor play mode copies the scene | Runtime changes do not overwrite editor data |
-| Framebuffer entity picking | The editor can select entities directly from the viewport |
-| YAML scene serialization | Scenes store entities, components, materials, scripts, and script field values |
-| Shaderc + SPIR-V cache | Multi-stage GLSL shaders are compiled and cached instead of rebuilt every time |
-| C# metadata reflection | Script classes and serializable fields show up in the editor |
-| Runtime/export path | Scenes can be packaged with assets and launched outside the editor |
-
-## Implemented Systems
-
-### Editor
-
-- Custom title bar and dockspace layout.
-- Scene hierarchy and properties editing.
-- Content browser with drag and drop for scenes, textures, and GLB meshes.
-- Viewport rendering through a framebuffer.
-- Entity picking from an integer framebuffer attachment.
-- Transform gizmos with ImGuizmo.
-- Play and stop workflow.
-- Scene open, save, save as, and game export.
-
-### Scene System
-
-- ECS model based on `entt`.
-- Stable UUIDs for entities.
-- Components for transform, camera, sprite renderer, mesh, directional light, and C# script.
-- YAML serialization for scene data.
-- Separate editor and runtime update paths.
-- Scene copying before play mode.
+- Dockable editor with a viewport, entity hierarchy, property inspector, and content browser.
+- Viewport entity picking through framebuffer IDs, transform gizmos, and drag-and-drop support for scenes, textures, and models.
+- ECS scenes with UUIDs and YAML serialization. Play mode runs a copy of the scene so runtime changes do not affect the editor scene.
 
 ### Rendering
 
-- OpenGL backend with a renderer abstraction layer.
-- Batched 2D quad renderer with texture slots and draw stats.
-- 3D renderer with mesh submission and material data.
-- Directional lights and shadow map depth passes.
-- GLB mesh loading through `tinygltf`.
-- Material properties for albedo, emissive color, roughness, and metallic.
-- Multi-stage GLSL files compiled with `shaderc` into SPIR-V.
-- YAML-backed shader cache database.
+- Batched 2D sprite rendering.
+- Static GLB mesh rendering with material controls, directional lights, and shadow maps.
+- GLSL shader compilation and SPIR-V caching.
 
-### C# Scripting
+### Scripting and runtime
 
-- .NET 9 runtime hosted from C++ through `hostfxr`.
-- Script projects built with `dotnet build`.
-- Game scripts loaded into a collectible `AssemblyLoadContext`.
-- Script classes and serializable fields reflected into editor UI.
-- Native calls for logging, input, entities, components, transforms, cameras, sprites, meshes, materials, lights, and script data.
-- Script source changes detected while the editor is running.
+- .NET 9 hosted from C++ for C# entity scripts, with fields editable in the inspector and assembly reloading while the editor is running.
+- Script access to entities, transforms, cameras, rendering components, input, and logging.
+- A standalone runtime and editor export for packaging a scene with its assets.
 
-### Runtime And Export
+Windows and Linux are supported. Linux uses X11 or XWayland; native Wayland support is not available. Rendering requires OpenGL 4.6.
 
-- `Rod-Runtime` runs scenes without the editor UI.
-- Editor export copies the runtime executable, assets, and startup scene.
-- Runtime loads `assets/scenes/Startup.rod`.
-
-## Current Limitations
-
-| Area | Current limitation |
-| --- | --- |
-| Platform | Windows and Linux (X11/XWayland). Native Wayland window management is not supported yet. |
-| Rendering backend | The renderer abstraction exists, but OpenGL is the only implemented backend. |
-| Asset pipeline | Asset handling is still simple. The editor currently works with scene files, PNG textures, and GLB meshes. |
-| Mesh loading | GLB loading is focused on static mesh data and basic material values. It is not a full glTF asset pipeline yet. |
-| Gameplay systems | Physics, audio, animation, prefab workflows, and asset importing tools are not implemented yet. |
-| Editor UX | The editor is usable, but many workflows are still early and will change as the engine grows. |
-
-## Code Map
-
-| Area | Start here |
-| --- | --- |
-| Editor shell | `Rod-Editor/src/EditorLayer.cpp` |
-| Editor panels | `Rod-Editor/src/Panels/` |
-| Scene and ECS | `RodEngine/src/Rod/Scene/` |
-| 2D renderer | `RodEngine/src/Rod/Renderer/Renderer2D.cpp` |
-| 3D renderer and shadows | `RodEngine/src/Rod/Renderer/Renderer3D.cpp` |
-| Shader compilation | `RodEngine/src/Rod/Platform/OpenGL/OpenGLShader.cpp` |
-| Shader cache | `RodEngine/src/Rod/Renderer/ShaderCacheDatabase.cpp` |
-| C# script hosting | `RodEngine/src/Rod/Scripting/` |
-| Managed script API | `Rod-ScriptCore/Source/` |
-| Standalone runtime | `Rod-Runtime/src/` |
-
-## Tech Stack
+## Tech stack
 
 | Area | Technology |
 | --- | --- |
-| Language | C++23, C# |
-| Build | CMake, MSVC or Clang, Ninja, .NET SDK |
-| Rendering | OpenGL, shaderc, SPIR-V |
-| UI | Dear ImGui, ImGuizmo |
-| ECS | entt |
-| Scene files | YAML |
-| Mesh loading | tinygltf |
+| Languages | C++23, C# |
+| Build | CMake, MSVC or Clang, Ninja |
+| Rendering | OpenGL 4.6, shaderc, SPIR-V |
+| Editor UI | Dear ImGui, ImGuizmo |
+| ECS | EnTT |
+| Scripting | .NET 9 |
+| Scene serialization | yaml-cpp |
+| Asset loading | tinygltf, stb_image |
 | Logging | spdlog |
 
 ## Build
 
 ### Requirements
 
-Both platforms need **CMake 3.25+**, **Git**, **Python 3**, and **.NET 9 SDK** for C# scripting. Running the engine requires **OpenGL 4.6**.
+Common requirements: **CMake 3.25+**, **Git**, **Python 3**, and the **.NET 9 SDK**.
 
 | Platform | Build tools and dependencies |
 | --- | --- |
-| Windows | Visual Studio 2022 with Desktop development with C++ |
-| Linux | Clang, a C++23 standard library with `std::format`, Ninja, X11 development headers (Xrandr, Xinerama, Xcursor, XInput), OpenGL development headers, and Zenity for file dialogs |
+| Windows (MSVC) | Visual Studio 2022 with the **Desktop development with C++** workload |
+| Windows (Clang) | The same Visual Studio workload, plus LLVM and Ninja on `PATH` |
+| Linux (Clang) | Clang with a C++23 standard library, Ninja, X11 development headers (Xrandr, Xinerama, Xcursor, XInput), OpenGL development headers, and Zenity for file dialogs |
 
-Linux uses X11, including XWayland on Wayland desktops. Native Wayland support is pending.
+### Sources
 
-<details>
-<summary>Install Linux dependencies on Fedora</summary>
-
-```bash
-sudo dnf install clang cmake ninja-build libstdc++-devel libX11-devel libXrandr-devel libXinerama-devel libXcursor-devel libXi-devel mesa-libGL-devel dotnet-sdk-9.0 zenity
-```
-
-</details>
-
-### Get the sources
-
-Choose HTTPS or SSH; SSH requires a GitHub SSH key.
-
-| Protocol | Clone command |
-| --- | --- |
-| HTTPS | `git clone https://github.com/Plecaj/RodEngine.git` |
-| SSH | `git clone git@github.com:Plecaj/RodEngine.git` |
-
-Then initialize the submodules and sync shaderc's dependencies. Run these steps for an existing clone too:
-
-```bash
+```sh
+git clone --recursive https://github.com/Plecaj/RodEngine.git
 cd RodEngine
-git submodule update --init --recursive
 python RodEngine/vendor/shaderc/utils/git-sync-deps
 ```
 
-### Build and run
+Shaderc requires the dependency sync above in addition to the recursive submodule checkout. After updating an existing clone, run `git submodule update --init --recursive` and repeat the sync.
+
+### Configure and build
 
 Run CMake from the repository root:
 
-| Platform | Configure | Debug build | Output directory | Editor executable |
-| --- | --- | --- | --- | --- |
-| Windows | `cmake --preset vs` | `cmake --build --preset vs-debug` | `build/vs/bin/Debug` | `Rod-Editor.exe` |
-| Linux | `cmake --preset linux-clang` | `cmake --build --preset linux-clang-debug` | `build/linux-clang/bin/Debug` | `Rod-Editor` |
-
-Run the editor from its output directory so it can find the copied assets. Both builds also produce `Rod-Runtime` (`.exe` on Windows) and build the C# projects when `dotnet` is available.
-
-### Configuration
-
-Build presets use `<platform>-<configuration>`, for example `vs-release` or `linux-clang-dist`. Output goes to `<build-directory>/bin/<configuration>`.
-
-| Configuration | Preset suffix | Purpose |
+| Toolchain | Configure | Debug build |
 | --- | --- | --- |
-| `Debug` | `debug` | Development and debugging |
-| `Release` | `release` | Optimized build |
-| `Dist` | `dist` | Distribution build based on Release |
+| Windows MSVC | `cmake --preset vs` | `cmake --build --preset vs-debug` |
+| Windows Clang | `cmake --preset windows-clang` | `cmake --build --preset windows-clang-debug` |
+| Linux Clang | `cmake --preset linux-clang` | `cmake --build --preset linux-clang-debug` |
 
-Append `-D<name>=<value>` to a configure command to override a CMake option.
+Windows Clang requires an x64 Visual Studio developer shell with LLVM and Ninja on `PATH`.
 
-| Option | Default | Description |
-| --- | --- | --- |
-| `ROD_CXX_STANDARD` | `23` | C++ standard: `20` or `23` |
-| `ROD_ENABLE_PCH` | `ON` | Use precompiled headers for the engine |
-| `ROD_BUILD_EDITOR` | `ON` | Build `Rod-Editor` |
-| `ROD_BUILD_RUNTIME` | `ON` | Build `Rod-Runtime` |
-| `ROD_IMGUI_DEMO` | `OFF` | Include the Dear ImGui demo window |
-| `ROD_WARNINGS_AS_ERRORS` | `OFF` | Treat project warnings as errors |
-| `BUILD_TESTING` | `OFF` | Build `RodEngineTests` and register tests with CTest |
+Build presets provide `Debug`, `Release`, and `Dist` configurations through the `-debug`, `-release`, and `-dist` suffixes.
 
-### Tests
+For a runtime-only build, configure with `-DROD_BUILD_EDITOR=OFF` and build the `Rod-Runtime` target explicitly.
 
-Tests are optional and use Catch2 v3.8.1, fetched once per build directory when enabled. Add test sources under `tests/` and list them in `tests/CMakeLists.txt`
+### Run
 
-| Step | Windows | Linux |
-| --- | --- | --- |
-| Configure | `cmake --preset vs -DBUILD_TESTING=ON` | `cmake --preset linux-clang -DBUILD_TESTING=ON` |
-| Build | `cmake --build build/vs --config Debug --target RodEngineTests` | `cmake --build build/linux-clang --config Debug --target RodEngineTests` |
-| Run | `ctest --test-dir build/vs -C Debug --output-on-failure` | `ctest --test-dir build/linux-clang -C Debug --output-on-failure` |
+Executables are written to `build/vs/bin/<configuration>` for MSVC and `build/clang/bin/<configuration>` for Clang. Run `Rod-Editor` (`Rod-Editor.exe` on Windows) from that directory so it can find its assets.
 
-### Runtime and export
+The bundled `assets/scenes/Example.rod` and `Example3D.rod` scenes can be opened through **File > Open** and run in play mode. `Rod-Runtime` loads `assets/scenes/Startup.rod`, falling back to the 3D example when no startup scene is present.
 
-For a runtime-only build, append `-DROD_BUILD_EDITOR=OFF` to either configure command.
+### Export
 
-| Platform | Export a Debug game package |
-| --- | --- |
-| Windows | `cmake --build build/vs --config Debug --target RodGame-Export` |
-| Linux | `cmake --build build/linux-clang --config Debug --target RodGame-Export` |
+**File > Export Game** writes the current scene and its assets to `exports/RodGame` relative to the editor's working directory.
 
-Packages go to `<build-directory>/export/RodGame`, containing assets and `RodGame.exe` on Windows or `RodGame` on Linux. Run the game from that directory. Use `--config Release` or `--config Dist` for other configurations.
+The CMake export target packages the bundled 3D example instead of the current editor scene:
+
+```sh
+cmake --build build/clang --config Debug --target RodGame-Export
+```
+
+Use `build/vs` for MSVC. Output goes to `<build-directory>/export/RodGame`; run `RodGame` (`RodGame.exe` on Windows) from that directory.
+
+## Tests
+
+The test suite covers math, scene operations, and scene serialization. To build and run it with Windows Clang:
+
+```powershell
+cmake --preset windows-clang -DBUILD_TESTING=ON
+cmake --build build/clang --config Debug --target RodEngineTests
+ctest --test-dir build/clang -C Debug --output-on-failure
+```
+
+For MSVC, use the `vs` configure preset and `build/vs` directory. For Linux, use `linux-clang` and `build/clang`. Catch2 is fetched during the first configuration with tests enabled.
 
 ## License
 
-RodEngine is licensed under the MIT License. See [LICENSE](LICENSE).
+RodEngine is licensed under [Apache-2.0](LICENSE). Third-party dependencies and bundled assets retain their own licenses.

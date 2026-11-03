@@ -9,6 +9,7 @@ __cmake_systeminformation/
 
 # Files 
 *.user
+/.cache/clangd/
 Sandbox/RodProfile-*.json
 Rod-Editor/RodProfile-*.json
 

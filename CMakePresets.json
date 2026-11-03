@@ -36,10 +36,29 @@
       }
     },
     {
+      "name": "windows-clang",
+      "displayName": "Windows Clang",
+      "description": "Clang with the MSVC toolchain.",
+      "generator": "Ninja Multi-Config",
+      "binaryDir": "${sourceDir}/build/clang",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-cl",
+        "CMAKE_CXX_COMPILER": "clang-cl",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "ROD_CXX_STANDARD": "23",
+        "ROD_ENABLE_PCH": "OFF"
+      }
+    },
+    {
       "name": "linux-clang",
       "displayName": "Linux Clang",
       "generator": "Ninja Multi-Config",
-      "binaryDir": "${sourceDir}/build/linux-clang",
+      "binaryDir": "${sourceDir}/build/clang",
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
@@ -48,7 +67,9 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "ROD_CXX_STANDARD": "23",
+        "ROD_ENABLE_PCH": "OFF",
         "GLFW_BUILD_X11": "ON",
         "GLFW_BUILD_WAYLAND": "OFF"
       }
@@ -81,6 +102,24 @@
       "targets": [
         "Rod-Editor"
       ]
+    },
+    {
+      "name": "windows-clang-debug",
+      "displayName": "Windows Clang Debug",
+      "configurePreset": "windows-clang",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-clang-release",
+      "displayName": "Windows Clang Release",
+      "configurePreset": "windows-clang",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-clang-dist",
+      "displayName": "Windows Clang Dist",
+      "configurePreset": "windows-clang",
+      "configuration": "Dist"
     },
     {
       "name": "linux-clang-debug",

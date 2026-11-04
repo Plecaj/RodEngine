@@ -31,6 +31,10 @@ jobs:
           - name: Linux Clang
             os: ubuntu-24.04
             preset: linux-clang-tests
+          - name: Linux Clang ASan + LSan + UBSan
+            os: ubuntu-24.04
+            preset: linux-clang-sanitizers
+            build_preset: linux-clang-sanitizers-tests
 
     defaults:
       run:
@@ -62,7 +66,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang ninja-build libgl1-mesa-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
+          sudo apt-get install -y clang llvm libclang-rt-dev ninja-build libgl1-mesa-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
 
       - name: Sync shaderc dependencies
         run: python RodEngine/vendor/shaderc/utils/git-sync-deps
@@ -71,7 +75,7 @@ jobs:
         run: cmake --preset ${{ matrix.preset }}
 
       - name: Build unit tests
-        run: cmake --build --preset ${{ matrix.preset }} --parallel 2
+        run: cmake --build --preset ${{ matrix.build_preset || matrix.preset }} --parallel 2
 
       - name: Run unit tests
         run: ctest --preset ${{ matrix.preset }}

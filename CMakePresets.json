@@ -131,6 +131,21 @@
         "ROD_BUILD_EDITOR": "OFF",
         "ROD_BUILD_RUNTIME": "OFF"
       }
+    },
+    {
+      "name": "linux-clang-sanitizers",
+      "displayName": "Linux Clang ASan + LSan + UBSan",
+      "description": "Instrument native code and dependencies for memory errors, leaks, and undefined behavior.",
+      "inherits": "linux-clang-analysis",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "ROD_ENABLE_SANITIZERS": "ON"
+      },
+      "environment": {
+        "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+        "UBSAN_OPTIONS": "print_stacktrace=1:halt_on_error=1",
+        "LSAN_OPTIONS": "exitcode=23"
+      }
     }
   ],
   "buildPresets": [
@@ -214,6 +229,17 @@
       "configurePreset": "linux-clang-tests",
       "configuration": "Debug",
       "targets": ["RodEngineTests"]
+    },
+    {
+      "name": "linux-clang-sanitizers",
+      "configurePreset": "linux-clang-sanitizers"
+    },
+    {
+      "name": "linux-clang-sanitizers-tests",
+      "configurePreset": "linux-clang-sanitizers",
+      "targets": [
+        "RodEngineTests"
+      ]
     }
   ],
   "testPresets": [
@@ -246,6 +272,18 @@
         "outputJUnitFile": "${sourceDir}/build/${presetName}/test-results.xml"
       },
       "execution": { "noTestsAction": "error" }
+    },
+    {
+      "name": "linux-clang-sanitizers",
+      "configurePreset": "linux-clang-sanitizers",
+      "configuration": "Debug",
+      "output": {
+        "outputOnFailure": true,
+        "outputJUnitFile": "${sourceDir}/build/${presetName}/test-results.xml"
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
     }
   ]
 }

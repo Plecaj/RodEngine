@@ -30,6 +30,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 include(RodBuildTypes)
 include(RodCompilerOptions)
 include(RodOutputDirs)
+include(RodSanitizers)
 include(RodDependencies)
 
 add_subdirectory(RodEngine)

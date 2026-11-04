@@ -1,8 +1,9 @@
 #pragma once
 
+#include "Rod/Core/Application.h"
+#include "Rod/Core/Core.h"
+#include "Rod/Core/Log.h"
 #include "Rod/Debug/Instrumentator.h"
-
-extern Rod::Application* Rod::CreateApplication();
 
 int main(int argc, char** argv)
 {

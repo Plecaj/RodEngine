@@ -17,10 +17,7 @@ namespace Rod {
 			return s_Mode;
 		}
 
-		static void SetMode(Mode mode)
-		{
-			GetMode() = mode;
-		}
+		static void SetMode(Mode mode) { GetMode() = mode; }
 	};
 
 }

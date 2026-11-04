@@ -1,5 +1,7 @@
 #include "rdpch.h"
+
 #include "Renderer.h"
+
 #include "ShaderCacheDatabase.h"
 
 namespace Rod {

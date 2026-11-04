@@ -4,10 +4,10 @@
 
 namespace Rod {
 
-	class PerformancePanel {
+	class PerformancePanel
+	{
 	public:
 		PerformancePanel() = default;
-		~PerformancePanel() = default;
 
 		void OnImGuiRender(float deltaTime);
 	};

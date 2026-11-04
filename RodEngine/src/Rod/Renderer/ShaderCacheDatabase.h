@@ -2,34 +2,36 @@
 
 #include "Rod/Core/Core.h"
 
+#include <yaml-cpp/yaml.h>
+
 #include <filesystem>
 #include <unordered_set>
 #include <vector>
 
-#include <yaml-cpp/yaml.h>
-
-namespace Rod{
+namespace Rod {
 
 	class ShaderCacheDatabase
 	{
 	public:
 		bool CacheShader(const std::string& key, const std::vector<uint32_t>& data);
 		void AddValidKey(const std::string& key) { m_ValidKeys.insert(key); }
-		bool Contains(const std::string& key) const;
+		[[nodiscard]] bool Contains(const std::string& key) const;
 
-		static ShaderCacheDatabase& Get()
+		[[nodiscard]] static ShaderCacheDatabase& Get()
 		{
-			static ShaderCacheDatabase instance;
-			return instance;
+			static ShaderCacheDatabase s_Instance;
+			return s_Instance;
 		};
 
 		void Flush();
+
 	private:
 		ShaderCacheDatabase();
 
 		void CreateYAMLCacheDatabase();
 		void ValidateCache();
 		void SaveDatabase();
+
 	private:
 		std::unordered_set<std::string> m_ValidKeys;
 

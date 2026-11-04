@@ -1,4 +1,5 @@
 #include "rdpch.h"
+
 #include "Shader.h"
 
 #include "Rod/Platform/OpenGL/OpenGLShader.h"
@@ -7,55 +8,53 @@
 
 namespace Rod {
 
-	namespace Utils {
+	std::string Shader::Trim(const std::string& value)
+	{
+		const size_t begin = value.find_first_not_of(" \t\r\n");
+		if (begin == std::string::npos)
+			return {};
 
-		static std::string Trim(const std::string& value)
-		{
-			const size_t begin = value.find_first_not_of(" \t\r\n");
-			if (begin == std::string::npos)
-				return {};
-
-			const size_t end = value.find_last_not_of(" \t\r\n");
-			return value.substr(begin, end - begin + 1);
-		}
-
-		static shaderc_shader_kind ShadercTypeFromString(const std::string& type)
-		{
-			if (type == "vertex")
-				return shaderc_vertex_shader;
-			if (type == "fragment" || type == "pixel")
-				return shaderc_fragment_shader;
-			if (type == "geometry")
-				return shaderc_geometry_shader;
-			if (type == "tess_control" || type == "hull")
-				return shaderc_tess_control_shader;
-			if (type == "tess_evaluation" || type == "domain")
-				return shaderc_tess_evaluation_shader;
-			if (type == "compute")
-				return shaderc_compute_shader;
-
-			RD_CORE_ASSERT(false, "Invalid shader type specified");
-			return shaderc_glsl_infer_from_source;
-		}
+		const size_t end = value.find_last_not_of(" \t\r\n");
+		return value.substr(begin, end - begin + 1);
 	}
 
-    Scope<Shader> Shader::Create(const std::string& filepath, const ShaderOptions& options)
-    {
-       std::string source = Shader::ReadFile(filepath); 
-	   std::unordered_map<shaderc_shader_kind, std::string> processed = Shader::PreProcess(source);
-	   RD_CORE_ASSERT(!processed.empty(), "Shader file contains no shader stages");
+	shaderc_shader_kind Shader::ShadercTypeFromString(const std::string& type)
+	{
+		if (type == "vertex")
+			return shaderc_vertex_shader;
+		if (type == "fragment" || type == "pixel")
+			return shaderc_fragment_shader;
+		if (type == "geometry")
+			return shaderc_geometry_shader;
+		if (type == "tess_control" || type == "hull")
+			return shaderc_tess_control_shader;
+		if (type == "tess_evaluation" || type == "domain")
+			return shaderc_tess_evaluation_shader;
+		if (type == "compute")
+			return shaderc_compute_shader;
 
-	   std::filesystem::path file(filepath);
-	   std::string name = file.stem().string();
-       switch (RendererAPI::GetAPI())
-       {
-       case RendererAPI::API::OpenGL: return CreateScope<OpenGLShader>(processed, name, options);
-       case RendererAPI::API::None:
-           RD_CORE_ASSERT(false, "None API is not supported");
-           return nullptr;
-       }
-       return nullptr;
-    }
+		RD_CORE_ASSERT(false, "Invalid shader type specified");
+		return shaderc_glsl_infer_from_source;
+	}
+
+	Scope<Shader> Shader::Create(const std::string& filepath, const ShaderOptions& options)
+	{
+		const std::string source = Shader::ReadFile(filepath);
+		const std::unordered_map<shaderc_shader_kind, std::string> processed = Shader::PreProcess(source);
+		RD_CORE_ASSERT(!processed.empty(), "Shader file contains no shader stages");
+
+		const std::filesystem::path file(filepath);
+		const std::string name = file.stem().string();
+		switch (RendererAPI::GetAPI())
+		{
+			case RendererAPI::API::OpenGL:
+				return CreateScope<OpenGLShader>(processed, name, options);
+			case RendererAPI::API::None:
+				RD_CORE_ASSERT(false, "None API is not supported");
+				return nullptr;
+		}
+		return nullptr;
+	}
 
 	std::string Shader::ReadFile(const std::string& filepath)
 	{
@@ -66,16 +65,17 @@ namespace Rod {
 		if (in)
 		{
 			in.seekg(0, std::ios::end);
-			auto size = in.tellg();
+			const auto size = static_cast<std::streamsize>(in.tellg());
 			if (size <= 0)
 				return {};
 
-			result.resize((size_t)size);
+			result.resize(static_cast<size_t>(size));
 			in.seekg(0, std::ios::beg);
-			in.read(&result[0], result.size());
+			in.read(result.data(), size);
 			in.close();
 		}
-		else {
+		else
+		{
 			RD_CORE_ERROR("Could not open file '{0}'", filepath);
 		}
 
@@ -90,21 +90,21 @@ namespace Rod {
 		std::unordered_map<shaderc_shader_kind, std::string> shaderSources;
 
 		const char* typeToken = "#type";
-		size_t typeTokenLength = strlen(typeToken);
+		const size_t typeTokenLength = strlen(typeToken);
 		size_t pos = source.find(typeToken, 0);
-		while (pos != std::string::npos) {
-			size_t eol = source.find_first_of("\r\n", pos);
+		while (pos != std::string::npos)
+		{
+			const size_t eol = source.find_first_of("\r\n", pos);
 			RD_CORE_ASSERT(eol != std::string::npos, "Syntax Error");
-			size_t begin = pos + typeTokenLength + 1;
-			std::string type = Utils::Trim(source.substr(begin, eol - begin));
+			const size_t begin = pos + typeTokenLength + 1;
+			const std::string type = Trim(source.substr(begin, eol - begin));
 
-			size_t nextLinePos = source.find_first_not_of("\r\n", eol);
+			const size_t nextLinePos = source.find_first_not_of("\r\n", eol);
 			RD_CORE_ASSERT(nextLinePos != std::string::npos, "Shader stage has no source");
 			pos = source.find(typeToken, nextLinePos);
 
-			size_t shaderEnd = (pos == std::string::npos) ? source.size() : pos;
-			shaderSources[Utils::ShadercTypeFromString(type)] =
-				source.substr(nextLinePos, shaderEnd - nextLinePos);
+			const size_t shaderEnd = (pos == std::string::npos) ? source.size() : pos;
+			shaderSources[ShadercTypeFromString(type)] = source.substr(nextLinePos, shaderEnd - nextLinePos);
 		}
 
 		return shaderSources;
@@ -142,9 +142,9 @@ namespace Rod {
 		return m_Shaders[name];
 	}
 
-	bool ShaderLibrary::Exists(const std::string& name)
+	bool ShaderLibrary::Exists(const std::string& name) const
 	{
-		return m_Shaders.find(name) != m_Shaders.end();
+		return m_Shaders.contains(name);
 	}
 
 }

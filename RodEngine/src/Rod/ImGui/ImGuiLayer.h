@@ -8,7 +8,11 @@ namespace Rod {
 	{
 	public:
 		ImGuiLayer();
-		~ImGuiLayer();
+		virtual ~ImGuiLayer() override;
+		ImGuiLayer(const ImGuiLayer&) = delete;
+		ImGuiLayer& operator=(const ImGuiLayer&) = delete;
+		ImGuiLayer(ImGuiLayer&&) = delete;
+		ImGuiLayer& operator=(ImGuiLayer&&) = delete;
 
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
@@ -22,6 +26,7 @@ namespace Rod {
 		void SetDarkThemeColors();
 
 		void SetBlockEvents(bool block) { m_BlockEvents = block; }
+
 	private:
 		bool m_BlockEvents = true;
 	};

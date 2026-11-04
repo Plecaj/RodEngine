@@ -4,10 +4,10 @@
 
 namespace Rod {
 
-	class DebugPanel {
+	class DebugPanel
+	{
 	public:
 		DebugPanel() = default;
-		~DebugPanel() = default;
 
 		void OnImGuiRender(int gizmoType, Entity hoveredEntity, bool& profiling);
 	};

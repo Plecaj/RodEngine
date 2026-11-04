@@ -2,7 +2,7 @@ include(RodSources)
 
 add_executable(Rod-Runtime)
 
-rod_configure_cpp_standard(Rod-Runtime)
+rod_configure_cpp_target(Rod-Runtime)
 
 rod_collect_sources(ROD_RUNTIME_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src")
 rod_collect_headers(ROD_RUNTIME_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/src")

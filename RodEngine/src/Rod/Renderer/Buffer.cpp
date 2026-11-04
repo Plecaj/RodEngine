@@ -1,8 +1,8 @@
 #include "rdpch.h"
+
 #include "Buffer.h"
 
 #include "RendererAPI.h"
-
 #include "Rod/Platform/OpenGL/OpenGLBuffer.h"
 
 namespace Rod {
@@ -11,8 +11,11 @@ namespace Rod {
 	{
 		switch (RendererAPI::GetAPI())
 		{
-			case RendererAPI::API::None: RD_CORE_ASSERT(false, "RendererAPI::None is currently not supported"); return nullptr;
-			case RendererAPI::API::OpenGL: return CreateScope<OpenGLVertexBuffer>(size);
+			case RendererAPI::API::None:
+				RD_CORE_ASSERT(false, "RendererAPI::None is currently not supported");
+				return nullptr;
+			case RendererAPI::API::OpenGL:
+				return CreateScope<OpenGLVertexBuffer>(size);
 		}
 
 		RD_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -23,8 +26,11 @@ namespace Rod {
 	{
 		switch (RendererAPI::GetAPI())
 		{
-			case RendererAPI::API::None: RD_CORE_ASSERT(false, "RendererAPI::None is currently not supported"); return nullptr;
-			case RendererAPI::API::OpenGL: return CreateScope<OpenGLVertexBuffer>(vertices, size);
+			case RendererAPI::API::None:
+				RD_CORE_ASSERT(false, "RendererAPI::None is currently not supported");
+				return nullptr;
+			case RendererAPI::API::OpenGL:
+				return CreateScope<OpenGLVertexBuffer>(vertices, size);
 		}
 
 		RD_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -35,8 +41,11 @@ namespace Rod {
 	{
 		switch (RendererAPI::GetAPI())
 		{
-			case RendererAPI::API::None: RD_CORE_ASSERT(false, "RendererAPI::None is currently not supported"); return nullptr;
-			case RendererAPI::API::OpenGL: return CreateScope<OpenGLIndexBuffer>(indices, count);
+			case RendererAPI::API::None:
+				RD_CORE_ASSERT(false, "RendererAPI::None is currently not supported");
+				return nullptr;
+			case RendererAPI::API::OpenGL:
+				return CreateScope<OpenGLIndexBuffer>(indices, count);
 		}
 
 		RD_CORE_ASSERT(false, "Unknown RendererAPI");
@@ -47,8 +56,11 @@ namespace Rod {
 	{
 		switch (RendererAPI::GetAPI())
 		{
-			case RendererAPI::API::None: RD_CORE_ASSERT(false, "RendererAPI::None is currently not supported"); return nullptr;
-			case RendererAPI::API::OpenGL: return CreateScope<OpenGLUniformBuffer>(size);
+			case RendererAPI::API::None:
+				RD_CORE_ASSERT(false, "RendererAPI::None is currently not supported");
+				return nullptr;
+			case RendererAPI::API::OpenGL:
+				return CreateScope<OpenGLUniformBuffer>(size);
 		}
 
 		RD_CORE_ASSERT(false, "Unknown RendererAPI");

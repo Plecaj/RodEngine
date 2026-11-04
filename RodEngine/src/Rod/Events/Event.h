@@ -2,21 +2,33 @@
 
 #include "Rod/Core/Core.h"
 
+#include <cstdint>
 #include <ostream>
 #include <string>
 
 namespace Rod {
 
-	enum class EventType
+	enum class EventType : std::uint8_t
 	{
 		None = 0,
-		WindowClose, WindowResize, WindowFocus, WindowLostFocus, WindowMoved,
-		AppTick, AppUpdate, AppRender,
-		KeyPressed, KeyReleased, KeyTyped,
-		MouseButtonPressed, MouseButtonReleased, MouseMoved, MouseScrolled
+		WindowClose,
+		WindowResize,
+		WindowFocus,
+		WindowLostFocus,
+		WindowMoved,
+		AppTick,
+		AppUpdate,
+		AppRender,
+		KeyPressed,
+		KeyReleased,
+		KeyTyped,
+		MouseButtonPressed,
+		MouseButtonReleased,
+		MouseMoved,
+		MouseScrolled
 	};
 
-	enum EventCategory
+	enum EventCategory : std::uint8_t
 	{
 		None = 0,
 		EventCategoryApplication = BIT(0),
@@ -26,39 +38,55 @@ namespace Rod {
 		EventCategoryMouseButton = BIT(4)
 	};
 
-#define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::type; }\
-								virtual EventType GetEventType() const override { return GetStaticType(); }\
-								virtual const char* GetName() const override { return #type; }
+#define EVENT_CLASS_TYPE(type) \
+	[[nodiscard]] static EventType GetStaticType() noexcept \
+	{ \
+		return EventType::type; \
+	} \
+	[[nodiscard]] virtual EventType GetEventType() const noexcept override \
+	{ \
+		return GetStaticType(); \
+	} \
+	[[nodiscard]] virtual const char* GetName() const noexcept override \
+	{ \
+		return #type; \
+	}
 
-#define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
+#define EVENT_CLASS_CATEGORY(category) \
+	[[nodiscard]] virtual int GetCategoryFlags() const noexcept override \
+	{ \
+		return category; \
+	}
 
 	class Event
 	{
 	public:
+		Event() = default;
 		virtual ~Event() = default;
+		Event(const Event&) = delete;
+		Event& operator=(const Event&) = delete;
+		Event(Event&&) = delete;
+		Event& operator=(Event&&) = delete;
 
 		bool Handled = false;
 
-		virtual EventType GetEventType() const = 0;
-		virtual const char* GetName() const = 0;
-		virtual int GetCategoryFlags() const = 0;
-		virtual std::string ToString() const { return GetName(); }
+		[[nodiscard]] virtual EventType GetEventType() const noexcept = 0;
+		[[nodiscard]] virtual const char* GetName() const noexcept = 0;
+		[[nodiscard]] virtual int GetCategoryFlags() const noexcept = 0;
+		[[nodiscard]] virtual std::string ToString() const { return GetName(); }
 
-		bool IsInCategory(EventCategory category) const
+		[[nodiscard]] bool IsInCategory(EventCategory category) const noexcept
 		{
-			return GetCategoryFlags() & category;
+			return (GetCategoryFlags() & category) != 0;
 		}
 	};
 
 	class EventDispatcher
 	{
 	public:
-		EventDispatcher(Event& event)
-			: m_Event(event)
-		{
-		}
+		explicit EventDispatcher(Event& event) noexcept : m_Event(event) {}
 
-		template<typename T, typename F>
+		template <typename T, typename F>
 		bool Dispatch(const F& func)
 		{
 			if (m_Event.GetEventType() == T::GetStaticType())
@@ -68,6 +96,7 @@ namespace Rod {
 			}
 			return false;
 		}
+
 	private:
 		Event& m_Event;
 	};

@@ -1,19 +1,26 @@
 #include "rdpch.h"
+
 #include "EditorCamera.h"
 
 #include "Rod/Core/Input.h"
 #include "Rod/Core/KeyCodes.h"
 #include "Rod/Core/MouseButtonCodes.h"
 
-#include <GLFW/glfw3.h>
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
 namespace Rod {
 
+	float EditorCamera::PanFactor(float viewportSize)
+	{
+		const float factor = std::min(viewportSize / PAN_VIEWPORT_SCALE, MAX_PAN_VIEWPORT_FACTOR);
+		return PAN_QUADRATIC_COEFFICIENT * (factor * factor) - PAN_LINEAR_COEFFICIENT * factor +
+		       PAN_CONSTANT_COEFFICIENT;
+	}
+
 	EditorCamera::EditorCamera(float fov, float aspectRatio, float nearClip, float farClip)
-		: m_FOV(fov), m_AspectRatio(aspectRatio), m_NearClip(nearClip), m_FarClip(farClip), Camera(glm::perspective(glm::radians(fov), aspectRatio, nearClip, farClip))
+	    : Camera(glm::perspective(glm::radians(fov), aspectRatio, nearClip, farClip)), m_FOV(fov),
+	      m_AspectRatio(aspectRatio), m_NearClip(nearClip), m_FarClip(farClip)
 	{
 		UpdateView();
 	}
@@ -28,33 +35,27 @@ namespace Rod {
 	{
 		m_Position = CalculatePosition();
 
-		glm::quat orientation = GetOrientation();
+		const glm::quat orientation = GetOrientation();
 		m_ViewMatrix = glm::translate(glm::mat4(1.0f), m_Position) * glm::toMat4(orientation);
 		m_ViewMatrix = glm::inverse(m_ViewMatrix);
 	}
 
 	std::pair<float, float> EditorCamera::PanSpeed() const
 	{
-		float x = std::min(m_ViewportWidth / 1000.0f, 2.4f);
-		float xFactor = 0.0366f * (x * x) - 0.1778f * x + 0.3021f;
-
-		float y = std::min(m_ViewportHeight / 1000.0f, 2.4f);
-		float yFactor = 0.0366f * (y * y) - 0.1778f * y + 0.3021f;
-
-		return { xFactor, yFactor };
+		return {PanFactor(m_ViewportWidth), PanFactor(m_ViewportHeight)};
 	}
 
 	float EditorCamera::RotationSpeed() const
 	{
-		return 0.8f;
+		return ROTATION_SPEED;
 	}
 
 	float EditorCamera::ZoomSpeed() const
 	{
-		float distance = m_Distance * 0.2f;
+		float distance = m_Distance * ZOOM_DISTANCE_SCALE;
 		distance = std::max(distance, 0.0f);
 		float speed = distance * distance;
-		speed = std::min(speed, 100.0f); 
+		speed = std::min(speed, MAX_ZOOM_SPEED);
 		return speed;
 	}
 
@@ -64,8 +65,8 @@ namespace Rod {
 
 		if (Input::IsKeyPressed(Key::LeftAlt) && m_ControlsEnabled)
 		{
-			const glm::vec2& mouse{ Input::GetMouseX(), Input::GetMouseY() };
-			glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.003f;
+			const glm::vec2& mouse{Input::GetMouseX(), Input::GetMouseY()};
+			const glm::vec2 delta = (mouse - m_InitialMousePosition) * MOUSE_DELTA_SCALE;
 			m_InitialMousePosition = mouse;
 
 			if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
@@ -87,7 +88,7 @@ namespace Rod {
 
 	bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e)
 	{
-		float delta = e.GetYOffset() * 0.1f;
+		const float delta = e.GetYOffset() * SCROLL_DELTA_SCALE;
 		MouseZoom(delta);
 		UpdateView();
 		return false;
@@ -102,7 +103,7 @@ namespace Rod {
 
 	void EditorCamera::MouseRotate(const glm::vec2& delta)
 	{
-		float yawSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
+		const float yawSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
 		m_Yaw += yawSign * delta.x * RotationSpeed();
 		m_Pitch += delta.y * RotationSpeed();
 	}
@@ -139,7 +140,7 @@ namespace Rod {
 
 	glm::quat EditorCamera::GetOrientation() const
 	{
-		return glm::quat(glm::vec3(-m_Pitch, -m_Yaw, 0.0f));
+		return {glm::vec3(-m_Pitch, -m_Yaw, 0.0f)};
 	}
 
 }

@@ -4,12 +4,14 @@ add_library(Rod::ProjectOptions ALIAS RodProjectOptions)
 add_library(RodProjectWarnings INTERFACE)
 add_library(Rod::ProjectWarnings ALIAS RodProjectWarnings)
 
-function(rod_configure_cpp_standard target)
+function(rod_configure_cpp_target target)
     set_target_properties(${target} PROPERTIES
         CXX_STANDARD ${ROD_CXX_STANDARD}
         CXX_STANDARD_REQUIRED ON
         CXX_EXTENSIONS OFF
+        DISABLE_PRECOMPILE_HEADERS OFF
     )
+    target_precompile_headers(${target} PRIVATE "${PROJECT_SOURCE_DIR}/RodEngine/src/rdpch.h")
 endfunction()
 
 target_compile_definitions(RodProjectOptions INTERFACE
@@ -55,7 +57,17 @@ if(MSVC)
         )
     endif()
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
-    target_compile_options(RodProjectWarnings INTERFACE -Wall -Wextra -Wpedantic)
+    target_compile_options(RodProjectWarnings INTERFACE
+        -Wall
+        -Wextra
+        -Wpedantic
+        -Wconversion
+        -Wsign-conversion
+        -Wshadow
+        -Wswitch-enum
+        -Wnon-virtual-dtor
+        -Wformat=2
+    )
 else()
     message(FATAL_ERROR "RodEngine requires MSVC, Clang, or GCC.")
 endif()

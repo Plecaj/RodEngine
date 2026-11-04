@@ -7,7 +7,10 @@ IndentWidth: 4
 TabWidth: 4
 UseTab: ForIndentation
 ContinuationIndentWidth: 4
-NamespaceIndentation: None
+NamespaceIndentation: All
+IndentPPDirectives: BeforeHash
+FixNamespaceComments: false
+BreakTemplateDeclarations: Yes
 AccessModifierOffset: -4
 IndentCaseLabels: true
 PointerAlignment: Left
@@ -52,8 +55,10 @@ SortIncludes: CaseSensitive
 IncludeCategories:
   - Regex: '^"rdpch\.h"$'
     Priority: -100
-  - Regex: '^"(imgui(_internal)?\.h|ImGuizmo\.h|entt\.hpp)"$'
+  - Regex: '^"(imgui(_internal)?\.h|entt\.hpp)"$'
     Priority: 2
+  - Regex: '^"ImGuizmo\.h"$'
+    Priority: 3
   - Regex: '^"'
     Priority: 1
   - Regex: '^<(glad/|GLFW/|glm/|yaml-cpp/|catch2/|nlohmann/|spdlog/|shaderc/|imgui|ImGuizmo|nethost\.h|hostfxr\.h|coreclr_delegates\.h|Windows\.h)'

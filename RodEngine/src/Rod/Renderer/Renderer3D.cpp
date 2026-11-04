@@ -1,164 +1,157 @@
 #include "rdpch.h"
+
 #include "Renderer3D.h"
 
 #include "Rod/Renderer/RenderCommand.h"
+
+#include <limits>
 
 namespace Rod {
 
 	Scope<Renderer3D::SceneData> Renderer3D::s_SceneData;
 
-	struct SceneMatrices
+	struct Renderer3D::SceneMatrices
 	{
 		glm::mat4 ViewProjection;
 		glm::mat4 Transform;
 	};
 
-	struct DirectionalLight
+	struct Renderer3D::DirectionalLight
 	{
 		glm::vec3 Direction;
-		uint32_t _padding;
+		uint32_t Padding;
 		glm::vec3 Color;
 		float Intensity;
 	};
 
-	constexpr size_t MAX_LIGHT_COUNT = 4;
-
-	struct LightsData
+	struct Renderer3D::LightsData
 	{
 		uint32_t Count;
-		uint32_t _padding[3];
+		uint32_t Padding[STD140_PADDING_WORD_COUNT];
 		DirectionalLight Lights[MAX_LIGHT_COUNT];
 	};
 
-	struct MaterialData
+	struct Renderer3D::MaterialData
 	{
 		glm::vec4 Albedo;
 		glm::vec3 Emissive;
-		float _Padding0;
+		float Padding0;
 	};
 
-	struct ShadowData
+	struct Renderer3D::ShadowData
 	{
 		glm::mat4 LightSpaceMatrices[MAX_LIGHT_COUNT];
 	};
 
-	struct DrawData
+	struct Renderer3D::DrawData
 	{
 		int EntityID;
-		int _Padding[3];
+		int Padding[STD140_PADDING_WORD_COUNT];
 	};
 
-	namespace Utils {
-		constexpr float MAX_SHADOW_DISTANCE = 100.0f;
-		constexpr float SHADOW_DEPTH_MARGIN = 10.0f;
+	Renderer3D::FrustumCorners Renderer3D::GetFrustumCornersWorldSpace(const glm::mat4& viewProjection)
+	{
+		const glm::mat4 inv = glm::inverse(viewProjection);
+		FrustumCorners corners;
+		size_t index = 0;
 
-		static inline std::array<glm::vec3, 8> GetFrustumCornersWorldSpace(const glm::mat4& viewProjection)
+		for (int x = 0; x < AXIS_ENDPOINT_COUNT; x++)
 		{
-			const glm::mat4 inv = glm::inverse(viewProjection);
-			std::array<glm::vec3, 8> corners;
-			int index = 0;
-
-			for (int x = 0; x < 2; x++)
+			for (int y = 0; y < AXIS_ENDPOINT_COUNT; y++)
 			{
-				for (int y = 0; y < 2; y++)
+				for (int z = 0; z < AXIS_ENDPOINT_COUNT; z++)
 				{
-					for (int z = 0; z < 2; z++)
-					{
-						glm::vec4 pt = inv * glm::vec4(
-							2.0f * x - 1.0f,
-							2.0f * y - 1.0f,
-							2.0f * z - 1.0f,
-							1.0f);
+					const glm::vec4 pt = inv * glm::vec4(
+					                               CLIP_COORDINATE_SPAN * static_cast<float>(x) - 1.0f,
+					                               CLIP_COORDINATE_SPAN * static_cast<float>(y) - 1.0f,
+					                               CLIP_COORDINATE_SPAN * static_cast<float>(z) - 1.0f,
+					                               1.0f);
 
-						corners[index++] = glm::vec3(pt) / pt.w;
-					}
+					corners[index++] = glm::vec3(pt) / pt.w;
 				}
 			}
-
-			return corners;
 		}
 
-		static inline void LimitFrustumDepth(std::array<glm::vec3, 8>& corners, float maxDistance)
+		return corners;
+	}
+
+	void Renderer3D::LimitFrustumDepth(FrustumCorners& corners, float maxDistance)
+	{
+		glm::vec3 nearCenter(0.0f);
+		glm::vec3 farCenter(0.0f);
+
+		for (size_t i = 0; i < corners.size(); i++)
 		{
-			glm::vec3 nearCenter(0.0f);
-			glm::vec3 farCenter(0.0f);
-
-			for (size_t i = 0; i < corners.size(); i++)
-			{
-				if (i % 2 == 0)
-					nearCenter += corners[i];
-				else
-					farCenter += corners[i];
-			}
-
-			nearCenter *= 0.25f;
-			farCenter *= 0.25f;
-
-			const glm::vec3 viewVector = farCenter - nearCenter;
-			if (glm::dot(viewVector, viewVector) <= 0.0001f)
-				return;
-
-			const glm::vec3 viewDirection = glm::normalize(viewVector);
-
-			// Corners are emitted as near/far pairs because z is the innermost loop.
-			for (size_t i = 0; i < corners.size(); i += 2)
-			{
-				const glm::vec3 nearCorner = corners[i];
-				const glm::vec3 farOffset = corners[i + 1] - nearCorner;
-				const float farDepth = glm::dot(farOffset, viewDirection);
-
-				if (farDepth <= maxDistance || farDepth <= 0.0001f)
-					continue;
-
-				corners[i + 1] = nearCorner + farOffset * (maxDistance / farDepth);
-			}
+			if (i % AXIS_ENDPOINT_COUNT == 0)
+				nearCenter += corners[i];
+			else
+				farCenter += corners[i];
 		}
 
-		static inline glm::mat4 CreateDirectionalLightViewProjection(const glm::vec3& lightDirection, const glm::mat4& cameraViewProjection)
+		nearCenter *= PLANE_CENTER_WEIGHT;
+		farCenter *= PLANE_CENTER_WEIGHT;
+
+		const glm::vec3 viewVector = farCenter - nearCenter;
+		if (glm::dot(viewVector, viewVector) <= DIRECTION_TOLERANCE)
+			return;
+
+		const glm::vec3 viewDirection = glm::normalize(viewVector);
+
+		// Corners are emitted as near/far pairs because z is the innermost loop.
+		for (size_t i = 0; i < corners.size(); i += AXIS_ENDPOINT_COUNT)
 		{
-			auto corners = GetFrustumCornersWorldSpace(cameraViewProjection);
-			LimitFrustumDepth(corners, MAX_SHADOW_DISTANCE);
+			const glm::vec3 nearCorner = corners[i];
+			const glm::vec3 farOffset = corners[i + 1] - nearCorner;
+			const float farDepth = glm::dot(farOffset, viewDirection);
 
-			glm::vec3 center(0.0f);
-			for (const auto& c : corners)
-				center += c;
-			center /= corners.size();
+			if (farDepth <= maxDistance || farDepth <= DIRECTION_TOLERANCE)
+				continue;
 
-			glm::vec3 normalizedLightDirection = glm::dot(lightDirection, lightDirection) > 0.0001f
-				? glm::normalize(lightDirection)
-				: glm::vec3(0.0f, -1.0f, 0.0f);
-
-			glm::vec3 lightPos = center - normalizedLightDirection * 100.0f;
-			glm::vec3 up = glm::abs(glm::dot(normalizedLightDirection, glm::vec3(0.0f, 1.0f, 0.0f))) > 0.95f
-				? glm::vec3(0.0f, 0.0f, 1.0f)
-				: glm::vec3(0.0f, 1.0f, 0.0f);
-
-			glm::mat4 lightView = glm::lookAt(lightPos, center, up);
-			glm::vec3 minBounds(FLT_MAX);
-			glm::vec3 maxBounds(-FLT_MAX);
-
-			for (const auto& corner : corners)
-			{
-				glm::vec4 trf = lightView * glm::vec4(corner, 1.0f);
-				minBounds = glm::min(minBounds, glm::vec3(trf));
-				maxBounds = glm::max(maxBounds, glm::vec3(trf));
-			}
-
-			float nearPlane = -maxBounds.z - SHADOW_DEPTH_MARGIN;
-			float farPlane = -minBounds.z + SHADOW_DEPTH_MARGIN;
-			if (farPlane <= nearPlane)
-				farPlane = nearPlane + SHADOW_DEPTH_MARGIN;
-
-			glm::mat4 lightProj = glm::ortho(
-				minBounds.x,
-				maxBounds.x,
-				minBounds.y,
-				maxBounds.y,
-				nearPlane,
-				farPlane);
-
-			return lightProj * lightView;
+			corners[i + 1] = nearCorner + farOffset * (maxDistance / farDepth);
 		}
+	}
+
+	glm::mat4 Renderer3D::CreateDirectionalLightViewProjection(
+	    const glm::vec3& lightDirection,
+	    const glm::mat4& cameraViewProjection)
+	{
+		auto corners = GetFrustumCornersWorldSpace(cameraViewProjection);
+		LimitFrustumDepth(corners, MAX_SHADOW_DISTANCE);
+
+		glm::vec3 center(0.0f);
+		for (const auto& c : corners)
+			center += c;
+		center /= static_cast<float>(corners.size());
+
+		const glm::vec3 normalizedLightDirection = glm::dot(lightDirection, lightDirection) > DIRECTION_TOLERANCE
+		                                               ? glm::normalize(lightDirection)
+		                                               : glm::vec3(0.0f, -1.0f, 0.0f);
+
+		const glm::vec3 lightPos = center - normalizedLightDirection * LIGHT_VIEW_DISTANCE;
+		const glm::vec3 up =
+		    glm::abs(glm::dot(normalizedLightDirection, glm::vec3(0.0f, 1.0f, 0.0f))) > LIGHT_UP_PARALLEL_THRESHOLD
+		        ? glm::vec3(0.0f, 0.0f, 1.0f)
+		        : glm::vec3(0.0f, 1.0f, 0.0f);
+
+		const glm::mat4 lightView = glm::lookAt(lightPos, center, up);
+		glm::vec3 minBounds(std::numeric_limits<float>::max());
+		glm::vec3 maxBounds(-std::numeric_limits<float>::max());
+
+		for (const auto& corner : corners)
+		{
+			const glm::vec4 trf = lightView * glm::vec4(corner, 1.0f);
+			minBounds = glm::min(minBounds, glm::vec3(trf));
+			maxBounds = glm::max(maxBounds, glm::vec3(trf));
+		}
+
+		const float nearPlane = -maxBounds.z - SHADOW_DEPTH_MARGIN;
+		float farPlane = -minBounds.z + SHADOW_DEPTH_MARGIN;
+		if (farPlane <= nearPlane)
+			farPlane = nearPlane + SHADOW_DEPTH_MARGIN;
+
+		const glm::mat4 lightProj = glm::ortho(minBounds.x, maxBounds.x, minBounds.y, maxBounds.y, nearPlane, farPlane);
+
+		return lightProj * lightView;
 	}
 
 	void Renderer3D::Init()
@@ -174,7 +167,10 @@ namespace Rod {
 			shadowMapSamplers[i] = static_cast<int>(i);
 
 		s_SceneData->Shader->Bind();
-		s_SceneData->Shader->SetIntArray("u_ShadowMaps", shadowMapSamplers.data(), (uint32_t)shadowMapSamplers.size());
+		s_SceneData->Shader->SetIntArray(
+		    "u_ShadowMaps",
+		    shadowMapSamplers.data(),
+		    static_cast<uint32_t>(shadowMapSamplers.size()));
 
 		s_SceneData->SceneUBO = UniformBuffer::Create(sizeof(SceneMatrices));
 		s_SceneData->MaterialUBO = UniformBuffer::Create(sizeof(MaterialData));
@@ -190,7 +186,10 @@ namespace Rod {
 		s_SceneData.reset();
 	}
 
-	void Renderer3D::BeginScene(const Camera& camera, const glm::mat4& transform, std::vector<DirectionalLightComponent>& lights)
+	void Renderer3D::BeginScene(
+	    const Camera& camera,
+	    const glm::mat4& transform,
+	    std::vector<DirectionalLightComponent>& lights)
 	{
 		RD_PROFILE_FUNCTION();
 
@@ -221,7 +220,7 @@ namespace Rod {
 
 		// Commands retain the shared mesh, which owns its GPU buffers.
 		if (mesh && mesh->GetVAO())
-			s_SceneData->DrawCommands.push_back({ mesh, transform, material, entityID });
+			s_SceneData->DrawCommands.push_back({mesh, transform, material, entityID});
 	}
 
 	void Renderer3D::GeometryPass()
@@ -237,18 +236,18 @@ namespace Rod {
 			matrices.ViewProjection = s_SceneData->ViewProjection;
 			matrices.Transform = command.Transform;
 
-			s_SceneData->SceneUBO->BindBase(1);
+			s_SceneData->SceneUBO->BindBase(SCENE_BINDING);
 			s_SceneData->SceneUBO->SetData(&matrices, sizeof(SceneMatrices));
 
-			MaterialData materialData;
+			MaterialData materialData{};
 			materialData.Albedo = command.Material.GetAlbedo();
 			materialData.Emissive = command.Material.GetEmissive();
-			s_SceneData->MaterialUBO->BindBase(3);
+			s_SceneData->MaterialUBO->BindBase(MATERIAL_BINDING);
 			s_SceneData->MaterialUBO->SetData(&materialData, sizeof(MaterialData));
 
 			DrawData drawData{};
 			drawData.EntityID = command.EntityID;
-			s_SceneData->DrawUBO->BindBase(4);
+			s_SceneData->DrawUBO->BindBase(DRAW_BINDING);
 			s_SceneData->DrawUBO->SetData(&drawData, sizeof(DrawData));
 
 			command.Mesh->GetVAO()->Bind();
@@ -259,18 +258,18 @@ namespace Rod {
 
 	void Renderer3D::SetupScene(std::vector<DirectionalLightComponent>& lights)
 	{
-		const uint32_t lightCount = (uint32_t)std::min(lights.size(), MAX_LIGHT_COUNT);
+		const auto lightCount = static_cast<uint32_t>(std::min(lights.size(), MAX_LIGHT_COUNT));
 
 		if (s_SceneData->DepthMaps.size() < lightCount)
 		{
 			auto previousState = RenderCommand::GetState();
 
-			for (uint32_t i = (uint32_t)s_SceneData->DepthMaps.size(); i < lightCount; i++)
+			for (auto i = static_cast<uint32_t>(s_SceneData->DepthMaps.size()); i < lightCount; i++)
 			{
 				FramebufferSpecification fbspec;
-				fbspec.Attachments = { FramebufferTextureFormat::DEPTH24 };
-				fbspec.Height = 2048;
-				fbspec.Width = 2048;
+				fbspec.Attachments = {FramebufferTextureSpecification{FramebufferTextureFormat::DEPTH24}};
+				fbspec.Height = SHADOW_MAP_SIZE;
+				fbspec.Width = SHADOW_MAP_SIZE;
 				s_SceneData->DepthMaps.push_back(Framebuffer::Create(fbspec));
 			}
 
@@ -284,22 +283,23 @@ namespace Rod {
 
 		for (uint32_t i = 0; i < lightCount; i++)
 		{
-			DirectionalLight data;
+			DirectionalLight data{};
 			data.Direction = lights[i].Direction;
 			data.Color = lights[i].Color;
 			data.Intensity = lights[i].Intensity;
 			lightData.Lights[i] = data;
 
 			s_SceneData->LightsDirections[i] = lights[i].Direction;
-			s_SceneData->LightSpaceMatrices[i] = Utils::CreateDirectionalLightViewProjection(lights[i].Direction, s_SceneData->ViewProjection);
+			s_SceneData->LightSpaceMatrices[i] =
+			    CreateDirectionalLightViewProjection(lights[i].Direction, s_SceneData->ViewProjection);
 			shadowData.LightSpaceMatrices[i] = s_SceneData->LightSpaceMatrices[i];
 		}
 		lightData.Count = lightCount;
 
-		s_SceneData->LightsUBO->BindBase(2);
+		s_SceneData->LightsUBO->BindBase(LIGHTS_BINDING);
 		s_SceneData->LightsUBO->SetData(&lightData, sizeof(LightsData));
 
-		s_SceneData->ShadowUBO->BindBase(5);
+		s_SceneData->ShadowUBO->BindBase(SHADOW_BINDING);
 		s_SceneData->ShadowUBO->SetData(&shadowData, sizeof(ShadowData));
 	}
 
@@ -324,7 +324,7 @@ namespace Rod {
 				matrices.ViewProjection = s_SceneData->LightSpaceMatrices[i];
 				matrices.Transform = command.Transform;
 
-				s_SceneData->SceneUBO->BindBase(1);
+				s_SceneData->SceneUBO->BindBase(SCENE_BINDING);
 				s_SceneData->SceneUBO->SetData(&matrices, sizeof(SceneMatrices));
 
 				command.Mesh->GetVAO()->Bind();

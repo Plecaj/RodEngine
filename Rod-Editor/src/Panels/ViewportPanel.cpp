@@ -1,131 +1,113 @@
-#include "ViewportPanel.h"
-#include "imgui.h"
-#include "ImGuizmo.h"
-#include "Rod/Core/Application.h"
-#include "Rod/Scene/Components.h"
-#include "Rod/Math/Math.h"
-#include "Rod/Core/Input.h"
-#include "Rod/Events/KeyEvent.h"
-#include <glm/gtc/type_ptr.hpp>
-#include <filesystem>
+#include "rdpch.h"
 
-#include "../SceneState.h"
+#include "ViewportPanel.h"
+
+#include "Rod/Core/Application.h"
+#include "Rod/Core/Input.h"
+#include "Rod/Math/Math.h"
+#include "Rod/Scene/Components.h"
+
+#include "imgui.h"
+#include <glm/gtc/type_ptr.hpp>
+
+#include "ImGuizmo.h"
 
 namespace Rod {
 
-	void ViewportPanel::OnImGuiRender(
-		const Framebuffer& framebuffer,
-		Scene& activeScene,
-		Entity selectedEntity,
-		EditorCamera& editorCamera,
-		SceneState sceneState,
-		int& gizmoType,
-		glm::vec2& viewportSize,
-		glm::vec2& pendingViewportSize,
-		glm::vec2 viewportBounds[2],
-		bool& viewportFocused,
-		bool& viewportHovered,
-		const std::filesystem::path& assetsPath,
-		std::function<void(const std::filesystem::path&)> onOpenScene)
+	void ViewportPanel::OnImGuiRender(const RenderContext& context)
 	{
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0, 0});
 		ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoTitleBar);
+		const auto viewportOffset = ImGui::GetCursorPos();
+		context.Focused = ImGui::IsWindowFocused();
+		context.Hovered = ImGui::IsWindowHovered();
+		Application::Get().GetImGuiLayer()->SetBlockEvents(!context.Focused && !context.Hovered);
 
-		auto viewportOffset = ImGui::GetCursorPos();
+		const auto panelSize = ImGui::GetContentRegionAvail();
+		context.PendingSize = {panelSize.x, panelSize.y};
+		ImGui::Image(
+		    static_cast<ImTextureID>(context.Framebuffer.GetColorAttachmentRendererID()),
+		    {context.Size.x, context.Size.y},
+		    {0.0f, 1.0f},
+		    {1.0f, 0.0f});
+		const auto sceneToOpen = AcceptSceneDrop(context.AssetsPath);
+		const ImVec2 windowPosition = ImGui::GetWindowPos();
+		context.Bounds[0] = {windowPosition.x + viewportOffset.x, windowPosition.y + viewportOffset.y};
+		context.Bounds[1] = context.Bounds[0] + context.Size;
+		DrawGizmo(context);
 
-		viewportFocused = ImGui::IsWindowFocused();
-		viewportHovered = ImGui::IsWindowHovered();
-		Application::Get().GetImGuiLayer()->SetBlockEvents(!viewportFocused && !viewportHovered);
+		ImGui::End();
+		ImGui::PopStyleVar();
+		if (!sceneToOpen.empty() && context.OpenScene)
+			context.OpenScene(sceneToOpen);
+	}
 
-		uint32_t textureID = framebuffer.GetColorAttachmentRendererID();
-		ImVec2 viewPortPanelSize = ImGui::GetContentRegionAvail();
-		pendingViewportSize = { viewPortPanelSize.x, viewPortPanelSize.y };
-
-		ImGui::Image((uint64_t)textureID, ImVec2{ viewportSize.x, viewportSize.y }, { 0.0f, 1.0f }, { 1.0f, 0.0f });
-
+	std::filesystem::path ViewportPanel::AcceptSceneDrop(const std::filesystem::path& assetsPath)
+	{
 		std::filesystem::path sceneToOpen;
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_SCENE_ITEM"))
-			{
-				const char* path = (const char*)payload->Data;
-				sceneToOpen = assetsPath / path;
-			}
+				sceneToOpen = assetsPath / static_cast<const char*>(payload->Data);
 			ImGui::EndDragDropTarget();
 		}
-
-		ImVec2 minBound = ImGui::GetWindowPos();
-		minBound.x += viewportOffset.x;
-		minBound.y += viewportOffset.y;
-		ImVec2 maxBound = { minBound.x + viewportSize.x, minBound.y + viewportSize.y };
-		viewportBounds[0] = { minBound.x, minBound.y };
-		viewportBounds[1] = { maxBound.x, maxBound.y };
-
-		if (selectedEntity && gizmoType != -1)
-		{
-			glm::mat4 cameraView, cameraProjection;
-
-			if (sceneState == SceneState::Edit)
-			{
-				cameraProjection = editorCamera.GetProjection();
-				cameraView = editorCamera.GetViewMatrix();
-			}
-			else if (sceneState == SceneState::Play)
-			{
-				auto cameraEntity = activeScene.GetPrimaryCameraEntity();
-				if (cameraEntity)
-				{
-					auto& cameraComp = cameraEntity.GetComponent<CameraComponent>().Camera;
-					cameraProjection = cameraComp.GetProjection();
-
-					const auto& transform = cameraEntity.GetComponent<TransformComponent>().GetTransform();
-					cameraView = glm::inverse(transform);
-				}
-			}
-
-			ImGuizmo::SetOrthographic(false);
-			ImGuizmo::SetDrawlist();
-
-			ImGuizmo::SetRect(
-				viewportBounds[0].x,
-				viewportBounds[0].y,
-				viewportBounds[1].x - viewportBounds[0].x,
-				viewportBounds[1].y - viewportBounds[0].y
-			);
-
-			auto& tc = selectedEntity.GetComponent<TransformComponent>();
-			glm::mat4 transform = tc.GetTransform();
-
-			bool snap = Input::IsKeyPressed(Key::LeftControl);
-			float snapValue = (gizmoType == ImGuizmo::OPERATION::ROTATE) ? 45.0f : 0.5f;
-			float snapValues[3] = { snapValue, snapValue, snapValue };
-
-			ImGuizmo::Manipulate(
-				glm::value_ptr(cameraView),
-				glm::value_ptr(cameraProjection),
-				(ImGuizmo::OPERATION)gizmoType,
-				ImGuizmo::MODE::LOCAL,
-				glm::value_ptr(transform),
-				nullptr,
-				snap ? snapValues : nullptr
-			);
-
-			if (ImGuizmo::IsUsing())
-			{
-				glm::vec3 translation, rotation, scale;
-				Math::DecomposeTransform(transform, translation, rotation, scale);
-
-				tc.Translation = translation;
-				tc.Rotation = rotation;
-				tc.Scale = scale;
-			}
-		}
-
-		ImGui::End();
-		ImGui::PopStyleVar();
-
-		if (!sceneToOpen.empty() && onOpenScene)
-			onOpenScene(sceneToOpen);
+		return sceneToOpen;
 	}
 
+	bool ViewportPanel::GetCameraMatrices(const RenderContext& context, glm::mat4& view, glm::mat4& projection)
+	{
+		if (context.State == SceneState::Edit)
+		{
+			projection = context.EditorCamera.GetProjection();
+			view = context.EditorCamera.GetViewMatrix();
+			return true;
+		}
+		const auto cameraEntity = context.ActiveScene.GetPrimaryCameraEntity();
+		if (!cameraEntity)
+			return false;
+		projection = cameraEntity.GetComponent<CameraComponent>().Camera.GetProjection();
+		view = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
+		return true;
+	}
+
+	void ViewportPanel::DrawGizmo(const RenderContext& context)
+	{
+		Entity selectedEntity = context.SelectedEntity;
+		if (!selectedEntity || context.GizmoType == -1)
+			return;
+		glm::mat4 cameraView, cameraProjection;
+		if (!GetCameraMatrices(context, cameraView, cameraProjection))
+			return;
+
+		ImGuizmo::SetOrthographic(false);
+		ImGuizmo::SetDrawlist();
+		ImGuizmo::SetRect(
+		    context.Bounds[0].x,
+		    context.Bounds[0].y,
+		    context.Bounds[1].x - context.Bounds[0].x,
+		    context.Bounds[1].y - context.Bounds[0].y);
+		auto& component = selectedEntity.GetComponent<TransformComponent>();
+		glm::mat4 transform = component.GetTransform();
+		const bool snap = Input::IsKeyPressed(Key::LeftControl);
+		const float snapValue = context.GizmoType == ImGuizmo::OPERATION::ROTATE ? ROTATION_SNAP : TRANSLATION_SNAP;
+		const std::array<float, VECTOR_COMPONENT_COUNT> snapValues{snapValue, snapValue, snapValue};
+		ImGuizmo::Manipulate(
+		    glm::value_ptr(cameraView),
+		    glm::value_ptr(cameraProjection),
+		    static_cast<ImGuizmo::OPERATION>(context.GizmoType),
+		    ImGuizmo::MODE::LOCAL,
+		    glm::value_ptr(transform),
+		    nullptr,
+		    snap ? snapValues.data() : nullptr);
+		if (ImGuizmo::IsUsing())
+		{
+			glm::vec3 translation, rotation, scale;
+			if (Math::DecomposeTransform(transform, translation, rotation, scale))
+			{
+				component.Translation = translation;
+				component.Rotation = rotation;
+				component.Scale = scale;
+			}
+		}
+	}
 }

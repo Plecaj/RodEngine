@@ -2,9 +2,12 @@
 
 #include "Rod/Renderer/EditorCamera.h"
 
+#include <vector>
+
 namespace Rod {
 
 	class Scene;
+	struct DirectionalLightComponent;
 
 	class SceneRenderer
 	{
@@ -15,6 +18,13 @@ namespace Rod {
 
 		static void RenderRuntime(Scene& scene);
 		static void RenderEditor(Scene& scene, EditorCamera& camera);
+
+	private:
+		struct RuntimeCameraData;
+		static RuntimeCameraData FindRuntimeCamera(Scene& scene);
+		static std::vector<DirectionalLightComponent> CollectLights(Scene& scene);
+		static void SubmitMeshes(Scene& scene);
+		static void SubmitSprites(Scene& scene);
 	};
 
 }

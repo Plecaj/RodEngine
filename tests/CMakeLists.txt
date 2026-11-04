@@ -2,11 +2,16 @@ include(vendor/Catch2)
 
 add_executable(RodEngineTests
     Math/Math.cpp
+    Renderer/Texture.cpp
+    Scripting/ScriptGlue.cpp
     Scene/Scene.cpp
     Scene/Serialization.cpp
 )
 
-rod_configure_cpp_standard(RodEngineTests)
+rod_configure_cpp_target(RodEngineTests)
+
+# Use Catch2's standard line-number fallback instead of the __COUNTER__ extension.
+target_compile_definitions(RodEngineTests PRIVATE CATCH_CONFIG_NO_COUNTER)
 
 target_link_libraries(RodEngineTests PRIVATE
     Rod::Engine
@@ -17,9 +22,5 @@ target_link_libraries(RodEngineTests PRIVATE
 
 rod_set_common_output_directories(RodEngineTests)
 rod_copy_dotnet_host(RodEngineTests)
-
-target_precompile_headers(RodEngineTests
-  PUBLIC ../RodEngine/src/rdpch.h
-)
 
 catch_discover_tests(RodEngineTests)

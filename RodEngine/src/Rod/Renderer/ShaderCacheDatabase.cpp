@@ -1,5 +1,8 @@
 #include "rdpch.h"
+
 #include "ShaderCacheDatabase.h"
+
+#include <limits>
 
 namespace Rod {
 
@@ -7,7 +10,7 @@ namespace Rod {
 	{
 		if (!std::filesystem::exists(m_CacheDirectory))
 		{
-			bool created = std::filesystem::create_directories(m_CacheDirectory);
+			const bool created = std::filesystem::create_directories(m_CacheDirectory);
 			if (!created)
 				RD_CORE_ERROR("Directory for shader cache could not be created");
 		}
@@ -22,7 +25,6 @@ namespace Rod {
 			CreateYAMLCacheDatabase();
 			m_CacheData = YAML::LoadFile(m_CacheDatabase.string());
 		}
-
 	}
 
 	void ShaderCacheDatabase::Flush()
@@ -33,14 +35,23 @@ namespace Rod {
 
 	bool ShaderCacheDatabase::CacheShader(const std::string& key, const std::vector<uint32_t>& data)
 	{
+		const auto maxWords = static_cast<size_t>(std::numeric_limits<std::streamsize>::max()) / sizeof(uint32_t);
+		if (data.size() > maxWords)
+			return false;
+
 		m_ValidKeys.insert(key);
 
-		std::filesystem::path filename = m_CacheDirectory / key;
+		const std::filesystem::path filename = m_CacheDirectory / key;
 		std::ofstream fout(filename, std::ios::binary | std::ios::out | std::ios::trunc);
 		if (!fout)
 			return false;
 
-		fout.write(reinterpret_cast<const char*>(data.data()), data.size() * sizeof(uint32_t));
+		const auto byteCount = static_cast<std::streamsize>(data.size() * sizeof(uint32_t));
+		// Binary streams consume the object representation of the SPIR-V words as bytes.
+		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+		fout.write(reinterpret_cast<const char*>(data.data()), byteCount);
+		if (!fout)
+			return false;
 		if (!Contains(key))
 			m_CacheData["Hashes"].push_back(key);
 		return true;
@@ -55,7 +66,6 @@ namespace Rod {
 		}
 		return false;
 	}
-
 
 	void ShaderCacheDatabase::CreateYAMLCacheDatabase()
 	{
@@ -90,8 +100,8 @@ namespace Rod {
 
 			for (const auto& hashNode : m_CacheData["Hashes"])
 			{
-				std::string key = hashNode.as<std::string>();
-				if (existingFiles.find(key) != existingFiles.end() && m_ValidKeys.find(key) != m_ValidKeys.end())
+				auto key = hashNode.as<std::string>();
+				if (existingFiles.contains(key) && m_ValidKeys.contains(key))
 				{
 					allowedFiles.insert(key);
 					newHashes.push_back(key);
@@ -107,15 +117,17 @@ namespace Rod {
 
 		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CacheDirectory))
 		{
-			std::string name = directoryEntry.path().filename().string();
-			if (allowedFiles.find(name) == allowedFiles.end())
+			const std::string name = directoryEntry.path().filename().string();
+			if (!allowedFiles.contains(name))
 			{
 				if (directoryEntry.is_directory())
 					std::filesystem::remove_all(directoryEntry.path());
 				else
 					std::filesystem::remove(directoryEntry.path());
 
-				RD_CORE_WARN("Removing {} because there is no corresponding YAML entry", directoryEntry.path().string());
+				RD_CORE_WARN(
+				    "Removing {} because there is no corresponding YAML entry",
+				    directoryEntry.path().string());
 			}
 		}
 	}

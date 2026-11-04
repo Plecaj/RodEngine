@@ -1,4 +1,5 @@
 #include "rdpch.h"
+
 #include "SceneRenderer.h"
 
 #include "Rod/Renderer/Renderer.h"
@@ -9,21 +10,21 @@
 
 namespace Rod {
 
-	struct RuntimeCameraData
+	struct SceneRenderer::RuntimeCameraData
 	{
 		Camera* MainCamera = nullptr;
 		glm::mat4 Transform = glm::mat4(1.0f);
 
-		bool IsValid() const { return MainCamera != nullptr; }
+		[[nodiscard]] bool IsValid() const { return MainCamera != nullptr; }
 	};
 
-	static RuntimeCameraData FindRuntimeCamera(entt::registry& registry)
+	SceneRenderer::RuntimeCameraData SceneRenderer::FindRuntimeCamera(Scene& scene)
 	{
+		auto& registry = scene.m_Registry;
 		RuntimeCameraData cameraData;
 
 		auto view = registry.view<CameraComponent, TransformComponent>();
-		view.each([&](CameraComponent& camera, TransformComponent& transform)
-		{
+		view.each([&](CameraComponent& camera, TransformComponent& transform) {
 			if (camera.Primary)
 			{
 				cameraData.MainCamera = &camera.Camera;
@@ -34,41 +35,35 @@ namespace Rod {
 		return cameraData;
 	}
 
-	static std::vector<DirectionalLightComponent> CollectLights(entt::registry& registry)
+	std::vector<DirectionalLightComponent> SceneRenderer::CollectLights(Scene& scene)
 	{
+		auto& registry = scene.m_Registry;
 		std::vector<DirectionalLightComponent> lightSources;
 
 		auto view = registry.view<DirectionalLightComponent>();
-		view.each([&](DirectionalLightComponent& light)
-		{
-			lightSources.push_back(light);
-		});
+		view.each([&](DirectionalLightComponent& light) { lightSources.push_back(light); });
 
 		return lightSources;
 	}
 
-	static void SubmitMeshes(entt::registry& registry)
+	void SceneRenderer::SubmitMeshes(Scene& scene)
 	{
+		auto& registry = scene.m_Registry;
 		auto view = registry.view<TransformComponent, MeshComponent>();
-		view.each([&](auto entity, TransformComponent& transform, MeshComponent& mesh)
-		{
+		view.each([&](auto entity, TransformComponent& transform, MeshComponent& mesh) {
 			if (!mesh.Mesh)
 				return;
 
-			Renderer3D::Submit(
-				mesh.Mesh,
-				transform.GetTransform(),
-				mesh.Material,
-				(int)entity);
+			Renderer3D::Submit(mesh.Mesh, transform.GetTransform(), mesh.Material, static_cast<int>(entity));
 		});
 	}
 
-	static void SubmitSprites(entt::registry& registry)
+	void SceneRenderer::SubmitSprites(Scene& scene)
 	{
+		auto& registry = scene.m_Registry;
 		auto view = registry.view<TransformComponent, SpriteRendererComponent>();
-		view.each([&](auto entity, TransformComponent& transform, SpriteRendererComponent& sprite)
-		{
-			Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+		view.each([&](auto entity, TransformComponent& transform, SpriteRendererComponent& sprite) {
+			Renderer2D::DrawSprite(transform.GetTransform(), sprite, static_cast<int>(entity));
 		});
 	}
 
@@ -97,33 +92,31 @@ namespace Rod {
 
 	void SceneRenderer::RenderRuntime(Scene& scene)
 	{
-		auto& registry = scene.m_Registry;
-		auto cameraData = FindRuntimeCamera(registry);
+		auto cameraData = FindRuntimeCamera(scene);
 		if (!cameraData.IsValid())
 			return;
 
-		auto lights = CollectLights(registry);
+		auto lights = CollectLights(scene);
 
 		Renderer3D::BeginScene(*cameraData.MainCamera, cameraData.Transform, lights);
-		SubmitMeshes(registry);
+		SubmitMeshes(scene);
 		Renderer3D::EndScene();
 
 		Renderer2D::BeginScene(*cameraData.MainCamera, cameraData.Transform);
-		SubmitSprites(registry);
+		SubmitSprites(scene);
 		Renderer2D::EndScene();
 	}
 
 	void SceneRenderer::RenderEditor(Scene& scene, EditorCamera& camera)
 	{
-		auto& registry = scene.m_Registry;
-		auto lights = CollectLights(registry);
+		auto lights = CollectLights(scene);
 
 		Renderer3D::BeginScene(camera, lights);
-		SubmitMeshes(registry);
+		SubmitMeshes(scene);
 		Renderer3D::EndScene();
 
 		Renderer2D::BeginScene(camera);
-		SubmitSprites(registry);
+		SubmitSprites(scene);
 		Renderer2D::EndScene();
 	}
 

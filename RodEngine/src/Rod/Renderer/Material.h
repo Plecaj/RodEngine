@@ -1,21 +1,21 @@
 #pragma once
-#include <glm/glm.hpp>
 
-#include "Rod/Core/Core.h"
+#include <glm/glm.hpp>
 
 namespace Rod {
 
-	class Material {
+	class Material
+	{
 	public:
-		const glm::vec4& GetAlbedo() const { return m_Albedo; }
-		float GetRoughness() const { return m_Roughness; }
-		float GetMetallic() const { return m_Metallic; }
-		const glm::vec3& GetEmissive() const { return m_Emissive; }
+		[[nodiscard]] const glm::vec4& GetAlbedo() const noexcept { return m_Albedo; }
+		[[nodiscard]] float GetRoughness() const noexcept { return m_Roughness; }
+		[[nodiscard]] float GetMetallic() const noexcept { return m_Metallic; }
+		[[nodiscard]] const glm::vec3& GetEmissive() const noexcept { return m_Emissive; }
 
-		void SetAlbedo(const glm::vec4& albedo) { m_Albedo = albedo; }
-		void SetRoughness(float roughness) { m_Roughness = roughness; }
-		void SetMetallic(float metallic) { m_Metallic = metallic; }
-		void SetEmissive(const glm::vec3& emissive) { m_Emissive = emissive; }
+		void SetAlbedo(const glm::vec4& albedo) noexcept { m_Albedo = albedo; }
+		void SetRoughness(float roughness) noexcept { m_Roughness = roughness; }
+		void SetMetallic(float metallic) noexcept { m_Metallic = metallic; }
+		void SetEmissive(const glm::vec3& emissive) noexcept { m_Emissive = emissive; }
 
 	private:
 		glm::vec4 m_Albedo = glm::vec4(1.0f);

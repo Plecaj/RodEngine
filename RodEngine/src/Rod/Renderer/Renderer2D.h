@@ -2,16 +2,19 @@
 
 #include "Rod/Renderer/Camera.h"
 #include "Rod/Renderer/EditorCamera.h"
-#include "Texture.h"
-#include "SubTexture2D.h"
-
 #include "Rod/Scene/Components.h"
 #include "Rod/Scene/ScriptableEntity.h"
+#include "SubTexture2D.h"
+#include "Texture.h"
 
 namespace Rod {
 
-	class Renderer2D {
+	class Renderer2D
+	{
 	public:
+		static constexpr uint32_t QUAD_VERTEX_COUNT = 4;
+		static constexpr uint32_t QUAD_INDEX_COUNT = 6;
+
 		static void Init();
 		static void Shutdown();
 
@@ -20,7 +23,12 @@ namespace Rod {
 		static void EndScene();
 
 		static void DrawQuad(const glm::mat4& transform, const glm::vec4& color, int entityID = -1);
-		static void DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, float tilingFactor = 1.0f, const glm::vec4& tintColor = glm::vec4(1.0f), int entityID = -1);
+		static void DrawQuad(
+		    const glm::mat4& transform,
+		    const Ref<Texture2D>& texture,
+		    float tilingFactor = 1.0f,
+		    const glm::vec4& tintColor = glm::vec4(1.0f),
+		    int entityID = -1);
 
 		static void DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID);
 
@@ -29,13 +37,14 @@ namespace Rod {
 			uint32_t DrawCalls = 0;
 			uint32_t QuadCount = 0;
 
-			uint32_t GetTotalVertexCount() { return QuadCount * 4; };
-			uint32_t GetTotalIndexCount() { return QuadCount * 6; };
+			[[nodiscard]] uint32_t GetTotalVertexCount() const noexcept { return QuadCount * QUAD_VERTEX_COUNT; };
+			[[nodiscard]] uint32_t GetTotalIndexCount() const noexcept { return QuadCount * QUAD_INDEX_COUNT; };
 		};
 		static void ResetStats();
-		static Statistics GetStats();
+		[[nodiscard]] static Statistics GetStats();
+
 	private:
-		// Initialize 
+		// Initialize
 		static void InitShader();
 		static void InitSamplers();
 		static void InitQuadVertexArray();

@@ -1,38 +1,31 @@
 #pragma once
 
 #include "Rod/Core/Application.h"
-#include "Rod/Core/Layer.h"
-#include "Rod/Core/Log.h"
-
-#include "Rod/Core/Timestep.h"
-
 #include "Rod/Core/Input.h"
 #include "Rod/Core/KeyCodes.h"
+#include "Rod/Core/Layer.h"
+#include "Rod/Core/Log.h"
 #include "Rod/Core/MouseButtonCodes.h"
-
+#include "Rod/Core/Timestep.h"
 #include "Rod/ImGui/ImGuiLayer.h"
-
-#include "Rod/Scene/Scene.h"
 #include "Rod/Scene/Components.h"
 #include "Rod/Scene/Entity.h"
-#include "Rod/Scene/ScriptableEntity.h"
+#include "Rod/Scene/Scene.h"
 #include "Rod/Scene/SceneSerializer.h"
+#include "Rod/Scene/ScriptableEntity.h"
 #include "Rod/Scripting/ScriptEngine.h"
 
 //------Renderer-----------------------
-#include "Rod/Renderer/Renderer.h"
-#include "Rod/Renderer/Renderer3D.h"
-#include "Rod/Renderer/Renderer2D.h"
-#include "Rod/Renderer/SceneRenderer.h"
-
-#include "Rod/Renderer/RenderCommand.h"
-
 #include "Rod/Renderer/Buffer.h"
 #include "Rod/Renderer/FrameBuffer.h"
+#include "Rod/Renderer/RenderCommand.h"
+#include "Rod/Renderer/Renderer.h"
+#include "Rod/Renderer/Renderer2D.h"
+#include "Rod/Renderer/Renderer3D.h"
+#include "Rod/Renderer/SceneRenderer.h"
 #include "Rod/Renderer/Shader.h"
-#include "Rod/Renderer/Texture.h"
 #include "Rod/Renderer/SubTexture2D.h"
+#include "Rod/Renderer/Texture.h"
 #include "Rod/Renderer/VertexArray.h"
 
 //-------------------------------------
-

@@ -7,8 +7,12 @@ namespace Rod {
 	class OpenGLFramebuffer : public Framebuffer
 	{
 	public:
-		OpenGLFramebuffer(const FramebufferSpecification& spec);
-		virtual ~OpenGLFramebuffer();
+		explicit OpenGLFramebuffer(FramebufferSpecification spec);
+		virtual ~OpenGLFramebuffer() override;
+		OpenGLFramebuffer(const OpenGLFramebuffer&) = delete;
+		OpenGLFramebuffer& operator=(const OpenGLFramebuffer&) = delete;
+		OpenGLFramebuffer(OpenGLFramebuffer&&) = delete;
+		OpenGLFramebuffer& operator=(OpenGLFramebuffer&&) = delete;
 
 		void Invalidate();
 
@@ -20,17 +24,28 @@ namespace Rod {
 
 		virtual void ClearColorAttachment(uint32_t attachmentIndex, int value) override;
 
-		virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const override { RD_CORE_ASSERT(index < m_ColorAttachments.size(), "Index < ColorAttachments.size()"); return m_ColorAttachments[index]; }
-		virtual uint32_t GetDepthAttachmentRendererID() const override { return m_DepthAttachment; }
+		[[nodiscard]] virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const override
+		{
+			RD_CORE_ASSERT(index < m_ColorAttachments.size(), "Index < ColorAttachments.size()");
+			return m_ColorAttachments[index];
+		}
+		[[nodiscard]] virtual uint32_t GetDepthAttachmentRendererID() const noexcept override
+		{
+			return m_DepthAttachment;
+		}
 		virtual void BindDepthAttachment(uint32_t slot = 0) const override;
 
-		virtual const FramebufferSpecification& GetSpecification() const override { return m_Specification; };
+		[[nodiscard]] virtual const FramebufferSpecification& GetSpecification() const noexcept override
+		{
+			return m_Specification;
+		};
+
 	private:
 		uint32_t m_RendererID = 0;
 		FramebufferSpecification m_Specification;
 
 		std::vector<FramebufferTextureSpecification> m_ColorAttachmentSpecifications;
-		FramebufferTextureSpecification m_DepthAttachmentSpecification = FramebufferTextureFormat::None;
+		FramebufferTextureSpecification m_DepthAttachmentSpecification;
 
 		std::vector<uint32_t> m_ColorAttachments;
 		uint32_t m_DepthAttachment = 0;

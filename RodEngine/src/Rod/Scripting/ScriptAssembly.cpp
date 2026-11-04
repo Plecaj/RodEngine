@@ -1,42 +1,33 @@
 #include "rdpch.h"
+
 #include "ScriptAssembly.h"
 
+#include "Rod/Scripting/ScriptClass.h"
+#include "Rod/Scripting/ScriptField.h"
+
+#include <exception>
 #include <json.hpp>
-#include <unordered_map>
 
 namespace Rod {
 
-	static ScriptFieldType ScriptFieldTypeFromString(const std::string& type)
+	ScriptFieldType ScriptAssembly::ScriptFieldTypeFromString(const std::string& type)
 	{
-		static const std::unordered_map<std::string, ScriptFieldType> fieldTypes = {
-			{ "Single", ScriptFieldType::Float },
-			{ "float", ScriptFieldType::Float },
-			{ "Double", ScriptFieldType::Double },
-			{ "double", ScriptFieldType::Double },
-			{ "Boolean", ScriptFieldType::Bool },
-			{ "bool", ScriptFieldType::Bool },
-			{ "Char", ScriptFieldType::Char },
-			{ "char", ScriptFieldType::Char },
-			{ "Byte", ScriptFieldType::Byte },
-			{ "Int16", ScriptFieldType::Short },
-			{ "Int32", ScriptFieldType::Int },
-			{ "int", ScriptFieldType::Int },
-			{ "Int64", ScriptFieldType::Long },
-			{ "long", ScriptFieldType::Long },
-			{ "SByte", ScriptFieldType::UByte },
-			{ "UInt16", ScriptFieldType::UShort },
-			{ "UInt32", ScriptFieldType::UInt },
-			{ "UInt64", ScriptFieldType::ULong },
-			{ "Vector2", ScriptFieldType::Vector2 },
-			{ "Vector3", ScriptFieldType::Vector3 },
-			{ "Vector4", ScriptFieldType::Vector4 },
-			{ "Entity", ScriptFieldType::Entity },
-			{ "String", ScriptFieldType::String },
-			{ "string", ScriptFieldType::String }
-		};
+		static const std::unordered_map<std::string, ScriptFieldType> FIELD_TYPES = {
+		    {"Single", ScriptFieldType::Float},    {"float", ScriptFieldType::Float},
+		    {"Double", ScriptFieldType::Double},   {"double", ScriptFieldType::Double},
+		    {"Boolean", ScriptFieldType::Bool},    {"bool", ScriptFieldType::Bool},
+		    {"Char", ScriptFieldType::Char},       {"char", ScriptFieldType::Char},
+		    {"Byte", ScriptFieldType::Byte},       {"Int16", ScriptFieldType::Short},
+		    {"Int32", ScriptFieldType::Int},       {"int", ScriptFieldType::Int},
+		    {"Int64", ScriptFieldType::Long},      {"long", ScriptFieldType::Long},
+		    {"SByte", ScriptFieldType::UByte},     {"UInt16", ScriptFieldType::UShort},
+		    {"UInt32", ScriptFieldType::UInt},     {"UInt64", ScriptFieldType::ULong},
+		    {"Vector2", ScriptFieldType::Vector2}, {"Vector3", ScriptFieldType::Vector3},
+		    {"Vector4", ScriptFieldType::Vector4}, {"Entity", ScriptFieldType::Entity},
+		    {"String", ScriptFieldType::String},   {"string", ScriptFieldType::String}};
 
-		auto it = fieldTypes.find(type);
-		return it != fieldTypes.end() ? it->second : ScriptFieldType::None;
+		auto it = FIELD_TYPES.find(type);
+		return it != FIELD_TYPES.end() ? it->second : ScriptFieldType::None;
 	}
 
 	bool ScriptAssembly::Load(const std::filesystem::path& assemblyPath, const std::string& metadataJson)
@@ -49,9 +40,9 @@ namespace Rod {
 			nlohmann::json metadata = nlohmann::json::parse(metadataJson);
 			for (const auto& classJson : metadata["classes"])
 			{
-				std::string fullName = classJson.value("fullName", "");
-				std::string namespaceName = classJson.value("namespace", "");
-				std::string className = classJson.value("name", "");
+				const std::string fullName = classJson.value("fullName", "");
+				const std::string namespaceName = classJson.value("namespace", "");
+				const std::string className = classJson.value("name", "");
 
 				ScriptClass scriptClass(fullName, namespaceName, className);
 
@@ -63,7 +54,7 @@ namespace Rod {
 					field.Type = ScriptFieldTypeFromString(field.TypeName);
 
 					if (field.Type != ScriptFieldType::None)
-						scriptClass.GetFields()[field.Name] = { field, fieldJson.value("defaultValue", "") };
+						scriptClass.GetFields()[field.Name] = {field, fieldJson.value("defaultValue", "")};
 				}
 
 				if (!fullName.empty())
@@ -88,7 +79,7 @@ namespace Rod {
 
 	bool ScriptAssembly::HasClass(const std::string& className) const
 	{
-		return m_Classes.find(className) != m_Classes.end();
+		return m_Classes.contains(className);
 	}
 
 	ScriptClass* ScriptAssembly::GetClass(const std::string& className)

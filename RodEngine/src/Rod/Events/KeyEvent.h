@@ -9,12 +9,11 @@ namespace Rod {
 	class KeyEvent : public Event
 	{
 	public:
-		int GetKeyCode() const { return m_KeyCode; }
+		[[nodiscard]] int GetKeyCode() const noexcept { return m_KeyCode; }
 
 		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
 	protected:
-		KeyEvent(const int keycode)
-			: m_KeyCode(keycode) {}
+		explicit KeyEvent(const int keycode) noexcept : m_KeyCode(keycode) {}
 
 		int m_KeyCode;
 	};
@@ -22,12 +21,13 @@ namespace Rod {
 	class KeyPressedEvent : public KeyEvent
 	{
 	public:
-		KeyPressedEvent(const int keycode, bool isRepeat = false)
-			: KeyEvent(keycode), m_IsRepeat(isRepeat) {}
+		explicit KeyPressedEvent(const int keycode, bool isRepeat = false) noexcept
+		    : KeyEvent(keycode), m_IsRepeat(isRepeat)
+		{}
 
-		bool IsRepeat() const { return m_IsRepeat; }
+		[[nodiscard]] bool IsRepeat() const noexcept { return m_IsRepeat; }
 
-		std::string ToString() const override
+		[[nodiscard]] virtual std::string ToString() const override
 		{
 			std::stringstream ss;
 			ss << "KeyPressedEvent: " << m_KeyCode << " (repeat = " << m_IsRepeat << ")";
@@ -42,10 +42,9 @@ namespace Rod {
 	class KeyReleasedEvent : public KeyEvent
 	{
 	public:
-		KeyReleasedEvent(const int keycode)
-			: KeyEvent(keycode) {}
+		explicit KeyReleasedEvent(const int keycode) noexcept : KeyEvent(keycode) {}
 
-		std::string ToString() const override
+		[[nodiscard]] virtual std::string ToString() const override
 		{
 			std::stringstream ss;
 			ss << "KeyReleasedEvent: " << m_KeyCode;
@@ -58,10 +57,9 @@ namespace Rod {
 	class KeyTypedEvent : public KeyEvent
 	{
 	public:
-		KeyTypedEvent(const int keycode)
-			: KeyEvent(keycode) {}
+		explicit KeyTypedEvent(const int keycode) noexcept : KeyEvent(keycode) {}
 
-		std::string ToString() const override
+		[[nodiscard]] virtual std::string ToString() const override
 		{
 			std::stringstream ss;
 			ss << "KeyTypedEvent: " << m_KeyCode;

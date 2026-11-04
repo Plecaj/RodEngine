@@ -11,24 +11,29 @@ namespace Rod {
 	class GLFWWindow : public Window
 	{
 	public:
-		GLFWWindow(const WindowProps& props);
-		~GLFWWindow() override;
+		explicit GLFWWindow(const WindowProps& props);
+		virtual ~GLFWWindow() override;
+		GLFWWindow(const GLFWWindow&) = delete;
+		GLFWWindow& operator=(const GLFWWindow&) = delete;
+		GLFWWindow(GLFWWindow&&) = delete;
+		GLFWWindow& operator=(GLFWWindow&&) = delete;
 
-		void OnUpdate() override;
+		virtual void OnUpdate() override;
 
-		inline unsigned int GetWidth() const override { return m_Data.Width; }
-		inline unsigned int GetHeight() const override { return m_Data.Height; }
+		[[nodiscard]] virtual unsigned int GetWidth() const noexcept override { return m_Data.Width; }
+		[[nodiscard]] virtual unsigned int GetHeight() const noexcept override { return m_Data.Height; }
 
-		void Minimize() const override;
-		void Maximize() const override;
-		void Restore() const override;
-		void BeginWindowDrag() const override;
+		virtual void Minimize() const override;
+		virtual void Maximize() const override;
+		virtual void Restore() const override;
+		virtual void BeginWindowDrag() const override;
 
-		inline void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
-		void SetVSync(bool enabled) override;
-		bool IsVSync() const override;
+		virtual void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
+		virtual void SetVSync(bool enabled) override;
+		[[nodiscard]] virtual bool IsVSync() const noexcept override;
 
-		inline void* GetNativeWindow() const override { return m_Window; };
+		[[nodiscard]] virtual void* GetNativeWindow() const noexcept override { return m_Window; };
+
 	private:
 		void Init(const WindowProps& props);
 		void Shutdown();
@@ -42,18 +47,19 @@ namespace Rod {
 		void ResetWindowDrag() const;
 		void UpdateWindowDrag() const;
 		glm::vec2 GetMouseScreenPosition() const;
+
 	private:
 		GLFWwindow* m_Window = nullptr;
 		Scope<GraphicsContext> m_Context;
 		mutable bool m_WindowDragActive = false;
-		mutable glm::vec2 m_WindowDragStartMouseScreen = { 0.0f, 0.0f };
-		mutable glm::ivec2 m_WindowDragStartPosition = { 0, 0 };
+		mutable glm::vec2 m_WindowDragStartMouseScreen = {0.0f, 0.0f};
+		mutable glm::ivec2 m_WindowDragStartPosition = {0, 0};
 
 		struct WindowData
 		{
 			std::string Title;
-			unsigned int Width, Height;
-			bool VSync;
+			unsigned int Width = 0, Height = 0;
+			bool VSync = false;
 
 			EventCallbackFn EventCallback;
 		};
@@ -61,7 +67,6 @@ namespace Rod {
 		WindowData m_Data;
 
 		static WindowData& GetWindowData(GLFWwindow* window);
-
 	};
 
 }

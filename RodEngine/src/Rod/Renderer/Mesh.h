@@ -1,32 +1,49 @@
 #pragma once
-#include <string>
-#include <vector>
-#include <memory>
-
-#include <tiny_gltf.h>
-
 #include "Buffer.h"
 #include "Material.h"
 #include "VertexArray.h"
 
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <string>
+#include <tiny_gltf.h>
+#include <vector>
+
 namespace Rod {
-    class Mesh {
-    public:
-        explicit Mesh(const std::string& glbPath);
+	class Mesh
+	{
+	public:
+		explicit Mesh(const std::string& glbPath);
 
-        const VertexArray* GetVAO() const { return m_VAO.get(); }
-        const Material& GetMaterial() const { return m_Material; }
-        const std::string& GetPath() const { return m_SourcePath; }
+		[[nodiscard]] const VertexArray* GetVAO() const noexcept { return m_VAO.get(); }
+		[[nodiscard]] const Material& GetMaterial() const noexcept { return m_Material; }
+		[[nodiscard]] const std::string& GetPath() const noexcept { return m_SourcePath; }
 
-    private:
-        void LoadGLB(const std::string& path);
-        void ProcessPrimitive(const tinygltf::Model& model, const tinygltf::Primitive& primitive);
-        void ProcessMaterial(const tinygltf::Model& model, const tinygltf::Primitive& primitive);
+	private:
+		static constexpr size_t VECTOR_COMPONENT_COUNT = 3;
+		static constexpr size_t COLOR_COMPONENT_COUNT = 4;
+		static constexpr size_t VERTEX_COMPONENT_COUNT = VECTOR_COMPONENT_COUNT * 2;
 
-    private:
-        Scope<VertexArray> m_VAO;
-        Material m_Material;
-        std::string m_SourcePath;
-    };
+		template <typename T>
+		[[nodiscard]] static T ReadScalar(const uint8_t* data);
+		[[nodiscard]] static const uint8_t*
+		AccessorData(const tinygltf::Model& model, const tinygltf::Accessor& accessor);
+		[[nodiscard]] static std::vector<float>
+		ReadVertices(const tinygltf::Model& model, const tinygltf::Primitive& primitive);
+		[[nodiscard]] static std::vector<uint32_t>
+		ReadIndices(const tinygltf::Model& model, const tinygltf::Primitive& primitive);
+		template <typename Vector>
+		[[nodiscard]] static Vector ToFloatVector(const std::vector<double>& values);
+
+		void LoadGLB(const std::string& path);
+		void ProcessPrimitive(const tinygltf::Model& model, const tinygltf::Primitive& primitive);
+		void ProcessMaterial(const tinygltf::Model& model, const tinygltf::Primitive& primitive);
+
+	private:
+		Scope<VertexArray> m_VAO;
+		Material m_Material;
+		std::string m_SourcePath;
+	};
 
 }

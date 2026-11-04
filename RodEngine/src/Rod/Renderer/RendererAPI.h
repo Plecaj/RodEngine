@@ -1,22 +1,32 @@
 #pragma once
 
-#include <glm/glm.hpp>
 #include "VertexArray.h"
+
+#include <glm/glm.hpp>
+
+#include <cstdint>
 
 namespace Rod {
 
 	class RendererAPI
 	{
 	public:
-		enum class API
+		enum class API : uint8_t
 		{
-			None = 0, OpenGL = 1
+			None = 0,
+			OpenGL = 1
 		};
+
 	public:
+		RendererAPI() = default;
 		virtual ~RendererAPI() = default;
+		RendererAPI(const RendererAPI&) = delete;
+		RendererAPI& operator=(const RendererAPI&) = delete;
+		RendererAPI(RendererAPI&&) = delete;
+		RendererAPI& operator=(RendererAPI&&) = delete;
 
 		virtual void Init() = 0;
-		virtual const int GetMaxTextureSlots() const = 0;
+		[[nodiscard]] virtual int GetMaxTextureSlots() const = 0;
 		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) = 0;
 		virtual void SetClearColor(const glm::vec4& color) = 0;
 		virtual void Clear() = 0;
@@ -34,10 +44,11 @@ namespace Rod {
 			uint32_t ViewportHeight = 0;
 		};
 
-		virtual RendererState GetState() const = 0;
+		[[nodiscard]] virtual RendererState GetState() const = 0;
 		virtual void SetState(const RendererState& state) = 0;
 
-		inline static API GetAPI() { return s_API; }
+		[[nodiscard]] static API GetAPI() noexcept { return s_API; }
+
 	private:
 		static API s_API;
 	};

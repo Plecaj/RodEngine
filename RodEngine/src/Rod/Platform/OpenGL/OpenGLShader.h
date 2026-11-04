@@ -3,28 +3,36 @@
 #include "Rod/Renderer/Shader.h"
 
 #include <glm/glm.hpp>
-#include <unordered_map>
+
 #include <filesystem>
+#include <unordered_map>
 
 namespace Rod {
 
 	class OpenGLShader : public Shader
 	{
 	public:
-		OpenGLShader(std::unordered_map<shaderc_shader_kind, std::string> shaders, std::string name, const ShaderOptions& options = ShaderOptions());
-		virtual	~OpenGLShader();
+		OpenGLShader(
+		    std::unordered_map<shaderc_shader_kind, std::string> shaders,
+		    std::string name,
+		    const ShaderOptions& options = ShaderOptions());
+		virtual ~OpenGLShader() override;
+		OpenGLShader(const OpenGLShader&) = delete;
+		OpenGLShader& operator=(const OpenGLShader&) = delete;
+		OpenGLShader(OpenGLShader&&) = delete;
+		OpenGLShader& operator=(OpenGLShader&&) = delete;
 
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
 
 		virtual void SetInt(const std::string& name, int value) override;
 		virtual void SetIntArray(const std::string& name, const int* values, uint32_t count) override;
-		virtual void SetFloat(const std::string& name, const float value) override;
+		virtual void SetFloat(const std::string& name, float value) override;
 		virtual void SetFloat3(const std::string& name, const glm::vec3& value) override;
 		virtual void SetFloat4(const std::string& name, const glm::vec4& value) override;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
 
-		virtual const std::string& GetName() const override { return m_Name; };
+		[[nodiscard]] virtual const std::string& GetName() const noexcept override { return m_Name; };
 
 		void UploadUniformInt(const std::string& name, int value);
 		void UploadUniformIntArray(const std::string& name, const int* values, uint32_t count);
@@ -36,18 +44,20 @@ namespace Rod {
 
 		void UploadUniformMat3(const std::string& name, const glm::mat3& matrix);
 		void UploadUniformMat4(const std::string& name, const glm::mat4& matrix);
+
 	private:
 		int GetUniformLocation(const std::string& name) const;
 
 		bool OpenSpirv(const shaderc_shader_kind& kind, const std::string& cacheKey);
 		std::vector<uint32_t> CompileSpirv(
-			const shaderc_shader_kind& kind,
-			const std::string& source,
-			shaderc::Compiler& compiler,
-			const shaderc::CompileOptions& options);
+		    const shaderc_shader_kind& kind,
+		    const std::string& source,
+		    shaderc::Compiler& compiler,
+		    const shaderc::CompileOptions& options);
 		void LoadSpirv();
+
 	private:
-		uint32_t m_RendererID;
+		uint32_t m_RendererID = 0;
 		mutable std::unordered_map<std::string, int> m_UniformLocationCache;
 		std::string m_Name;
 

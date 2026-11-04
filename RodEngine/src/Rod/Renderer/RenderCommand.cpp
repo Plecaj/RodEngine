@@ -1,4 +1,5 @@
 #include "rdpch.h"
+
 #include "RenderCommand.h"
 
 #include "Rod/Platform/OpenGL/OpenGLRendererAPI.h"

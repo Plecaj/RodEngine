@@ -3,7 +3,7 @@ include(RodSources)
 add_library(RodEngine STATIC)
 add_library(Rod::Engine ALIAS RodEngine)
 
-rod_configure_cpp_standard(RodEngine)
+rod_configure_cpp_target(RodEngine)
 
 rod_collect_sources(ROD_ENGINE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src")
 rod_collect_headers(ROD_ENGINE_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/src")
@@ -49,10 +49,6 @@ target_compile_definitions(RodEngine PRIVATE
     $<$<PLATFORM_ID:Windows>:_CRT_SECURE_NO_WARNINGS>
     ROD_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
 )
-
-if(ROD_ENABLE_PCH)
-    target_precompile_headers(RodEngine PRIVATE src/rdpch.h)
-endif()
 
 include(RodDotnet)
 

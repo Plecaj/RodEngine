@@ -1,6 +1,7 @@
 #include "rdpch.h"
-#include "Rod/Core/Input.h"
+
 #include "Rod/Core/Application.h"
+#include "Rod/Core/Input.h"
 
 #include <GLFW/glfw3.h>
 
@@ -23,10 +24,10 @@ namespace Rod {
 	std::pair<float, float> Input::GetMousePosition()
 	{
 		auto window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-		double xPos, yPos;
+		double xPos{}, yPos{};
 		glfwGetCursorPos(window, &xPos, &yPos);
 
-		return { (float)xPos, (float)yPos };
+		return {static_cast<float>(xPos), static_cast<float>(yPos)};
 	}
 
 	float Input::GetMouseX()

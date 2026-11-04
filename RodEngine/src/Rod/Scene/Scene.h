@@ -6,54 +6,69 @@
 
 #include "entt.hpp"
 
+#include <cstdint>
+#include <string>
+#include <unordered_map>
+
 namespace Rod {
 
-class Entity;
-struct NativeScriptComponent;
+	class Entity;
+	struct NativeScriptComponent;
 
-class Scene {
-public:
-  Scene() = default;
-  ~Scene() = default;
-  Scene(const Scene &other);
-  Scene operator=(const Scene &other) { return Scene(other); }
+	class Scene
+	{
+	public:
+		Scene() = default;
+		~Scene() = default;
+		Scene(const Scene& other);
+		Scene& operator=(const Scene& other);
+		Scene(Scene&& other) noexcept;
+		// Replacing a scene invokes user native-script destruction callbacks, which may throw.
+		Scene& operator=(Scene&& other) noexcept(false);
 
-  Entity CreateEntity(const std::string &name = "");
-  Entity CreateEntityWithUUID(UUID uuid, const std::string &name = "");
-  void DestroyEntity(Entity entity);
+		Entity CreateEntity(const std::string& name = "");
+		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = "");
+		void DestroyEntity(Entity entity);
 
-  void OnRuntimeStart();
-  void OnRuntimeStop();
-  void OnUpdateRuntime(Timestep &ts);
-  void OnUpdateEditor(Timestep &ts, EditorCamera &camera);
-  void OnViewportResize(uint32_t width, uint32_t height);
+		void OnRuntimeStart();
+		void OnRuntimeStop();
+		void OnUpdateRuntime(Timestep& ts);
+		void OnUpdateEditor(Timestep& ts, EditorCamera& camera);
+		void OnViewportResize(uint32_t width, uint32_t height);
 
-  Entity GetPrimaryCameraEntity();
-  Entity FindEntityByUUID(UUID uuid);
-  Entity FindEntityByName(const std::string &name);
+		[[nodiscard]] Entity GetPrimaryCameraEntity();
+		[[nodiscard]] Entity FindEntityByUUID(UUID uuid);
+		[[nodiscard]] Entity FindEntityByName(const std::string& name);
 
-  bool operator==(const Scene &other) const;
+		[[nodiscard]] bool operator==(const Scene& other) const;
 
-  bool isValidEntityHandle(const entt::entity entity) const {
-    return m_Registry.valid(entity);
-  }
+		[[nodiscard]] bool IsValidEntityHandle(entt::entity entity) const { return m_Registry.valid(entity); }
 
-private:
-  void DestroyNativeScripts();
-  void DestroyNativeScript(NativeScriptComponent &script);
-  void UpdateNativeScripts(Timestep &ts);
+	private:
+		template <typename... Components>
+		static void CopyComponent(
+		    entt::registry& dst,
+		    const entt::registry& src,
+		    const std::unordered_map<uint64_t, entt::entity>& entityMap);
 
-  template <typename T> void OnComponentAdded(Entity entity, T &component);
+		void DestroyNativeScripts();
+		static void DestroyNativeScript(NativeScriptComponent& script);
+		void RebindNativeScripts();
+		void UpdateNativeScript(entt::entity entity, NativeScriptComponent& script, Timestep& ts);
+		void UpdateNativeScripts(Timestep& ts);
 
-private:
-  entt::registry m_Registry;
-  uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
+		template <typename T>
+		void OnComponentAdded(Entity entity, T& component);
 
-  friend class Entity;
-  friend class SceneSerializer;
-  friend class SceneHierarchyPanel;
-  friend class ScriptEngine;
-  friend class SceneRenderer;
-};
+	private:
+		entt::registry m_Registry;
+		uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 
-} // namespace Rod
+		friend class Entity;
+		friend class SceneSerializer;
+		friend class SceneHierarchyPanel;
+		friend class ScriptEngine;
+		friend class SceneRenderer;
+	};
+
+}

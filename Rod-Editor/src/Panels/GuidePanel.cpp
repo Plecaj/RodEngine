@@ -1,4 +1,7 @@
+#include "rdpch.h"
+
 #include "GuidePanel.h"
+
 #include "imgui.h"
 
 namespace Rod {

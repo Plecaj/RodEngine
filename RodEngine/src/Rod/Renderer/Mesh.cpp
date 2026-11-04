@@ -1,9 +1,99 @@
 #include "rdpch.h"
+
 #include "Mesh.h"
 
+#include <cstring>
 #include <limits>
 
 namespace Rod {
+
+	template <typename T>
+	T Mesh::ReadScalar(const uint8_t* data)
+	{
+		T value{};
+		std::memcpy(&value, data, sizeof(value));
+		return value;
+	}
+
+	const uint8_t* Mesh::AccessorData(const tinygltf::Model& model, const tinygltf::Accessor& accessor)
+	{
+		const auto& view = model.bufferViews[static_cast<size_t>(accessor.bufferView)];
+		const auto& buffer = model.buffers[static_cast<size_t>(view.buffer)];
+		return buffer.data.data() + view.byteOffset + accessor.byteOffset;
+	}
+
+	std::vector<float> Mesh::ReadVertices(const tinygltf::Model& model, const tinygltf::Primitive& primitive)
+	{
+		const auto position = primitive.attributes.find("POSITION");
+		RD_CORE_ASSERT(position != primitive.attributes.end(), "Could not find position in mesh primitive");
+		if (position == primitive.attributes.end())
+			return {};
+
+		const auto& accessor = model.accessors[static_cast<size_t>(position->second)];
+		const uint8_t* positions = AccessorData(model, accessor);
+		const uint8_t* normals = nullptr;
+		const auto normal = primitive.attributes.find("NORMAL");
+		if (normal != primitive.attributes.end())
+			normals = AccessorData(model, model.accessors[static_cast<size_t>(normal->second)]);
+		else
+			RD_CORE_WARN("Mesh primitive has no NORMAL attribute");
+
+		std::vector<float> vertices;
+		vertices.reserve(accessor.count * VERTEX_COMPONENT_COUNT);
+		for (size_t vertex = 0; vertex < accessor.count; ++vertex)
+		{
+			for (size_t component = 0; component < VECTOR_COMPONENT_COUNT; ++component)
+				vertices.push_back(
+				    ReadScalar<float>(positions + (vertex * VECTOR_COMPONENT_COUNT + component) * sizeof(float)));
+			for (size_t component = 0; component < VECTOR_COMPONENT_COUNT; ++component)
+				vertices.push_back(
+				    normals ? ReadScalar<float>(normals + (vertex * VECTOR_COMPONENT_COUNT + component) * sizeof(float))
+				            : 0.0f);
+		}
+		return vertices;
+	}
+
+	std::vector<uint32_t> Mesh::ReadIndices(const tinygltf::Model& model, const tinygltf::Primitive& primitive)
+	{
+		RD_CORE_ASSERT(primitive.indices >= 0, "Mesh indices < 0");
+		if (primitive.indices < 0)
+			return {};
+
+		const auto& accessor = model.accessors[static_cast<size_t>(primitive.indices)];
+		if (accessor.componentType != TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT &&
+		    accessor.componentType != TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT)
+		{
+			RD_CORE_ASSERT(false, "Unsupported index type");
+			return {};
+		}
+		const auto& view = model.bufferViews[static_cast<size_t>(accessor.bufferView)];
+		const uint8_t* data = AccessorData(model, accessor);
+		size_t stride = view.byteStride;
+		if (stride == 0)
+			stride =
+			    accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT ? sizeof(uint16_t) : sizeof(uint32_t);
+
+		std::vector<uint32_t> indices;
+		indices.reserve(accessor.count);
+		for (size_t index = 0; index < accessor.count; ++index)
+		{
+			const uint8_t* element = data + index * stride;
+			if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)
+				indices.push_back(ReadScalar<uint16_t>(element));
+			else
+				indices.push_back(ReadScalar<uint32_t>(element));
+		}
+		return indices;
+	}
+
+	template <typename Vector>
+	Vector Mesh::ToFloatVector(const std::vector<double>& values)
+	{
+		Vector result(0.0f);
+		for (typename Vector::length_type component = 0; component < result.length(); ++component)
+			result[component] = static_cast<float>(values[static_cast<size_t>(component)]);
+		return result;
+	}
 
 	Mesh::Mesh(const std::string& glbPath)
 	{
@@ -20,13 +110,17 @@ namespace Rod {
 		std::string err, warn;
 
 		const bool loaded = loader.LoadBinaryFromFile(&model, &err, &warn, path);
-		if (!warn.empty()) RD_CORE_WARN(warn);
-		if (!err.empty())  RD_CORE_ERROR(err);
+		if (!warn.empty())
+			RD_CORE_WARN(warn);
+		if (!err.empty())
+			RD_CORE_ERROR(err);
 		RD_CORE_ASSERT(loaded, "Failed to load GLB");
 		if (!loaded)
 			return;
 
 		RD_CORE_ASSERT(!model.meshes.empty(), "Meshes are empty");
+		if (model.meshes.empty())
+			return;
 
 		m_VAO = VertexArray::Create();
 
@@ -44,55 +138,9 @@ namespace Rod {
 	{
 		RD_PROFILE_FUNCTION();
 
-		auto posIt = primitive.attributes.find("POSITION");
-		RD_CORE_ASSERT(posIt != primitive.attributes.end(), "Could not find position in mesh primitive");
-
-		const auto& posAccessor = model.accessors[posIt->second];
-		const auto& posView = model.bufferViews[posAccessor.bufferView];
-		const auto& posBuffer = model.buffers[posView.buffer];
-
-		const float* positions = reinterpret_cast<const float*>(
-			&posBuffer.data[posView.byteOffset + posAccessor.byteOffset]);
-
-		size_t vertexCount = posAccessor.count;
-		const float* normals = nullptr;
-
-		auto normIt = primitive.attributes.find("NORMAL");
-		if (normIt != primitive.attributes.end())
-		{
-			const auto& normAccessor = model.accessors[normIt->second];
-			const auto& normView = model.bufferViews[normAccessor.bufferView];
-			const auto& normBuffer = model.buffers[normView.buffer];
-
-			normals = reinterpret_cast<const float*>(
-				&normBuffer.data[normView.byteOffset + normAccessor.byteOffset]);
-		}
-		else
-		{
-			RD_CORE_WARN("Mesh primitive has no NORMAL attribute");
-		}
-
-		std::vector<float> vertexData;
-		vertexData.reserve(vertexCount * 6);
-
-		for (size_t i = 0; i < vertexCount; i++) {
-			vertexData.push_back(positions[i * 3 + 0]);
-			vertexData.push_back(positions[i * 3 + 1]);
-			vertexData.push_back(positions[i * 3 + 2]);
-
-			if (normals)
-			{
-				vertexData.push_back(normals[i * 3 + 0]);
-				vertexData.push_back(normals[i * 3 + 1]);
-				vertexData.push_back(normals[i * 3 + 2]);
-			}
-			else
-			{
-				vertexData.push_back(0.0f);
-				vertexData.push_back(0.0f);
-				vertexData.push_back(0.0f);
-			}
-		}
+		auto vertexData = ReadVertices(model, primitive);
+		if (vertexData.empty())
+			return;
 
 		const size_t vertexBufferSize = vertexData.size() * sizeof(float);
 		const bool vertexBufferFits = vertexBufferSize <= std::numeric_limits<uint32_t>::max();
@@ -104,42 +152,12 @@ namespace Rod {
 		}
 
 		auto vertexBuffer = VertexBuffer::Create(vertexData.data(), static_cast<uint32_t>(vertexBufferSize));
-		BufferLayout layout = {
-			{ ShaderDataType::Float3, "a_Position" },
-			{ ShaderDataType::Float3, "a_Normal" }
-		};
+		const BufferLayout layout = {{ShaderDataType::Float3, "a_Position"}, {ShaderDataType::Float3, "a_Normal"}};
 		vertexBuffer->SetBufferLayout(layout);
 
-		RD_CORE_ASSERT(primitive.indices >= 0, "Mesh indicies < 0");
-
-		const auto& idxAccessor = model.accessors[primitive.indices];
-		const auto& idxView = model.bufferViews[idxAccessor.bufferView];
-		const auto& idxBuffer = model.buffers[idxView.buffer];
-
-		std::vector<uint32_t> indices;
-		indices.reserve(idxAccessor.count);
-
-		const uint8_t* data = &idxBuffer.data[idxView.byteOffset + idxAccessor.byteOffset];
-		size_t stride = idxView.byteStride;
-		if (stride == 0)
-			stride = idxAccessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT ? 2 : 4;
-
-		for (size_t i = 0; i < idxAccessor.count; i++)
-		{
-			const uint8_t* element = data + i * stride;
-
-			switch (idxAccessor.componentType)
-			{
-			case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
-				indices.push_back(*reinterpret_cast<const uint16_t*>(element));
-				break;
-			case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
-				indices.push_back(*reinterpret_cast<const uint32_t*>(element));
-				break;
-			default:
-				RD_CORE_ASSERT(false, "Unsupported index type");
-			}
-		}
+		auto indices = ReadIndices(model, primitive);
+		if (indices.empty())
+			return;
 
 		const bool indexBufferFits = indices.size() <= std::numeric_limits<uint32_t>::max();
 		RD_CORE_ASSERT(indexBufferFits, "Mesh index buffer is too large");
@@ -159,31 +177,18 @@ namespace Rod {
 		if (primitive.material == -1)
 			return;
 
-		RD_CORE_ASSERT(primitive.material < static_cast<int>(model.materials.size()), "Invalid material index");
-		const auto& gltfMaterial = model.materials[primitive.material];
+		RD_CORE_ASSERT(std::cmp_less(primitive.material, model.materials.size()), "Invalid material index");
+		const auto& gltfMaterial = model.materials[static_cast<size_t>(primitive.material)];
 		const auto& pbr = gltfMaterial.pbrMetallicRoughness;
 
-		if (pbr.baseColorFactor.size() == 4)
-		{
-			m_Material.SetAlbedo(glm::vec4(
-				static_cast<float>(pbr.baseColorFactor[0]),
-				static_cast<float>(pbr.baseColorFactor[1]),
-				static_cast<float>(pbr.baseColorFactor[2]),
-				static_cast<float>(pbr.baseColorFactor[3])
-			));
-		}
+		if (pbr.baseColorFactor.size() == COLOR_COMPONENT_COUNT)
+			m_Material.SetAlbedo(ToFloatVector<glm::vec4>(pbr.baseColorFactor));
 
 		m_Material.SetRoughness(static_cast<float>(pbr.roughnessFactor));
 		m_Material.SetMetallic(static_cast<float>(pbr.metallicFactor));
 
-		if (gltfMaterial.emissiveFactor.size() == 3)
-		{
-			m_Material.SetEmissive(glm::vec3(
-				static_cast<float>(gltfMaterial.emissiveFactor[0]),
-				static_cast<float>(gltfMaterial.emissiveFactor[1]),
-				static_cast<float>(gltfMaterial.emissiveFactor[2])
-			));
-		}
+		if (gltfMaterial.emissiveFactor.size() == VECTOR_COMPONENT_COUNT)
+			m_Material.SetEmissive(ToFloatVector<glm::vec3>(gltfMaterial.emissiveFactor));
 	}
 
 }

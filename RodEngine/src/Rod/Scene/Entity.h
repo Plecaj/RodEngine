@@ -1,8 +1,14 @@
 #pragma once
 
-#include "Scene.h"
+#include "Rod/Core/Core.h"
 #include "Rod/Core/UUID.h"
+#include "Scene.h"
+
 #include "entt.hpp"
+
+#include <cstdint>
+#include <string>
+#include <utility>
 
 namespace Rod {
 
@@ -10,10 +16,9 @@ namespace Rod {
 	{
 	public:
 		Entity() = default;
-		Entity(entt::entity handle, Scene* scene);
-		Entity(const Entity& other) = default;
+		Entity(entt::entity handle, Scene* scene) noexcept;
 
-		template<typename T, typename... Args>
+		template <typename T, typename... Args>
 		T& AddComponent(Args&&... args)
 		{
 			RD_CORE_ASSERT(!HasComponent<T>(), "Entity already has component");
@@ -22,49 +27,50 @@ namespace Rod {
 			return component;
 		}
 
-		template<typename T>
-		T& GetComponent()
+		template <typename T>
+		[[nodiscard]] T& GetComponent()
 		{
 			RD_CORE_ASSERT(HasComponent<T>(), "Entity does not have component");
 			return m_Scene->m_Registry.get<T>(m_EntityHandle);
 		}
 
-		template<typename T>
-		const T& GetComponent() const
+		template <typename T>
+		[[nodiscard]] const T& GetComponent() const
 		{
 			RD_CORE_ASSERT(HasComponent<T>(), "Entity does not have component");
 			return m_Scene->m_Registry.get<T>(m_EntityHandle);
 		}
 
-		template<typename T>
-		bool HasComponent() const
+		template <typename T>
+		[[nodiscard]] bool HasComponent() const
 		{
 			return m_Scene->m_Registry.all_of<T>(m_EntityHandle);
 		}
 
-		template<typename T>
+		template <typename T>
 		void RemoveComponent()
 		{
 			RD_CORE_ASSERT(HasComponent<T>(), "Entity does not have component");
 			m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		}
 
-		operator bool() const { return m_EntityHandle != entt::null && m_Scene != nullptr && m_Scene->m_Registry.valid(m_EntityHandle); }
-		operator uint32_t() const { return (uint32_t)m_EntityHandle; }
-		operator entt::entity() const { return m_EntityHandle; }
+		[[nodiscard]] explicit operator bool() const
+		{
+			return m_EntityHandle != entt::null && m_Scene != nullptr && m_Scene->m_Registry.valid(m_EntityHandle);
+		}
+		[[nodiscard]] explicit operator uint32_t() const noexcept { return static_cast<uint32_t>(m_EntityHandle); }
+		[[nodiscard]] explicit operator entt::entity() const noexcept { return m_EntityHandle; }
 
-		UUID GetUUID() const;
-		const std::string& GetName() const;
+		[[nodiscard]] UUID GetUUID() const;
+		[[nodiscard]] const std::string& GetName() const;
 
-		bool operator==(const Entity& other) const
+		[[nodiscard]] bool operator==(const Entity& other) const noexcept
 		{
 			return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene;
 		}
 
-		bool operator!=(const Entity& other) const
-		{
-			return !(*this == other);
-		}
+		[[nodiscard]] bool operator!=(const Entity& other) const noexcept { return !(*this == other); }
+
 	private:
 		entt::entity m_EntityHandle = entt::null;
 		Scene* m_Scene = nullptr;

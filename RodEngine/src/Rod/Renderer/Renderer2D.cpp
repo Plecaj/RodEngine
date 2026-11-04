@@ -1,321 +1,312 @@
 #include "rdpch.h"
+
 #include "Renderer2D.h"
 
-#include "VertexArray.h"
-#include "Shader.h"
 #include "RenderCommand.h"
-#include "RendererLimits.h"
-
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include "Shader.h"
+#include "VertexArray.h"
 
 namespace Rod {
 
-    struct QuadVertex
-    {
-        glm::vec3 Position;
-        glm::vec4 Color;
-        glm::vec2 TexCoord;
-        float TexIdx;
-        float TilingFactor;
+	struct QuadVertex
+	{
+		glm::vec3 Position;
+		glm::vec4 Color;
+		glm::vec2 TexCoord;
+		float TexIdx;
+		float TilingFactor;
 
-        int EntityID = 0;
-    };
+		int EntityID = 0;
+	};
 
-    struct Renderer2DData
-    {
-        static constexpr int MAX_QUAD_COUNT = 10000;
-        static constexpr int MAX_VERTICES_COUNT = MAX_QUAD_COUNT * 4;
-        static constexpr int MAX_INDICES_COUNT = MAX_QUAD_COUNT * 6;
-        static constexpr int MAX_TEXTURE_SLOTS = 32;
+	struct Renderer2DData
+	{
+		static constexpr uint32_t MAX_QUAD_COUNT = 10000;
+		static constexpr uint32_t MAX_VERTICES_COUNT = MAX_QUAD_COUNT * Renderer2D::QUAD_VERTEX_COUNT;
+		static constexpr uint32_t MAX_INDICES_COUNT = MAX_QUAD_COUNT * Renderer2D::QUAD_INDEX_COUNT;
+		static constexpr uint32_t MAX_TEXTURE_SLOTS = 32;
 
-        Scope<VertexArray> QuadVertexArray;
-        VertexBuffer* QuadVertexBuffer = nullptr; // Owned by QuadVertexArray.
-        Scope<UniformBuffer> QuadUniformBuffer;
-        Scope<Shader> TextureShader;
-        Ref<Texture2D> WhiteTexture;
+		Scope<VertexArray> QuadVertexArray;
+		VertexBuffer* QuadVertexBuffer = nullptr; // Owned by QuadVertexArray.
+		Scope<UniformBuffer> QuadUniformBuffer;
+		Scope<Shader> TextureShader;
+		Ref<Texture2D> WhiteTexture;
 
-        uint32_t QuadIndexCount = 0;
-        std::vector<QuadVertex> QuadVertexBufferBase;
-        QuadVertex* QuadVertexBufferPtr = nullptr;
+		uint32_t QuadIndexCount = 0;
+		std::vector<QuadVertex> QuadVertexBufferBase;
+		QuadVertex* QuadVertexBufferPtr = nullptr;
 
-        std::vector<Ref<Texture2D>> TextureSlots;
-        uint32_t TextureSlotIndex = 1; // 0 = white texture
+		std::vector<Ref<Texture2D>> TextureSlots;
+		uint32_t TextureSlotIndex = 1; // 0 = white texture
 
-        glm::vec4 QuadVertexPositions[4];
-        Renderer2D::Statistics Stats;
-    };
+		std::array<glm::vec4, Renderer2D::QUAD_VERTEX_COUNT> QuadVertexPositions;
+		Renderer2D::Statistics Stats;
+	};
 
-    static Scope<Renderer2DData> s_Data;
+	static Scope<Renderer2DData> g_Data;
 
-    void Renderer2D::Init()
-    {
-        RD_PROFILE_FUNCTION();
-        s_Data = CreateScope<Renderer2DData>();
-        s_Data->TextureSlots.resize(s_Data->MAX_TEXTURE_SLOTS);
+	void Renderer2D::Init()
+	{
+		RD_PROFILE_FUNCTION();
+		g_Data = CreateScope<Renderer2DData>();
+		g_Data->TextureSlots.resize(g_Data->MAX_TEXTURE_SLOTS);
 
-        InitShader();
-        InitSamplers();
-        InitQuadVertexArray();
-        InitWhiteTexture();
-        InitQuadVertexPositions();
-    }
+		InitShader();
+		InitSamplers();
+		InitQuadVertexArray();
+		InitWhiteTexture();
+		InitQuadVertexPositions();
+	}
 
+	void Renderer2D::InitShader()
+	{
+		Shader::ShaderOptions shaderOptions;
+		shaderOptions.OptimizationLevel = Shader::OptimizationLevel::Performance;
+		shaderOptions.GenerateDebugInfo = false;
 
-    void Renderer2D::InitShader()
-    {
-        Shader::ShaderOptions shaderOptions;
-        shaderOptions.OptimizationLevel = Shader::OptimizationLevel::Performance;
-        shaderOptions.GenerateDebugInfo = false;
+		g_Data->TextureShader = Shader::Create("assets/shaders/Texture.glsl", shaderOptions);
+		g_Data->QuadUniformBuffer = UniformBuffer::Create(sizeof(glm::mat4));
+	}
 
-        s_Data->TextureShader = Shader::Create("assets/shaders/Texture.glsl", shaderOptions);
-        s_Data->QuadUniformBuffer = UniformBuffer::Create(sizeof(glm::mat4));
-    }
+	void Renderer2D::InitSamplers()
+	{
+		std::array<int, Renderer2DData::MAX_TEXTURE_SLOTS> samplers;
+		for (uint32_t i = 0; i < Renderer2DData::MAX_TEXTURE_SLOTS; i++)
+			samplers[i] = static_cast<int>(i);
 
-    void Renderer2D::InitSamplers()
-    {
-        std::array<int, Renderer2DData::MAX_TEXTURE_SLOTS> samplers;
-        for (int i = 0; i < Renderer2DData::MAX_TEXTURE_SLOTS; i++)
-            samplers[i] = i;
+		g_Data->TextureShader->Bind();
+		g_Data->TextureShader->SetIntArray("u_Textures", samplers.data(), static_cast<uint32_t>(samplers.size()));
+	}
 
-        s_Data->TextureShader->Bind();
-        s_Data->TextureShader->SetIntArray("u_Textures", samplers.data(), (uint32_t)samplers.size());
-    }
+	void Renderer2D::InitQuadVertexArray()
+	{
+		g_Data->QuadVertexArray = VertexArray::Create();
 
-    void Renderer2D::InitQuadVertexArray()
-    {
-        s_Data->QuadVertexArray = VertexArray::Create();
+		auto vertexBuffer = VertexBuffer::Create(sizeof(QuadVertex) * g_Data->MAX_VERTICES_COUNT);
+		vertexBuffer->SetBufferLayout(
+		    {{ShaderDataType::Float3, "a_Position"},
+		     {ShaderDataType::Float4, "a_Color"},
+		     {ShaderDataType::Float2, "a_TexCoord"},
+		     {ShaderDataType::Float, "a_TexIdx"},
+		     {ShaderDataType::Float, "a_TilingFactor"},
+		     {ShaderDataType::Int, "a_EntityID"}});
 
-        auto vertexBuffer = VertexBuffer::Create(sizeof(QuadVertex) * s_Data->MAX_VERTICES_COUNT);
-        vertexBuffer->SetBufferLayout(
-            {
-                { ShaderDataType::Float3, "a_Position" },
-                { ShaderDataType::Float4, "a_Color"},
-                { ShaderDataType::Float2, "a_TexCoord" },
-                { ShaderDataType::Float, "a_TexIdx"},
-                { ShaderDataType::Float, "a_TilingFactor"},
-                { ShaderDataType::Int, "a_EntityID"}
-            });
+		g_Data->QuadVertexBuffer = vertexBuffer.get();
+		g_Data->QuadVertexArray->AddVertexBuffer(std::move(vertexBuffer));
+		g_Data->QuadVertexBufferBase.resize(Renderer2DData::MAX_VERTICES_COUNT);
 
-        s_Data->QuadVertexBuffer = vertexBuffer.get();
-        s_Data->QuadVertexArray->AddVertexBuffer(std::move(vertexBuffer));
-        s_Data->QuadVertexBufferBase.resize(Renderer2DData::MAX_VERTICES_COUNT);
+		std::vector<uint32_t> quadIndices(Renderer2DData::MAX_INDICES_COUNT);
+		constexpr std::array<uint32_t, QUAD_INDEX_COUNT> quadPattern = {0, 1, 2, 2, 3, 0};
+		uint32_t offset = 0;
+		for (uint32_t i = 0; i < Renderer2DData::MAX_INDICES_COUNT; i += QUAD_INDEX_COUNT)
+		{
+			for (uint32_t corner = 0; corner < QUAD_INDEX_COUNT; ++corner)
+				quadIndices[i + corner] = offset + quadPattern[corner];
+			offset += QUAD_VERTEX_COUNT;
+		}
 
-        std::vector<uint32_t> quadIndices(Renderer2DData::MAX_INDICES_COUNT);
-        uint32_t offset = 0;
-        for (uint32_t i = 0; i < Renderer2DData::MAX_INDICES_COUNT; i += 6)
-        {
-            quadIndices[i + 0] = offset + 0;
-            quadIndices[i + 1] = offset + 1;
-            quadIndices[i + 2] = offset + 2;
+		auto quadIB = IndexBuffer::Create(quadIndices.data(), Renderer2DData::MAX_INDICES_COUNT);
+		g_Data->QuadVertexArray->SetIndexBuffer(std::move(quadIB));
+	}
 
-            quadIndices[i + 3] = offset + 2;
-            quadIndices[i + 4] = offset + 3;
-            quadIndices[i + 5] = offset + 0;
+	void Renderer2D::InitWhiteTexture()
+	{
+		g_Data->WhiteTexture = Texture2D::Create(1, 1);
+		constexpr uint32_t whiteTextureData = 0xffffffff;
+		g_Data->WhiteTexture->SetData(&whiteTextureData, sizeof(whiteTextureData));
 
-            offset += 4;
-        }
+		g_Data->TextureSlots[0] = g_Data->WhiteTexture;
+	}
 
-        auto quadIB = IndexBuffer::Create(quadIndices.data(), Renderer2DData::MAX_INDICES_COUNT);
-        s_Data->QuadVertexArray->SetIndexBuffer(std::move(quadIB));
-    }
+	void Renderer2D::InitQuadVertexPositions()
+	{
+		constexpr std::array<glm::vec4, QUAD_VERTEX_COUNT> positions = {
+		    {{-0.5f, -0.5f, 0.0f, 1.0f},
+		     {0.5f, -0.5f, 0.0f, 1.0f},
+		     {0.5f, 0.5f, 0.0f, 1.0f},
+		     {-0.5f, 0.5f, 0.0f, 1.0f}}};
+		g_Data->QuadVertexPositions = positions;
+	}
 
-    void Renderer2D::InitWhiteTexture()
-    {
-        s_Data->WhiteTexture = Texture2D::Create(1, 1);
-        uint32_t whiteTextureData = 0xffffffff;
-        s_Data->WhiteTexture->SetData(&whiteTextureData, sizeof(whiteTextureData));
+	void Renderer2D::Shutdown()
+	{
+		RD_PROFILE_FUNCTION();
 
-        s_Data->TextureSlots[0] = s_Data->WhiteTexture;
-    }
+		g_Data.reset();
+	}
 
-    void Renderer2D::InitQuadVertexPositions()
-    {
-        s_Data->QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
-        s_Data->QuadVertexPositions[1] = { 0.5f, -0.5f, 0.0f, 1.0f };
-        s_Data->QuadVertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
-        s_Data->QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
-    }
+	void Renderer2D::BeginScene(const Camera& camera, const glm::mat4& transform)
+	{
+		RD_PROFILE_FUNCTION();
 
-    void Renderer2D::Shutdown()
-    {
-        RD_PROFILE_FUNCTION();
+		glm::mat4 viewProj = camera.GetProjection() * glm::inverse(transform);
 
-        s_Data.reset();
-    }
+		g_Data->TextureShader->Bind();
 
-    void Renderer2D::BeginScene(const Camera& camera, const glm::mat4& transform)
-    {
-        RD_PROFILE_FUNCTION();
+		g_Data->QuadUniformBuffer->BindBase(0);
+		g_Data->QuadUniformBuffer->SetData(&viewProj, sizeof(viewProj));
 
-        glm::mat4 viewProj = camera.GetProjection() * glm::inverse(transform);
+		BeginBatch();
+	}
 
-        s_Data->TextureShader->Bind();
+	void Renderer2D::BeginScene(const EditorCamera& camera)
+	{
+		RD_PROFILE_FUNCTION();
 
-        s_Data->QuadUniformBuffer->BindBase(0);
-        s_Data->QuadUniformBuffer->SetData(&viewProj, sizeof(viewProj));
+		glm::mat4 viewProj = camera.GetViewProjection();
 
-        BeginBatch();
-    }
+		g_Data->TextureShader->Bind();
 
-    void Renderer2D::BeginScene(const EditorCamera& camera)
-    {
-        RD_PROFILE_FUNCTION();
+		g_Data->QuadUniformBuffer->BindBase(0);
+		g_Data->QuadUniformBuffer->SetData(&viewProj, sizeof(viewProj));
 
-        glm::mat4 viewProj = camera.GetViewProjection();
+		BeginBatch();
+	}
 
-        s_Data->TextureShader->Bind();
+	void Renderer2D::EndScene()
+	{
+		RD_PROFILE_FUNCTION();
 
-        s_Data->QuadUniformBuffer->BindBase(0);
-        s_Data->QuadUniformBuffer->SetData(&viewProj, sizeof(viewProj));
+		if (g_Data->QuadIndexCount == 0)
+			return;
 
-        BeginBatch();
-    }
+		EndBatch();
+		Flush();
+	}
 
-    void Renderer2D::EndScene()
-    {
-        RD_PROFILE_FUNCTION();
+	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color, int entityID)
+	{
+		RD_PROFILE_FUNCTION();
+		if (g_Data->QuadIndexCount + QUAD_INDEX_COUNT > g_Data->MAX_INDICES_COUNT)
+		{
+			EndBatch();
+			Flush();
+			BeginBatch();
+		}
 
-        if (s_Data->QuadIndexCount == 0) return;
+		constexpr glm::vec2 textureCoords[] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}};
+		constexpr float whiteTextureIndex = 0.0f;
+		constexpr float tilingFactor = 1.0f;
 
-        EndBatch();
-        Flush();
-    }
+		for (uint32_t i = 0; i < QUAD_VERTEX_COUNT; i++)
+		{
+			g_Data->QuadVertexBufferPtr->Position = transform * g_Data->QuadVertexPositions[i];
+			g_Data->QuadVertexBufferPtr->Color = color;
+			g_Data->QuadVertexBufferPtr->TexCoord = textureCoords[i];
+			g_Data->QuadVertexBufferPtr->TexIdx = whiteTextureIndex;
+			g_Data->QuadVertexBufferPtr->TilingFactor = tilingFactor;
+			g_Data->QuadVertexBufferPtr->EntityID = entityID;
+			g_Data->QuadVertexBufferPtr++;
+		}
 
-    void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color, int entityID)
-    {
-        RD_PROFILE_FUNCTION();
-        if (s_Data->QuadIndexCount + 6 > s_Data->MAX_INDICES_COUNT) {
-            EndBatch();
-            Flush();
-            BeginBatch();
-        }
+		g_Data->QuadIndexCount += QUAD_INDEX_COUNT;
 
-        constexpr uint32_t quadVertexCount = 4;
-        constexpr glm::vec2 textureCoords[] = {
-            {0.0f, 0.0f},
-            {1.0f, 0.0f},
-            {1.0f, 1.0f},
-            {0.0f, 1.0f }
-        };
-        constexpr float whiteTextureIndex = 0.0f;
-        constexpr float tilingFactor = 1.0f;
+		g_Data->Stats.QuadCount++;
+	}
 
-        for (int i = 0; i < quadVertexCount; i++) {
-            s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[i];
-            s_Data->QuadVertexBufferPtr->Color = color;
-            s_Data->QuadVertexBufferPtr->TexCoord = textureCoords[i];
-            s_Data->QuadVertexBufferPtr->TexIdx = whiteTextureIndex;
-            s_Data->QuadVertexBufferPtr->TilingFactor = tilingFactor;
-            s_Data->QuadVertexBufferPtr->EntityID = entityID;
-            s_Data->QuadVertexBufferPtr++;
-        }
+	void Renderer2D::DrawQuad(
+	    const glm::mat4& transform,
+	    const Ref<Texture2D>& texture,
+	    float tilingFactor,
+	    const glm::vec4& tintColor,
+	    int entityID)
+	{
+		RD_PROFILE_FUNCTION();
+		if ((g_Data->QuadIndexCount + QUAD_INDEX_COUNT > g_Data->MAX_INDICES_COUNT))
+		{
+			EndBatch();
+			Flush();
+			BeginBatch();
+		}
 
-        s_Data->QuadIndexCount += 6;
+		constexpr glm::vec2 textureCoords[] = {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}};
 
-        s_Data->Stats.QuadCount++;
-    }
+		float textureIndex = 0.0f;
+		for (uint32_t i = 1; i < g_Data->TextureSlotIndex; i++)
+		{
+			if (*g_Data->TextureSlots[i] == *texture)
+			{
+				textureIndex = static_cast<float>(i);
+				break;
+			}
+		}
 
-    void Renderer2D::DrawQuad(const glm::mat4& transform, const Ref<Texture2D>& texture, float tilingFactor, const glm::vec4& tintColor, int entityID)
-    {
-        RD_PROFILE_FUNCTION();
-        if ((s_Data->QuadIndexCount + 6 > s_Data->MAX_INDICES_COUNT)) {
-            EndBatch();
-            Flush();
-            BeginBatch();
-        }
+		if (textureIndex == 0 && g_Data->TextureSlotIndex < g_Data->MAX_TEXTURE_SLOTS - 1)
+		{
+			textureIndex = static_cast<float>(g_Data->TextureSlotIndex);
+			g_Data->TextureSlots[g_Data->TextureSlotIndex] = texture;
+			g_Data->TextureSlotIndex++;
+		}
+		else if (textureIndex == 0)
+		{
+			EndBatch();
+			Flush();
+			BeginBatch();
+		}
 
-        constexpr uint32_t quadVertexCount = 4;
-        constexpr glm::vec2 textureCoords[] = {
-            {0.0f, 0.0f},
-            {1.0f, 0.0f},
-            {1.0f, 1.0f},
-            {0.0f, 1.0f }
-        };
+		for (uint32_t i = 0; i < QUAD_VERTEX_COUNT; i++)
+		{
+			g_Data->QuadVertexBufferPtr->Position = transform * g_Data->QuadVertexPositions[i];
+			g_Data->QuadVertexBufferPtr->Color = tintColor;
+			g_Data->QuadVertexBufferPtr->TexCoord = textureCoords[i];
+			g_Data->QuadVertexBufferPtr->TexIdx = textureIndex;
+			g_Data->QuadVertexBufferPtr->TilingFactor = tilingFactor;
+			g_Data->QuadVertexBufferPtr->EntityID = entityID;
+			g_Data->QuadVertexBufferPtr++;
+		}
 
-        float textureIndex = 0.0f;
-        for (uint32_t i = 1; i < s_Data->TextureSlotIndex; i++)
-        {
-            if (*s_Data->TextureSlots[i].get() == *texture.get())
-            {
-                textureIndex = (float)i;
-                break;
-            }
-        }
+		g_Data->QuadIndexCount += QUAD_INDEX_COUNT;
 
-        if (textureIndex == 0 && s_Data->TextureSlotIndex < s_Data->MAX_TEXTURE_SLOTS - 1)
-        {
-            textureIndex = (float)s_Data->TextureSlotIndex;
-            s_Data->TextureSlots[s_Data->TextureSlotIndex] = texture;
-            s_Data->TextureSlotIndex++;
-        }
-        else if (textureIndex == 0) {
-            EndBatch();
-            Flush();
-            BeginBatch();
-        }
+		g_Data->Stats.QuadCount++;
+	}
 
-        for (int i = 0; i < quadVertexCount; i++) {
-            s_Data->QuadVertexBufferPtr->Position = transform * s_Data->QuadVertexPositions[i];
-            s_Data->QuadVertexBufferPtr->Color = tintColor;
-            s_Data->QuadVertexBufferPtr->TexCoord = textureCoords[i];
-            s_Data->QuadVertexBufferPtr->TexIdx = textureIndex;
-            s_Data->QuadVertexBufferPtr->TilingFactor = tilingFactor;
-            s_Data->QuadVertexBufferPtr->EntityID = entityID;
-            s_Data->QuadVertexBufferPtr++;
-        }
+	void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID)
+	{
+		if (src.Texture)
+			DrawQuad(transform, src.Texture, src.TilingFactor, src.Color, entityID);
+		else
+			DrawQuad(transform, src.Color, entityID);
+	}
 
-        s_Data->QuadIndexCount += 6;
+	void Renderer2D::ResetStats()
+	{
+		g_Data->Stats = {};
+	}
 
-        s_Data->Stats.QuadCount++;
-    }
+	Renderer2D::Statistics Renderer2D::GetStats()
+	{
+		return g_Data->Stats;
+	}
 
-    void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID)
-    {
-        if (src.Texture)
-            DrawQuad(transform, src.Texture, src.TilingFactor, src.Color, entityID);
-        else
-            DrawQuad(transform, src.Color, entityID);
-    }
+	void Renderer2D::BeginBatch()
+	{
+		RD_PROFILE_FUNCTION();
 
-    void Renderer2D::ResetStats()
-    {
-        memset(&s_Data->Stats, 0, sizeof(Statistics));
-    }
+		g_Data->TextureSlotIndex = 1;
+		g_Data->QuadIndexCount = 0;
+		g_Data->QuadVertexBufferPtr = g_Data->QuadVertexBufferBase.data();
+	}
 
-    Renderer2D::Statistics Renderer2D::GetStats()
-    {
-        return s_Data->Stats;
-    }
+	void Renderer2D::EndBatch()
+	{
+		RD_PROFILE_FUNCTION();
 
-    void Renderer2D::BeginBatch()
-    {
-        RD_PROFILE_FUNCTION();
+		const auto vertexCount = static_cast<size_t>(g_Data->QuadVertexBufferPtr - g_Data->QuadVertexBufferBase.data());
+		const auto dataSize = static_cast<uint32_t>(vertexCount * sizeof(QuadVertex));
+		g_Data->QuadVertexBuffer->SetData(g_Data->QuadVertexBufferBase.data(), dataSize);
+	}
 
-        s_Data->TextureSlotIndex = 1;
-        s_Data->QuadIndexCount = 0;
-        s_Data->QuadVertexBufferPtr = s_Data->QuadVertexBufferBase.data();
-    }
+	void Renderer2D::Flush()
+	{
+		RD_PROFILE_FUNCTION();
 
-    void Renderer2D::EndBatch()
-    {
-        RD_PROFILE_FUNCTION();
+		for (uint32_t i = 0; i < g_Data->TextureSlotIndex; i++)
+			g_Data->TextureSlots[i]->Bind(i);
 
-        auto dataSize = (uint32_t)((uint8_t*)s_Data->QuadVertexBufferPtr - (uint8_t*)s_Data->QuadVertexBufferBase.data());
-        s_Data->QuadVertexBuffer->SetData(s_Data->QuadVertexBufferBase.data(), dataSize);
-    }
+		g_Data->QuadVertexArray->Bind();
+		g_Data->QuadVertexArray->GetIndexBuffer()->Bind();
 
-    void Renderer2D::Flush()
-    {
-        RD_PROFILE_FUNCTION();
-
-        for (uint32_t i = 0; i < s_Data->TextureSlotIndex; i++)
-            s_Data->TextureSlots[i]->Bind(i);
-
-        s_Data->QuadVertexArray->Bind();
-        s_Data->QuadVertexArray->GetIndexBuffer()->Bind();
-
-        RenderCommand::DrawIndexed(*s_Data->QuadVertexArray, s_Data->QuadIndexCount);
-        s_Data->Stats.DrawCalls++;
-    }
+		RenderCommand::DrawIndexed(*g_Data->QuadVertexArray, g_Data->QuadIndexCount);
+		g_Data->Stats.DrawCalls++;
+	}
 }

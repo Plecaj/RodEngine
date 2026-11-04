@@ -1,11 +1,13 @@
 InheritParentConfig: false
 Checks: >-
   -*,
+  clang-diagnostic-*,
   clang-analyzer-*,
   bugprone-assert-side-effect,
   bugprone-assignment-in-if-condition,
   bugprone-branch-clone,
   bugprone-dangling-handle,
+  bugprone-exception-escape,
   bugprone-integer-division,
   bugprone-macro-parentheses,
   bugprone-macro-repeated-side-effects,
@@ -21,31 +23,50 @@ Checks: >-
   bugprone-undefined-memory-manipulation,
   bugprone-unhandled-self-assignment,
   bugprone-use-after-move,
+  bugprone-virtual-near-miss,
   performance-*,
+  cppcoreguidelines-init-variables,
+  cppcoreguidelines-missing-std-forward,
+  cppcoreguidelines-noexcept-destructor,
+  cppcoreguidelines-noexcept-move-operations,
+  cppcoreguidelines-noexcept-swap,
+  cppcoreguidelines-prefer-member-initializer,
   cppcoreguidelines-pro-type-const-cast,
   cppcoreguidelines-pro-type-reinterpret-cast,
   cppcoreguidelines-special-member-functions,
+  cppcoreguidelines-slicing,
+  cppcoreguidelines-virtual-class-destructor,
   google-explicit-constructor,
   google-readability-casting,
   misc-include-cleaner,
+  misc-const-correctness,
   misc-unconventional-assign-operator,
+  modernize-concat-nested-namespaces,
   modernize-deprecated-headers,
   modernize-loop-convert,
   modernize-redundant-void-arg,
+  modernize-pass-by-value,
   modernize-return-braced-init-list,
+  modernize-type-traits,
+  modernize-unary-static-assert,
   modernize-use-auto,
   modernize-use-bool-literals,
   modernize-use-default-member-init,
   modernize-use-emplace,
   modernize-use-equals-default,
   modernize-use-equals-delete,
+  modernize-use-integer-sign-comparison,
   modernize-use-nodiscard,
+  modernize-use-noexcept,
   modernize-use-nullptr,
-  modernize-use-override,
   modernize-use-transparent-functors,
   modernize-use-using,
   readability-avoid-const-params-in-decls,
+  readability-const-return-type,
+  readability-container-contains,
+  readability-container-data-pointer,
   readability-container-size-empty,
+  readability-delete-null-pointer,
   readability-duplicate-include,
   readability-function-cognitive-complexity,
   readability-function-size,
@@ -56,21 +77,30 @@ Checks: >-
   readability-make-member-function-const,
   readability-misleading-indentation,
   readability-non-const-parameter,
+  readability-redundant-casting,
   readability-redundant-control-flow,
   readability-redundant-declaration,
+  readability-redundant-function-ptr-dereference,
+  readability-redundant-inline-specifier,
   readability-redundant-member-init,
   readability-redundant-smartptr-get,
   readability-redundant-string-cstr,
   readability-redundant-string-init,
+  readability-redundant-typename,
   readability-simplify-boolean-expr,
-  readability-simplify-subscript-expr
+  readability-simplify-subscript-expr,
+  readability-string-compare,
+  readability-uniqueptr-delete-release,
+  readability-use-std-min-max
 WarningsAsErrors: ''
 HeaderFilterRegex: '(^|.*[/\\])(RodEngine[/\\]src|Rod-Editor[/\\]src|Rod-Runtime[/\\]src|tests)[/\\].*'
 SystemHeaders: false
 FormatStyle: file
 CheckOptions:
   bugprone-assert-side-effect.AssertMacros: 'assert,RD_ASSERT,RD_CORE_ASSERT'
-  bugprone-assert-side-effect.CheckFunctionCalls: true
+  # Read-only queries belong inside assertions and should disappear with them.
+  # Continue diagnosing explicit mutations such as assignments and increments.
+  bugprone-assert-side-effect.CheckFunctionCalls: false
   bugprone-narrowing-conversions.WarnOnIntegerNarrowingConversion: true
   bugprone-narrowing-conversions.WarnOnIntegerToFloatingPointNarrowingConversion: true
   bugprone-narrowing-conversions.WarnOnFloatingPointNarrowingConversion: true
@@ -80,7 +110,13 @@ CheckOptions:
   cppcoreguidelines-special-member-functions.AllowMissingMoveFunctionsWhenCopyIsDeleted: false
   cppcoreguidelines-special-member-functions.AllowImplicitlyDeletedCopyOrMove: false
   misc-include-cleaner.IgnoreHeaders: '(^|[/\\])rdpch\.h$'
+  # Clang-tidy cannot recover exported includes from the compiled PCH.
+  # Common dependencies come from rdpch.h; keep checking unused local includes.
+  misc-include-cleaner.MissingIncludes: false
+  misc-include-cleaner.UnusedIncludes: true
   readability-function-size.LineThreshold: 100
+  readability-implicit-bool-conversion.AllowPointerConditions: true
+  readability-implicit-bool-conversion.AllowIntegerConditions: true
   readability-function-size.StatementThreshold: 60
   readability-function-size.BranchThreshold: 12
   readability-function-size.ParameterThreshold: 6

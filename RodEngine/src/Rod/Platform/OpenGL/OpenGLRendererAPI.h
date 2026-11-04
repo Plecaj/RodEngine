@@ -7,7 +7,7 @@ namespace Rod {
 	class OpenGLRendererAPI : public RendererAPI
 	{
 		virtual void Init() override;
-		virtual const int GetMaxTextureSlots() const override;
+		[[nodiscard]] virtual int GetMaxTextureSlots() const override;
 		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 		virtual void SetClearColor(const glm::vec4& color) override;
 		virtual void Clear() override;
@@ -16,7 +16,7 @@ namespace Rod {
 
 		virtual void DrawIndexed(const VertexArray& vertexArray, uint32_t indexCount = 0) override;
 
-		virtual RendererState GetState() const override;
+		[[nodiscard]] virtual RendererState GetState() const override;
 		virtual void SetState(const RendererState& state) override;
 	};
 

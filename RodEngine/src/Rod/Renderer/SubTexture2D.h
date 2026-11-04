@@ -1,8 +1,11 @@
 #pragma once
 
+#include "Texture.h"
+
 #include <glm/glm.hpp>
 
-#include "Texture.h"
+#include <array>
+#include <cstddef>
 
 namespace Rod {
 
@@ -11,14 +14,20 @@ namespace Rod {
 	public:
 		SubTexture2D(const Ref<Texture2D>& texture, const glm::vec2& min, const glm::vec2& max);
 
-		const Ref<Texture2D>& GetTexture() const { return m_Texture; }
-		const glm::vec2* GetTexCoords() const { return m_TexCoords; }
+		[[nodiscard]] const Ref<Texture2D>& GetTexture() const noexcept { return m_Texture; }
+		[[nodiscard]] const glm::vec2* GetTexCoords() const noexcept { return m_TexCoords.data(); }
 
-		static SubTexture2D CreateFromCoords(const Ref<Texture2D>& texture, const glm::vec2 coords, const glm::vec2 cellSize, const glm::vec2 spriteSize = {1, 1});
+		[[nodiscard]] static SubTexture2D CreateFromCoords(
+		    const Ref<Texture2D>& texture,
+		    glm::vec2 coords,
+		    glm::vec2 cellSize,
+		    glm::vec2 spriteSize = {1, 1});
+
 	private:
 		Ref<Texture2D> m_Texture;
 
-		glm::vec2 m_TexCoords[4];
+		static constexpr size_t TEX_COORD_COUNT = 4;
+		std::array<glm::vec2, TEX_COORD_COUNT> m_TexCoords;
 	};
 
 }

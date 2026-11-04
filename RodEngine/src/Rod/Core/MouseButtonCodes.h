@@ -1,13 +1,11 @@
 #pragma once
 
-#include "rdpch.h"
+#include <cstdint>
 
-namespace Rod
-{
-	using MouseCode = uint16_t;
+namespace Rod {
+	using MouseCode = uint8_t;
 
-	namespace Mouse
-	{
+	namespace Mouse {
 		enum : MouseCode
 		{
 			// From glfw3.h

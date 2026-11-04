@@ -1,13 +1,16 @@
 #include "rdpch.h"
+
 #include "Rod/Utils/PlatformUtils.h"
 
-#include <Windows.h>
-#include <commdlg.h>
+// NOLINTBEGIN(misc-include-cleaner)
 #include <GLFW/glfw3.h>
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/glfw3native.h>
+#include <Windows.h>
 
+#include <commdlg.h>
+#define GLFW_EXPOSE_NATIVE_WIN32
 #include "Rod/Core/Application.h"
+
+#include <GLFW/glfw3native.h>
 
 namespace Rod {
 
@@ -33,10 +36,10 @@ namespace Rod {
 
 	std::string FileDialogs::OpenFile(const char* filter)
 	{
-		CHAR szFile[260] = { 0 };
+		CHAR szFile[MAX_PATH] = {0};
 		auto ofn = CreateOpenFileName(szFile, sizeof(szFile), filter, OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST);
 
-		if (GetOpenFileNameA(&ofn) == TRUE)
+		if (GetOpenFileNameA(&ofn))
 			return ofn.lpstrFile;
 
 		return {};
@@ -44,13 +47,14 @@ namespace Rod {
 
 	std::string FileDialogs::SaveFile(const char* filter)
 	{
-		CHAR szFile[260] = { 0 };
+		CHAR szFile[MAX_PATH] = {0};
 		auto ofn = CreateOpenFileName(szFile, sizeof(szFile), filter, OFN_PATHMUSTEXIST);
 
-		if (GetSaveFileNameA(&ofn) == TRUE)
+		if (GetSaveFileNameA(&ofn))
 			return ofn.lpstrFile;
 
 		return {};
 	}
 
 }
+// NOLINTEND(misc-include-cleaner)

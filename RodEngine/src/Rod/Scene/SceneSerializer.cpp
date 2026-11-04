@@ -1,17 +1,27 @@
 #include "rdpch.h"
+
 #include "SceneSerializer.h"
 
-#include "Entity.h"
 #include "Components.h"
+#include "Entity.h"
+#include "Rod/Renderer/Mesh.h"
+#include "Rod/Renderer/Texture.h"
+#include "Rod/Scene/Scene.h"
+#include "Rod/Scripting/ScriptField.h"
+#include "yaml-cpp/emitter.h"
+#include "yaml-cpp/emittermanip.h"
+#include "yaml-cpp/exceptions.h"
+#include "yaml-cpp/node/convert.h"
+// yaml-cpp keeps map lookup template definitions in this separate header.
+#include "yaml-cpp/node/detail/impl.h" // IWYU pragma: keep
+#include "yaml-cpp/node/node.h"
+#include "yaml-cpp/node/parse.h"
 
-#include <filesystem>
 #include <fstream>
-#include <string>
-#include <yaml-cpp/yaml.h>
 
 namespace YAML {
 
-	template<>
+	template <>
 	struct convert<glm::vec3>
 	{
 		static Node encode(const glm::vec3& rhs)
@@ -25,17 +35,16 @@ namespace YAML {
 
 		static bool decode(const Node& node, glm::vec3& rhs)
 		{
-			if (!node.IsSequence() || node.size() != 3)
+			if (!node.IsSequence() || node.size() != static_cast<size_t>(rhs.length()))
 				return false;
 
-			rhs.x = node[0].as<float>();
-			rhs.y = node[1].as<float>();
-			rhs.z = node[2].as<float>();
+			for (decltype(rhs.length()) component = 0; component < rhs.length(); ++component)
+				rhs[component] = node[static_cast<size_t>(component)].as<float>();
 			return true;
 		}
 	};
 
-	template<>
+	template <>
 	struct convert<glm::vec4>
 	{
 		static Node encode(const glm::vec4& rhs)
@@ -50,13 +59,11 @@ namespace YAML {
 
 		static bool decode(const Node& node, glm::vec4& rhs)
 		{
-			if (!node.IsSequence() || node.size() != 4)
+			if (!node.IsSequence() || node.size() != static_cast<size_t>(rhs.length()))
 				return false;
 
-			rhs.x = node[0].as<float>();
-			rhs.y = node[1].as<float>();
-			rhs.z = node[2].as<float>();
-			rhs.w = node[3].as<float>();
+			for (decltype(rhs.length()) component = 0; component < rhs.length(); ++component)
+				rhs[component] = node[static_cast<size_t>(component)].as<float>();
 			return true;
 		}
 	};
@@ -79,12 +86,10 @@ namespace Rod {
 		return out;
 	}
 
-	SceneSerializer::SceneSerializer(Scene& scene)
-		: m_Scene(scene)
-	{
-	}
+	SceneSerializer::SceneSerializer(Scene& scene) : m_Scene(scene)
+	{}
 
-	static void SerializeTagComponent(YAML::Emitter& out, const TagComponent& tag)
+	void SceneSerializer::SerializeTagComponent(YAML::Emitter& out, const TagComponent& tag)
 	{
 		out << YAML::Key << "TagComponent";
 		out << YAML::BeginMap;
@@ -92,7 +97,7 @@ namespace Rod {
 		out << YAML::EndMap;
 	}
 
-	static void SerializeTransformComponent(YAML::Emitter& out, const TransformComponent& transform)
+	void SceneSerializer::SerializeTransformComponent(YAML::Emitter& out, const TransformComponent& transform)
 	{
 		out << YAML::Key << "TransformComponent";
 		out << YAML::BeginMap;
@@ -102,7 +107,7 @@ namespace Rod {
 		out << YAML::EndMap;
 	}
 
-	static void SerializeCameraComponent(YAML::Emitter& out, const CameraComponent& cameraComponent)
+	void SceneSerializer::SerializeCameraComponent(YAML::Emitter& out, const CameraComponent& cameraComponent)
 	{
 		const auto& camera = cameraComponent.Camera;
 
@@ -110,7 +115,7 @@ namespace Rod {
 		out << YAML::BeginMap;
 		out << YAML::Key << "Camera" << YAML::Value;
 		out << YAML::BeginMap;
-		out << YAML::Key << "ProjectionType" << YAML::Value << (int)camera.GetProjectionType();
+		out << YAML::Key << "ProjectionType" << YAML::Value << static_cast<int>(camera.GetProjectionType());
 		out << YAML::Key << "PerspectiveFOV" << YAML::Value << camera.GetPerspectiveVerticalFOV();
 		out << YAML::Key << "PerspectiveNear" << YAML::Value << camera.GetPerspectiveNearClip();
 		out << YAML::Key << "PerspectiveFar" << YAML::Value << camera.GetPerspectiveFarClip();
@@ -124,27 +129,29 @@ namespace Rod {
 		out << YAML::EndMap;
 	}
 
-	static std::string NormalizeAssetPath(std::string path)
+	std::string SceneSerializer::NormalizeAssetPath(std::string path)
 	{
 		std::replace(path.begin(), path.end(), '\\', '/');
 		return path;
 	}
 
-	static void SerializeSpriteRendererComponent(YAML::Emitter& out, const SpriteRendererComponent& sprite)
+	void SceneSerializer::SerializeSpriteRendererComponent(YAML::Emitter& out, const SpriteRendererComponent& sprite)
 	{
 		out << YAML::Key << "SpriteRendererComponent";
 		out << YAML::BeginMap;
 		out << YAML::Key << "Color" << YAML::Value << sprite.Color;
 		out << YAML::Key << "TilingFactor" << YAML::Value << sprite.TilingFactor;
-		out << YAML::Key << "Texture" << YAML::Value << (sprite.Texture ? NormalizeAssetPath(sprite.Texture->GetPath()) : "None");
+		out << YAML::Key << "Texture" << YAML::Value
+		    << (sprite.Texture ? NormalizeAssetPath(sprite.Texture->GetPath()) : "None");
 		out << YAML::EndMap;
 	}
 
-	static void SerializeMeshComponent(YAML::Emitter& out, const MeshComponent& meshComponent)
+	void SceneSerializer::SerializeMeshComponent(YAML::Emitter& out, const MeshComponent& meshComponent)
 	{
 		out << YAML::Key << "MeshComponent";
 		out << YAML::BeginMap;
-		out << YAML::Key << "Path" << YAML::Value << (meshComponent.Mesh ? NormalizeAssetPath(meshComponent.Mesh->GetPath()) : "None");
+		out << YAML::Key << "Path" << YAML::Value
+		    << (meshComponent.Mesh ? NormalizeAssetPath(meshComponent.Mesh->GetPath()) : "None");
 
 		if (meshComponent.Mesh)
 		{
@@ -158,7 +165,7 @@ namespace Rod {
 		out << YAML::EndMap;
 	}
 
-	static void SerializeDirectionalLightComponent(YAML::Emitter& out, const DirectionalLightComponent& light)
+	void SceneSerializer::SerializeDirectionalLightComponent(YAML::Emitter& out, const DirectionalLightComponent& light)
 	{
 		out << YAML::Key << "DirectionalLightComponent";
 		out << YAML::BeginMap;
@@ -168,7 +175,7 @@ namespace Rod {
 		out << YAML::EndMap;
 	}
 
-	static void SerializeScriptComponent(YAML::Emitter& out, const ScriptComponent& script)
+	void SceneSerializer::SerializeScriptComponent(YAML::Emitter& out, const ScriptComponent& script)
 	{
 		out << YAML::Key << "ScriptComponent";
 		out << YAML::BeginMap;
@@ -178,7 +185,7 @@ namespace Rod {
 		{
 			out << YAML::BeginMap;
 			out << YAML::Key << "Name" << YAML::Value << name;
-			out << YAML::Key << "Type" << YAML::Value << (int)field.Field.Type;
+			out << YAML::Key << "Type" << YAML::Value << static_cast<int>(field.Field.Type);
 			out << YAML::Key << "TypeName" << YAML::Value << field.Field.TypeName;
 			out << YAML::Key << "Value" << YAML::Value << field.Value;
 			out << YAML::EndMap;
@@ -187,10 +194,10 @@ namespace Rod {
 		out << YAML::EndMap;
 	}
 
-	static void SerializeEntity(YAML::Emitter& out, Entity entity)
+	void SceneSerializer::SerializeEntity(YAML::Emitter& out, Entity entity)
 	{
 		out << YAML::BeginMap;
-		out << YAML::Key << "Entity" << YAML::Value << (uint64_t)entity.GetUUID();
+		out << YAML::Key << "Entity" << YAML::Value << static_cast<uint64_t>(entity.GetUUID());
 
 		if (entity.HasComponent<TagComponent>())
 			SerializeTagComponent(out, entity.GetComponent<TagComponent>());
@@ -220,7 +227,7 @@ namespace Rod {
 		auto view = m_Scene.m_Registry.view<IDComponent>();
 		for (auto entityID : view)
 		{
-			Entity entity = { entityID, &m_Scene };
+			const Entity entity = {entityID, &m_Scene};
 			if (!entity)
 				continue;
 
@@ -229,7 +236,7 @@ namespace Rod {
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
 
-		std::filesystem::path path = filepath;
+		const std::filesystem::path path = filepath;
 		if (path.has_parent_path())
 			std::filesystem::create_directories(path.parent_path());
 
@@ -242,7 +249,7 @@ namespace Rod {
 		fout << out.c_str();
 	}
 
-	static void DeserializeTransformComponent(const YAML::Node& entityNode, Entity entity)
+	void SceneSerializer::DeserializeTransformComponent(const YAML::Node& entityNode, Entity entity)
 	{
 		auto transformComponent = entityNode["TransformComponent"];
 		if (!transformComponent)
@@ -254,7 +261,7 @@ namespace Rod {
 		transform.Scale = transformComponent["Scale"].as<glm::vec3>();
 	}
 
-	static void DeserializeCameraComponent(const YAML::Node& entityNode, Entity entity)
+	void SceneSerializer::DeserializeCameraComponent(const YAML::Node& entityNode, Entity entity)
 	{
 		auto cameraComponent = entityNode["CameraComponent"];
 		if (!cameraComponent)
@@ -263,7 +270,8 @@ namespace Rod {
 		auto& camera = entity.AddComponent<CameraComponent>();
 		auto cameraProps = cameraComponent["Camera"];
 
-		camera.Camera.SetProjectionType((SceneCamera::ProjectionType)cameraProps["ProjectionType"].as<int>());
+		camera.Camera.SetProjectionType(
+		    static_cast<SceneCamera::ProjectionType>(cameraProps["ProjectionType"].as<int>()));
 		camera.Camera.SetPerspectiveVerticalFOV(cameraProps["PerspectiveFOV"].as<float>());
 		camera.Camera.SetPerspectiveNearClip(cameraProps["PerspectiveNear"].as<float>());
 		camera.Camera.SetPerspectiveFarClip(cameraProps["PerspectiveFar"].as<float>());
@@ -275,7 +283,7 @@ namespace Rod {
 		camera.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();
 	}
 
-	static void DeserializeSpriteRendererComponent(const YAML::Node& entityNode, Entity entity)
+	void SceneSerializer::DeserializeSpriteRendererComponent(const YAML::Node& entityNode, Entity entity)
 	{
 		auto spriteRendererComponent = entityNode["SpriteRendererComponent"];
 		if (!spriteRendererComponent)
@@ -285,19 +293,19 @@ namespace Rod {
 		sprite.Color = spriteRendererComponent["Color"].as<glm::vec4>();
 		sprite.TilingFactor = spriteRendererComponent["TilingFactor"].as<float>();
 
-		std::string texturePath = NormalizeAssetPath(spriteRendererComponent["Texture"].as<std::string>());
+		const std::string texturePath = NormalizeAssetPath(spriteRendererComponent["Texture"].as<std::string>());
 		if (texturePath != "None")
 			sprite.Texture = Texture2D::Create(texturePath);
 	}
 
-	static void DeserializeMeshComponent(const YAML::Node& entityNode, Entity entity)
+	void SceneSerializer::DeserializeMeshComponent(const YAML::Node& entityNode, Entity entity)
 	{
 		auto meshComponent = entityNode["MeshComponent"];
 		if (!meshComponent)
 			return;
 
 		auto& mesh = entity.AddComponent<MeshComponent>();
-		std::string meshPath = NormalizeAssetPath(meshComponent["Path"].as<std::string>());
+		const std::string meshPath = NormalizeAssetPath(meshComponent["Path"].as<std::string>());
 		if (meshPath != "None")
 			mesh.SetMesh(CreateRef<Mesh>(meshPath));
 
@@ -315,7 +323,7 @@ namespace Rod {
 			material.SetMetallic(meshComponent["Metallic"].as<float>());
 	}
 
-	static void DeserializeDirectionalLightComponent(const YAML::Node& entityNode, Entity entity)
+	void SceneSerializer::DeserializeDirectionalLightComponent(const YAML::Node& entityNode, Entity entity)
 	{
 		auto directionalLightComponent = entityNode["DirectionalLightComponent"];
 		if (!directionalLightComponent)
@@ -327,7 +335,7 @@ namespace Rod {
 		light.Intensity = directionalLightComponent["Intensity"].as<float>();
 	}
 
-	static void DeserializeScriptComponent(const YAML::Node& entityNode, Entity entity)
+	void SceneSerializer::DeserializeScriptComponent(const YAML::Node& entityNode, Entity entity)
 	{
 		auto scriptComponent = entityNode["ScriptComponent"];
 		if (!scriptComponent)
@@ -344,7 +352,7 @@ namespace Rod {
 		{
 			ScriptField field;
 			field.Name = fieldNode["Name"].as<std::string>();
-			field.Type = (ScriptFieldType)fieldNode["Type"].as<int>();
+			field.Type = static_cast<ScriptFieldType>(fieldNode["Type"].as<int>());
 			field.TypeName = fieldNode["TypeName"] ? fieldNode["TypeName"].as<std::string>() : "";
 
 			ScriptFieldInstance instance;
@@ -354,9 +362,9 @@ namespace Rod {
 		}
 	}
 
-	static Entity DeserializeEntity(Scene& scene, const YAML::Node& entityNode)
+	Entity SceneSerializer::DeserializeEntity(Scene& scene, const YAML::Node& entityNode)
 	{
-		uint64_t uuid = entityNode["Entity"].as<uint64_t>();
+		auto uuid = entityNode["Entity"].as<uint64_t>();
 
 		std::string name;
 		auto tagComponent = entityNode["TagComponent"];
@@ -365,7 +373,7 @@ namespace Rod {
 
 		RD_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
 
-		Entity entity = scene.CreateEntityWithUUID(uuid, name);
+		Entity entity = scene.CreateEntityWithUUID(UUID{uuid}, name);
 		DeserializeTransformComponent(entityNode, entity);
 		DeserializeCameraComponent(entityNode, entity);
 		DeserializeSpriteRendererComponent(entityNode, entity);
@@ -391,7 +399,7 @@ namespace Rod {
 		if (!data["Scene"])
 			return false;
 
-		std::string sceneName = data["Scene"].as<std::string>();
+		auto sceneName = data["Scene"].as<std::string>();
 		RD_CORE_TRACE("Deserializing scene '{0}'", sceneName);
 
 		auto entities = data["Entities"];

@@ -1,32 +1,66 @@
 #pragma once
 
+#include "Rod/Core/Core.h"
+
+#include <cstdint>
+#include <initializer_list>
+#include <string>
+#include <utility>
+#include <vector>
+
 namespace Rod {
 
-	enum class ShaderDataType
+	enum class ShaderDataType : std::uint8_t
 	{
-		None = 0, Float, Float2, Float3, Float4, Mat3, Mat4, Int, Int2, Int3, Int4, Bool
+		None = 0,
+		Float,
+		Float2,
+		Float3,
+		Float4,
+		Mat3,
+		Mat4,
+		Int,
+		Int2,
+		Int3,
+		Int4,
+		Bool
 	};
 
-	static uint32_t ShaderDataTypeSize(ShaderDataType type)
+	// NOLINTBEGIN(readability-magic-numbers)
+	[[nodiscard]] static uint32_t ShaderDataTypeSize(ShaderDataType type)
 	{
 		switch (type)
 		{
-			case ShaderDataType::Float:  return 4;
-			case ShaderDataType::Float2: return 4 * 2;
-			case ShaderDataType::Float3: return 4 * 3;
-			case ShaderDataType::Float4: return 4 * 4;
-			case ShaderDataType::Mat3:	 return 4 * 3 * 3;
-			case ShaderDataType::Mat4:   return 4 * 4 * 4;
-			case ShaderDataType::Int:    return 4;
-			case ShaderDataType::Int2:   return 4 * 2;
-			case ShaderDataType::Int3:   return 4 * 3;
-			case ShaderDataType::Int4:   return 4 * 4;
-			case ShaderDataType::Bool:   return 1;
+			case ShaderDataType::Float:
+				return 4;
+			case ShaderDataType::Float2:
+				return 4 * 2;
+			case ShaderDataType::Float3:
+				return 4 * 3;
+			case ShaderDataType::Float4:
+				return 4 * 4;
+			case ShaderDataType::Mat3:
+				return 4 * 3 * 3;
+			case ShaderDataType::Mat4:
+				return 4 * 4 * 4;
+			case ShaderDataType::Int:
+				return 4;
+			case ShaderDataType::Int2:
+				return 4 * 2;
+			case ShaderDataType::Int3:
+				return 4 * 3;
+			case ShaderDataType::Int4:
+				return 4 * 4;
+			case ShaderDataType::Bool:
+				return 1;
+			case ShaderDataType::None:
+				break;
 		}
 
 		RD_CORE_ASSERT(false, "Unknown ShaderDataType");
 		return 0;
 	}
+	// NOLINTEND(readability-magic-numbers)
 
 	struct BufferElement
 	{
@@ -36,52 +70,66 @@ namespace Rod {
 		uint32_t Offset;
 		bool Normalized;
 
-		BufferElement(ShaderDataType type, const std::string& name, bool normalized = false)
-			:Name(name), Type(type), Size(ShaderDataTypeSize(type)), Offset(0), Normalized(normalized)
-		{
-		}
+		BufferElement(ShaderDataType type, std::string name, bool normalized = false)
+		    : Type(type), Name(std::move(name)), Size(ShaderDataTypeSize(type)), Offset(0), Normalized(normalized)
+		{}
 
-		BufferElement() :Name({}), Type(ShaderDataType::None), Size(0), Offset(0), Normalized(false) {};
+		BufferElement() : Type(ShaderDataType::None), Name({}), Size(0), Offset(0), Normalized(false) {};
 
-		uint32_t GetComponentCount() const
+		// NOLINTBEGIN(readability-magic-numbers)
+		[[nodiscard]] uint32_t GetComponentCount() const
 		{
 			switch (Type)
 			{
-				case ShaderDataType::Float:  return 1;
-				case ShaderDataType::Float2: return 2;
-				case ShaderDataType::Float3: return 3;
-				case ShaderDataType::Float4: return 4;
-				case ShaderDataType::Mat3:	 return 3 * 3;
-				case ShaderDataType::Mat4:   return 4 * 4;
-				case ShaderDataType::Int:    return 1;
-				case ShaderDataType::Int2:   return 2;
-				case ShaderDataType::Int3:   return 3;
-				case ShaderDataType::Int4:   return 4;
-				case ShaderDataType::Bool:   return 1;
+				case ShaderDataType::Float:
+					return 1;
+				case ShaderDataType::Float2:
+					return 2;
+				case ShaderDataType::Float3:
+					return 3;
+				case ShaderDataType::Float4:
+					return 4;
+				case ShaderDataType::Mat3:
+					return 3 * 3;
+				case ShaderDataType::Mat4:
+					return 4 * 4;
+				case ShaderDataType::Int:
+					return 1;
+				case ShaderDataType::Int2:
+					return 2;
+				case ShaderDataType::Int3:
+					return 3;
+				case ShaderDataType::Int4:
+					return 4;
+				case ShaderDataType::Bool:
+					return 1;
+				case ShaderDataType::None:
+					break;
 			}
 
 			RD_CORE_ASSERT(false, "Unknown ShaderDataType");
 			return 0;
 		}
+		// NOLINTEND(readability-magic-numbers)
 	};
 
 	class BufferLayout
 	{
 	public:
-		BufferLayout() {};
+		BufferLayout() = default;
 
-		BufferLayout(const std::initializer_list<BufferElement>& elements)
-			: m_Elements(elements)
+		BufferLayout(const std::initializer_list<BufferElement>& elements) : m_Elements(elements)
 		{
 			CalculateOffsetsAndStride();
 		}
-		inline uint32_t GetStride() const { return m_Stride; };
-		inline const std::vector<BufferElement> GetElements() const { return m_Elements; }
+		[[nodiscard]] uint32_t GetStride() const noexcept { return m_Stride; };
+		[[nodiscard]] const std::vector<BufferElement>& GetElements() const noexcept { return m_Elements; }
 
-		std::vector<BufferElement>::iterator begin() { return m_Elements.begin(); }
-		std::vector<BufferElement>::iterator end() { return m_Elements.end(); }
-		std::vector<BufferElement>::const_iterator begin() const { return m_Elements.begin(); }
-		std::vector<BufferElement>::const_iterator end() const { return m_Elements.end(); }
+		[[nodiscard]] std::vector<BufferElement>::iterator begin() noexcept { return m_Elements.begin(); }
+		[[nodiscard]] std::vector<BufferElement>::iterator end() noexcept { return m_Elements.end(); }
+		[[nodiscard]] std::vector<BufferElement>::const_iterator begin() const noexcept { return m_Elements.begin(); }
+		[[nodiscard]] std::vector<BufferElement>::const_iterator end() const noexcept { return m_Elements.end(); }
+
 	private:
 		void CalculateOffsetsAndStride()
 		{
@@ -94,6 +142,7 @@ namespace Rod {
 				m_Stride += element.Size;
 			}
 		}
+
 	private:
 		std::vector<BufferElement> m_Elements;
 		uint32_t m_Stride = 0;
@@ -102,7 +151,12 @@ namespace Rod {
 	class VertexBuffer
 	{
 	public:
-		virtual ~VertexBuffer() {};
+		VertexBuffer() = default;
+		virtual ~VertexBuffer() = default;
+		VertexBuffer(const VertexBuffer&) = delete;
+		VertexBuffer& operator=(const VertexBuffer&) = delete;
+		VertexBuffer(VertexBuffer&&) = delete;
+		VertexBuffer& operator=(VertexBuffer&&) = delete;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
@@ -110,29 +164,39 @@ namespace Rod {
 		virtual void SetData(const void* data, uint32_t size) = 0;
 
 		virtual void SetBufferLayout(const BufferLayout& layout) = 0;
-		virtual const BufferLayout& GetLayout() const = 0;
+		[[nodiscard]] virtual const BufferLayout& GetLayout() const noexcept = 0;
 
-		static Scope<VertexBuffer> Create(uint32_t size);
-		static Scope<VertexBuffer> Create(float* vertices, uint32_t size);
+		[[nodiscard]] static Scope<VertexBuffer> Create(uint32_t size);
+		[[nodiscard]] static Scope<VertexBuffer> Create(float* vertices, uint32_t size);
 	};
 
 	class IndexBuffer
 	{
 	public:
-		virtual ~IndexBuffer() {};
+		IndexBuffer() = default;
+		virtual ~IndexBuffer() = default;
+		IndexBuffer(const IndexBuffer&) = delete;
+		IndexBuffer& operator=(const IndexBuffer&) = delete;
+		IndexBuffer(IndexBuffer&&) = delete;
+		IndexBuffer& operator=(IndexBuffer&&) = delete;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 
-		virtual uint32_t GetCount() const = 0;
+		[[nodiscard]] virtual uint32_t GetCount() const noexcept = 0;
 
-		static Scope<IndexBuffer> Create(uint32_t* indices, uint32_t count);
+		[[nodiscard]] static Scope<IndexBuffer> Create(uint32_t* indices, uint32_t count);
 	};
 
 	class UniformBuffer
 	{
 	public:
-		virtual ~UniformBuffer() {};
+		UniformBuffer() = default;
+		virtual ~UniformBuffer() = default;
+		UniformBuffer(const UniformBuffer&) = delete;
+		UniformBuffer& operator=(const UniformBuffer&) = delete;
+		UniformBuffer(UniformBuffer&&) = delete;
+		UniformBuffer& operator=(UniformBuffer&&) = delete;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
@@ -140,6 +204,6 @@ namespace Rod {
 
 		virtual void SetData(void* data, uint32_t size) = 0;
 
-		static Scope<UniformBuffer> Create(uint32_t size);
+		[[nodiscard]] static Scope<UniformBuffer> Create(uint32_t size);
 	};
 }

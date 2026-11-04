@@ -1,6 +1,9 @@
 #include "rdpch.h"
+
 #include "OpenGLRendererAPI.h"
 
+#include "Rod/Renderer/RendererAPI.h"
+#include "Rod/Renderer/VertexArray.h"
 #include "glad/glad.h"
 
 namespace Rod {
@@ -17,16 +20,20 @@ namespace Rod {
 		glDepthMask(GL_TRUE);
 	}
 
-	const int OpenGLRendererAPI::GetMaxTextureSlots() const
+	int OpenGLRendererAPI::GetMaxTextureSlots() const
 	{
-		int textureSlots;
+		int textureSlots{};
 		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &textureSlots);
 		return textureSlots;
 	}
 
 	void OpenGLRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 	{
-		glViewport(x, y, width, height);
+		glViewport(
+		    static_cast<GLint>(x),
+		    static_cast<GLint>(y),
+		    static_cast<GLsizei>(width),
+		    static_cast<GLsizei>(height));
 	}
 
 	void OpenGLRendererAPI::SetClearColor(const glm::vec4& color)
@@ -53,13 +60,14 @@ namespace Rod {
 
 	void OpenGLRendererAPI::DrawIndexed(const VertexArray& vertexArray, uint32_t indexCount)
 	{
-		uint32_t count = indexCount ? indexCount : vertexArray.GetIndexBuffer()->GetCount();
-		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+		const uint32_t count = indexCount ? indexCount : vertexArray.GetIndexBuffer()->GetCount();
+		glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(count), GL_UNSIGNED_INT, nullptr);
 	}
 
 	RendererAPI::RendererState OpenGLRendererAPI::GetState() const
 	{
 		GLint framebuffer = 0;
+		// NOLINTBEGIN(readability-magic-numbers)
 		GLint viewport[4] = {};
 		glGetIntegerv(GL_FRAMEBUFFER_BINDING, &framebuffer);
 		glGetIntegerv(GL_VIEWPORT, viewport);
@@ -70,13 +78,18 @@ namespace Rod {
 		state.ViewportY = viewport[1];
 		state.ViewportWidth = static_cast<uint32_t>(viewport[2]);
 		state.ViewportHeight = static_cast<uint32_t>(viewport[3]);
+		// NOLINTEND(readability-magic-numbers)
 		return state;
 	}
 
 	void OpenGLRendererAPI::SetState(const RendererState& state)
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, state.FramebufferID);
-		glViewport(state.ViewportX, state.ViewportY, state.ViewportWidth, state.ViewportHeight);
+		glViewport(
+		    state.ViewportX,
+		    state.ViewportY,
+		    static_cast<GLsizei>(state.ViewportWidth),
+		    static_cast<GLsizei>(state.ViewportHeight));
 	}
 
 }

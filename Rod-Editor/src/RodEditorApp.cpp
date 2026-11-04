@@ -1,28 +1,16 @@
-#include <Rod.h>
-#include "Rod/Core/EntryPoint.h"
-
-#include <imgui.h>
+#include "rdpch.h"
 
 #include "EditorLayer.h"
+#include "Rod/Core/EntryPoint.h" // IWYU pragma: keep
 
 namespace Rod {
 
 	class RodEditor : public Application
 	{
 	public:
-		RodEditor()
-			: Application("Rod Editor", "assets/textures/logo.png", true)
-		{
-			PushLayer(new EditorLayer());
-		}
+		RodEditor() : Application("Rod Editor", "assets/textures/logo.png", true) { PushLayer(new EditorLayer()); }
 
-		~RodEditor()
-		{
-
-		}
-
-		bool IsEditor() const override { return true; }
-
+		[[nodiscard]] virtual bool IsEditor() const override { return true; }
 	};
 
 	Application* CreateApplication()

@@ -1,14 +1,11 @@
 #pragma once
 
 #include "Rod/Core/Core.h"
-
-#include "Rod/Core/Window.h"
 #include "Rod/Core/LayerStack.h"
-#include "Rod/Events/Event.h"
-#include "Rod/Events/ApplicationEvent.h"
-
 #include "Rod/Core/Timestep.h"
-
+#include "Rod/Core/Window.h"
+#include "Rod/Events/ApplicationEvent.h"
+#include "Rod/Events/Event.h"
 #include "Rod/ImGui/ImGuiLayer.h"
 
 namespace Rod {
@@ -16,34 +13,42 @@ namespace Rod {
 	class Application
 	{
 	public:
-		Application(const std::string& name = "Rod App", const std::string& iconFilepath = "", bool isEditor = false);
+		explicit Application(
+		    const std::string& name = "Rod App",
+		    const std::string& iconFilepath = "",
+		    bool isEditor = false);
 		virtual ~Application();
+		Application(const Application&) = delete;
+		Application& operator=(const Application&) = delete;
+		Application(Application&&) = delete;
+		Application& operator=(Application&&) = delete;
 
 		void Run();
 
 		void OnEvent(Event& e);
-		
+
 		void PushLayer(Layer* layer);
 		void PushOverlay(Layer* overlay);
 
-		inline Window& GetWindow() { return *m_Window; };
+		[[nodiscard]] Window& GetWindow() noexcept { return *m_Window; };
 
 		void Close();
 
 		void Minimize();
-		bool IsMinimized() const { return m_Minimized; }
+		[[nodiscard]] bool IsMinimized() const noexcept { return m_Minimized; }
 
 		void Maximize();
-		bool IsMaximized() const { return m_Maximized; }
+		[[nodiscard]] bool IsMaximized() const noexcept { return m_Maximized; }
 
 		void RestoreWindow();
 		void BeginWindowDrag();
 
-		ImGuiLayer* GetImGuiLayer() { return m_ImGuiLayer; };
+		[[nodiscard]] ImGuiLayer* GetImGuiLayer() noexcept { return m_ImGuiLayer; };
 
-		virtual bool IsEditor() const { return false; }
+		[[nodiscard]] virtual bool IsEditor() const { return false; }
 
-		static inline Application& Get() { return *s_Instance; };
+		[[nodiscard]] static Application& Get() noexcept { return *s_Instance; };
+
 	private:
 		Timestep CalculateTimestep();
 		void UpdateLayers(Timestep timestep);
@@ -51,12 +56,14 @@ namespace Rod {
 
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
+
 	private:
 		Scope<Window> m_Window;
 		ImGuiLayer* m_ImGuiLayer = nullptr;
 		bool m_Running = true, m_Minimized = false, m_Maximized = false;
 		LayerStack m_LayerStack;
 		float m_LastFrameTime = 0.0f;
+
 	private:
 		static Application* s_Instance;
 	};
@@ -64,5 +71,3 @@ namespace Rod {
 	// To be defined in CLIENT
 	Application* CreateApplication();
 }
-
-

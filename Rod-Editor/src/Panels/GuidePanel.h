@@ -4,10 +4,10 @@
 
 namespace Rod {
 
-	class GuidePanel {
+	class GuidePanel
+	{
 	public:
 		GuidePanel() = default;
-		~GuidePanel() = default;
 
 		void OnImGuiRender();
 	};

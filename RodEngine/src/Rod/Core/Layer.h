@@ -10,20 +10,23 @@ namespace Rod {
 	class Layer
 	{
 	public:
-		Layer(const std::string& name = "Layer");
+		explicit Layer(std::string name = "Layer");
 		virtual ~Layer();
+		Layer(const Layer&) = delete;
+		Layer& operator=(const Layer&) = delete;
+		Layer(Layer&&) = delete;
+		Layer& operator=(Layer&&) = delete;
 
 		virtual void OnAttach() {};
 		virtual void OnDetach() {};
-		virtual void OnUpdate(Timestep) {};
+		virtual void OnUpdate(Timestep){};
 		virtual void OnImGuiRender() {};
 		virtual void OnEvent(Event&) {};
 
-		inline const std::string& GetName() const { return m_DebugName; }
+		[[nodiscard]] const std::string& GetName() const noexcept { return m_DebugName; }
+
 	private:
 		std::string m_DebugName;
 	};
 
-
 }
-

@@ -16,7 +16,6 @@
       "binaryDir": "${sourceDir}/build/vs",
       "cacheVariables": {
         "ROD_CXX_STANDARD": "23",
-        "ROD_ENABLE_PCH": "ON",
         "ROD_BUILD_EDITOR": "ON"
       },
       "vendor": {
@@ -50,8 +49,7 @@
         "CMAKE_C_COMPILER": "clang-cl",
         "CMAKE_CXX_COMPILER": "clang-cl",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "ROD_CXX_STANDARD": "23",
-        "ROD_ENABLE_PCH": "OFF"
+        "ROD_CXX_STANDARD": "23"
       }
     },
     {
@@ -69,7 +67,6 @@
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "ROD_CXX_STANDARD": "23",
-        "ROD_ENABLE_PCH": "OFF",
         "GLFW_BUILD_X11": "ON",
         "GLFW_BUILD_WAYLAND": "OFF"
       }
@@ -82,7 +79,7 @@
       "binaryDir": "${sourceDir}/build/analysis",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_DISABLE_PRECOMPILE_HEADERS": "ON",
+        "CMAKE_DISABLE_PRECOMPILE_HEADERS": "OFF",
         "BUILD_TESTING": "ON",
         "ROD_BUILD_EDITOR": "ON",
         "ROD_BUILD_RUNTIME": "ON"
@@ -96,7 +93,7 @@
       "binaryDir": "${sourceDir}/build/analysis",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_DISABLE_PRECOMPILE_HEADERS": "ON",
+        "CMAKE_DISABLE_PRECOMPILE_HEADERS": "OFF",
         "BUILD_TESTING": "ON",
         "ROD_BUILD_EDITOR": "ON",
         "ROD_BUILD_RUNTIME": "ON"

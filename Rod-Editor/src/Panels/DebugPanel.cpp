@@ -1,7 +1,10 @@
+#include "rdpch.h"
+
 #include "DebugPanel.h"
+
 #include "imgui.h"
+
 #include "ImGuizmo.h"
-#include "Rod/Debug/Instrumentator.h"
 
 namespace Rod {
 
@@ -14,10 +17,18 @@ namespace Rod {
 		const char* gizmoMode = "None";
 		switch (gizmoType)
 		{
-		case -1:                                gizmoMode = "None";      break;
-		case ImGuizmo::OPERATION::TRANSLATE:    gizmoMode = "Translate"; break;
-		case ImGuizmo::OPERATION::ROTATE:       gizmoMode = "Rotate";    break;
-		case ImGuizmo::OPERATION::SCALE:        gizmoMode = "Scale";     break;
+			case -1:
+				gizmoMode = "None";
+				break;
+			case ImGuizmo::OPERATION::TRANSLATE:
+				gizmoMode = "Translate";
+				break;
+			case ImGuizmo::OPERATION::ROTATE:
+				gizmoMode = "Rotate";
+				break;
+			case ImGuizmo::OPERATION::SCALE:
+				gizmoMode = "Scale";
+				break;
 		}
 		ImGui::Text("Current Gizmo mode: %s", gizmoMode);
 
@@ -31,7 +42,8 @@ namespace Rod {
 		ImGui::TextDisabled("Profiling");
 
 		const char* profilingButtonText = profiling ? "Stop Profiling" : "Start Profiling";
-		if (ImGui::Button(profilingButtonText)) {
+		if (ImGui::Button(profilingButtonText))
+		{
 			if (profiling)
 			{
 				profiling = false;

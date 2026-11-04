@@ -1,21 +1,26 @@
 #include "rdpch.h"
 
-#include "Rod/Renderer/SceneRenderer.h"
 #include "Application.h"
-#include "Log.h"
+
+#include "Rod/Core/Layer.h"
+#include "Rod/Core/Timestep.h"
+#include "Rod/Core/Window.h"
+#include "Rod/Events/ApplicationEvent.h"
+#include "Rod/Events/Event.h"
+#include "Rod/ImGui/ImGuiLayer.h"
+#include "Rod/Renderer/SceneRenderer.h"
 #include "Rod/Utils/PlatformUtils.h"
 
-
 namespace Rod {
-		
+
 	Application* Application::s_Instance = nullptr;
 
 	Application::Application(const std::string& name, const std::string& iconFilepath, bool isEditor)
 	{
 		RD_PROFILE_FUNCTION();
 		RD_CORE_ASSERT(!s_Instance, "Application already exists!")
-			s_Instance = this;
-		
+		s_Instance = this;
+
 		WindowProps props;
 		props.Title = name;
 		props.IsEditor = isEditor;
@@ -31,7 +36,6 @@ namespace Rod {
 			m_ImGuiLayer = new ImGuiLayer;
 			PushOverlay(m_ImGuiLayer);
 		}
-
 	}
 
 	Application::~Application()
@@ -110,12 +114,12 @@ namespace Rod {
 	void Application::Run()
 	{
 		RD_PROFILE_FUNCTION();
-		
+
 		while (m_Running)
 		{
 			RD_PROFILE_SCOPE("Run loop");
 
-			Timestep timestep = CalculateTimestep();
+			const Timestep timestep = CalculateTimestep();
 			UpdateLayers(timestep);
 			RenderImGui();
 			m_Window->OnUpdate();
@@ -124,8 +128,8 @@ namespace Rod {
 
 	Timestep Application::CalculateTimestep()
 	{
-		float time = Platform::GetTime();
-		Timestep timestep = time - m_LastFrameTime;
+		const float time = Platform::GetTime();
+		Timestep timestep{time - m_LastFrameTime};
 		m_LastFrameTime = time;
 
 		return timestep;

@@ -1,14 +1,15 @@
 #include "rdpch.h"
 
-#include "Log.h"
+// NOLINTBEGIN(misc-include-cleaner)
 #include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/spdlog.h"
 
 namespace Rod {
-	
+
 	Ref<spdlog::logger> Log::s_CoreLogger;
 	Ref<spdlog::logger> Log::s_ClientLogger;
 
-	void Log::Init() 
+	void Log::Init()
 	{
 		spdlog::set_pattern("%^[%T] %n: %v%$");
 		s_CoreLogger = spdlog::stdout_color_mt("ROD");
@@ -19,3 +20,4 @@ namespace Rod {
 	}
 
 }
+// NOLINTEND(misc-include-cleaner)

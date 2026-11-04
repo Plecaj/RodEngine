@@ -2,7 +2,7 @@ include(RodSources)
 
 add_executable(Rod-Editor)
 
-rod_configure_cpp_standard(Rod-Editor)
+rod_configure_cpp_target(Rod-Editor)
 
 rod_collect_sources(ROD_EDITOR_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src")
 rod_collect_headers(ROD_EDITOR_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/src")

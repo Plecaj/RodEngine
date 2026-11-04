@@ -1,6 +1,6 @@
-#include <Rod.h>
-#include "Rod/Core/EntryPoint.h"
+#include "rdpch.h"
 
+#include "Rod/Core/EntryPoint.h" // IWYU pragma: keep
 #include "RuntimeLayer.h"
 
 namespace Rod {
@@ -8,11 +8,7 @@ namespace Rod {
 	class RodRuntime : public Application
 	{
 	public:
-		RodRuntime()
-			: Application("Rod Game")
-		{
-			PushLayer(new RuntimeLayer());
-		}
+		RodRuntime() : Application("Rod Game") { PushLayer(new RuntimeLayer()); }
 	};
 
 	Application* CreateApplication()
@@ -21,4 +17,3 @@ namespace Rod {
 	}
 
 }
-

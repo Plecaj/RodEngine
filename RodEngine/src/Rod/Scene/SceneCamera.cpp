@@ -1,7 +1,8 @@
 #include "rdpch.h"
+
 #include "SceneCamera.h"
 
-#include <glm/gtc/matrix_transform.hpp>
+#include <glm/ext/matrix_clip_space.hpp>
 
 namespace Rod {
 
@@ -15,7 +16,7 @@ namespace Rod {
 		if (width == 0 || height == 0)
 			return;
 
-		m_AspectRatio = (float)width / (float)height;
+		m_AspectRatio = static_cast<float>(width) / static_cast<float>(height);
 		RecalculateProjection();
 	}
 
@@ -39,18 +40,20 @@ namespace Rod {
 
 	void SceneCamera::RecalculateProjection()
 	{
-		if (m_ProjectionType == ProjectionType::Perspective) 
+		if (m_ProjectionType == ProjectionType::Perspective)
 		{
 			m_Projection = glm::perspective(m_PerspectiveFOV, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);
 		}
-		else 
+		else
 		{
-			float orthoLeft = -m_OrthographicSize * m_AspectRatio * 0.5f;
-			float orthoRight = m_OrthographicSize * m_AspectRatio * 0.5f;
-			float orthoBottom = -m_OrthographicSize * 0.5f;
-			float orthoTop = m_OrthographicSize * 0.5f;
+			constexpr float halfExtent = 0.5f;
+			const float orthoLeft = -m_OrthographicSize * m_AspectRatio * halfExtent;
+			const float orthoRight = m_OrthographicSize * m_AspectRatio * halfExtent;
+			const float orthoBottom = -m_OrthographicSize * halfExtent;
+			const float orthoTop = m_OrthographicSize * halfExtent;
 
-			m_Projection = glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, m_OrthographicNear, m_OrthographicFar);
+			m_Projection =
+			    glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, m_OrthographicNear, m_OrthographicFar);
 		}
 	}
 

@@ -10,28 +10,35 @@ namespace Rod {
 	{
 	public:
 		OpenGLTexture2D(uint32_t width, uint32_t height);
-		OpenGLTexture2D(const std::string& path);
-		virtual ~OpenGLTexture2D();
+		explicit OpenGLTexture2D(const std::string& path);
+		virtual ~OpenGLTexture2D() override;
+		OpenGLTexture2D(const OpenGLTexture2D&) = delete;
+		OpenGLTexture2D& operator=(const OpenGLTexture2D&) = delete;
+		OpenGLTexture2D(OpenGLTexture2D&&) = delete;
+		OpenGLTexture2D& operator=(OpenGLTexture2D&&) = delete;
 
-		virtual uint32_t GetWidth() const override { return m_Width; }
-		virtual uint32_t GetHeight() const override { return m_Height; }
-		virtual uint32_t GetRendererID() const override { return m_RendererID; };
+		[[nodiscard]] virtual uint32_t GetWidth() const noexcept override { return m_Width; }
+		[[nodiscard]] virtual uint32_t GetHeight() const noexcept override { return m_Height; }
+		[[nodiscard]] virtual uint32_t GetRendererID() const noexcept override { return m_RendererID; };
 
-		virtual void SetData(void* data, uint32_t size) override;
+		virtual void SetData(const void* data, uint32_t size) override;
 
-		virtual std::string GetPath() const override { return m_Path; };
+		[[nodiscard]] virtual std::string GetPath() const override { return m_Path; };
 
 		virtual void Bind(uint32_t slot = 0) const override;
 
-
-		virtual bool operator==(const Texture& other) const override
+		[[nodiscard]] virtual bool operator==(const Texture& other) const noexcept override
 		{
-			return m_RendererID == ((OpenGLTexture2D&)other).m_RendererID;
+			const auto* texture = dynamic_cast<const OpenGLTexture2D*>(&other);
+			if (!texture)
+				return false;
+			return m_RendererID == texture->m_RendererID;
 		}
+
 	private:
 		std::string m_Path;
-		uint32_t m_Width, m_Height;
-		uint32_t m_RendererID;
-		GLenum m_InternalFormat, m_DataFormat;
+		uint32_t m_Width = 0, m_Height = 0;
+		uint32_t m_RendererID = 0;
+		GLenum m_InternalFormat = 0, m_DataFormat = 0;
 	};
 }

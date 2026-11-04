@@ -6,15 +6,15 @@
 #include <utility>
 
 #ifdef RD_PLATFORM_WINDOWS
-#if RD_DYNAMIC_LINK
-	#ifdef RD_BUILD_DLL
-		#define ROD_API __declspec(dllexport)
+	#if RD_DYNAMIC_LINK
+		#ifdef RD_BUILD_DLL
+			#define ROD_API __declspec(dllexport)
+		#else
+			#define ROD_API __declspec(dllimport)
+		#endif
 	#else
-		#define ROD_API __declspec(dllimport)
+		#define ROD_API
 	#endif
-#else
-	#define ROD_API 
-#endif
 #elif defined(RD_PLATFORM_LINUX)
 	#define ROD_API
 #else
@@ -34,32 +34,57 @@
 #endif
 
 #ifdef RD_ENABLE_ASSERTS
-	#define RD_ASSERT(x, ...) do { if (!(x)) { RD_ERROR("Assertion Failed: {0}", __VA_ARGS__); RD_DEBUGBREAK(); } } while (false);
-	#define RD_CORE_ASSERT(x, ...) do { if (!(x)) { RD_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); RD_DEBUGBREAK(); } } while (false);
+	#define RD_ASSERT(x, ...) \
+		do \
+		{ \
+			if (!(x)) \
+			{ \
+				RD_ERROR("Assertion Failed: {0}", __VA_ARGS__); \
+				RD_DEBUGBREAK(); \
+			} \
+		} while (false);
+	#define RD_CORE_ASSERT(x, ...) \
+		do \
+		{ \
+			if (!(x)) \
+			{ \
+				RD_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); \
+				RD_DEBUGBREAK(); \
+			} \
+		} while (false);
 #else
-	#define RD_ASSERT(x, ...) do { (void)sizeof(x); } while (false);
-	#define RD_CORE_ASSERT(x, ...) do { (void)sizeof(x); } while (false);
+	#define RD_ASSERT(x, ...) \
+		do \
+		{ \
+			(void)sizeof(x); \
+		} while (false);
+	#define RD_CORE_ASSERT(x, ...) \
+		do \
+		{ \
+			(void)sizeof(x); \
+		} while (false);
 #endif
 
-#define BIT(x) (1 << x)
+#define BIT(x) (1 << (x))
 
-#define RD_BIND_EVENT_FN(fn) std::bind(&fn, this, std::placeholders::_1)
+#define RD_BIND_EVENT_FN(fn) std::bind(&fn, this, std::placeholders::_1) // NOLINT(bugprone-macro-parentheses)
 
-namespace Rod
-{
-	template<typename T>
+namespace Rod {
+	template <typename T>
 	using Scope = std::unique_ptr<T>;
 
-	template<typename T, typename... Args>
-	inline static constexpr Scope<T> CreateScope(Args&&... args) {
+	template <typename T, typename... Args>
+	[[nodiscard]] static constexpr Scope<T> CreateScope(Args&&... args)
+	{
 		return std::make_unique<T>(std::forward<Args>(args)...);
 	}
 
-	template<typename T>
+	template <typename T>
 	using Ref = std::shared_ptr<T>;
 
-	template<typename T, typename... Args>
-	inline static constexpr Ref<T> CreateRef(Args&&... args) {
+	template <typename T, typename... Args>
+	[[nodiscard]] static constexpr Ref<T> CreateRef(Args&&... args)
+	{
 		return std::make_shared<T>(std::forward<Args>(args)...);
 	}
 

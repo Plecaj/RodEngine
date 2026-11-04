@@ -1,4 +1,5 @@
 #include "rdpch.h"
+
 #include "Rod/Utils/PlatformUtils.h"
 #include "Rod/Utils/Process.h"
 
@@ -6,7 +7,7 @@ namespace Rod {
 
 	static std::string ShowFileDialog(const char* filter, bool save)
 	{
-		std::vector<std::string> arguments = { "zenity", "--file-selection" };
+		std::vector<std::string> arguments = {"zenity", "--file-selection"};
 		if (save)
 		{
 			arguments.emplace_back("--save");
@@ -15,7 +16,7 @@ namespace Rod {
 
 		if (filter && *filter)
 		{
-			std::string description = filter;
+			const std::string description = filter;
 			const char* patterns = filter + description.size() + 1;
 			if (*patterns)
 			{

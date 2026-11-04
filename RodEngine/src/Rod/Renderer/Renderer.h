@@ -12,7 +12,7 @@ namespace Rod {
 
 		static void OnWindowResize(uint32_t width, uint32_t height);
 
-		inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
+		[[nodiscard]] static RendererAPI::API GetAPI() noexcept { return RendererAPI::GetAPI(); }
 	};
 
 }

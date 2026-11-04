@@ -2,6 +2,8 @@
 
 #include "ScriptField.h"
 
+#include <string>
+
 namespace Rod {
 
 	class ScriptClass
@@ -10,12 +12,13 @@ namespace Rod {
 		ScriptClass() = default;
 		ScriptClass(std::string fullName, std::string namespaceName, std::string className);
 
-		const std::string& GetFullName() const { return m_FullName; }
-		const std::string& GetNamespaceName() const { return m_NamespaceName; }
-		const std::string& GetClassName() const { return m_ClassName; }
+		[[nodiscard]] const std::string& GetFullName() const noexcept { return m_FullName; }
+		[[nodiscard]] const std::string& GetNamespaceName() const noexcept { return m_NamespaceName; }
+		[[nodiscard]] const std::string& GetClassName() const noexcept { return m_ClassName; }
 
-		const ScriptFieldMap& GetFields() const { return m_Fields; }
-		ScriptFieldMap& GetFields() { return m_Fields; }
+		[[nodiscard]] const ScriptFieldMap& GetFields() const noexcept { return m_Fields; }
+		[[nodiscard]] ScriptFieldMap& GetFields() noexcept { return m_Fields; }
+
 	private:
 		std::string m_FullName;
 		std::string m_NamespaceName;

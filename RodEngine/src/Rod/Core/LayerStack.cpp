@@ -1,10 +1,13 @@
 #include "rdpch.h"
+
 #include "LayerStack.h"
+
+#include "Rod/Core/Layer.h"
 
 namespace Rod {
 
 	LayerStack::LayerStack() = default;
-	
+
 	LayerStack::~LayerStack()
 	{
 		for (Layer* layer : m_Layers)
@@ -37,13 +40,13 @@ namespace Rod {
 		}
 	}
 
-	void LayerStack::PopOverlay(Layer* layer)
+	void LayerStack::PopOverlay(Layer* overlay)
 	{
 		auto overlayBegin = m_Layers.begin() + m_LayerInsertIndex;
-		auto it = std::find(overlayBegin, m_Layers.end(), layer);
-		if (it != m_Layers.end()) 
+		auto it = std::find(overlayBegin, m_Layers.end(), overlay);
+		if (it != m_Layers.end())
 		{
-			layer->OnDetach();
+			overlay->OnDetach();
 			m_Layers.erase(it);
 		}
 	}

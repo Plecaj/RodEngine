@@ -1,14 +1,14 @@
 #pragma once
 #include "RenderCommand.h"
 
-#include <stdint.h>
+#include <cstdint>
 
-namespace Rod{
+namespace Rod {
 
 	class RendererLimits
 	{
 	public:
-		static const uint32_t GetMaxTextureSlots() { return RenderCommand::GetMaxTextureSlots(); };
+		[[nodiscard]] static uint32_t GetMaxTextureSlots() { return RenderCommand::GetMaxTextureSlots(); };
 	};
 
 }

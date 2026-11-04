@@ -17,7 +17,6 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 set(ROD_CXX_STANDARD 23 CACHE STRING "C++ standard used by RodEngine targets.")
 set_property(CACHE ROD_CXX_STANDARD PROPERTY STRINGS 20 23)
 
-option(ROD_ENABLE_PCH "Enable RodEngine precompiled headers." ON)
 option(ROD_IMGUI_DEMO "Compile Dear ImGui demo window support." OFF)
 option(ROD_BUILD_EDITOR "Build the Rod editor executable." ON)
 option(ROD_BUILD_RUNTIME "Build the standalone Rod runtime executable." ON)

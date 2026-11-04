@@ -1,8 +1,11 @@
 #include "rdpch.h"
+
 #include "Math.h"
 
 #define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtc/quaternion.hpp>
+#include <glm/ext/quaternion_float.hpp>
+#include <glm/ext/scalar_constants.hpp>
+#include <glm/gtc/epsilon.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
@@ -18,9 +21,11 @@ namespace Rod::Math {
 			return false;
 
 		glm::mat4 rotationMatrix = transform;
-		rotationMatrix[3] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+		constexpr auto translationColumn = 3;
+		constexpr auto spatialAxes = 3;
+		rotationMatrix[translationColumn] = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 
-		for (glm::length_t i = 0; i < 3; ++i)
+		for (int i = 0; i < spatialAxes; ++i)
 		{
 			if (!glm::epsilonEqual(scale[i], 0.0f, glm::epsilon<float>()))
 				rotationMatrix[i] /= scale[i];

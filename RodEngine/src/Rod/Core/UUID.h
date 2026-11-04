@@ -8,10 +8,11 @@ namespace Rod {
 	{
 	public:
 		UUID();
-		UUID(uint64_t uuid);
-		UUID(const UUID&) = default;
+		explicit UUID(uint64_t uuid) noexcept;
 
-		operator uint64_t() const { return m_UUID; }
+		[[nodiscard]] explicit operator uint64_t() const noexcept { return m_UUID; }
+		[[nodiscard]] bool operator==(const UUID&) const noexcept = default;
+
 	private:
 		uint64_t m_UUID;
 	};

@@ -3,6 +3,8 @@
 #include "ScriptClass.h"
 
 #include <filesystem>
+#include <string>
+#include <unordered_map>
 
 namespace Rod {
 
@@ -12,10 +14,16 @@ namespace Rod {
 		bool Load(const std::filesystem::path& assemblyPath, const std::string& metadataJson);
 		void Clear();
 
-		bool HasClass(const std::string& className) const;
-		ScriptClass* GetClass(const std::string& className);
-		const std::unordered_map<std::string, ScriptClass>& GetClasses() const { return m_Classes; }
+		[[nodiscard]] bool HasClass(const std::string& className) const;
+		[[nodiscard]] ScriptClass* GetClass(const std::string& className);
+		[[nodiscard]] const std::unordered_map<std::string, ScriptClass>& GetClasses() const noexcept
+		{
+			return m_Classes;
+		}
+
 	private:
+		static ScriptFieldType ScriptFieldTypeFromString(const std::string& type);
+
 		std::unordered_map<std::string, ScriptClass> m_Classes;
 		std::filesystem::path m_AssemblyPath;
 	};

@@ -1,11 +1,12 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <unordered_map>
 
 namespace Rod {
 
-	enum class ScriptFieldType
+	enum class ScriptFieldType : uint8_t
 	{
 		None = 0,
 		Float,

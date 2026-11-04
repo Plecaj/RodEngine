@@ -1,10 +1,12 @@
+#include "rdpch.h"
+
 #include "RuntimeLayer.h"
 
 #include "Rod/Renderer/RenderCommand.h"
 
 namespace Rod {
 
-	std::filesystem::path RuntimeLayer::ResolveStartupScenePath() const
+	std::filesystem::path RuntimeLayer::ResolveStartupScenePath()
 	{
 		std::filesystem::path startupScene = "assets/scenes/Startup.rod";
 		if (std::filesystem::exists(startupScene))
@@ -18,7 +20,7 @@ namespace Rod {
 		ScriptEngine::Init();
 
 		m_Scene = CreateScope<Scene>();
-		std::filesystem::path scenePath = ResolveStartupScenePath();
+		const std::filesystem::path scenePath = ResolveStartupScenePath();
 		if (!std::filesystem::exists(scenePath))
 		{
 			RD_CORE_ERROR("Runtime startup scene was not found: {}", scenePath.string());
@@ -52,7 +54,7 @@ namespace Rod {
 	{
 		ScriptEngine::OnUpdate();
 
-		RenderCommand::SetClearColor({ 0.15f, 0.15f, 0.15f, 1.0f });
+		RenderCommand::SetClearColor(CLEAR_COLOR);
 		RenderCommand::Clear();
 		Renderer2D::ResetStats();
 
@@ -87,4 +89,3 @@ namespace Rod {
 	}
 
 }
-

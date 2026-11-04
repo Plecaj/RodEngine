@@ -20,6 +20,11 @@ set(SHADERC_ENABLE_WGSL_OUTPUT OFF CACHE BOOL "Disable WGSL/Tint output" FORCE)
 set(SHADERC_ENABLE_WERROR_COMPILE OFF CACHE BOOL "Disable -Werror for shaderc" FORCE)
 set(SPIRV_SKIP_TESTS ON CACHE BOOL "Skip SPIRV-Tools tests" FORCE)
 
+if(ROD_ENABLE_SANITIZERS)
+    # UBSan's vptr checks need RTTI from glslang and SPIRV-Tools.
+    set(ENABLE_RTTI ON CACHE BOOL "Enable RTTI in shaderc dependencies" FORCE)
+endif()
+
 set(GLSLANG_ENABLE_INSTALL OFF CACHE BOOL "Enable glslang installation" FORCE)
 set(GLSLANG_TESTS OFF CACHE BOOL "Enable glslang testing" FORCE)
 set(ENABLE_GLSLANG_BINARIES OFF CACHE BOOL "Builds glslang and spirv-remap" FORCE)

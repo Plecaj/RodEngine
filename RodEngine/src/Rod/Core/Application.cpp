@@ -15,23 +15,24 @@ namespace Rod {
 
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application(const std::string& name, const std::string& iconFilepath, bool isEditor)
+	Application::Application(const std::string& name, const std::string& iconFilepath, bool usesCustomUi)
+	    : Application(
+	          WindowProps{name, WindowProps::DEFAULT_WIDTH, WindowProps::DEFAULT_HEIGHT, iconFilepath, usesCustomUi})
+	{}
+
+	Application::Application(const WindowProps& props)
 	{
 		RD_PROFILE_FUNCTION();
 		RD_CORE_ASSERT(!s_Instance, "Application already exists!")
 		s_Instance = this;
 
-		WindowProps props;
-		props.Title = name;
-		props.IsEditor = isEditor;
-		props.TaskbarIconFilepath = iconFilepath;
 		m_Window = Window::Create(props);
 		m_Window->SetEventCallback(RD_BIND_EVENT_FN(Application::OnEvent));
 		m_Window->SetVSync(false);
 
 		SceneRenderer::Init();
 
-		if (isEditor)
+		if (props.UsesCustomUi)
 		{
 			m_ImGuiLayer = new ImGuiLayer;
 			PushOverlay(m_ImGuiLayer);

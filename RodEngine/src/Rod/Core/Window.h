@@ -20,16 +20,18 @@ namespace Rod {
 		unsigned int Height;
 
 		std::string TaskbarIconFilepath;
-		bool IsEditor;
+		bool UsesCustomUi;
+		bool Resizable = true;
+		bool Centered = false;
 
 		explicit WindowProps(
 		    std::string title = "Rod Engine",
 		    uint32_t width = DEFAULT_WIDTH,
 		    uint32_t height = DEFAULT_HEIGHT,
 		    std::string taskbarIconFilepath = "",
-		    bool isEditor = false)
+		    bool usesCustomUi = false)
 		    : Title(std::move(title)), Width(width), Height(height),
-		      TaskbarIconFilepath(std::move(taskbarIconFilepath)), IsEditor(isEditor)
+		      TaskbarIconFilepath(std::move(taskbarIconFilepath)), UsesCustomUi(usesCustomUi)
 		{}
 	};
 

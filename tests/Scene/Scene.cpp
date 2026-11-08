@@ -42,6 +42,68 @@ TEST_CASE("Scene finds entities by UUID and name", "[scene]")
 	REQUIRE(!scene.FindEntityByName("Missing"));
 }
 
+TEST_CASE("Scene equality compares component data", "[scene]")
+{
+	constexpr uint32_t viewportWidth = 800;
+	constexpr uint32_t viewportHeight = 400;
+	constexpr float changedTilingFactor = 2.0f;
+	constexpr float changedMetallic = 0.75f;
+	constexpr float changedIntensity = 2.0f;
+
+	Rod::Scene original;
+	original.OnViewportResize(viewportWidth, viewportHeight);
+	auto entity = original.CreateEntityWithUUID(Rod::UUID{g_PlayerID}, "Player");
+	entity.AddComponent<Rod::SpriteRendererComponent>();
+	entity.AddComponent<Rod::MeshComponent>();
+	entity.AddComponent<Rod::DirectionalLightComponent>();
+	entity.AddComponent<Rod::CameraComponent>();
+	auto& script = entity.AddComponent<Rod::ScriptComponent>("Game.Player");
+	script.Fields["Speed"] = {{"Speed", "System.Single", Rod::ScriptFieldType::Float}, "3.0"};
+	Rod::Scene copy(original);
+	REQUIRE(original == copy);
+	REQUIRE(copy == original);
+
+	auto copiedEntity = copy.FindEntityByUUID(Rod::UUID{g_PlayerID});
+	SECTION("tag")
+	{
+		copiedEntity.GetComponent<Rod::TagComponent>().Tag = "Changed";
+	}
+	SECTION("transform")
+	{
+		copiedEntity.GetComponent<Rod::TransformComponent>().Translation.x = 1.0f;
+	}
+	SECTION("sprite")
+	{
+		copiedEntity.GetComponent<Rod::SpriteRendererComponent>().TilingFactor = changedTilingFactor;
+	}
+	SECTION("mesh material")
+	{
+		copiedEntity.GetComponent<Rod::MeshComponent>().Material.SetMetallic(changedMetallic);
+	}
+	SECTION("light")
+	{
+		copiedEntity.GetComponent<Rod::DirectionalLightComponent>().Intensity = changedIntensity;
+	}
+	SECTION("camera")
+	{
+		copiedEntity.GetComponent<Rod::CameraComponent>().Primary = false;
+	}
+	SECTION("script field")
+	{
+		copiedEntity.GetComponent<Rod::ScriptComponent>().Fields.at("Speed").Value = "4.0";
+	}
+	SECTION("component presence")
+	{
+		copiedEntity.RemoveComponent<Rod::MeshComponent>();
+	}
+	SECTION("viewport")
+	{
+		copy.OnViewportResize(viewportHeight, viewportHeight);
+	}
+	REQUIRE_FALSE(original == copy);
+	REQUIRE_FALSE(copy == original);
+}
+
 TEST_CASE("Scene destroys only the requested entity", "[scene]")
 {
 	Rod::Scene scene;

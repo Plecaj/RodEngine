@@ -11,6 +11,135 @@
 #include "Rod/Scripting/ScriptEngine.h"
 
 namespace Rod {
+	namespace {
+		template <typename Component, typename Equal>
+		bool SameComponent(
+		    const entt::registry& left,
+		    entt::entity leftEntity,
+		    const entt::registry& right,
+		    entt::entity rightEntity,
+		    Equal equal)
+		{
+			const bool leftHas = left.all_of<Component>(leftEntity);
+			const bool rightHas = right.all_of<Component>(rightEntity);
+			return leftHas == rightHas &&
+			       (!leftHas || equal(left.get<Component>(leftEntity), right.get<Component>(rightEntity)));
+		}
+
+		template <typename Asset>
+		bool SameAsset(const Ref<Asset>& left, const Ref<Asset>& right)
+		{
+			return (!left && !right) || (left && right && left->GetPath() == right->GetPath());
+		}
+
+		bool SameScriptFields(const ScriptFieldMap& left, const ScriptFieldMap& right)
+		{
+			if (left.size() != right.size())
+				return false;
+			for (const auto& [name, field] : left)
+			{
+				const auto it = right.find(name);
+				if (it == right.end() || field.Field.Name != it->second.Field.Name ||
+				    field.Field.TypeName != it->second.Field.TypeName || field.Field.Type != it->second.Field.Type ||
+				    field.Value != it->second.Value)
+					return false;
+			}
+			return true;
+		}
+
+		bool SameCamera(const SceneCamera& left, const SceneCamera& right)
+		{
+			if (left.GetProjectionType() != right.GetProjectionType() ||
+			    left.GetPerspectiveVerticalFOV() != right.GetPerspectiveVerticalFOV() ||
+			    left.GetPerspectiveNearClip() != right.GetPerspectiveNearClip() ||
+			    left.GetPerspectiveFarClip() != right.GetPerspectiveFarClip() ||
+			    left.GetOrthographicSize() != right.GetOrthographicSize() ||
+			    left.GetOrthographicNearClip() != right.GetOrthographicNearClip() ||
+			    left.GetOrthographicFarClip() != right.GetOrthographicFarClip())
+				return false;
+			for (glm::mat4::length_type column = 0; column < left.GetProjection().length(); ++column)
+			{
+				if (left.GetProjection()[column] != right.GetProjection()[column])
+					return false;
+			}
+			return true;
+		}
+
+		bool SameEntityComponents(
+		    const entt::registry& left,
+		    entt::entity leftEntity,
+		    const entt::registry& right,
+		    entt::entity rightEntity)
+		{
+			return SameComponent<TagComponent>(
+			           left,
+			           leftEntity,
+			           right,
+			           rightEntity,
+			           [](const auto& a, const auto& b) { return a.Tag == b.Tag; }) &&
+			       SameComponent<TransformComponent>(
+			           left,
+			           leftEntity,
+			           right,
+			           rightEntity,
+			           [](const auto& a, const auto& b) {
+				           return a.Translation == b.Translation && a.Rotation == b.Rotation && a.Scale == b.Scale;
+			           }) &&
+			       SameComponent<SpriteRendererComponent>(
+			           left,
+			           leftEntity,
+			           right,
+			           rightEntity,
+			           [](const auto& a, const auto& b) {
+				           return a.Color == b.Color && a.TilingFactor == b.TilingFactor &&
+				                  SameAsset(a.Texture, b.Texture);
+			           }) &&
+			       SameComponent<MeshComponent>(
+			           left,
+			           leftEntity,
+			           right,
+			           rightEntity,
+			           [](const auto& a, const auto& b) {
+				           return SameAsset(a.Mesh, b.Mesh) && a.Material.GetAlbedo() == b.Material.GetAlbedo() &&
+				                  a.Material.GetEmissive() == b.Material.GetEmissive() &&
+				                  a.Material.GetRoughness() == b.Material.GetRoughness() &&
+				                  a.Material.GetMetallic() == b.Material.GetMetallic();
+			           }) &&
+			       SameComponent<DirectionalLightComponent>(
+			           left,
+			           leftEntity,
+			           right,
+			           rightEntity,
+			           [](const auto& a, const auto& b) {
+				           return a.Direction == b.Direction && a.Color == b.Color && a.Intensity == b.Intensity;
+			           }) &&
+			       SameComponent<CameraComponent>(
+			           left,
+			           leftEntity,
+			           right,
+			           rightEntity,
+			           [](const auto& a, const auto& b) {
+				           return a.Primary == b.Primary && a.FixedAspectRatio == b.FixedAspectRatio &&
+				                  SameCamera(a.Camera, b.Camera);
+			           }) &&
+			       SameComponent<ScriptComponent>(
+			           left,
+			           leftEntity,
+			           right,
+			           rightEntity,
+			           [](const auto& a, const auto& b) {
+				           return a.ClassName == b.ClassName && SameScriptFields(a.Fields, b.Fields);
+			           }) &&
+			       SameComponent<NativeScriptComponent>(
+			           left,
+			           leftEntity,
+			           right,
+			           rightEntity,
+			           [](const auto& a, const auto& b) {
+				           return a.InstantiateScript == b.InstantiateScript && a.DestroyScript == b.DestroyScript;
+			           });
+		}
+	}
 
 	template <typename... Components>
 	void Scene::CopyComponent(
@@ -152,12 +281,32 @@ namespace Rod {
 
 	bool Scene::operator==(const Scene& other) const
 	{
-		for (const auto entity : m_Registry.view<entt::entity>())
+		if (this == &other)
+			return true;
+		if (m_ViewportWidth != other.m_ViewportWidth || m_ViewportHeight != other.m_ViewportHeight)
+			return false;
+
+		std::unordered_map<uint64_t, entt::entity> otherEntities;
+		for (const auto entity : other.m_Registry.view<entt::entity>())
 		{
-			if (!other.IsValidEntityHandle(entity))
+			if (!other.m_Registry.all_of<IDComponent>(entity))
+				return false;
+			const auto id = static_cast<uint64_t>(other.m_Registry.get<IDComponent>(entity).ID);
+			if (!otherEntities.emplace(id, entity).second)
 				return false;
 		}
-		return true;
+
+		for (const auto entity : m_Registry.view<entt::entity>())
+		{
+			if (!m_Registry.all_of<IDComponent>(entity))
+				return false;
+			const auto id = static_cast<uint64_t>(m_Registry.get<IDComponent>(entity).ID);
+			const auto it = otherEntities.find(id);
+			if (it == otherEntities.end() || !SameEntityComponents(m_Registry, entity, other.m_Registry, it->second))
+				return false;
+			otherEntities.erase(it);
+		}
+		return otherEntities.empty();
 	}
 
 	void Scene::DestroyNativeScripts()

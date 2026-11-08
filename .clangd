@@ -1,10 +1,11 @@
 CompileFlags:
   CompilationDatabase: build/clang
+  Add: [-w]
 Diagnostics:
   ClangTidy:
     FastCheckFilter: Strict
   UnusedIncludes: Strict
-  MissingIncludes: Strict
+  MissingIncludes: None
   Includes:
     IgnoreHeader: ['(^|[/\\])rdpch\.h$']
 ---

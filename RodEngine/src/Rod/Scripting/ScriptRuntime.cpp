@@ -11,7 +11,7 @@
 	#include <hostfxr.h>
 	#include <nethost.h>
 	#ifdef RD_PLATFORM_WINDOWS
-		#include <Windows.h>
+		#include <Windows.h> // IWYU pragma: keep
 	#endif
 #endif
 
@@ -23,7 +23,7 @@ namespace Rod {
 	ScriptRuntime::HostString ScriptRuntime::ToHostString(const std::string& value)
 	{
 	#ifdef RD_PLATFORM_WINDOWS
-		int size = MultiByteToWideChar(
+		const int size = MultiByteToWideChar(
 		    CP_UTF8,
 		    MB_ERR_INVALID_CHARS,
 		    value.data(),
@@ -126,7 +126,8 @@ namespace Rod {
 		if (!IsInitialized())
 			return nullptr;
 
-		void* function = nullptr;
+		// Hostfxr writes the function pointer through a void** output parameter.
+		void* function = nullptr; // NOLINT(misc-const-correctness)
 		auto loadAssemblyAndGetFunctionPointer =
 		    std::bit_cast<load_assembly_and_get_function_pointer_fn>(m_LoadAssemblyAndGetFunctionPointer);
 		const int32_t result = loadAssemblyAndGetFunctionPointer(

@@ -10,10 +10,10 @@
 #include "ScriptRuntime.h"
 
 #include <bit>
-#include <cstdlib>
+#include <cstdlib> // IWYU pragma: keep
 
 #ifdef RD_PLATFORM_WINDOWS
-	#include <objbase.h>
+	#include <objbase.h> // IWYU pragma: keep
 #endif
 
 namespace Rod {

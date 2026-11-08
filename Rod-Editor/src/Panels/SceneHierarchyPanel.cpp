@@ -9,7 +9,7 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-#include <typeinfo>
+#include <typeinfo> // IWYU pragma: keep
 
 namespace Rod {
 

@@ -21,6 +21,7 @@ namespace Rod {
 
 		std::string TaskbarIconFilepath;
 		bool UsesCustomUi;
+		bool NativeTitlebar;
 		bool Resizable = true;
 		bool Centered = false;
 
@@ -31,7 +32,8 @@ namespace Rod {
 		    std::string taskbarIconFilepath = "",
 		    bool usesCustomUi = false)
 		    : Title(std::move(title)), Width(width), Height(height),
-		      TaskbarIconFilepath(std::move(taskbarIconFilepath)), UsesCustomUi(usesCustomUi)
+		      TaskbarIconFilepath(std::move(taskbarIconFilepath)), UsesCustomUi(usesCustomUi),
+		      NativeTitlebar(!usesCustomUi)
 		{}
 	};
 

@@ -5,6 +5,7 @@ add_executable(RodEngineTests
     Renderer/Texture.cpp
     Scripting/ScriptGlue.cpp
     Scene/Scene.cpp
+    Scene/SceneCamera.cpp
     Scene/Serialization.cpp
 )
 

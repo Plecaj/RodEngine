@@ -82,7 +82,7 @@ namespace Rod {
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, openGLMinorVersion);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		glfwWindowHint(GLFW_RESIZABLE, props.Resizable ? GLFW_TRUE : GLFW_FALSE);
-		if (props.UsesCustomUi)
+		if (!props.NativeTitlebar)
 #ifdef RD_PLATFORM_WINDOWS
 			glfwWindowHint(GLFW_TITLEBAR, GLFW_FALSE);
 #else

@@ -13,16 +13,13 @@ namespace Rod {
 	namespace {
 		constexpr auto g_WindowTitle = "RodEngine - Project Browser";
 		constexpr uint32_t g_LauncherWidth = 768;
-		constexpr uint32_t g_LauncherHeight = 396;
-		constexpr float g_TitlebarHeight = 42.0f;
-		constexpr float g_WindowButtonWidth = 40.0f;
-		constexpr float g_ButtonCount = 2.0f;
-		constexpr ImVec2 g_TitleTextOffset{16.0f, 12.0f};
+		constexpr uint32_t g_LauncherHeight = 354;
 		constexpr ImVec2 g_ActionCardSize{104.0f, 104.0f};
 
 		WindowProps LauncherWindowProps()
 		{
 			WindowProps props{g_WindowTitle, g_LauncherWidth, g_LauncherHeight, "assets/textures/logo.png", true};
+			props.NativeTitlebar = true;
 			props.Resizable = false;
 			props.Centered = true;
 			return props;
@@ -46,7 +43,6 @@ namespace Rod {
 			                                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings;
 			ImGui::Begin("Project Browser", nullptr, flags);
 
-			DrawTitlebar();
 			DrawProjectActions();
 
 			ImGui::End();
@@ -65,8 +61,8 @@ namespace Rod {
 		{
 			constexpr float half = 0.5f;
 			constexpr float centerOffset = 0.185f;
-			constexpr float cardTop = 78.0f;
-			constexpr float dividerY = 214.0f;
+			constexpr float cardTop = 36.0f;
+			constexpr float dividerY = 172.0f;
 			constexpr float sidePadding = 16.0f;
 			const float width = ImGui::GetWindowWidth();
 
@@ -132,39 +128,6 @@ namespace Rod {
 				point.y += center.y;
 			}
 			drawList.AddPolyline(points.data(), static_cast<int>(points.size()), color, ImDrawFlags_Closed, stroke);
-		}
-
-		static void DrawTitlebar()
-		{
-			const ImVec2 origin = ImGui::GetWindowPos();
-			const float width = ImGui::GetWindowWidth();
-			ImDrawList* drawList = ImGui::GetWindowDrawList();
-			constexpr ImU32 background = IM_COL32(39, 41, 44, 255);
-			constexpr ImU32 text = IM_COL32(225, 228, 232, 255);
-			drawList->AddRectFilled(origin, ImVec2{origin.x + width, origin.y + g_TitlebarHeight}, background);
-
-			ImGui::SetCursorPos(ImVec2{0.0f, 0.0f});
-			ImGui::InvisibleButton(
-			    "##DragTitlebar",
-			    ImVec2{width - g_WindowButtonWidth * g_ButtonCount, g_TitlebarHeight});
-			if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
-				Application::Get().BeginWindowDrag();
-
-			drawList->AddText(
-			    ImVec2{origin.x + g_TitleTextOffset.x, origin.y + g_TitleTextOffset.y},
-			    text,
-			    g_WindowTitle);
-
-			ImGui::PushStyleColor(ImGuiCol_Button, ImGui::ColorConvertU32ToFloat4(background));
-			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
-			ImGui::SameLine(0.0f, 0.0f);
-			if (ImGui::Button("-##Minimize", ImVec2{g_WindowButtonWidth, g_TitlebarHeight}))
-				Application::Get().Minimize();
-			ImGui::SameLine(0.0f, 0.0f);
-			if (ImGui::Button("x##Close", ImVec2{g_WindowButtonWidth, g_TitlebarHeight}))
-				Application::Get().Close();
-			ImGui::PopStyleVar();
-			ImGui::PopStyleColor();
 		}
 	};
 

@@ -16,7 +16,8 @@ namespace Rod {
 		explicit Application(
 		    const std::string& name = "Rod App",
 		    const std::string& iconFilepath = "",
-		    bool isEditor = false);
+		    bool usesCustomUi = false);
+		explicit Application(const WindowProps& props);
 		virtual ~Application();
 		Application(const Application&) = delete;
 		Application& operator=(const Application&) = delete;

@@ -95,7 +95,7 @@ Checks: >-
   readability-use-std-min-max,
   -clang-analyzer-optin.core.EnumCastOutOfRange
 WarningsAsErrors: ''
-HeaderFilterRegex: '(^|.*[/\\])(RodEngine[/\\]src|Rod-Editor[/\\]src|Rod-Runtime[/\\]src|tests)[/\\].*'
+HeaderFilterRegex: '(^|.*[/\\])(RodEngine[/\\]src|Rod-Editor[/\\]src|Rod-Launcher[/\\]src|Rod-Runtime[/\\]src|tests)[/\\].*'
 SystemHeaders: false
 FormatStyle: file
 CheckOptions:

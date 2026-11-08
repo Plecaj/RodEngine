@@ -81,7 +81,8 @@ namespace Rod {
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, openGLMajorVersion);
 		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, openGLMinorVersion);
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-		if (props.IsEditor)
+		glfwWindowHint(GLFW_RESIZABLE, props.Resizable ? GLFW_TRUE : GLFW_FALSE);
+		if (props.UsesCustomUi)
 #ifdef RD_PLATFORM_WINDOWS
 			glfwWindowHint(GLFW_TITLEBAR, GLFW_FALSE);
 #else
@@ -101,6 +102,19 @@ namespace Rod {
 			throw std::runtime_error("Could not create an OpenGL 4.6 GLFW window.");
 		}
 		++g_WindowCount;
+
+		if (props.Centered)
+		{
+			constexpr int centerDivisor = 2;
+			GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+			const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+			int monitorX{}, monitorY{};
+			glfwGetMonitorPos(monitor, &monitorX, &monitorY);
+			glfwSetWindowPos(
+			    m_Window,
+			    monitorX + (mode->width - static_cast<int>(props.Width)) / centerDivisor,
+			    monitorY + (mode->height - static_cast<int>(props.Height)) / centerDivisor);
+		}
 	}
 
 	void GLFWWindow::SetGLFWCallbacks()

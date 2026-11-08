@@ -19,6 +19,7 @@ set_property(CACHE ROD_CXX_STANDARD PROPERTY STRINGS 20 23)
 
 option(ROD_IMGUI_DEMO "Compile Dear ImGui demo window support." OFF)
 option(ROD_BUILD_EDITOR "Build the Rod editor executable." ON)
+option(ROD_BUILD_LAUNCHER "Build the Rod project launcher executable." ON)
 option(ROD_BUILD_RUNTIME "Build the standalone Rod runtime executable." ON)
 option(ROD_WARNINGS_AS_ERRORS "Treat RodEngine warnings as errors." OFF)
 option(BUILD_TESTING "Build RodEngine tests." OFF)
@@ -39,6 +40,10 @@ include(RodScripts)
 
 if(ROD_BUILD_EDITOR)
   add_subdirectory(Rod-Editor)
+endif()
+
+if(ROD_BUILD_LAUNCHER)
+  add_subdirectory(Rod-Launcher)
 endif()
 
 if(ROD_BUILD_RUNTIME)

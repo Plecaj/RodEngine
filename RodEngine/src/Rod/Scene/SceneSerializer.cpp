@@ -10,7 +10,6 @@
 #include "Rod/Scripting/ScriptField.h"
 #include "yaml-cpp/emitter.h"
 #include "yaml-cpp/emittermanip.h"
-#include "yaml-cpp/exceptions.h"
 #include "yaml-cpp/node/convert.h"
 // yaml-cpp keeps map lookup template definitions in this separate header.
 #include "yaml-cpp/node/detail/impl.h" // IWYU pragma: keep
@@ -18,6 +17,8 @@
 #include "yaml-cpp/node/parse.h"
 
 #include <fstream>
+#include <stdexcept>
+#include <vector>
 
 namespace YAML {
 
@@ -365,6 +366,8 @@ namespace Rod {
 	Entity SceneSerializer::DeserializeEntity(Scene& scene, const YAML::Node& entityNode)
 	{
 		auto uuid = entityNode["Entity"].as<uint64_t>();
+		if (scene.FindEntityByUUID(UUID{uuid}))
+			throw std::runtime_error("Duplicate entity UUID: " + std::to_string(uuid));
 
 		std::string name;
 		auto tagComponent = entityNode["TagComponent"];
@@ -374,44 +377,63 @@ namespace Rod {
 		RD_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
 
 		Entity entity = scene.CreateEntityWithUUID(UUID{uuid}, name);
-		DeserializeTransformComponent(entityNode, entity);
-		DeserializeCameraComponent(entityNode, entity);
-		DeserializeSpriteRendererComponent(entityNode, entity);
-		DeserializeMeshComponent(entityNode, entity);
-		DeserializeDirectionalLightComponent(entityNode, entity);
-		DeserializeScriptComponent(entityNode, entity);
+		try
+		{
+			DeserializeTransformComponent(entityNode, entity);
+			DeserializeCameraComponent(entityNode, entity);
+			DeserializeSpriteRendererComponent(entityNode, entity);
+			DeserializeMeshComponent(entityNode, entity);
+			DeserializeDirectionalLightComponent(entityNode, entity);
+			DeserializeScriptComponent(entityNode, entity);
+		}
+		catch (...)
+		{
+			scene.DestroyEntity(entity);
+			throw;
+		}
 		return entity;
 	}
 
 	bool SceneSerializer::DeserializeText(const std::string& filepath)
 	{
-		YAML::Node data;
+		std::vector<Entity> createdEntities;
 		try
 		{
-			data = YAML::LoadFile(filepath);
+			auto data = YAML::LoadFile(filepath);
+			if (!data["Scene"])
+			{
+				RD_CORE_ERROR("Scene '{}' is missing a scene header", filepath);
+				return false;
+			}
+
+			auto sceneName = data["Scene"].as<std::string>();
+			RD_CORE_TRACE("Deserializing scene '{0}'", sceneName);
+
+			auto entities = data["Entities"];
+			if (!entities)
+				return true;
+			createdEntities.reserve(entities.size());
+
+			for (auto entityNode : entities)
+			{
+				if (entityNode["Entity"])
+					createdEntities.push_back(DeserializeEntity(m_Scene, entityNode));
+			}
+			return true;
 		}
-		catch (const YAML::Exception& exception)
+		catch (const std::exception& exception)
 		{
+			for (auto entity : createdEntities)
+				m_Scene.DestroyEntity(entity);
 			RD_CORE_ERROR("Failed to deserialize scene '{}': {}", filepath, exception.what());
 			return false;
 		}
-
-		if (!data["Scene"])
-			return false;
-
-		auto sceneName = data["Scene"].as<std::string>();
-		RD_CORE_TRACE("Deserializing scene '{0}'", sceneName);
-
-		auto entities = data["Entities"];
-		if (!entities)
-			return true;
-
-		for (auto entityNode : entities)
+		catch (...)
 		{
-			if (entityNode["Entity"])
-				DeserializeEntity(m_Scene, entityNode);
+			for (auto entity : createdEntities)
+				m_Scene.DestroyEntity(entity);
+			RD_CORE_ERROR("Failed to deserialize scene '{}': unknown error", filepath);
+			return false;
 		}
-
-		return true;
 	}
 }

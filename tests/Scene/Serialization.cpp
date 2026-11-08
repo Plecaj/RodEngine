@@ -7,7 +7,6 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
-// Keep the umbrella for yaml-cpp node lookup template definitions.
 #include <yaml-cpp/yaml.h> // IWYU pragma: keep
 
 #include <fstream>
@@ -319,7 +318,62 @@ TEST_CASE_METHOD(
 	}
 	Rod::Scene scene;
 	const auto existing = scene.CreateEntityWithUUID(Rod::UUID{EXISTING_ID}, "Existing");
-	REQUIRE(!Rod::SceneSerializer(scene).DeserializeText(Filepath()));
+	REQUIRE_FALSE(Rod::SceneSerializer(scene).DeserializeText(Filepath()));
 	REQUIRE(scene.FindEntityByUUID(Rod::UUID{EXISTING_ID}) == existing);
 	REQUIRE(existing.GetName() == "Existing");
+}
+
+TEST_CASE_METHOD(
+    SerializationFixture,
+    "Scene deserialization rolls back entities from invalid component data",
+    "[scene][serialization]")
+{
+	SECTION("wrong vector size")
+	{
+		WriteScene(R"(Scene: Invalid
+Entities:
+  - Entity: 1001
+  - Entity: 1002
+    TransformComponent:
+      Translation: [1, 2]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+)");
+	}
+	SECTION("non-numeric component")
+	{
+		WriteScene(R"(Scene: Invalid
+Entities:
+  - Entity: 1001
+  - Entity: 1002
+    TransformComponent:
+      Translation: [bad, 2, 3]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+)");
+	}
+
+	Rod::Scene scene;
+	const auto existing = scene.CreateEntityWithUUID(Rod::UUID{EXISTING_ID}, "Existing");
+	REQUIRE_FALSE(Rod::SceneSerializer(scene).DeserializeText(Filepath()));
+	REQUIRE(scene.FindEntityByUUID(Rod::UUID{EXISTING_ID}) == existing);
+	REQUIRE_FALSE(scene.FindEntityByUUID(Rod::UUID{BASE_ID}));
+	REQUIRE_FALSE(scene.FindEntityByUUID(Rod::UUID{PLAYER_ID}));
+}
+
+TEST_CASE_METHOD(
+    SerializationFixture,
+    "Scene deserialization rejects duplicate entity IDs without changing the scene",
+    "[scene][serialization]")
+{
+	WriteScene(R"(Scene: Invalid
+Entities:
+  - Entity: 1001
+  - Entity: 1001
+)");
+	Rod::Scene scene;
+	const auto existing = scene.CreateEntityWithUUID(Rod::UUID{EXISTING_ID}, "Existing");
+	REQUIRE_FALSE(Rod::SceneSerializer(scene).DeserializeText(Filepath()));
+	REQUIRE(scene.FindEntityByUUID(Rod::UUID{EXISTING_ID}) == existing);
+	REQUIRE_FALSE(scene.FindEntityByUUID(Rod::UUID{BASE_ID}));
 }

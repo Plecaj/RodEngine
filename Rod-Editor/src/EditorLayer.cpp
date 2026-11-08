@@ -455,10 +455,15 @@ namespace Rod {
 
 	bool EditorLayer::DeserializeScene(const std::filesystem::path& path)
 	{
-		NewScene();
+		Scene loadedScene;
+		loadedScene.OnViewportResize(static_cast<uint32_t>(m_ViewportSize.x), static_cast<uint32_t>(m_ViewportSize.y));
+		SceneSerializer serializer(loadedScene);
+		if (!serializer.DeserializeText(path.string()))
+			return false;
 
-		SceneSerializer serializer(*m_ActiveScene);
-		return serializer.DeserializeText(path.string());
+		NewScene();
+		m_EditorScene = std::move(loadedScene);
+		return true;
 	}
 
 	void EditorLayer::SerializeScene(const std::filesystem::path& path)

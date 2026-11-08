@@ -1,5 +1,6 @@
 #include "rdpch.h"
 
+#include "ProjectSetupPanel.h"
 #include "Rod/Core/Application.h"
 #include "Rod/Core/EntryPoint.h" // IWYU pragma: keep
 #include "Rod/Core/Layer.h"
@@ -49,8 +50,13 @@ namespace Rod {
 			                                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings;
 			ImGui::Begin("Project Browser", nullptr, flags);
 
-			DrawProjectActions();
-			DrawRecentProjects();
+			if (m_ProjectSetup.IsOpen())
+				m_ProjectSetup.OnImGuiRender();
+			else
+			{
+				DrawProjectActions();
+				DrawRecentProjects();
+			}
 
 			ImGui::End();
 			constexpr int styleVarCount = 2;
@@ -134,7 +140,7 @@ namespace Rod {
 			ImGui::PopID();
 		}
 
-		void DrawProjectActions() const
+		void DrawProjectActions()
 		{
 			constexpr float half = 0.5f;
 			constexpr float centerOffset = 0.185f;
@@ -143,7 +149,8 @@ namespace Rod {
 			const float width = ImGui::GetWindowWidth();
 
 			ImGui::SetCursorPos(ImVec2{width * (half - centerOffset) - g_ActionCardSize.x * half, cardTop});
-			DrawActionCard("New", ProjectAction::New);
+			if (DrawActionCard("New", ProjectAction::New))
+				m_ProjectSetup.Open();
 			ImGui::SetCursorPos(ImVec2{width * (half + centerOffset) - g_ActionCardSize.x * half, cardTop});
 			DrawActionCard("Open", ProjectAction::Open);
 
@@ -154,14 +161,14 @@ namespace Rod {
 			    ImGui::GetColorU32(ImGuiCol_Separator));
 		}
 
-		void DrawActionCard(const char* label, ProjectAction action) const
+		bool DrawActionCard(const char* label, ProjectAction action) const
 		{
 			constexpr float half = 0.5f;
 			constexpr float iconTop = 38.0f;
 			constexpr float labelTop = 66.0f;
 			ImGui::PushID(label);
 			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-			ImGui::Button("##Action", g_ActionCardSize);
+			const bool clicked = ImGui::Button("##Action", g_ActionCardSize);
 			ImGui::PopStyleVar();
 
 			const ImVec2 min = ImGui::GetItemRectMin();
@@ -172,6 +179,7 @@ namespace Rod {
 			DrawActionIcon(*drawList, action, ImVec2{centerX, min.y + iconTop}, color);
 			drawList->AddText(ImVec2{centerX - labelWidth * half, min.y + labelTop}, color, label);
 			ImGui::PopID();
+			return clicked;
 		}
 
 		void DrawActionIcon(ImDrawList& drawList, ProjectAction action, const ImVec2& center, ImU32 color) const
@@ -209,6 +217,7 @@ namespace Rod {
 
 	private:
 		Scope<Texture2D> m_FolderIcon;
+		ProjectSetupPanel m_ProjectSetup;
 	};
 
 	class RodLauncher final : public Application

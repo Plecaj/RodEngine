@@ -17,7 +17,7 @@ namespace Rod {
 	static std::wstring QuoteArgument(const std::string& argument)
 	{
 		constexpr size_t quoteEscapeMultiplier = 2;
-		int size = MultiByteToWideChar(
+		const int size = MultiByteToWideChar(
 		    CP_UTF8,
 		    MB_ERR_INVALID_CHARS,
 		    argument.data(),
@@ -35,7 +35,7 @@ namespace Rod {
 
 		std::wstring quoted = L"\"";
 		size_t backslashes = 0;
-		for (wchar_t character : value)
+		for (const wchar_t character : value)
 		{
 			if (character == L'\\')
 			{
@@ -54,7 +54,7 @@ namespace Rod {
 	{
 		constexpr size_t outputBufferSize = 4096;
 		char buffer[outputBufferSize];
-		DWORD count;
+		DWORD count = 0;
 		std::string output;
 		while (ReadFile(readPipe, buffer, sizeof(buffer), &count, nullptr) && count > 0)
 			output.append(buffer, count);
@@ -75,10 +75,11 @@ namespace Rod {
 		}
 
 		SECURITY_ATTRIBUTES security = {sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE};
-		HANDLE readPipe, writePipe;
+		HANDLE readPipe = nullptr, writePipe = nullptr;
 		if (!CreatePipe(&readPipe, &writePipe, &security, 0))
 			return {-1, "Failed to create process output pipe."};
-		Handle reader(readPipe), writer(writePipe);
+		const Handle reader(readPipe);
+		Handle writer(writePipe);
 		if (!SetHandleInformation(readPipe, HANDLE_FLAG_INHERIT, 0))
 			return {-1, "Failed to configure process output pipe."};
 
@@ -89,7 +90,7 @@ namespace Rod {
 		startup.hStdError = captureErrors ? writePipe : GetStdHandle(STD_ERROR_HANDLE);
 		startup.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
 		PROCESS_INFORMATION information = {};
-		if (CreateProcessW(
+		if (!CreateProcessW(
 		        nullptr,
 		        command.data(),
 		        nullptr,
@@ -102,14 +103,14 @@ namespace Rod {
 		        &information))
 			return {-1, "Failed to start process: " + std::to_string(GetLastError())};
 
-		Handle process(information.hProcess), thread(information.hThread);
+		const Handle process(information.hProcess), thread(information.hThread);
 		writer.reset();
 		ProcessResult result;
 		result.Output = ReadPipe(readPipe);
 
 		if (WaitForSingleObject(process.get(), INFINITE) == WAIT_OBJECT_0)
 		{
-			DWORD exitCode;
+			DWORD exitCode = 0;
 			if (GetExitCodeProcess(process.get(), &exitCode))
 				result.ExitCode = static_cast<int>(exitCode);
 		}

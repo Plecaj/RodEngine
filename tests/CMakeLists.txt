@@ -8,6 +8,10 @@ add_executable(RodEngineTests
     Scene/Serialization.cpp
 )
 
+if(WIN32)
+    target_sources(RodEngineTests PRIVATE Platform/Process.cpp)
+endif()
+
 rod_configure_cpp_target(RodEngineTests)
 
 # Use Catch2's standard line-number fallback instead of the __COUNTER__ extension.

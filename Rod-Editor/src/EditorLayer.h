@@ -70,7 +70,7 @@ namespace Rod {
 		void RenderDockspace();
 		void RenderPanels();
 
-		bool DeserializeScene(const std::filesystem::path& path);
+		void DeserializeScene(const std::filesystem::path& path);
 		void SerializeScene(const std::filesystem::path& path);
 
 		[[nodiscard]] static std::filesystem::path GetRuntimeExecutablePath();

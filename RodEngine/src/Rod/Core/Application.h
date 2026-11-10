@@ -7,17 +7,16 @@
 #include "Rod/Events/ApplicationEvent.h"
 #include "Rod/Events/Event.h"
 #include "Rod/ImGui/ImGuiLayer.h"
+#include "Rod/Project/Project.h"
+
+#include <optional>
 
 namespace Rod {
 
 	class Application
 	{
 	public:
-		explicit Application(
-		    const std::string& name = "Rod App",
-		    const std::string& iconFilepath = "",
-		    bool usesCustomUi = false);
-		explicit Application(const WindowProps& props);
+		explicit Application(const WindowProps& props, std::optional<Project> project);
 		virtual ~Application();
 		Application(const Application&) = delete;
 		Application& operator=(const Application&) = delete;
@@ -32,6 +31,8 @@ namespace Rod {
 		void PushOverlay(Layer* overlay);
 
 		[[nodiscard]] Window& GetWindow() noexcept { return *m_Window; };
+		[[nodiscard]] Project* GetProject() noexcept { return m_Project ? &*m_Project : nullptr; }
+		[[nodiscard]] const Project* GetProject() const noexcept { return m_Project ? &*m_Project : nullptr; }
 
 		void Close();
 
@@ -59,6 +60,7 @@ namespace Rod {
 		bool OnWindowResize(WindowResizeEvent& e);
 
 	private:
+		std::optional<Project> m_Project;
 		Scope<Window> m_Window;
 		ImGuiLayer* m_ImGuiLayer = nullptr;
 		bool m_Running = true, m_Minimized = false, m_Maximized = false;

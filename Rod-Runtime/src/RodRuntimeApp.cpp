@@ -8,12 +8,21 @@ namespace Rod {
 	class RodRuntime : public Application
 	{
 	public:
-		RodRuntime() : Application("Rod Game") { PushLayer(new RuntimeLayer()); }
+		explicit RodRuntime(Project project) : Application(WindowProps{"Rod Game"}, std::move(project))
+		{
+			PushLayer(new RuntimeLayer());
+		}
 	};
 
 	Application* CreateApplication()
 	{
-		return new RodRuntime();
+		return new RodRuntime(Project{
+		    {},
+		    ProjectProperties{
+		        .Name = "Sandbox",
+		        .AssetsPath = "assets",
+		        .StartupScenePath = "scenes/Startup.rod",
+		        .ScriptsProjectPath = "Scripts/RodGame.csproj"}});
 	}
 
 }

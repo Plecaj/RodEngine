@@ -4,6 +4,8 @@
 
 #include "Rod/Renderer/RenderCommand.h"
 
+#include <exception>
+
 namespace Rod {
 
 	std::filesystem::path RuntimeLayer::ResolveStartupScenePath()
@@ -29,9 +31,13 @@ namespace Rod {
 		}
 
 		SceneSerializer serializer(*m_Scene);
-		if (!serializer.DeserializeText(scenePath.string()))
+		try
 		{
-			RD_CORE_ERROR("Failed to load runtime scene: {}", scenePath.string());
+			serializer.DeserializeText(scenePath.string());
+		}
+		catch (const std::exception& exception)
+		{
+			RD_CORE_ERROR("{}", exception.what());
 			Application::Get().Close();
 			return;
 		}

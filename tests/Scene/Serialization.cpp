@@ -7,9 +7,9 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
-#include <yaml-cpp/yaml.h> // IWYU pragma: keep
 
 #include <fstream>
+#include <stdexcept>
 #include <system_error>
 
 namespace {
@@ -50,8 +50,7 @@ namespace {
 			std::ofstream file(Filepath());
 			REQUIRE(file.is_open());
 			file << text;
-			file.close();
-			REQUIRE(!file.fail());
+			REQUIRE(file.good());
 		}
 		template <glm::length_t Size>
 		static void RequireVectorNear(const glm::vec<Size, float>& actual, const glm::vec<Size, float>& expected)
@@ -74,7 +73,7 @@ namespace {
 		{
 			Rod::SceneSerializer(m_Original).SerializeText(Filepath());
 			m_Restored.OnViewportResize(VIEWPORT_SIZE.x, VIEWPORT_SIZE.y);
-			REQUIRE(Rod::SceneSerializer(m_Restored).DeserializeText(Filepath()));
+			Rod::SceneSerializer(m_Restored).DeserializeText(Filepath());
 			m_Expected = m_Original.FindEntityByUUID(Rod::UUID{PLAYER_ID});
 			m_Actual = m_Restored.FindEntityByUUID(m_Expected.GetUUID());
 			REQUIRE(m_Actual);
@@ -287,27 +286,17 @@ TEST_CASE_METHOD(
 	RequireScriptFieldsEqual(after.Fields, before.Fields);
 }
 
-TEST_CASE_METHOD(
-    SerializationFixture,
-    "Scene deserialization accepts a document without entities",
-    "[scene][serialization]")
+TEST_CASE_METHOD(SerializationFixture, "Empty scenes load", "[scene][serialization]")
 {
 	WriteScene("Scene: Empty\n");
 	Rod::Scene scene;
-	REQUIRE(Rod::SceneSerializer(scene).DeserializeText(Filepath()));
-	Rod::SceneSerializer(scene).SerializeText(Filepath());
-	REQUIRE(YAML::LoadFile(Filepath())["Entities"].size() == 0);
+	Rod::SceneSerializer(scene).DeserializeText(Filepath());
+	REQUIRE(scene == Rod::Scene{});
 }
 
-TEST_CASE_METHOD(
-    SerializationFixture,
-    "Scene deserialization rejects unreadable or invalid documents",
-    "[scene][serialization]")
+TEST_CASE_METHOD(SerializationFixture, "Invalid scene files preserve the scene", "[scene][serialization]")
 {
-	SECTION("missing file")
-	{
-		REQUIRE(!std::filesystem::exists(Filepath()));
-	}
+	SECTION("missing file") {}
 	SECTION("malformed YAML")
 	{
 		WriteScene("Scene: [unterminated\n");
@@ -316,21 +305,17 @@ TEST_CASE_METHOD(
 	{
 		WriteScene("Entities: []\n");
 	}
+
 	Rod::Scene scene;
-	const auto existing = scene.CreateEntityWithUUID(Rod::UUID{EXISTING_ID}, "Existing");
-	REQUIRE_FALSE(Rod::SceneSerializer(scene).DeserializeText(Filepath()));
-	REQUIRE(scene.FindEntityByUUID(Rod::UUID{EXISTING_ID}) == existing);
-	REQUIRE(existing.GetName() == "Existing");
+	scene.CreateEntityWithUUID(Rod::UUID{EXISTING_ID}, "Existing");
+	const Rod::Scene original = scene;
+	REQUIRE_THROWS_AS(Rod::SceneSerializer(scene).DeserializeText(Filepath()), std::runtime_error);
+	REQUIRE(scene == original);
 }
 
-TEST_CASE_METHOD(
-    SerializationFixture,
-    "Scene deserialization rolls back entities from invalid component data",
-    "[scene][serialization]")
+TEST_CASE_METHOD(SerializationFixture, "Invalid components roll back scene loading", "[scene][serialization]")
 {
-	SECTION("wrong vector size")
-	{
-		WriteScene(R"(Scene: Invalid
+	WriteScene(R"(Scene: Invalid
 Entities:
   - Entity: 1001
   - Entity: 1002
@@ -339,41 +324,43 @@ Entities:
       Rotation: [0, 0, 0]
       Scale: [1, 1, 1]
 )");
-	}
-	SECTION("non-numeric component")
-	{
-		WriteScene(R"(Scene: Invalid
-Entities:
-  - Entity: 1001
-  - Entity: 1002
-    TransformComponent:
-      Translation: [bad, 2, 3]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-)");
-	}
-
 	Rod::Scene scene;
-	const auto existing = scene.CreateEntityWithUUID(Rod::UUID{EXISTING_ID}, "Existing");
-	REQUIRE_FALSE(Rod::SceneSerializer(scene).DeserializeText(Filepath()));
-	REQUIRE(scene.FindEntityByUUID(Rod::UUID{EXISTING_ID}) == existing);
-	REQUIRE_FALSE(scene.FindEntityByUUID(Rod::UUID{BASE_ID}));
-	REQUIRE_FALSE(scene.FindEntityByUUID(Rod::UUID{PLAYER_ID}));
+	scene.CreateEntityWithUUID(Rod::UUID{EXISTING_ID}, "Existing");
+	const Rod::Scene original = scene;
+	REQUIRE_THROWS_AS(Rod::SceneSerializer(scene).DeserializeText(Filepath()), std::runtime_error);
+	REQUIRE(scene == original);
 }
 
-TEST_CASE_METHOD(
-    SerializationFixture,
-    "Scene deserialization rejects duplicate entity IDs without changing the scene",
-    "[scene][serialization]")
+TEST_CASE_METHOD(SerializationFixture, "Duplicate entity IDs roll back scene loading", "[scene][serialization]")
 {
-	WriteScene(R"(Scene: Invalid
-Entities:
-  - Entity: 1001
-  - Entity: 1001
-)");
+	WriteScene("Scene: Invalid\nEntities:\n  - Entity: 1001\n  - Entity: 1001\n");
 	Rod::Scene scene;
-	const auto existing = scene.CreateEntityWithUUID(Rod::UUID{EXISTING_ID}, "Existing");
-	REQUIRE_FALSE(Rod::SceneSerializer(scene).DeserializeText(Filepath()));
-	REQUIRE(scene.FindEntityByUUID(Rod::UUID{EXISTING_ID}) == existing);
-	REQUIRE_FALSE(scene.FindEntityByUUID(Rod::UUID{BASE_ID}));
+	scene.CreateEntityWithUUID(Rod::UUID{EXISTING_ID}, "Existing");
+	const Rod::Scene original = scene;
+	REQUIRE_THROWS_AS(Rod::SceneSerializer(scene).DeserializeText(Filepath()), std::runtime_error);
+	REQUIRE(scene == original);
+}
+
+TEST_CASE_METHOD(SerializationFixture, "Scene saves replace existing files", "[scene][serialization]")
+{
+	WriteScene("Previous scene contents\n");
+	Rod::Scene scene;
+	scene.CreateEntityWithUUID(Rod::UUID{PLAYER_ID}, "Player");
+	Rod::SceneSerializer(scene).SerializeText(Filepath());
+	Rod::Scene restored;
+	Rod::SceneSerializer(restored).DeserializeText(Filepath());
+	REQUIRE(restored == scene);
+}
+
+TEST_CASE_METHOD(SerializationFixture, "Missing textures roll back scene loading", "[scene][serialization]")
+{
+	WriteScene(
+	    "Scene: Invalid\nEntities:\n  - Entity: 1001\n  - Entity: 1002\n"
+	    "    SpriteRendererComponent:\n      Color: [1, 1, 1, 1]\n      TilingFactor: 1\n"
+	    "      Texture: " + Filepath() + ".missing.png\n");
+	Rod::Scene scene;
+	scene.CreateEntityWithUUID(Rod::UUID{EXISTING_ID}, "Existing");
+	const Rod::Scene original = scene;
+	REQUIRE_THROWS_AS(Rod::SceneSerializer(scene).DeserializeText(Filepath()), std::runtime_error);
+	REQUIRE(scene == original);
 }

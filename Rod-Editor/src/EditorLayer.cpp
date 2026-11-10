@@ -10,6 +10,8 @@
 
 #include "ImGuizmo.h"
 
+#include <exception>
+
 namespace Rod {
 
 	extern const std::filesystem::path g_AssetsPath;
@@ -429,18 +431,33 @@ namespace Rod {
 
 	void EditorLayer::OpenScene(const std::filesystem::path& path)
 	{
-		if (DeserializeScene(path))
+		try
+		{
+			DeserializeScene(path);
 			m_SceneOutputFilepath = path.string();
+		}
+		catch (const std::exception& exception)
+		{
+			RD_CORE_ERROR("{}", exception.what());
+		}
 	}
 
 	void EditorLayer::SaveScene()
 	{
 		if (m_SceneOutputFilepath.empty())
+		{
 			SaveSceneAs();
-		if (m_SceneOutputFilepath.empty())
 			return;
+		}
 
-		SerializeScene(m_SceneOutputFilepath);
+		try
+		{
+			SerializeScene(m_SceneOutputFilepath);
+		}
+		catch (const std::exception& exception)
+		{
+			RD_CORE_ERROR("{}", exception.what());
+		}
 	}
 
 	void EditorLayer::SaveSceneAs()
@@ -448,22 +465,27 @@ namespace Rod {
 		const std::string filepath = FileDialogs::SaveFile("Rod Scene (*.rod)\0*.rod\0");
 		if (!filepath.empty())
 		{
-			m_SceneOutputFilepath = filepath;
-			SerializeScene(filepath);
+			try
+			{
+				SerializeScene(filepath);
+				m_SceneOutputFilepath = filepath;
+			}
+			catch (const std::exception& exception)
+			{
+				RD_CORE_ERROR("{}", exception.what());
+			}
 		}
 	}
 
-	bool EditorLayer::DeserializeScene(const std::filesystem::path& path)
+	void EditorLayer::DeserializeScene(const std::filesystem::path& path)
 	{
 		Scene loadedScene;
 		loadedScene.OnViewportResize(static_cast<uint32_t>(m_ViewportSize.x), static_cast<uint32_t>(m_ViewportSize.y));
 		SceneSerializer serializer(loadedScene);
-		if (!serializer.DeserializeText(path.string()))
-			return false;
+		serializer.DeserializeText(path.string());
 
 		NewScene();
 		m_EditorScene = std::move(loadedScene);
-		return true;
 	}
 
 	void EditorLayer::SerializeScene(const std::filesystem::path& path)
@@ -501,7 +523,15 @@ namespace Rod {
 			return;
 
 		SceneSerializer serializer(*sceneToExport);
-		serializer.SerializeText((exportAssets / "scenes" / "Startup.rod").string());
+		try
+		{
+			serializer.SerializeText((exportAssets / "scenes" / "Startup.rod").string());
+		}
+		catch (const std::exception& exception)
+		{
+			RD_CORE_ERROR("{}", exception.what());
+			return;
+		}
 		RD_CORE_INFO("Exported game to {}", exportRoot.string());
 	}
 

@@ -17,7 +17,6 @@ public readonly struct NativeCall
 public static unsafe class ScriptHost
 {
     private static AssemblyLoadContext? s_LoadContext;
-    private static AssemblyDependencyResolver? s_AssemblyResolver;
     private static Assembly? s_GameAssembly;
     private static readonly Dictionary<ulong, ScriptBehaviour> s_Instances = new();
     private static readonly Dictionary<Type, string> s_FieldTypeNames = new()
@@ -83,14 +82,36 @@ public static unsafe class ScriptHost
     public static IntPtr LoadAssembly(byte* assemblyPath)
     {
         string path = Marshal.PtrToStringUTF8((IntPtr)assemblyPath) ?? string.Empty;
+        var loadContext = new AssemblyLoadContext("RodGameScripts", isCollectible: true);
+        Assembly assembly;
+        string metadata;
+        try
+        {
+            AssemblyDependencyResolver resolver;
+            try
+            {
+                resolver = new AssemblyDependencyResolver(path);
+            }
+            catch (InvalidOperationException exception)
+            {
+                loadContext.Unload();
+                return Marshal.StringToCoTaskMemUTF8(JsonSerializer.Serialize(new { error = exception.Message }));
+            }
+            loadContext.Resolving += (context, name) => ResolveScriptAssembly(context, name, resolver);
+            assembly = loadContext.LoadFromAssemblyPath(path);
+            metadata = BuildMetadataJson(assembly);
+        }
+        catch (Exception exception) when (exception is IOException or BadImageFormatException or
+                                        UnauthorizedAccessException or ArgumentException)
+        {
+            loadContext.Unload();
+            return Marshal.StringToCoTaskMemUTF8(JsonSerializer.Serialize(new { error = exception.Message }));
+        }
 
         UnloadAssemblyInternal();
-        s_LoadContext = new AssemblyLoadContext("RodGameScripts", isCollectible: true);
-        s_AssemblyResolver = new AssemblyDependencyResolver(path);
-        s_LoadContext.Resolving += ResolveScriptAssembly;
-        s_GameAssembly = s_LoadContext.LoadFromAssemblyPath(path);
-
-        return Marshal.StringToCoTaskMemUTF8(BuildMetadataJson());
+        s_LoadContext = loadContext;
+        s_GameAssembly = assembly;
+        return Marshal.StringToCoTaskMemUTF8(metadata);
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
@@ -106,23 +127,22 @@ public static unsafe class ScriptHost
 
         s_Instances.Clear();
         s_GameAssembly = null;
-        s_AssemblyResolver = null;
 
         if (s_LoadContext != null)
         {
-            s_LoadContext.Resolving -= ResolveScriptAssembly;
             s_LoadContext.Unload();
             s_LoadContext = null;
         }
     }
 
-    private static Assembly? ResolveScriptAssembly(AssemblyLoadContext context, AssemblyName assemblyName)
+    private static Assembly? ResolveScriptAssembly(
+        AssemblyLoadContext context, AssemblyName assemblyName, AssemblyDependencyResolver resolver)
     {
         Assembly scriptCoreAssembly = typeof(ScriptBehaviour).Assembly;
         if (AssemblyName.ReferenceMatchesDefinition(scriptCoreAssembly.GetName(), assemblyName))
             return scriptCoreAssembly;
 
-        string? assemblyPath = s_AssemblyResolver?.ResolveAssemblyToPath(assemblyName);
+        string? assemblyPath = resolver.ResolveAssemblyToPath(assemblyName);
         if (assemblyPath != null)
             return context.LoadFromAssemblyPath(assemblyPath);
 
@@ -189,12 +209,9 @@ public static unsafe class ScriptHost
             field.SetValue(instance, convertedValue);
     }
 
-    private static string BuildMetadataJson()
+    private static string BuildMetadataJson(Assembly assembly)
     {
-        if (s_GameAssembly == null)
-            return "{\"classes\":[]}";
-
-        var classes = GetLoadableTypes(s_GameAssembly)
+        var classes = GetLoadableTypes(assembly)
             .Where(type => type.IsClass && !type.IsAbstract && typeof(ScriptBehaviour).IsAssignableFrom(type))
             .Select(BuildClassMetadata);
 

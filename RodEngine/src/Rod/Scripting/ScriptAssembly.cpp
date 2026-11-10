@@ -5,8 +5,8 @@
 #include "Rod/Scripting/ScriptClass.h"
 #include "Rod/Scripting/ScriptField.h"
 
-#include <exception>
 #include <json.hpp>
+#include <stdexcept>
 
 namespace Rod {
 
@@ -30,26 +30,32 @@ namespace Rod {
 		return it != FIELD_TYPES.end() ? it->second : ScriptFieldType::None;
 	}
 
-	bool ScriptAssembly::Load(const std::filesystem::path& assemblyPath, const std::string& metadataJson)
+	ScriptAssembly::ScriptAssembly(const std::filesystem::path& assemblyPath, const std::string& metadataJson)
+	    : m_AssemblyPath(assemblyPath)
 	{
-		Clear();
-		m_AssemblyPath = assemblyPath;
-
 		try
 		{
-			nlohmann::json metadata = nlohmann::json::parse(metadataJson);
-			for (const auto& classJson : metadata["classes"])
+			const auto metadata = nlohmann::json::parse(metadataJson);
+			if (metadata.contains("error"))
+				throw std::runtime_error(
+				    "Assembly load failed '" + assemblyPath.string() + "': " + metadata.at("error").get<std::string>());
+			if (!metadata.is_object() || !metadata.contains("classes") || !metadata.at("classes").is_array())
+				throw std::runtime_error("Assembly metadata invalid '" + assemblyPath.string() + "': classes required");
+			for (const auto& classJson : metadata.at("classes"))
 			{
-				const std::string fullName = classJson.value("fullName", "");
+				const auto fullName = classJson.at("fullName").get<std::string>();
+				if (fullName.empty() || !classJson.at("fields").is_array())
+					throw std::runtime_error(
+					    "Assembly metadata invalid '" + assemblyPath.string() + "': class/fields required");
 				const std::string namespaceName = classJson.value("namespace", "");
 				const std::string className = classJson.value("name", "");
 
 				ScriptClass scriptClass(fullName, namespaceName, className);
 
-				for (const auto& fieldJson : classJson["fields"])
+				for (const auto& fieldJson : classJson.at("fields"))
 				{
 					ScriptField field;
-					field.Name = fieldJson.value("name", "");
+					field.Name = fieldJson.at("name").get<std::string>();
 					field.TypeName = fieldJson.value("type", "");
 					field.Type = ScriptFieldTypeFromString(field.TypeName);
 
@@ -57,24 +63,13 @@ namespace Rod {
 						scriptClass.GetFields()[field.Name] = {field, fieldJson.value("defaultValue", "")};
 				}
 
-				if (!fullName.empty())
-					m_Classes[fullName] = scriptClass;
+				m_Classes[fullName] = std::move(scriptClass);
 			}
 		}
-		catch (const std::exception& e)
+		catch (const nlohmann::json::exception& exception)
 		{
-			RD_CORE_ERROR("Failed to parse script metadata: {}", e.what());
-			Clear();
-			return false;
+			throw std::runtime_error("Assembly metadata invalid '" + assemblyPath.string() + "': " + exception.what());
 		}
-
-		return true;
-	}
-
-	void ScriptAssembly::Clear()
-	{
-		m_Classes.clear();
-		m_AssemblyPath.clear();
 	}
 
 	bool ScriptAssembly::HasClass(const std::string& className) const

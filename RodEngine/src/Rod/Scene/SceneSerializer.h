@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 namespace YAML {
 	class Emitter;
@@ -24,8 +25,7 @@ namespace Rod {
 		explicit SceneSerializer(Scene& scene);
 
 		void SerializeText(const std::string& filepath);
-
-		bool DeserializeText(const std::string& filepath);
+		void DeserializeText(const std::string& filepath);
 
 	private:
 		static void SerializeTagComponent(YAML::Emitter& out, const TagComponent& tag);
@@ -43,7 +43,7 @@ namespace Rod {
 		static void DeserializeMeshComponent(const YAML::Node& entityNode, Entity entity);
 		static void DeserializeDirectionalLightComponent(const YAML::Node& entityNode, Entity entity);
 		static void DeserializeScriptComponent(const YAML::Node& entityNode, Entity entity);
-		static Entity DeserializeEntity(Scene& scene, const YAML::Node& entityNode);
+		static void DeserializeEntity(Scene& scene, const YAML::Node& entityNode, std::vector<Entity>& createdEntities);
 
 		Scene& m_Scene;
 	};

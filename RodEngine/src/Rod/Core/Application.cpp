@@ -15,12 +15,8 @@ namespace Rod {
 
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application(const std::string& name, const std::string& iconFilepath, bool usesCustomUi)
-	    : Application(
-	          WindowProps{name, WindowProps::DEFAULT_WIDTH, WindowProps::DEFAULT_HEIGHT, iconFilepath, usesCustomUi})
-	{}
-
-	Application::Application(const WindowProps& props)
+	Application::Application(const WindowProps& props, std::optional<Project> project)
+	    : m_Project(std::move(project))
 	{
 		RD_PROFILE_FUNCTION();
 		RD_CORE_ASSERT(!s_Instance, "Application already exists!")

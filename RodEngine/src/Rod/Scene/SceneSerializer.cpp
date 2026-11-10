@@ -8,13 +8,9 @@
 #include "Rod/Renderer/Texture.h"
 #include "Rod/Scene/Scene.h"
 #include "Rod/Scripting/ScriptField.h"
-#include "yaml-cpp/emitter.h"
-#include "yaml-cpp/emittermanip.h"
-#include "yaml-cpp/node/convert.h"
-// yaml-cpp keeps map lookup template definitions in this separate header.
-#include "yaml-cpp/node/detail/impl.h" // IWYU pragma: keep
-#include "yaml-cpp/node/node.h"
-#include "yaml-cpp/node/parse.h"
+#include "Rod/Utils/FileUtils.h"
+
+#include <yaml-cpp/yaml.h>
 
 #include <fstream>
 #include <stdexcept>
@@ -72,6 +68,31 @@ namespace YAML {
 }
 
 namespace Rod {
+
+	namespace {
+		std::string RollbackLoad(Scene& scene, const std::vector<Entity>& createdEntities)
+		{
+			std::string rollbackErrors;
+			for (auto it = createdEntities.rbegin(); it != createdEntities.rend(); ++it)
+			{
+				if (!*it)
+					continue;
+				try
+				{
+					scene.DestroyEntity(*it);
+				}
+				catch (const std::exception& exception)
+				{
+					rollbackErrors += " " + std::string(exception.what());
+				}
+				catch (...)
+				{
+					rollbackErrors += " Unknown error.";
+				}
+			}
+			return rollbackErrors.empty() ? " | Scene unchanged." : " | Rollback incomplete:" + rollbackErrors;
+		}
+	}
 
 	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec3& v)
 	{
@@ -224,30 +245,18 @@ namespace Rod {
 		out << YAML::BeginMap;
 		out << YAML::Key << "Scene" << YAML::Value << "Untitled";
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
-
 		auto view = m_Scene.m_Registry.view<IDComponent>();
 		for (auto entityID : view)
 		{
 			const Entity entity = {entityID, &m_Scene};
-			if (!entity)
-				continue;
-
-			SerializeEntity(out, entity);
+			if (entity)
+				SerializeEntity(out, entity);
 		}
 		out << YAML::EndSeq;
 		out << YAML::EndMap;
-
-		const std::filesystem::path path = filepath;
-		if (path.has_parent_path())
-			std::filesystem::create_directories(path.parent_path());
-
-		std::ofstream fout(filepath);
-		if (!fout.is_open())
-		{
-			RD_CORE_ERROR("Failed to open file: {}", filepath);
-			return;
-		}
-		fout << out.c_str();
+		if (!out.good())
+			throw std::runtime_error("Scene save failed '" + filepath + "': " + out.GetLastError());
+		WriteTextFile(filepath, out.c_str());
 	}
 
 	void SceneSerializer::DeserializeTransformComponent(const YAML::Node& entityNode, Entity entity)
@@ -363,7 +372,10 @@ namespace Rod {
 		}
 	}
 
-	Entity SceneSerializer::DeserializeEntity(Scene& scene, const YAML::Node& entityNode)
+	void SceneSerializer::DeserializeEntity(
+	    Scene& scene,
+	    const YAML::Node& entityNode,
+	    std::vector<Entity>& createdEntities)
 	{
 		auto uuid = entityNode["Entity"].as<uint64_t>();
 		if (scene.FindEntityByUUID(UUID{uuid}))
@@ -374,66 +386,58 @@ namespace Rod {
 		if (tagComponent)
 			name = tagComponent["Tag"].as<std::string>();
 
-		RD_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
-
 		Entity entity = scene.CreateEntityWithUUID(UUID{uuid}, name);
-		try
-		{
-			DeserializeTransformComponent(entityNode, entity);
-			DeserializeCameraComponent(entityNode, entity);
-			DeserializeSpriteRendererComponent(entityNode, entity);
-			DeserializeMeshComponent(entityNode, entity);
-			DeserializeDirectionalLightComponent(entityNode, entity);
-			DeserializeScriptComponent(entityNode, entity);
-		}
-		catch (...)
-		{
-			scene.DestroyEntity(entity);
-			throw;
-		}
-		return entity;
+		createdEntities.push_back(entity);
+		DeserializeTransformComponent(entityNode, entity);
+		DeserializeCameraComponent(entityNode, entity);
+		DeserializeSpriteRendererComponent(entityNode, entity);
+		DeserializeMeshComponent(entityNode, entity);
+		DeserializeDirectionalLightComponent(entityNode, entity);
+		DeserializeScriptComponent(entityNode, entity);
 	}
 
-	bool SceneSerializer::DeserializeText(const std::string& filepath)
+	void SceneSerializer::DeserializeText(const std::string& filepath)
 	{
 		std::vector<Entity> createdEntities;
 		try
 		{
-			auto data = YAML::LoadFile(filepath);
-			if (!data["Scene"])
+			if (filepath.empty())
+				throw std::runtime_error("Path empty");
+			std::ifstream file(filepath);
+			if (!file.is_open())
+				throw std::runtime_error("Open failed; check path/permissions");
+			const auto data = YAML::Load(file);
+			if (file.bad())
+				throw std::runtime_error("Read failed");
+			if (!data.IsMap())
+				throw std::runtime_error("YAML mapping required");
+			const auto sceneName = data["Scene"];
+			if (!sceneName.IsDefined() || !sceneName.IsScalar())
+				throw std::runtime_error("Field 'Scene': text required");
+
+			const auto entities = data["Entities"];
+			if (entities.IsDefined())
 			{
-				RD_CORE_ERROR("Scene '{}' is missing a scene header", filepath);
-				return false;
+				if (!entities.IsSequence())
+					throw std::runtime_error("Field 'Entities': sequence required");
+				createdEntities.reserve(entities.size());
+				for (const auto& entityNode : entities)
+				{
+					if (!entityNode.IsMap() || !entityNode["Entity"])
+						throw std::runtime_error("Field 'Entity': ID required");
+					DeserializeEntity(m_Scene, entityNode, createdEntities);
+				}
 			}
-
-			auto sceneName = data["Scene"].as<std::string>();
-			RD_CORE_TRACE("Deserializing scene '{0}'", sceneName);
-
-			auto entities = data["Entities"];
-			if (!entities)
-				return true;
-			createdEntities.reserve(entities.size());
-
-			for (auto entityNode : entities)
-			{
-				if (entityNode["Entity"])
-					createdEntities.push_back(DeserializeEntity(m_Scene, entityNode));
-			}
-			return true;
 		}
 		catch (const std::exception& exception)
 		{
-			for (auto entity : createdEntities)
-				m_Scene.DestroyEntity(entity);
-			RD_CORE_ERROR("Failed to deserialize scene '{}': {}", filepath, exception.what());
-			return false;
+			const auto rollback = RollbackLoad(m_Scene, createdEntities);
+			throw std::runtime_error("Scene load failed '" + filepath + "': " + exception.what() + rollback);
 		}
 		catch (...)
 		{
-			for (auto entity : createdEntities)
-				m_Scene.DestroyEntity(entity);
-			RD_CORE_ERROR("Failed to deserialize scene '{}': unknown error", filepath);
-			return false;
+			RollbackLoad(m_Scene, createdEntities);
+			throw;
 		}
 	}
 }

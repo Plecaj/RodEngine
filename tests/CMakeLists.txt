@@ -2,6 +2,7 @@ include(vendor/Catch2)
 
 add_executable(RodEngineTests
     Math/Math.cpp
+    Project/Serialization.cpp
     Renderer/Texture.cpp
     Scripting/ScriptGlue.cpp
     Scene/Scene.cpp

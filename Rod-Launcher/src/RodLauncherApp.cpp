@@ -214,7 +214,7 @@ namespace Rod {
 	class RodLauncher final : public Application
 	{
 	public:
-		RodLauncher() : Application(LauncherWindowProps()) { PushLayer(new LauncherLayer()); }
+		RodLauncher() : Application(LauncherWindowProps(), std::nullopt) { PushLayer(new LauncherLayer()); }
 	};
 
 	Application* CreateApplication()

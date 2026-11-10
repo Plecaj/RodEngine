@@ -12,7 +12,7 @@ namespace Rod {
 	{
 	public:
 		explicit GLFWWindow(const WindowProps& props);
-		virtual ~GLFWWindow() override;
+		virtual ~GLFWWindow() override = default;
 		GLFWWindow(const GLFWWindow&) = delete;
 		GLFWWindow& operator=(const GLFWWindow&) = delete;
 		GLFWWindow(GLFWWindow&&) = delete;
@@ -32,11 +32,10 @@ namespace Rod {
 		virtual void SetVSync(bool enabled) override;
 		[[nodiscard]] virtual bool IsVSync() const noexcept override;
 
-		[[nodiscard]] virtual void* GetNativeWindow() const noexcept override { return m_Window; };
+		[[nodiscard]] virtual void* GetNativeWindow() const noexcept override { return m_Window.get(); };
 
 	private:
 		void Init(const WindowProps& props);
-		void Shutdown();
 		void InitGLFW();
 		void CreateNativeWindow(const WindowProps& props);
 		void SetGLFWCallbacks();
@@ -49,12 +48,6 @@ namespace Rod {
 		glm::vec2 GetMouseScreenPosition() const;
 
 	private:
-		GLFWwindow* m_Window = nullptr;
-		Scope<GraphicsContext> m_Context;
-		mutable bool m_WindowDragActive = false;
-		mutable glm::vec2 m_WindowDragStartMouseScreen = {0.0f, 0.0f};
-		mutable glm::ivec2 m_WindowDragStartPosition = {0, 0};
-
 		struct WindowData
 		{
 			std::string Title;
@@ -65,6 +58,15 @@ namespace Rod {
 		};
 
 		WindowData m_Data;
+		struct NativeWindowDeleter
+		{
+			void operator()(GLFWwindow* window) const noexcept;
+		};
+		std::unique_ptr<GLFWwindow, NativeWindowDeleter> m_Window;
+		Scope<GraphicsContext> m_Context;
+		mutable bool m_WindowDragActive = false;
+		mutable glm::vec2 m_WindowDragStartMouseScreen = {0.0f, 0.0f};
+		mutable glm::ivec2 m_WindowDragStartPosition = {0, 0};
 
 		static WindowData& GetWindowData(GLFWwindow* window);
 	};

@@ -5,26 +5,21 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
+#include <stdexcept>
+
 namespace Rod {
 
 	OpenGLContext::OpenGLContext(GLFWwindow* windowHandle) : m_WindowHandle(windowHandle)
 	{
-		RD_CORE_ASSERT(windowHandle, "Window handle is null!")
-	}
-
-	void OpenGLContext::Init()
-	{
 		RD_PROFILE_FUNCTION();
+		if (!windowHandle)
+			throw std::invalid_argument("OpenGL window handle required");
 
 		glfwMakeContextCurrent(m_WindowHandle);
 		// NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
 		const int status = gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
-		RD_CORE_ASSERT(status, "Failed to initialize Glad!");
 		if (!status)
-		{
-			RD_CORE_ERROR("Failed to initialize Glad!");
-			return;
-		}
+			throw std::runtime_error("OpenGL loader initialization failed");
 
 		RD_CORE_INFO("OpenGL Info:");
 		RD_CORE_INFO("	Vendor: {0}", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));

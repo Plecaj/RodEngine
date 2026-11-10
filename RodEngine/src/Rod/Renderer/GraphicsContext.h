@@ -12,7 +12,6 @@ namespace Rod {
 		GraphicsContext(GraphicsContext&&) = delete;
 		GraphicsContext& operator=(GraphicsContext&&) = delete;
 
-		virtual void Init() = 0;
 		virtual void SwapBuffers() = 0;
 	};
 

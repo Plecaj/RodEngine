@@ -33,9 +33,11 @@ namespace Rod {
 		Init(props);
 	}
 
-	GLFWWindow::~GLFWWindow()
+	void GLFWWindow::NativeWindowDeleter::operator()(GLFWwindow* window) const noexcept
 	{
-		Shutdown();
+		glfwDestroyWindow(window);
+		if (--g_WindowCount == 0)
+			glfwTerminate();
 	}
 
 	void GLFWWindow::Init(const WindowProps& props)
@@ -51,10 +53,9 @@ namespace Rod {
 		InitGLFW();
 		CreateNativeWindow(props);
 
-		m_Context = CreateScope<OpenGLContext>(m_Window);
-		m_Context->Init();
+		m_Context = CreateScope<OpenGLContext>(m_Window.get());
 
-		glfwSetWindowUserPointer(m_Window, &m_Data);
+		glfwSetWindowUserPointer(m_Window.get(), &m_Data);
 		GLFWWindow::SetVSync(true);
 		SetGLFWCallbacks();
 		SetTaskbarIcon(props.TaskbarIconFilepath);
@@ -89,13 +90,13 @@ namespace Rod {
 			glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 #endif
 
-		m_Window = glfwCreateWindow(
+		m_Window.reset(glfwCreateWindow(
 		    static_cast<int>(props.Width),
 		    static_cast<int>(props.Height),
 		    m_Data.Title.c_str(),
 		    nullptr,
-		    nullptr);
-		if (!m_Window)
+		    nullptr));
+		if (!m_Window.get())
 		{
 			if (g_WindowCount == 0)
 				glfwTerminate();
@@ -111,7 +112,7 @@ namespace Rod {
 			int monitorX{}, monitorY{};
 			glfwGetMonitorPos(monitor, &monitorX, &monitorY);
 			glfwSetWindowPos(
-			    m_Window,
+			    m_Window.get(),
 			    monitorX + (mode->width - static_cast<int>(props.Width)) / centerDivisor,
 			    monitorY + (mode->height - static_cast<int>(props.Height)) / centerDivisor);
 		}
@@ -126,7 +127,7 @@ namespace Rod {
 
 	void GLFWWindow::SetWindowCallbacks()
 	{
-		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height) {
+		glfwSetWindowSizeCallback(m_Window.get(), [](GLFWwindow* window, int width, int height) {
 			WindowData& data = GetWindowData(window);
 			data.Width = static_cast<unsigned int>(width);
 			data.Height = static_cast<unsigned int>(height);
@@ -135,7 +136,7 @@ namespace Rod {
 			data.EventCallback(event);
 		});
 
-		glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window) {
+		glfwSetWindowCloseCallback(m_Window.get(), [](GLFWwindow* window) {
 			const WindowData& data = GetWindowData(window);
 
 			WindowCloseEvent event;
@@ -145,7 +146,7 @@ namespace Rod {
 
 	void GLFWWindow::SetKeyboardCallbacks()
 	{
-		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int, int action, int) {
+		glfwSetKeyCallback(m_Window.get(), [](GLFWwindow* window, int key, int, int action, int) {
 			const WindowData& data = GetWindowData(window);
 
 			switch (action)
@@ -168,7 +169,7 @@ namespace Rod {
 			}
 		});
 
-		glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int keycode) {
+		glfwSetCharCallback(m_Window.get(), [](GLFWwindow* window, unsigned int keycode) {
 			const WindowData& data = GetWindowData(window);
 			KeyTypedEvent event(static_cast<int>(keycode));
 			data.EventCallback(event);
@@ -177,7 +178,7 @@ namespace Rod {
 
 	void GLFWWindow::SetMouseCallbacks()
 	{
-		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int) {
+		glfwSetMouseButtonCallback(m_Window.get(), [](GLFWwindow* window, int button, int action, int) {
 			const WindowData& data = GetWindowData(window);
 
 			switch (action)
@@ -195,14 +196,14 @@ namespace Rod {
 			}
 		});
 
-		glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset) {
+		glfwSetScrollCallback(m_Window.get(), [](GLFWwindow* window, double xOffset, double yOffset) {
 			const WindowData& data = GetWindowData(window);
 
 			MouseScrolledEvent event(static_cast<float>(xOffset), static_cast<float>(yOffset));
 			data.EventCallback(event);
 		});
 
-		glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xPos, double yPos) {
+		glfwSetCursorPosCallback(m_Window.get(), [](GLFWwindow* window, double xPos, double yPos) {
 			const WindowData& data = GetWindowData(window);
 
 			MouseMovedEvent event(static_cast<float>(xPos), static_cast<float>(yPos));
@@ -230,27 +231,13 @@ namespace Rod {
 		icon.height = height;
 		icon.pixels = data;
 
-		glfwSetWindowIcon(m_Window, 1, &icon);
+		glfwSetWindowIcon(m_Window.get(), 1, &icon);
 		stbi_image_free(data);
 	}
 
 	GLFWWindow::WindowData& GLFWWindow::GetWindowData(GLFWwindow* window)
 	{
 		return *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
-	}
-
-	void GLFWWindow::Shutdown()
-	{
-		RD_PROFILE_FUNCTION();
-
-		m_Context.reset();
-		if (m_Window)
-		{
-			glfwDestroyWindow(m_Window);
-			m_Window = nullptr;
-			if (--g_WindowCount == 0)
-				glfwTerminate();
-		}
 	}
 
 	void GLFWWindow::OnUpdate()
@@ -265,34 +252,34 @@ namespace Rod {
 	void GLFWWindow::Minimize() const
 	{
 		ResetWindowDrag();
-		glfwIconifyWindow(m_Window);
+		glfwIconifyWindow(m_Window.get());
 	}
 
 	void GLFWWindow::Maximize() const
 	{
 		ResetWindowDrag();
-		glfwMaximizeWindow(m_Window);
+		glfwMaximizeWindow(m_Window.get());
 	}
 
 	void GLFWWindow::Restore() const
 	{
 		ResetWindowDrag();
-		glfwRestoreWindow(m_Window);
+		glfwRestoreWindow(m_Window.get());
 	}
 
 	void GLFWWindow::BeginWindowDrag() const
 	{
-		if (glfwGetMouseButton(m_Window, GLFW_MOUSE_BUTTON_LEFT) != GLFW_PRESS)
+		if (glfwGetMouseButton(m_Window.get(), GLFW_MOUSE_BUTTON_LEFT) != GLFW_PRESS)
 		{
 			ResetWindowDrag();
 			return;
 		}
 
-		if (glfwGetWindowAttrib(m_Window, GLFW_MAXIMIZED) != GLFW_FALSE)
-			glfwRestoreWindow(m_Window);
+		if (glfwGetWindowAttrib(m_Window.get(), GLFW_MAXIMIZED) != GLFW_FALSE)
+			glfwRestoreWindow(m_Window.get());
 
 		int windowX{}, windowY{};
-		glfwGetWindowPos(m_Window, &windowX, &windowY);
+		glfwGetWindowPos(m_Window.get(), &windowX, &windowY);
 
 		const glm::vec2 mouseScreen = GetMouseScreenPosition();
 
@@ -306,7 +293,7 @@ namespace Rod {
 		const glm::vec2 dragDelta = mouseScreen - m_WindowDragStartMouseScreen;
 		const int newWinX = m_WindowDragStartPosition.x + static_cast<int>(dragDelta.x);
 		const int newWinY = m_WindowDragStartPosition.y + static_cast<int>(dragDelta.y);
-		glfwSetWindowPos(m_Window, newWinX, newWinY);
+		glfwSetWindowPos(m_Window.get(), newWinX, newWinY);
 	}
 
 	void GLFWWindow::ResetWindowDrag() const
@@ -319,8 +306,8 @@ namespace Rod {
 		if (!m_WindowDragActive)
 			return;
 
-		if (glfwGetMouseButton(m_Window, GLFW_MOUSE_BUTTON_LEFT) != GLFW_PRESS ||
-		    glfwGetWindowAttrib(m_Window, GLFW_FOCUSED) == GLFW_FALSE)
+		if (glfwGetMouseButton(m_Window.get(), GLFW_MOUSE_BUTTON_LEFT) != GLFW_PRESS ||
+		    glfwGetWindowAttrib(m_Window.get(), GLFW_FOCUSED) == GLFW_FALSE)
 			ResetWindowDrag();
 	}
 
@@ -328,8 +315,8 @@ namespace Rod {
 	{
 		int windowX{}, windowY{};
 		double mouseX{}, mouseY{};
-		glfwGetWindowPos(m_Window, &windowX, &windowY);
-		glfwGetCursorPos(m_Window, &mouseX, &mouseY);
+		glfwGetWindowPos(m_Window.get(), &windowX, &windowY);
+		glfwGetCursorPos(m_Window.get(), &mouseX, &mouseY);
 
 		return {
 		    static_cast<float>(windowX) + static_cast<float>(mouseX),

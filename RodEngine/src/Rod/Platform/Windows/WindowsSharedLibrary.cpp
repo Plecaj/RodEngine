@@ -4,22 +4,20 @@
 
 // NOLINTBEGIN(misc-include-cleaner,cppcoreguidelines-pro-type-reinterpret-cast)
 #include <Windows.h>
+#include <system_error>
 
 namespace Rod {
 
-	SharedLibrary::~SharedLibrary()
+	SharedLibrary::SharedLibrary(const std::filesystem::path& path) : m_Handle(LoadLibraryW(path.c_str()))
 	{
-		Unload();
+		if (!m_Handle)
+		{
+			const auto error = static_cast<int>(GetLastError());
+			throw std::system_error(error, std::system_category(), "Library load failed '" + path.string() + "'");
+		}
 	}
 
-	bool SharedLibrary::Load(const std::filesystem::path& path)
-	{
-		Unload();
-		m_Handle = LoadLibraryW(path.c_str());
-		return m_Handle != nullptr;
-	}
-
-	void SharedLibrary::Unload()
+	void SharedLibrary::Close() noexcept
 	{
 		if (m_Handle)
 		{

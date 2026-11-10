@@ -2,9 +2,9 @@
 
 #include "ScriptRuntime.h"
 
-#include "Rod/Utils/SharedLibrary.h"
-
 #include <bit>
+#include <memory>
+#include <stdexcept>
 
 #ifdef ROD_HAS_DOTNET_HOST
 	#include <coreclr_delegates.h>
@@ -17,9 +17,24 @@
 
 namespace Rod {
 
-#ifdef ROD_HAS_DOTNET_HOST
-	SharedLibrary ScriptRuntime::s_HostFxr;
+	ScriptRuntime::ScriptRuntime(ScriptRuntime&& other) noexcept
+	    : m_HostFxr(std::move(other.m_HostFxr)),
+	      m_LoadAssemblyAndGetFunctionPointer(std::exchange(other.m_LoadAssemblyAndGetFunctionPointer, nullptr)),
+	      m_CoreAssemblyPath(std::move(other.m_CoreAssemblyPath))
+	{}
 
+	ScriptRuntime& ScriptRuntime::operator=(ScriptRuntime&& other) noexcept
+	{
+		if (this != &other)
+		{
+			m_HostFxr = std::move(other.m_HostFxr);
+			m_LoadAssemblyAndGetFunctionPointer = std::exchange(other.m_LoadAssemblyAndGetFunctionPointer, nullptr);
+			m_CoreAssemblyPath = std::move(other.m_CoreAssemblyPath);
+		}
+		return *this;
+	}
+
+#ifdef ROD_HAS_DOTNET_HOST
 	ScriptRuntime::HostString ScriptRuntime::ToHostString(const std::string& value)
 	{
 	#ifdef RD_PLATFORM_WINDOWS
@@ -45,89 +60,81 @@ namespace Rod {
 	}
 #endif
 
-	bool ScriptRuntime::Initialize(
-	    const std::filesystem::path& runtimeConfigPath,
-	    const std::filesystem::path& coreAssemblyPath)
+	std::filesystem::path ScriptRuntime::GetHostFxrPath()
 	{
 #ifdef ROD_HAS_DOTNET_HOST
-		if (IsInitialized())
-			return true;
-
-		if (!s_HostFxr.IsLoaded())
-		{
-			size_t size = 0;
-			get_hostfxr_path(nullptr, &size, nullptr);
-			std::vector<char_t> hostfxrPath(size);
-			if (size == 0 || get_hostfxr_path(hostfxrPath.data(), &size, nullptr) != 0 ||
-			    !s_HostFxr.Load(hostfxrPath.data()))
-			{
-				RD_CORE_ERROR("Failed to locate or load hostfxr. Install the .NET 9 runtime.");
-				return false;
-			}
-		}
-
-		auto initializeForRuntimeConfig = std::bit_cast<hostfxr_initialize_for_runtime_config_fn>(
-		    s_HostFxr.GetFunction("hostfxr_initialize_for_runtime_config"));
-		auto getRuntimeDelegate =
-		    std::bit_cast<hostfxr_get_runtime_delegate_fn>(s_HostFxr.GetFunction("hostfxr_get_runtime_delegate"));
-		auto close = std::bit_cast<hostfxr_close_fn>(s_HostFxr.GetFunction("hostfxr_close"));
-
-		if (!initializeForRuntimeConfig || !getRuntimeDelegate || !close)
-		{
-			RD_CORE_ERROR("hostfxr does not expose the required hosting functions.");
-			Shutdown();
-			return false;
-		}
-
-		hostfxr_handle context = nullptr;
-		int32_t result =
-		    initializeForRuntimeConfig(std::filesystem::absolute(runtimeConfigPath).c_str(), nullptr, &context);
-		if (result < 0 || !context)
-		{
-			if (context)
-				close(context);
-			RD_CORE_ERROR("Failed to initialize .NET runtime from '{}'.", runtimeConfigPath.string());
-			Shutdown();
-			return false;
-		}
-
-		result = getRuntimeDelegate(
-		    context,
-		    hdt_load_assembly_and_get_function_pointer,
-		    &m_LoadAssemblyAndGetFunctionPointer);
-		close(context);
-
-		if (result != 0 || !m_LoadAssemblyAndGetFunctionPointer)
-		{
-			RD_CORE_ERROR("Failed to get .NET load_assembly_and_get_function_pointer delegate.");
-			Shutdown();
-			return false;
-		}
-
-		m_CoreAssemblyPath = std::filesystem::absolute(coreAssemblyPath);
-		return true;
+		size_t size = 0;
+		get_hostfxr_path(nullptr, &size, nullptr);
+		std::vector<char_t> path(size);
+		if (size == 0 || get_hostfxr_path(path.data(), &size, nullptr) != 0)
+			throw std::runtime_error("hostfxr missing; install .NET 9");
+		return path.data();
 #else
-		(void)runtimeConfigPath;
-		(void)coreAssemblyPath;
-		RD_CORE_ERROR("C# scripting requires a build configured with the .NET 9 SDK.");
-		return false;
+		throw std::runtime_error("Scripting unavailable: .NET host missing");
 #endif
 	}
 
-	void ScriptRuntime::Shutdown()
+	std::shared_ptr<const SharedLibrary> ScriptRuntime::GetHostFxrLibrary()
 	{
-		m_LoadAssemblyAndGetFunctionPointer = nullptr;
-		m_CoreAssemblyPath.clear();
+		static const auto library = std::make_shared<const SharedLibrary>(GetHostFxrPath());
+		return library;
 	}
 
-	void* ScriptRuntime::GetFunction(const std::string& typeName, const std::string& methodName)
+	ScriptRuntime::ScriptRuntime(
+	    const std::filesystem::path& runtimeConfigPath,
+	    const std::filesystem::path& coreAssemblyPath)
+	    : m_HostFxr(GetHostFxrLibrary()), m_LoadAssemblyAndGetFunctionPointer(nullptr)
 	{
 #ifdef ROD_HAS_DOTNET_HOST
-		if (!IsInitialized())
+		if (runtimeConfigPath.empty() || coreAssemblyPath.empty())
+			throw std::runtime_error("Runtime paths required");
+
+		const auto configPath = std::filesystem::absolute(runtimeConfigPath);
+		m_CoreAssemblyPath = std::filesystem::absolute(coreAssemblyPath);
+		if (!std::filesystem::is_regular_file(configPath))
+			throw std::runtime_error("Runtime config unavailable '" + configPath.string() + "'");
+		if (!std::filesystem::is_regular_file(m_CoreAssemblyPath))
+			throw std::runtime_error("Core assembly unavailable '" + m_CoreAssemblyPath.string() + "'");
+
+		auto initializeForRuntimeConfig = std::bit_cast<hostfxr_initialize_for_runtime_config_fn>(
+		    m_HostFxr->GetFunction("hostfxr_initialize_for_runtime_config"));
+		auto getRuntimeDelegate =
+		    std::bit_cast<hostfxr_get_runtime_delegate_fn>(m_HostFxr->GetFunction("hostfxr_get_runtime_delegate"));
+		auto close = std::bit_cast<hostfxr_close_fn>(m_HostFxr->GetFunction("hostfxr_close"));
+
+		if (!initializeForRuntimeConfig || !getRuntimeDelegate || !close)
+			throw std::runtime_error("hostfxr symbols missing");
+
+		hostfxr_handle context = nullptr;
+		int32_t result =
+		    initializeForRuntimeConfig(configPath.c_str(), nullptr, &context);
+		std::unique_ptr<void, hostfxr_close_fn> ownedContext(context, close);
+		if (result < 0 || !ownedContext)
+			throw std::runtime_error("Runtime init failed '" + configPath.string() + "': " + std::to_string(result));
+
+		void* delegate = nullptr;
+		result = getRuntimeDelegate(
+		    ownedContext.get(),
+		    hdt_load_assembly_and_get_function_pointer,
+		    &delegate);
+
+		if (result != 0 || !delegate)
+			throw std::runtime_error("Runtime delegate unavailable: " + std::to_string(result));
+
+		m_LoadAssemblyAndGetFunctionPointer = delegate;
+#else
+		(void)runtimeConfigPath;
+		(void)coreAssemblyPath;
+#endif
+	}
+
+	void* ScriptRuntime::GetFunction(const std::string& typeName, const std::string& methodName) const
+	{
+		if (!m_LoadAssemblyAndGetFunctionPointer)
 			return nullptr;
 
-		// Hostfxr writes the function pointer through a void** output parameter.
-		void* function = nullptr; // NOLINT(misc-const-correctness)
+#ifdef ROD_HAS_DOTNET_HOST
+		void* function = nullptr;
 		auto loadAssemblyAndGetFunctionPointer =
 		    std::bit_cast<load_assembly_and_get_function_pointer_fn>(m_LoadAssemblyAndGetFunctionPointer);
 		const int32_t result = loadAssemblyAndGetFunctionPointer(
@@ -139,10 +146,7 @@ namespace Rod {
 		    &function);
 
 		if (result != 0 || !function)
-		{
-			RD_CORE_ERROR("Failed to load managed script function '{}'.", methodName);
 			return nullptr;
-		}
 
 		return function;
 #else

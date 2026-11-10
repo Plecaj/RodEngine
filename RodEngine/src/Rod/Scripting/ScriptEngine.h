@@ -40,6 +40,7 @@ namespace Rod {
 		[[nodiscard]] static ScriptClass* GetScriptClass(const std::string& className);
 
 	private:
+		struct ScriptPaths;
 		struct ScriptEngineData;
 		static std::unique_ptr<ScriptEngineData> s_Data;
 
@@ -52,9 +53,7 @@ namespace Rod {
 		    const std::string& requiredSidecar = "");
 		static std::filesystem::path CreateAssemblyCachePath(const std::filesystem::path& assemblyPath);
 		static std::string CopyManagedString(void* value);
-		static bool BindHostFunctions();
-		static void InitializeScriptPaths();
-		static void ClearFailedInit();
+		static ScriptPaths ResolveScriptPaths();
 
 		static void RefreshSourceWriteTime();
 		static std::filesystem::file_time_type GetLatestSourceWriteTime();

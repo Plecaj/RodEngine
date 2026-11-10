@@ -11,8 +11,12 @@ namespace Rod {
 	class ScriptAssembly
 	{
 	public:
-		bool Load(const std::filesystem::path& assemblyPath, const std::string& metadataJson);
-		void Clear();
+		ScriptAssembly(const std::filesystem::path& assemblyPath, const std::string& metadataJson);
+		~ScriptAssembly() = default;
+		ScriptAssembly(const ScriptAssembly&) = default;
+		ScriptAssembly& operator=(const ScriptAssembly&) = default;
+		ScriptAssembly(ScriptAssembly&&) noexcept = default;
+		ScriptAssembly& operator=(ScriptAssembly&&) noexcept = default;
 
 		[[nodiscard]] bool HasClass(const std::string& className) const;
 		[[nodiscard]] ScriptClass* GetClass(const std::string& className);

@@ -4,23 +4,18 @@
 
 #include <dlfcn.h>
 
+#include <stdexcept>
+
 namespace Rod {
 
-	SharedLibrary::~SharedLibrary()
+	SharedLibrary::SharedLibrary(const std::filesystem::path& path)
+	    : m_Handle(dlopen(path.c_str(), RTLD_NOW | RTLD_LOCAL))
 	{
-		Unload();
-	}
-
-	bool SharedLibrary::Load(const std::filesystem::path& path)
-	{
-		Unload();
-		m_Handle = dlopen(path.c_str(), RTLD_NOW | RTLD_LOCAL);
 		if (!m_Handle)
-			RD_CORE_ERROR("Failed to load library '{}': {}", path.string(), dlerror());
-		return m_Handle != nullptr;
+			throw std::runtime_error("Library load failed '" + path.string() + "': " + dlerror());
 	}
 
-	void SharedLibrary::Unload()
+	void SharedLibrary::Close() noexcept
 	{
 		if (m_Handle)
 		{

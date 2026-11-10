@@ -1,31 +1,37 @@
 #pragma once
 
+#include "Rod/Utils/SharedLibrary.h"
+
 #include <filesystem>
+#include <memory>
 #include <string>
 
 namespace Rod {
-	class SharedLibrary;
-
 	class ScriptRuntime
 	{
 	public:
-		bool Initialize(const std::filesystem::path& runtimeConfigPath, const std::filesystem::path& coreAssemblyPath);
-		void Shutdown();
+		ScriptRuntime(const std::filesystem::path& runtimeConfigPath, const std::filesystem::path& coreAssemblyPath);
+		~ScriptRuntime() = default;
+		ScriptRuntime(const ScriptRuntime&) = delete;
+		ScriptRuntime& operator=(const ScriptRuntime&) = delete;
+		ScriptRuntime(ScriptRuntime&& other) noexcept;
+		ScriptRuntime& operator=(ScriptRuntime&& other) noexcept;
 
-		[[nodiscard]] void* GetFunction(const std::string& typeName, const std::string& methodName);
-
-		[[nodiscard]] bool IsInitialized() const noexcept { return m_LoadAssemblyAndGetFunctionPointer != nullptr; }
+		[[nodiscard]] void* GetFunction(const std::string& typeName, const std::string& methodName) const;
 
 	private:
+		static std::filesystem::path GetHostFxrPath();
+		static std::shared_ptr<const SharedLibrary> GetHostFxrLibrary();
+
 #ifdef RD_PLATFORM_WINDOWS
 		using HostString = std::wstring;
 #else
 		using HostString = std::string;
 #endif
 		static HostString ToHostString(const std::string& value);
-		static SharedLibrary s_HostFxr;
 
-		void* m_LoadAssemblyAndGetFunctionPointer = nullptr;
+		std::shared_ptr<const SharedLibrary> m_HostFxr;
+		void* m_LoadAssemblyAndGetFunctionPointer;
 		std::filesystem::path m_CoreAssemblyPath;
 	};
 

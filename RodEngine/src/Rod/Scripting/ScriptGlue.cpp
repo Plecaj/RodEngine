@@ -12,6 +12,7 @@
 #include <bit>
 #include <cstdlib> // IWYU pragma: keep
 #include <cstring>
+#include <stdexcept>
 
 #ifdef RD_PLATFORM_WINDOWS
 	#include <objbase.h> // IWYU pragma: keep
@@ -512,7 +513,19 @@ namespace Rod {
 		if (!entity || !entity.HasComponent<MeshComponent>())
 			return;
 		auto& mesh = entity.GetComponent<MeshComponent>();
-		mesh.SetMesh(path && path[0] ? CreateRef<Mesh>(path) : nullptr);
+		if (!path || !path[0])
+		{
+			mesh.SetMesh(nullptr);
+			return;
+		}
+		try
+		{
+			mesh.SetMesh(CreateRef<Mesh>(path));
+		}
+		catch (const std::runtime_error& exception)
+		{
+			RD_CORE_ERROR("{}", exception.what());
+		}
 	}
 
 	ScriptGlue::ScriptVec4 RD_CDECL ScriptGlue::MeshGetAlbedo(uint64_t entityID)

@@ -4,6 +4,7 @@ add_executable(RodEngineTests
     Math/Math.cpp
     Project/Serialization.cpp
     Platform/SharedLibrary.cpp
+    Renderer/Mesh.cpp
     Renderer/Texture.cpp
     Scripting/ScriptAssembly.cpp
     Scripting/ScriptGlue.cpp

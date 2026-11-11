@@ -5,17 +5,16 @@
 #include <cerrno>
 #include <cstring>
 #include <fcntl.h> // IWYU pragma: keep
+#include <future>
 #include <spawn.h>
 #include <sys/wait.h>
+#include <thread>
 #include <unistd.h>
 
 namespace Rod {
 
-	ProcessResult Process::Run(const std::vector<std::string>& arguments, bool captureErrors)
+	static std::vector<char*> BuildArguments(const std::vector<std::string>& arguments)
 	{
-		if (arguments.empty())
-			return {-1, "No executable specified."};
-
 		std::vector<char*> argv;
 		argv.reserve(arguments.size() + 1);
 		for (const auto& argument : arguments)
@@ -25,6 +24,38 @@ namespace Rod {
 			argv.push_back(const_cast<char*>(argument.c_str()));
 		}
 		argv.push_back(nullptr);
+		return argv;
+	}
+
+	ProcessResult Process::Start(const std::vector<std::string>& arguments)
+	{
+		if (arguments.empty())
+			return {-1, "No executable specified."};
+
+		auto argv = BuildArguments(arguments);
+		std::promise<pid_t> child;
+		std::thread([process = child.get_future()]() mutable {
+			const auto pid = process.get();
+			if (pid > 0)
+			{
+				while (waitpid(pid, nullptr, 0) == -1 && errno == EINTR)
+				{}
+			}
+		}).detach();
+		pid_t process = 0;
+		const int error = posix_spawnp(&process, argv[0], nullptr, nullptr, argv.data(), environ);
+		child.set_value(error == 0 ? process : 0);
+		if (error != 0)
+			return {-1, std::strerror(error)};
+		return {0, {}};
+	}
+
+	ProcessResult Process::Run(const std::vector<std::string>& arguments, bool captureErrors)
+	{
+		if (arguments.empty())
+			return {-1, "No executable specified."};
+
+		auto argv = BuildArguments(arguments);
 
 		constexpr size_t pipeEndCount = 2;
 		std::array<int, pipeEndCount> output;

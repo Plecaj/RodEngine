@@ -50,6 +50,18 @@ namespace Rod {
 		return quoted + L'"';
 	}
 
+	static std::wstring BuildCommand(const std::vector<std::string>& arguments)
+	{
+		std::wstring command;
+		for (const auto& argument : arguments)
+		{
+			if (!command.empty())
+				command += L' ';
+			command += QuoteArgument(argument);
+		}
+		return command;
+	}
+
 	static std::string ReadPipe(HANDLE readPipe)
 	{
 		constexpr size_t outputBufferSize = 4096;
@@ -61,18 +73,37 @@ namespace Rod {
 		return output;
 	}
 
+	ProcessResult Process::Start(const std::vector<std::string>& arguments)
+	{
+		if (arguments.empty())
+			return {-1, "No executable specified."};
+
+		auto command = BuildCommand(arguments);
+		STARTUPINFOW startup = {};
+		startup.cb = sizeof(startup);
+		PROCESS_INFORMATION information = {};
+		if (!CreateProcessW(
+		        nullptr,
+		        command.data(),
+		        nullptr,
+		        nullptr,
+		        FALSE,
+		        CREATE_NO_WINDOW,
+		        nullptr,
+		        nullptr,
+		        &startup,
+		        &information))
+			return {-1, "Failed to start process: " + std::to_string(GetLastError())};
+		const Handle process(information.hProcess), thread(information.hThread);
+		return {0, {}};
+	}
+
 	ProcessResult Process::Run(const std::vector<std::string>& arguments, bool captureErrors)
 	{
 		if (arguments.empty())
 			return {-1, "No executable specified."};
 
-		std::wstring command;
-		for (const auto& argument : arguments)
-		{
-			if (!command.empty())
-				command += L' ';
-			command += QuoteArgument(argument);
-		}
+		auto command = BuildCommand(arguments);
 
 		SECURITY_ATTRIBUTES security = {sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE};
 		HANDLE readPipe = nullptr, writePipe = nullptr;

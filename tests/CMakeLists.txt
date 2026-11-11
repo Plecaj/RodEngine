@@ -28,6 +28,14 @@ endif()
 
 if(WIN32)
     target_sources(RodEngineTests PRIVATE Platform/Process.cpp)
+    add_executable(RodProcessTestHelper Platform/ProcessTestHelper.cpp)
+    target_compile_features(RodProcessTestHelper PRIVATE cxx_std_17)
+    target_link_libraries(RodProcessTestHelper PRIVATE Rod::ProjectOptions Rod::ProjectWarnings)
+    rod_set_common_output_directories(RodProcessTestHelper)
+    add_dependencies(RodEngineTests RodProcessTestHelper)
+    target_compile_definitions(RodEngineTests PRIVATE
+        ROD_PROCESS_TEST_HELPER_PATH="$<TARGET_FILE:RodProcessTestHelper>"
+    )
 endif()
 
 rod_configure_cpp_target(RodEngineTests)

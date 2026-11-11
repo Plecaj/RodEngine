@@ -24,6 +24,8 @@ target_sources(RodEngine PUBLIC
 
 target_include_directories(RodEngine PUBLIC src)
 
+find_package(Threads REQUIRED)
+
 target_link_libraries(RodEngine
     PUBLIC
         Rod::ProjectOptions
@@ -41,6 +43,7 @@ target_link_libraries(RodEngine
         Rod::Stb
         Rod::TinyGltf
     PRIVATE
+        Threads::Threads
         $<$<PLATFORM_ID:Windows>:opengl32;comdlg32;ole32>
         ${CMAKE_DL_LIBS}
 )

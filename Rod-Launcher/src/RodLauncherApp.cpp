@@ -5,11 +5,19 @@
 #include "Rod/Core/Core.h"
 #include "Rod/Core/EntryPoint.h" // IWYU pragma: keep
 #include "Rod/Core/Layer.h"
+#include "Rod/Project/Project.h"
+#include "Rod/Project/ProjectSerializer.h"
 #include "Rod/Renderer/Texture.h"
+#include "Rod/Utils/PlatformUtils.h"
+#include "Rod/Utils/Process.h"
 
 #include "imgui.h"
 
 #include <array>
+#include <exception>
+#include <optional>
+#include <stdexcept>
+#include <string>
 
 namespace Rod {
 
@@ -52,12 +60,19 @@ namespace Rod {
 			ImGui::Begin("Project Browser", nullptr, flags);
 
 			if (m_ProjectSetup.IsOpen())
-				m_ProjectSetup.OnImGuiRender();
+			{
+				if (auto project = m_ProjectSetup.OnImGuiRender())
+				{
+					m_Project = std::move(project);
+					LaunchEditor();
+				}
+			}
 			else
 			{
 				DrawProjectActions();
 				DrawRecentProjects();
 			}
+			DrawProjectResult();
 
 			ImGui::End();
 			constexpr int styleVarCount = 2;
@@ -153,13 +168,71 @@ namespace Rod {
 			if (DrawActionCard("New", ProjectAction::New))
 				m_ProjectSetup.Open();
 			ImGui::SetCursorPos(ImVec2{width * (half + centerOffset) - g_ActionCardSize.x * half, cardTop});
-			DrawActionCard("Open", ProjectAction::Open);
+			if (DrawActionCard("Open", ProjectAction::Open))
+				OpenProject();
 
 			const ImVec2 origin = ImGui::GetWindowPos();
 			ImGui::GetWindowDrawList()->AddLine(
 			    ImVec2{origin.x + g_ContentPadding, origin.y + dividerY},
 			    ImVec2{origin.x + width - g_ContentPadding, origin.y + dividerY},
 			    ImGui::GetColorU32(ImGuiCol_Separator));
+		}
+
+		void OpenProject()
+		{
+			try
+			{
+				const auto path = FileDialogs::OpenFile("Rod Project (*.rodproj, *.rdproj)\0*.rodproj;*.rdproj\0");
+				if (path.empty())
+					return;
+				Project project{std::filesystem::absolute(path).lexically_normal(), {}};
+				ProjectSerializer::Deserialize(project);
+				m_Project = std::move(project);
+				LaunchEditor();
+			}
+			catch (const std::exception& exception)
+			{
+				m_Error = exception.what();
+				ImGui::OpenPopup("Project");
+			}
+		}
+
+		void LaunchEditor()
+		{
+			try
+			{
+				const auto& properties = m_Project->GetProperties();
+				const auto executable = std::filesystem::current_path() / "Rod-Editor" ROD_EXECUTABLE_SUFFIX;
+				const auto result = Process::Start(
+				    {executable.string(),
+				     m_Project->GetManifestPath().string(),
+				     properties.Name,
+				     properties.AssetsPath.string(),
+				     properties.StartupScenePath.string(),
+				     properties.ScriptsProjectPath.string()});
+				if (result.ExitCode != 0)
+					throw std::runtime_error("Could not launch editor: " + result.Output);
+				m_Error.clear();
+				Application::Get().Close();
+			}
+			catch (const std::exception& exception)
+			{
+				m_Error = exception.what();
+				ImGui::OpenPopup("Project");
+			}
+		}
+
+		void DrawProjectResult() const
+		{
+			constexpr float dialogWidth = 500.0f;
+			ImGui::SetNextWindowSize(ImVec2{dialogWidth, 0.0f}, ImGuiCond_Appearing);
+			if (ImGui::BeginPopupModal("Project", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				ImGui::TextWrapped("%s", m_Error.c_str());
+				if (ImGui::Button("OK"))
+					ImGui::CloseCurrentPopup();
+				ImGui::EndPopup();
+			}
 		}
 
 		bool DrawActionCard(const char* label, ProjectAction action) const
@@ -219,6 +292,8 @@ namespace Rod {
 	private:
 		Scope<Texture2D> m_FolderIcon;
 		ProjectSetupPanel m_ProjectSetup;
+		std::optional<Project> m_Project;
+		std::string m_Error;
 	};
 
 	class RodLauncher final : public Application
@@ -232,5 +307,4 @@ namespace Rod {
 		RD_CORE_ASSERT(!project, "Launcher does not accept a project argument");
 		return new RodLauncher();
 	}
-
 }

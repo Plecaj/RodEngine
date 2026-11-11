@@ -9,7 +9,7 @@ namespace Rod {
 	class RuntimeLayer : public Layer
 	{
 	public:
-		RuntimeLayer() = default;
+		explicit RuntimeLayer(const Project& project);
 
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
@@ -19,9 +19,9 @@ namespace Rod {
 	private:
 		bool OnWindowResize(WindowResizeEvent& event);
 		bool OnKeyPressed(KeyPressedEvent& event);
-		[[nodiscard]] static std::filesystem::path ResolveStartupScenePath();
 
 	private:
+		const Project& m_Project;
 		static constexpr glm::vec4 CLEAR_COLOR{0.15f, 0.15f, 0.15f, 1.0f};
 		Scope<Scene> m_Scene;
 		bool m_RunningScene = false;

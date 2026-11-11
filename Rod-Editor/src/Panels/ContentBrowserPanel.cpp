@@ -6,8 +6,6 @@
 
 namespace Rod {
 
-	extern const std::filesystem::path g_AssetsPath = "assets";
-
 	bool ContentBrowserPanel::DrawBackButton(const char* id, const ImVec2& size)
 	{
 		constexpr float half = 0.5f;
@@ -51,7 +49,8 @@ namespace Rod {
 		return ImGui::IsItemClicked(ImGuiMouseButton_Left);
 	}
 
-	ContentBrowserPanel::ContentBrowserPanel() : m_CurrentDirectory(g_AssetsPath)
+	ContentBrowserPanel::ContentBrowserPanel(const std::filesystem::path& assetsPath)
+	    : m_AssetsPath(assetsPath), m_CurrentDirectory(assetsPath)
 	{
 		m_DirectoryIcon = Texture2D::Create("assets/textures/DirectoryIcon.png");
 		m_FileIcon = Texture2D::Create("assets/textures/FileIcon.png");
@@ -78,7 +77,7 @@ namespace Rod {
 		constexpr ImVec2 backButtonSize{34.0f, 28.0f};
 		constexpr float horizontalSpacing = 10.0f;
 		constexpr float verticalSpacing = 4.0f;
-		if (m_CurrentDirectory != g_AssetsPath)
+		if (m_CurrentDirectory != m_AssetsPath)
 		{
 			if (DrawBackButton("##ContentBrowserBack", backButtonSize))
 				m_CurrentDirectory = m_CurrentDirectory.parent_path();
@@ -107,7 +106,7 @@ namespace Rod {
 		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
 		{
 			const auto& path = directoryEntry.path();
-			auto relativePath = std::filesystem::relative(path, g_AssetsPath);
+			auto relativePath = std::filesystem::relative(path, m_AssetsPath);
 			const std::string filenameString = path.filename().string();
 
 			const std::string uniqueID = relativePath.string();

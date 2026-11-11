@@ -1,7 +1,10 @@
 #include "rdpch.h"
 
+#include "Rod/Core/Core.h"
 #include "Rod/Core/EntryPoint.h" // IWYU pragma: keep
 #include "RuntimeLayer.h"
+
+#include <optional>
 
 namespace Rod {
 
@@ -10,19 +13,14 @@ namespace Rod {
 	public:
 		explicit RodRuntime(Project project) : Application(WindowProps{"Rod Game"}, std::move(project))
 		{
-			PushLayer(new RuntimeLayer());
+			PushLayer(new RuntimeLayer(*GetProject()));
 		}
 	};
 
-	Application* CreateApplication()
+	Application* CreateApplication(const std::optional<Project>& project)
 	{
-		return new RodRuntime(Project{
-		    {},
-		    ProjectProperties{
-		        .Name = "Sandbox",
-		        .AssetsPath = "assets",
-		        .StartupScenePath = "scenes/Startup.rod",
-		        .ScriptsProjectPath = "Scripts/RodGame.csproj"}});
+		RD_CORE_ASSERT(project.has_value(), "Project must be provided for runtime");
+		return new RodRuntime(project.value());
 	}
 
 }

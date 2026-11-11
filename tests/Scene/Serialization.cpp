@@ -7,12 +7,30 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
+#include <yaml-cpp/yaml.h>
 
 #include <fstream>
 #include <stdexcept>
 #include <system_error>
 
 namespace {
+	class PathOnlyTexture : public Rod::Texture2D
+	{
+	public:
+		explicit PathOnlyTexture(std::string path) : m_Path(std::move(path)) {}
+		uint32_t GetWidth() const noexcept override { return 1; }
+		uint32_t GetHeight() const noexcept override { return 1; }
+		uint32_t GetRendererID() const noexcept override { return 0; }
+		void SetData(const void*, uint32_t) override {}
+		std::string GetPath() const override { return m_Path; }
+		void Bind(uint32_t) const override {}
+		bool operator==(const Rod::Texture& other) const noexcept override { return this == &other; }
+
+	private:
+		std::string m_Path;
+	};
+
 	class SerializationFixture
 	{
 	public:
@@ -375,4 +393,47 @@ TEST_CASE_METHOD(SerializationFixture, "Missing meshes roll back scene loading",
 	const Rod::Scene original = scene;
 	REQUIRE_THROWS_AS(Rod::SceneSerializer(scene).DeserializeText(Filepath()), std::runtime_error);
 	REQUIRE(scene == original);
+}
+
+TEST_CASE_METHOD(
+    SerializationFixture,
+    "Scene saves use project-relative asset paths",
+    "[scene][serialization][project]")
+{
+	const std::filesystem::path projectDirectory = "My Project";
+	const auto assetPath = projectDirectory / "Content" / "Textures" / "Player.png";
+	Rod::Scene scene;
+	auto entity = scene.CreateEntity("Player");
+	entity.AddComponent<Rod::SpriteRendererComponent>().Texture = Rod::CreateRef<PathOnlyTexture>(assetPath.string());
+	Rod::SceneSerializer(scene, projectDirectory).SerializeText(Filepath());
+	const auto data = YAML::LoadFile(Filepath());
+	REQUIRE(
+	    data["Entities"][0]["SpriteRendererComponent"]["Texture"].as<std::string>() == "Content/Textures/Player.png");
+}
+
+TEST_CASE_METHOD(
+    SerializationFixture,
+    "Scene loads resolve assets against the project directory",
+    "[scene][serialization][project]")
+{
+	const auto projectDirectory = std::filesystem::path(Filepath()).parent_path() / "My Project";
+	std::filesystem::path assetPath = "Content/Missing";
+	std::string component;
+	SECTION("texture")
+	{
+		assetPath += ".png";
+		component = "    SpriteRendererComponent:\n      Color: [1, 1, 1, 1]\n      TilingFactor: 1\n      Texture: ";
+	}
+	SECTION("mesh")
+	{
+		assetPath += ".glb";
+		component = "    MeshComponent:\n      Path: ";
+	}
+	WriteScene("Scene: Missing asset\nEntities:\n  - Entity: 1001\n" + component + assetPath.generic_string() + "\n");
+	Rod::Scene scene;
+	const auto expectedPath = (projectDirectory / assetPath).lexically_normal();
+	REQUIRE_THROWS_WITH(
+	    Rod::SceneSerializer(scene, projectDirectory).DeserializeText(Filepath()),
+	    Catch::Matchers::ContainsSubstring(expectedPath.string()));
+	REQUIRE_FALSE(scene.FindEntityByUUID(Rod::UUID{BASE_ID}));
 }

@@ -72,5 +72,5 @@ namespace Rod {
 	};
 
 	// To be defined in CLIENT
-	Application* CreateApplication();
+	Application* CreateApplication(const std::optional<Project>& project);
 }

@@ -19,7 +19,7 @@ namespace Rod {
 	class EditorLayer : public Rod::Layer
 	{
 	public:
-		EditorLayer();
+		explicit EditorLayer(const Project& project);
 
 		virtual void OnAttach() override;
 		virtual void OnDetach() override;
@@ -81,6 +81,7 @@ namespace Rod {
 		bool CopyGameAssets(const std::filesystem::path& exportAssetsPath);
 
 	private:
+		const Project& m_Project;
 		Scene m_EditorScene;
 		Scene m_RuntimeScene;
 		Scene* m_ActiveScene = nullptr;

@@ -10,5 +10,7 @@ namespace Rod {
 		std::filesystem::path AssetsPath = "Assets";
 		std::filesystem::path StartupScenePath = "Scenes/Main.rod";
 		std::filesystem::path ScriptsProjectPath = "Scripts/Game.csproj";
+
+		static constexpr int PROPERTIES_COUNT = 4;
 	};
 }

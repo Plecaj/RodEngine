@@ -18,21 +18,16 @@ namespace Rod {
 		              true},
 		          std::move(project))
 		{
-			PushLayer(new EditorLayer());
+			PushLayer(new EditorLayer(*GetProject()));
 		}
 
 		[[nodiscard]] virtual bool IsEditor() const override { return true; }
 	};
 
-	Application* CreateApplication()
+	Application* CreateApplication(const std::optional<Project>& project)
 	{
-		return new RodEditor(Project{
-		    {},
-		    ProjectProperties{
-		        .Name = "Sandbox",
-		        .AssetsPath = "assets",
-		        .StartupScenePath = "scenes/Example3D.rod",
-		        .ScriptsProjectPath = "Scripts/RodGame.csproj"}});
+		RD_CORE_ASSERT(project.has_value(), "Project must be provided for editor");
+		return new RodEditor(project.value());
 	}
 
 }

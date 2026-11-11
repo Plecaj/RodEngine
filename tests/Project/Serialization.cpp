@@ -65,9 +65,9 @@ TEST_CASE_METHOD(ProjectSerializationFixture, "Project manifests round trip all 
 	Rod::Project restored{ManifestPath(), {}};
 	Rod::ProjectSerializer::Deserialize(restored);
 	REQUIRE(restored.GetProperties().Name == properties.Name);
-	REQUIRE(restored.GetAssetsPath() == properties.AssetsPath);
-	REQUIRE(restored.GetStartupScenePath() == properties.StartupScenePath);
-	REQUIRE(restored.GetScriptProjectPath() == properties.ScriptsProjectPath);
+	REQUIRE(restored.GetProperties().AssetsPath == properties.AssetsPath);
+	REQUIRE(restored.GetProperties().StartupScenePath == properties.StartupScenePath);
+	REQUIRE(restored.GetProperties().ScriptsProjectPath == properties.ScriptsProjectPath);
 }
 
 TEST_CASE_METHOD(
@@ -89,7 +89,7 @@ TEST_CASE_METHOD(
 	const auto original = project.GetProperties();
 	REQUIRE_THROWS_AS(Rod::ProjectSerializer::Deserialize(project), std::runtime_error);
 	REQUIRE(project.GetProperties().Name == original.Name);
-	REQUIRE(project.GetAssetsPath() == original.AssetsPath);
-	REQUIRE(project.GetStartupScenePath() == original.StartupScenePath);
-	REQUIRE(project.GetScriptProjectPath() == original.ScriptsProjectPath);
+	REQUIRE(project.GetProperties().AssetsPath == original.AssetsPath);
+	REQUIRE(project.GetProperties().StartupScenePath == original.StartupScenePath);
+	REQUIRE(project.GetProperties().ScriptsProjectPath == original.ScriptsProjectPath);
 }

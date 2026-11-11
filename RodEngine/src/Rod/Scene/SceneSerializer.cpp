@@ -108,7 +108,8 @@ namespace Rod {
 		return out;
 	}
 
-	SceneSerializer::SceneSerializer(Scene& scene) : m_Scene(scene)
+	SceneSerializer::SceneSerializer(Scene& scene, std::filesystem::path projectDirectory)
+	    : m_Scene(scene), m_ProjectDirectory(std::move(projectDirectory))
 	{}
 
 	void SceneSerializer::SerializeTagComponent(YAML::Emitter& out, const TagComponent& tag)
@@ -157,23 +158,37 @@ namespace Rod {
 		return path;
 	}
 
-	void SceneSerializer::SerializeSpriteRendererComponent(YAML::Emitter& out, const SpriteRendererComponent& sprite)
+	std::string SceneSerializer::SerializeAssetPath(const std::string& path) const
+	{
+		const std::filesystem::path assetPath = NormalizeAssetPath(path);
+		if (m_ProjectDirectory.empty())
+			return assetPath.generic_string();
+		return assetPath.lexically_normal().lexically_relative(m_ProjectDirectory.lexically_normal()).generic_string();
+	}
+
+	std::string SceneSerializer::ResolveAssetPath(const std::string& path) const
+	{
+		return (m_ProjectDirectory / NormalizeAssetPath(path)).lexically_normal().string();
+	}
+
+	void
+	SceneSerializer::SerializeSpriteRendererComponent(YAML::Emitter& out, const SpriteRendererComponent& sprite) const
 	{
 		out << YAML::Key << "SpriteRendererComponent";
 		out << YAML::BeginMap;
 		out << YAML::Key << "Color" << YAML::Value << sprite.Color;
 		out << YAML::Key << "TilingFactor" << YAML::Value << sprite.TilingFactor;
 		out << YAML::Key << "Texture" << YAML::Value
-		    << (sprite.Texture ? NormalizeAssetPath(sprite.Texture->GetPath()) : "None");
+		    << (sprite.Texture ? SerializeAssetPath(sprite.Texture->GetPath()) : "None");
 		out << YAML::EndMap;
 	}
 
-	void SceneSerializer::SerializeMeshComponent(YAML::Emitter& out, const MeshComponent& meshComponent)
+	void SceneSerializer::SerializeMeshComponent(YAML::Emitter& out, const MeshComponent& meshComponent) const
 	{
 		out << YAML::Key << "MeshComponent";
 		out << YAML::BeginMap;
 		out << YAML::Key << "Path" << YAML::Value
-		    << (meshComponent.Mesh ? NormalizeAssetPath(meshComponent.Mesh->GetPath()) : "None");
+		    << (meshComponent.Mesh ? SerializeAssetPath(meshComponent.Mesh->GetPath()) : "None");
 
 		if (meshComponent.Mesh)
 		{
@@ -216,7 +231,7 @@ namespace Rod {
 		out << YAML::EndMap;
 	}
 
-	void SceneSerializer::SerializeEntity(YAML::Emitter& out, Entity entity)
+	void SceneSerializer::SerializeEntity(YAML::Emitter& out, Entity entity) const
 	{
 		out << YAML::BeginMap;
 		out << YAML::Key << "Entity" << YAML::Value << static_cast<uint64_t>(entity.GetUUID());
@@ -293,7 +308,7 @@ namespace Rod {
 		camera.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();
 	}
 
-	void SceneSerializer::DeserializeSpriteRendererComponent(const YAML::Node& entityNode, Entity entity)
+	void SceneSerializer::DeserializeSpriteRendererComponent(const YAML::Node& entityNode, Entity entity) const
 	{
 		auto spriteRendererComponent = entityNode["SpriteRendererComponent"];
 		if (!spriteRendererComponent)
@@ -305,10 +320,10 @@ namespace Rod {
 
 		const std::string texturePath = NormalizeAssetPath(spriteRendererComponent["Texture"].as<std::string>());
 		if (texturePath != "None")
-			sprite.Texture = Texture2D::Create(texturePath);
+			sprite.Texture = Texture2D::Create(ResolveAssetPath(texturePath));
 	}
 
-	void SceneSerializer::DeserializeMeshComponent(const YAML::Node& entityNode, Entity entity)
+	void SceneSerializer::DeserializeMeshComponent(const YAML::Node& entityNode, Entity entity) const
 	{
 		auto meshComponent = entityNode["MeshComponent"];
 		if (!meshComponent)
@@ -317,7 +332,7 @@ namespace Rod {
 		auto& mesh = entity.AddComponent<MeshComponent>();
 		const std::string meshPath = NormalizeAssetPath(meshComponent["Path"].as<std::string>());
 		if (meshPath != "None")
-			mesh.SetMesh(CreateRef<Mesh>(meshPath));
+			mesh.SetMesh(CreateRef<Mesh>(ResolveAssetPath(meshPath)));
 
 		if (!mesh.Mesh)
 			return;
@@ -375,7 +390,7 @@ namespace Rod {
 	void SceneSerializer::DeserializeEntity(
 	    Scene& scene,
 	    const YAML::Node& entityNode,
-	    std::vector<Entity>& createdEntities)
+	    std::vector<Entity>& createdEntities) const
 	{
 		auto uuid = entityNode["Entity"].as<uint64_t>();
 		if (scene.FindEntityByUUID(UUID{uuid}))

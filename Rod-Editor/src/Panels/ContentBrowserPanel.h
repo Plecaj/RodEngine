@@ -11,7 +11,7 @@ namespace Rod {
 	class ContentBrowserPanel
 	{
 	public:
-		ContentBrowserPanel();
+		explicit ContentBrowserPanel(const std::filesystem::path& assetsPath);
 
 		void OnImGuiRender();
 
@@ -31,6 +31,7 @@ namespace Rod {
 		    const std::string& filename);
 
 	private:
+		std::filesystem::path m_AssetsPath;
 		std::filesystem::path m_CurrentDirectory;
 
 		Scope<Texture2D> m_DirectoryIcon, m_FileIcon;

@@ -14,8 +14,6 @@
 
 namespace Rod {
 
-	extern const std::filesystem::path g_AssetsPath;
-
 	void EditorLayer::SetupDefaultDockLayout(ImGuiID dockspaceID)
 	{
 		const ImGuiDockNode* dockNode = ImGui::DockBuilderGetNode(dockspaceID);
@@ -81,7 +79,9 @@ namespace Rod {
 		ImGui::DockBuilderFinish(dockspaceID);
 	}
 
-	EditorLayer::EditorLayer() : Layer("Editor Layer")
+	EditorLayer::EditorLayer(const Project& project)
+	    : Layer("Editor Layer"), m_Project(project),
+	      m_SceneHierarchyPanel(project.GetAssetsPath()), m_ContentBrowserPanel(project.GetAssetsPath())
 	{}
 
 	void EditorLayer::OnAttach()
@@ -90,7 +90,7 @@ namespace Rod {
 
 		CreateFramebuffer();
 		NewScene();
-		DeserializeScene("assets/scenes/Example3D.rod");
+		OpenScene(m_Project.GetStartupScenePath());
 		SetupTitlebarCallbacks();
 		LoadEditorResources();
 		ScriptEngine::Init();
@@ -321,7 +321,7 @@ namespace Rod {
 			 m_ViewportBounds,
 			 m_ViewportFocused,
 			 m_ViewportHovered,
-			 g_AssetsPath,
+			 m_Project.GetAssetsPath(),
 			 [this](const std::filesystem::path& path) { OpenScene(path); }});
 
 		m_ToolbarPanel.OnImGuiRender(
@@ -481,7 +481,7 @@ namespace Rod {
 	{
 		Scene loadedScene;
 		loadedScene.OnViewportResize(static_cast<uint32_t>(m_ViewportSize.x), static_cast<uint32_t>(m_ViewportSize.y));
-		SceneSerializer serializer(loadedScene);
+		SceneSerializer serializer(loadedScene, m_Project.GetDirectory());
 		serializer.DeserializeText(path.string());
 
 		NewScene();
@@ -490,7 +490,7 @@ namespace Rod {
 
 	void EditorLayer::SerializeScene(const std::filesystem::path& path)
 	{
-		SceneSerializer serializer(*m_ActiveScene);
+		SceneSerializer serializer(*m_ActiveScene, m_Project.GetDirectory());
 		serializer.SerializeText(path.string());
 	}
 

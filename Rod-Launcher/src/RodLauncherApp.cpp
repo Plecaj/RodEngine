@@ -2,6 +2,7 @@
 
 #include "ProjectSetupPanel.h"
 #include "Rod/Core/Application.h"
+#include "Rod/Core/Core.h"
 #include "Rod/Core/EntryPoint.h" // IWYU pragma: keep
 #include "Rod/Core/Layer.h"
 #include "Rod/Renderer/Texture.h"
@@ -226,8 +227,9 @@ namespace Rod {
 		RodLauncher() : Application(LauncherWindowProps(), std::nullopt) { PushLayer(new LauncherLayer()); }
 	};
 
-	Application* CreateApplication()
+	Application* CreateApplication(const std::optional<Project>& project)
 	{
+		RD_CORE_ASSERT(!project, "Launcher does not accept a project argument");
 		return new RodLauncher();
 	}
 

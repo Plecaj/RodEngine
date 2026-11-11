@@ -8,21 +8,15 @@
 
 namespace Rod {
 
-	std::filesystem::path RuntimeLayer::ResolveStartupScenePath()
-	{
-		std::filesystem::path startupScene = "assets/scenes/Startup.rod";
-		if (std::filesystem::exists(startupScene))
-			return startupScene;
-
-		return "assets/scenes/Example3D.rod";
-	}
+	RuntimeLayer::RuntimeLayer(const Project& project) : m_Project(project)
+	{}
 
 	void RuntimeLayer::OnAttach()
 	{
 		ScriptEngine::Init();
 
 		m_Scene = CreateScope<Scene>();
-		const std::filesystem::path scenePath = ResolveStartupScenePath();
+		const std::filesystem::path scenePath = m_Project.GetStartupScenePath();
 		if (!std::filesystem::exists(scenePath))
 		{
 			RD_CORE_ERROR("Runtime startup scene was not found: {}", scenePath.string());
@@ -30,7 +24,7 @@ namespace Rod {
 			return;
 		}
 
-		SceneSerializer serializer(*m_Scene);
+		SceneSerializer serializer(*m_Scene, m_Project.GetDirectory());
 		try
 		{
 			serializer.DeserializeText(scenePath.string());

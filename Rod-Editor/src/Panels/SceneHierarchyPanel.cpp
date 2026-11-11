@@ -14,12 +14,8 @@
 
 namespace Rod {
 
-	extern const std::filesystem::path g_AssetsPath;
-
-	SceneHierarchyPanel::SceneHierarchyPanel(Scene* scene)
-	{
-		SetContext(scene);
-	}
+	SceneHierarchyPanel::SceneHierarchyPanel(const std::filesystem::path& assetsPath) : m_AssetsPath(assetsPath)
+	{}
 
 	void SceneHierarchyPanel::SetContext(Scene* scene)
 	{
@@ -410,7 +406,7 @@ namespace Rod {
 
 	void SceneHierarchyPanel::DrawSpriteRendererComponent(Entity entity)
 	{
-		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [](auto& component) {
+		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [this](auto& component) {
 			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 
 			if (ImGui::Button("Texture", ImVec2(ASSET_BUTTON_WIDTH, 0.0f)))
@@ -423,7 +419,7 @@ namespace Rod {
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_TEXTURE_ITEM"))
 				{
 					const char* path = static_cast<const char*>(payload->Data);
-					const std::filesystem::path texturePath = std::filesystem::path(g_AssetsPath) / path;
+					const std::filesystem::path texturePath = m_AssetsPath / path;
 					component.Texture = Texture2D::Create(texturePath.string());
 				}
 				ImGui::EndDragDropTarget();
@@ -435,7 +431,7 @@ namespace Rod {
 
 	void SceneHierarchyPanel::DrawMeshComponent(Entity entity)
 	{
-		DrawComponent<MeshComponent>("Mesh", entity, [](auto& component) {
+		DrawComponent<MeshComponent>("Mesh", entity, [this](auto& component) {
 			const std::string meshPath = component.Mesh ? component.Mesh->GetPath() : "None";
 			ImGui::Text("Asset: %s", meshPath.c_str());
 
@@ -450,7 +446,7 @@ namespace Rod {
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_MESH_ITEM"))
 				{
 					const char* path = static_cast<const char*>(payload->Data);
-					const std::filesystem::path meshAssetPath = std::filesystem::path(g_AssetsPath) / path;
+					const std::filesystem::path meshAssetPath = m_AssetsPath / path;
 					try
 					{
 						component.SetMesh(CreateRef<Mesh>(meshAssetPath.string()));

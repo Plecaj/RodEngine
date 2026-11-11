@@ -12,8 +12,7 @@ namespace Rod {
 	class SceneHierarchyPanel
 	{
 	public:
-		SceneHierarchyPanel() = default;
-		explicit SceneHierarchyPanel(Scene* scene);
+		explicit SceneHierarchyPanel(const std::filesystem::path& assetsPath);
 
 		void SetContext(Scene* scene);
 
@@ -99,6 +98,7 @@ namespace Rod {
 		void DrawComponents(Entity entity);
 
 	private:
+		std::filesystem::path m_AssetsPath;
 		Scene* m_Context = nullptr;
 		Entity m_SelectionContext;
 	};

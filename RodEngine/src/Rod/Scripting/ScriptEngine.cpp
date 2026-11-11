@@ -251,6 +251,10 @@ namespace Rod {
 		const std::filesystem::path root = GetSourceRoot();
 		const std::filesystem::path editorRoot = GetEditorRoot();
 		const bool editorMode = Application::Get().IsEditor();
+		const Project* project = Application::Get().GetProject();
+		if (!project)
+			throw std::runtime_error("Scripting requires an application project");
+		const auto assetsPath = project->GetAssetsPath();
 
 		const std::filesystem::path sourceCoreAssemblyPath = GetManagedAssemblyPath(
 		    root / "Rod-ScriptCore" / "Rod.ScriptCore.csproj",
@@ -263,13 +267,14 @@ namespace Rod {
 		const auto coreAssembly = editorMode || !std::filesystem::exists(packagedCoreAssemblyPath)
 		                              ? sourceCoreAssemblyPath
 		                              : packagedCoreAssemblyPath;
-		const auto scriptProject = root / "Rod-Editor" / "assets" / "Scripts" / "RodGame.csproj";
+		const auto scriptProject = project->GetScriptProjectPath();
+		if (scriptProject.empty())
+			throw std::runtime_error("Script project path is empty");
 		auto scriptAssembly = GetManagedAssemblyPath(scriptProject);
 		if (!editorMode && !std::filesystem::exists(scriptAssembly))
 		{
 			scriptAssembly = SelectPackagedAssembly(
-			    {editorRoot / "assets" / "Scripts" / "App" / "RodGame.dll",
-			     editorRoot / "assets" / "Scripts" / "bin" / "Debug" / "net9.0" / "RodGame.dll"});
+			    {assetsPath / "Scripts" / "App" / (scriptProject.stem().string() + ".dll"), scriptAssembly});
 		}
 		return {
 		    coreAssembly,
@@ -277,7 +282,7 @@ namespace Rod {
 		    scriptProject,
 		    scriptAssembly,
 		    scriptProject.parent_path() / "Source",
-		    editorRoot / "assets" / "Scripts" / "Cache"};
+		    assetsPath / "Scripts" / "Cache"};
 	}
 
 	void ScriptEngine::Init()

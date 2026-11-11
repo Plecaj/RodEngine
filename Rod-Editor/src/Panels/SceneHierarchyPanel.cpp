@@ -9,6 +9,7 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
+#include <stdexcept>
 #include <typeinfo> // IWYU pragma: keep
 
 namespace Rod {
@@ -450,7 +451,14 @@ namespace Rod {
 				{
 					const char* path = static_cast<const char*>(payload->Data);
 					const std::filesystem::path meshAssetPath = std::filesystem::path(g_AssetsPath) / path;
-					component.SetMesh(CreateRef<Mesh>(meshAssetPath.string()));
+					try
+					{
+						component.SetMesh(CreateRef<Mesh>(meshAssetPath.string()));
+					}
+					catch (const std::runtime_error& exception)
+					{
+						RD_CORE_ERROR("{}", exception.what());
+					}
 				}
 				ImGui::EndDragDropTarget();
 			}

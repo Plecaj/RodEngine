@@ -28,7 +28,7 @@ namespace Rod {
 		template <typename T>
 		[[nodiscard]] static T ReadScalar(const uint8_t* data);
 		[[nodiscard]] static const uint8_t*
-		AccessorData(const tinygltf::Model& model, const tinygltf::Accessor& accessor);
+		AccessorData(const tinygltf::Model& model, const tinygltf::Accessor& accessor, size_t elementSize);
 		[[nodiscard]] static std::vector<float>
 		ReadVertices(const tinygltf::Model& model, const tinygltf::Primitive& primitive);
 		[[nodiscard]] static std::vector<uint32_t>
@@ -36,8 +36,7 @@ namespace Rod {
 		template <typename Vector>
 		[[nodiscard]] static Vector ToFloatVector(const std::vector<double>& values);
 
-		void LoadGLB(const std::string& path);
-		void ProcessPrimitive(const tinygltf::Model& model, const tinygltf::Primitive& primitive);
+		void ProcessPrimitive(std::vector<float>& vertices, std::vector<uint32_t>& indices);
 		void ProcessMaterial(const tinygltf::Model& model, const tinygltf::Primitive& primitive);
 
 	private:

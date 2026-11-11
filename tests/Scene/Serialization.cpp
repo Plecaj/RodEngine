@@ -364,3 +364,15 @@ TEST_CASE_METHOD(SerializationFixture, "Missing textures roll back scene loading
 	REQUIRE_THROWS_AS(Rod::SceneSerializer(scene).DeserializeText(Filepath()), std::runtime_error);
 	REQUIRE(scene == original);
 }
+
+TEST_CASE_METHOD(SerializationFixture, "Missing meshes roll back scene loading", "[scene][serialization]")
+{
+	WriteScene(
+	    "Scene: Invalid\nEntities:\n  - Entity: 1001\n  - Entity: 1002\n"
+	    "    MeshComponent:\n      Path: " + Filepath() + ".missing.glb\n");
+	Rod::Scene scene;
+	scene.CreateEntityWithUUID(Rod::UUID{EXISTING_ID}, "Existing");
+	const Rod::Scene original = scene;
+	REQUIRE_THROWS_AS(Rod::SceneSerializer(scene).DeserializeText(Filepath()), std::runtime_error);
+	REQUIRE(scene == original);
+}

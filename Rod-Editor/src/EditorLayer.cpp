@@ -311,18 +311,18 @@ namespace Rod {
 		const Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 		m_ViewportPanel.OnImGuiRender(
 		    {*m_Framebuffer,
-		     *m_ActiveScene,
-		     selectedEntity,
-		     m_EditorCamera,
-		     m_SceneState,
-		     m_GizmoType,
-		     m_ViewportSize,
-		     m_PendingViewportSize,
-		     m_ViewportBounds,
-		     m_ViewportFocused,
-		     m_ViewportHovered,
-		     g_AssetsPath,
-		     [this](const std::filesystem::path& path) { OpenScene(path); }});
+			 *m_ActiveScene,
+			 selectedEntity,
+			 m_EditorCamera,
+			 m_SceneState,
+			 m_GizmoType,
+			 m_ViewportSize,
+			 m_PendingViewportSize,
+			 m_ViewportBounds,
+			 m_ViewportFocused,
+			 m_ViewportHovered,
+			 g_AssetsPath,
+			 [this](const std::filesystem::path& path) { OpenScene(path); }});
 
 		m_ToolbarPanel.OnImGuiRender(
 		    m_SceneState,

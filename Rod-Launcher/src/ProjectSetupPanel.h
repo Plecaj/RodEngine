@@ -1,7 +1,10 @@
 #pragma once
 
+#include "Rod/Project/Project.h"
+
 #include <array>
 #include <cstdint>
+#include <optional>
 #include <span>
 #include <string>
 
@@ -12,7 +15,7 @@ namespace Rod {
 	public:
 		void Open();
 		[[nodiscard]] bool IsOpen() const noexcept { return m_Open; }
-		void OnImGuiRender();
+		std::optional<Project> OnImGuiRender();
 
 	private:
 		enum class Step : uint8_t
@@ -26,7 +29,8 @@ namespace Rod {
 		void DrawDirectory();
 		void DrawDetails();
 		void DrawFiles();
-		void DrawNavigation();
+		std::optional<Project> DrawNavigation();
+		[[nodiscard]] Project CreateProject() const;
 		[[nodiscard]] bool CanContinue() const;
 		[[nodiscard]] std::string ProjectName() const;
 		[[nodiscard]] std::string AssetDirectory() const;
@@ -41,7 +45,7 @@ namespace Rod {
 		Field m_ScriptProject{};
 		Step m_Step = Step::Directory;
 		bool m_Open = false;
-		bool m_ShowCreationNotice = false;
+		std::string m_Error;
 	};
 
 }

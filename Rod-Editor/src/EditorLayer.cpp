@@ -121,8 +121,8 @@ namespace Rod {
 	{
 		m_EditorCamera = EditorCamera(EDITOR_FOV, EDITOR_ASPECT_RATIO, EDITOR_NEAR_CLIP, EDITOR_FAR_CLIP);
 
-		m_PlayButton = Texture2D::Create("assets/textures/PlayButton.png");
-		m_StopButton = Texture2D::Create("assets/textures/StopButton.png");
+		m_PlayButton = Texture2D::Create("RodAssets/Textures/PlayButton.png");
+		m_StopButton = Texture2D::Create("RodAssets/Textures/StopButton.png");
 	}
 
 	void EditorLayer::OnDetach()
@@ -511,7 +511,7 @@ namespace Rod {
 		}
 
 		const std::filesystem::path exportRoot = GetExportRootPath();
-		const std::filesystem::path exportAssets = exportRoot / "assets";
+		const std::filesystem::path exportAssets = exportRoot / "Assets";
 
 		if (!PrepareExportFolders(exportAssets))
 			return;
@@ -519,7 +519,7 @@ namespace Rod {
 		if (!CopyRuntimeExecutable(runtimeExecutable, exportRoot))
 			return;
 
-		if (!CopyGameAssets(exportAssets))
+		if (!CopyEngineAssets(exportRoot / "RodAssets"))
 			return;
 
 		SceneSerializer serializer(*sceneToExport);
@@ -577,11 +577,11 @@ namespace Rod {
 		return true;
 	}
 
-	bool EditorLayer::CopyGameAssets(const std::filesystem::path& exportAssetsPath)
+	bool EditorLayer::CopyEngineAssets(const std::filesystem::path& exportAssetsPath)
 	{
 		std::error_code error;
 		std::filesystem::copy(
-		    std::filesystem::current_path() / "assets",
+		    std::filesystem::current_path() / "RodAssets",
 		    exportAssetsPath,
 		    std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing,
 		    error);

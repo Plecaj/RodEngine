@@ -2,6 +2,7 @@
 
 #include "Rod/Renderer/EditorCamera.h"
 
+#include <filesystem>
 #include <vector>
 
 namespace Rod {
@@ -12,7 +13,7 @@ namespace Rod {
 	class SceneRenderer
 	{
 	public:
-		static void Init();
+		static void Init(const std::filesystem::path& shaderDirectory);
 		static void Shutdown();
 		static void OnViewportResize(uint32_t width, uint32_t height);
 

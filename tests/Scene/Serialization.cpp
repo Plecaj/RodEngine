@@ -306,7 +306,7 @@ TEST_CASE_METHOD(
 
 TEST_CASE_METHOD(SerializationFixture, "Empty scenes load", "[scene][serialization]")
 {
-	WriteScene("Scene: Empty\n");
+	WriteScene("Scene: Empty\nEntities: []\n");
 	Rod::Scene scene;
 	Rod::SceneSerializer(scene).DeserializeText(Filepath());
 	REQUIRE(scene == Rod::Scene{});

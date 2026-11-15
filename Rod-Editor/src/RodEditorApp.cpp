@@ -14,7 +14,7 @@ namespace Rod {
 		              "Rod Editor",
 		              WindowProps::DEFAULT_WIDTH,
 		              WindowProps::DEFAULT_HEIGHT,
-		              "assets/textures/logo.png",
+		              "RodAssets/Textures/logo.png",
 		              true},
 		          std::move(project))
 		{

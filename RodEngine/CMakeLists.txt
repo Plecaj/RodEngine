@@ -44,13 +44,12 @@ target_link_libraries(RodEngine
         Rod::TinyGltf
     PRIVATE
         Threads::Threads
-        $<$<PLATFORM_ID:Windows>:opengl32;comdlg32;ole32>
+        $<$<PLATFORM_ID:Windows>:opengl32;comdlg32;ole32;shell32>
         ${CMAKE_DL_LIBS}
 )
 
 target_compile_definitions(RodEngine PRIVATE
     $<$<PLATFORM_ID:Windows>:_CRT_SECURE_NO_WARNINGS>
-    ROD_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
 )
 
 include(RodDotnet)

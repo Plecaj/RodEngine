@@ -129,76 +129,10 @@ namespace Rod {
 
 	std::unique_ptr<ScriptEngine::ScriptEngineData> ScriptEngine::s_Data;
 
-	std::filesystem::path ScriptEngine::GetEditorRoot()
-	{
-		return std::filesystem::current_path();
-	}
-
-	std::filesystem::path ScriptEngine::GetSourceRoot()
-	{
-#ifdef ROD_SOURCE_DIR
-		return ROD_SOURCE_DIR;
-#else
-		std::filesystem::path current = std::filesystem::current_path();
-		if (std::filesystem::exists(current / "Rod-ScriptCore"))
-			return current;
-		if (std::filesystem::exists(current.parent_path().parent_path().parent_path() / "Rod-ScriptCore"))
-			return current.parent_path().parent_path().parent_path();
-		return current;
-#endif
-	}
-
-	std::filesystem::path
-	ScriptEngine::GetManagedAssemblyPath(const std::filesystem::path& projectPath, const std::string& requiredSidecar)
+	std::filesystem::path ScriptEngine::GetManagedAssemblyPath(const std::filesystem::path& projectPath)
 	{
 		const std::string assemblyName = projectPath.stem().string() + ".dll";
-		const auto candidates = std::to_array<std::filesystem::path>(
-		    {projectPath.parent_path() / "bin" / "Debug" / "net9.0" / assemblyName,
-		     projectPath.parent_path() / "bin" / "x64" / "Debug" / "net9.0" / assemblyName});
-
-		std::filesystem::path newestCandidate;
-		std::filesystem::file_time_type newestWriteTime = std::filesystem::file_time_type::min();
-
-		auto trySelectCandidate = [&](const std::filesystem::path& candidate) {
-			if (!std::filesystem::exists(candidate))
-				return;
-
-			if (!requiredSidecar.empty() && !std::filesystem::exists(candidate.parent_path() / requiredSidecar))
-				return;
-
-			auto writeTime = std::filesystem::last_write_time(candidate);
-			if (newestCandidate.empty() || writeTime > newestWriteTime)
-			{
-				newestCandidate = candidate;
-				newestWriteTime = writeTime;
-			}
-		};
-
-		for (const auto& candidate : candidates)
-			trySelectCandidate(candidate);
-
-		if (!newestCandidate.empty())
-			return newestCandidate;
-
-		return candidates[0];
-	}
-
-	std::filesystem::path ScriptEngine::SelectPackagedAssembly(
-	    const std::vector<std::filesystem::path>& candidates,
-	    const std::string& requiredSidecar)
-	{
-		for (const auto& candidate : candidates)
-		{
-			if (!std::filesystem::exists(candidate))
-				continue;
-
-			if (!requiredSidecar.empty() && !std::filesystem::exists(candidate.parent_path() / requiredSidecar))
-				continue;
-
-			return candidate;
-		}
-
-		return candidates.empty() ? std::filesystem::path() : candidates[0];
+		return projectPath.parent_path() / "bin" / "Debug" / "net9.0" / assemblyName;
 	}
 
 	std::filesystem::path ScriptEngine::CreateAssemblyCachePath(const std::filesystem::path& assemblyPath)
@@ -248,39 +182,20 @@ namespace Rod {
 
 	ScriptEngine::ScriptPaths ScriptEngine::ResolveScriptPaths()
 	{
-		const std::filesystem::path root = GetSourceRoot();
-		const std::filesystem::path editorRoot = GetEditorRoot();
-		const bool editorMode = Application::Get().IsEditor();
 		const Project* project = Application::Get().GetProject();
 		if (!project)
 			throw std::runtime_error("Scripting requires an application project");
 		const auto assetsPath = project->GetAssetsPath();
 
-		const std::filesystem::path sourceCoreAssemblyPath = GetManagedAssemblyPath(
-		    root / "Rod-ScriptCore" / "Rod.ScriptCore.csproj",
-		    "Rod.ScriptCore.runtimeconfig.json");
-		const std::filesystem::path packagedCoreAssemblyPath = SelectPackagedAssembly(
-		    {editorRoot / "assets" / "Scripts" / "Core" / "Rod.ScriptCore.dll",
-		     editorRoot / "assets" / "Scripts" / "bin" / "Debug" / "net9.0" / "Rod.ScriptCore.dll"},
-		    "Rod.ScriptCore.runtimeconfig.json");
-
-		const auto coreAssembly = editorMode || !std::filesystem::exists(packagedCoreAssemblyPath)
-		                              ? sourceCoreAssemblyPath
-		                              : packagedCoreAssemblyPath;
+		const auto coreAssembly = std::filesystem::absolute("RodAssets/Scripts/Core/Rod.ScriptCore.dll");
 		const auto scriptProject = project->GetScriptProjectPath();
 		if (scriptProject.empty())
 			throw std::runtime_error("Script project path is empty");
-		auto scriptAssembly = GetManagedAssemblyPath(scriptProject);
-		if (!editorMode && !std::filesystem::exists(scriptAssembly))
-		{
-			scriptAssembly = SelectPackagedAssembly(
-			    {assetsPath / "Scripts" / "App" / (scriptProject.stem().string() + ".dll"), scriptAssembly});
-		}
 		return {
 		    coreAssembly,
 		    coreAssembly.parent_path() / "Rod.ScriptCore.runtimeconfig.json",
 		    scriptProject,
-		    scriptAssembly,
+		    GetManagedAssemblyPath(scriptProject),
 		    scriptProject.parent_path() / "Source",
 		    assetsPath / "Scripts" / "Cache"};
 	}

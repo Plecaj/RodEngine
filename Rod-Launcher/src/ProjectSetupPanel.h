@@ -4,8 +4,8 @@
 
 #include <array>
 #include <cstdint>
+#include <filesystem>
 #include <optional>
-#include <span>
 #include <string>
 
 namespace Rod {
@@ -25,7 +25,12 @@ namespace Rod {
 			Files
 		};
 
-		static void DrawField(const char* label, const char* hint, std::span<char> value);
+		static bool DrawPathPicker(const char* label, const std::filesystem::path& value);
+		void PickProjectPath(
+		    std::filesystem::path& value,
+		    const char* filter = nullptr,
+		    const char* extension = nullptr);
+		void ResetDefaultPaths();
 		void DrawDirectory();
 		void DrawDetails();
 		void DrawFiles();
@@ -33,16 +38,14 @@ namespace Rod {
 		[[nodiscard]] Project CreateProject() const;
 		[[nodiscard]] bool CanContinue() const;
 		[[nodiscard]] std::string ProjectName() const;
-		[[nodiscard]] std::string AssetDirectory() const;
-		[[nodiscard]] std::string ProjectFolder() const;
 
 		static constexpr size_t FIELD_CAPACITY = 1024;
-		using Field = std::array<char, FIELD_CAPACITY>;
-		Field m_Directory{};
-		Field m_Name{};
-		Field m_AssetDirectory{};
-		Field m_StartScene{};
-		Field m_ScriptProject{};
+		std::array<char, FIELD_CAPACITY> m_Name{};
+		std::filesystem::path m_Directory;
+		std::filesystem::path m_AssetDirectory;
+		std::filesystem::path m_StartScene;
+		std::filesystem::path m_ScriptProject;
+		std::filesystem::path m_ShaderDirectory;
 		Step m_Step = Step::Directory;
 		bool m_Open = false;
 		std::string m_Error;

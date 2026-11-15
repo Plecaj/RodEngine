@@ -67,11 +67,11 @@ namespace Rod {
 		});
 	}
 
-	void SceneRenderer::Init()
+	void SceneRenderer::Init(const std::filesystem::path& shaderDirectory)
 	{
 		RD_PROFILE_FUNCTION();
 
-		Renderer::Init();
+		Renderer::Init(shaderDirectory);
 		Renderer3D::Init();
 		Renderer2D::Init();
 	}

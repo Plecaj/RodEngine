@@ -27,6 +27,7 @@ rod_set_common_output_directories(Rod-Runtime)
 rod_copy_dotnet_host(Rod-Runtime)
 
 rod_copy_assets(Rod-Runtime)
+rod_copy_samples(Rod-Runtime)
 
 set(ROD_GAME_EXPORT_DIR "${CMAKE_BINARY_DIR}/export/RodGame")
 
@@ -37,11 +38,11 @@ add_custom_target(RodGame-Export
         "$<TARGET_FILE:Rod-Runtime>"
         "${ROD_GAME_EXPORT_DIR}/RodGame${CMAKE_EXECUTABLE_SUFFIX}"
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "$<TARGET_FILE_DIR:Rod-Runtime>/assets"
-        "${ROD_GAME_EXPORT_DIR}/assets"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/Rod-Editor/assets/scenes/Example3D.rod"
-        "${ROD_GAME_EXPORT_DIR}/assets/scenes/Startup.rod"
+        "$<TARGET_FILE_DIR:Rod-Runtime>/RodAssets"
+        "${ROD_GAME_EXPORT_DIR}/RodAssets"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "$<TARGET_FILE_DIR:Rod-Runtime>/Samples"
+        "${ROD_GAME_EXPORT_DIR}/Samples"
     DEPENDS Rod-Runtime
     VERBATIM
 )

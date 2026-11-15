@@ -1,0 +1,5 @@
+Name: Samples
+AssetsPath: Assets
+StartupScenePath: Assets/Scenes/Example3D.rod
+ScriptsProjectPath: Assets/Scripts/RodGame.csproj
+ShadersPath: ../RodAssets/Shaders

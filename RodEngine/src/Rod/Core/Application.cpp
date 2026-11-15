@@ -26,7 +26,7 @@ namespace Rod {
 		m_Window->SetEventCallback(RD_BIND_EVENT_FN(Application::OnEvent));
 		m_Window->SetVSync(false);
 
-		SceneRenderer::Init();
+		SceneRenderer::Init(m_Project ? m_Project->GetShadersPath() : ProjectProperties{}.ShadersPath);
 
 		if (props.UsesCustomUi)
 		{

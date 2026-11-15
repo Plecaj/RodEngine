@@ -2,6 +2,10 @@
 
 #include "Rod/Core/UUID.h"
 #include "Rod/Project/Project.h"
+#include "Rod/Project/ProjectInitializer.h"
+#include "Rod/Scene/Entity.h"
+#include "Rod/Scene/Scene.h"
+#include "Rod/Scene/SceneSerializer.h"
 #include "Rod/Project/ProjectSerializer.h"
 
 #include <catch2/catch_test_macros.hpp>
@@ -49,17 +53,22 @@ namespace {
 
 TEST_CASE_METHOD(ProjectSerializationFixture, "Project manifests round trip all properties", "[project][serialization]")
 {
-	const Rod::ProjectProperties properties{
+	Rod::ProjectProperties properties{
 	    .Name = "Game: \"one\"\n# project",
 	    .AssetsPath = "Game Assets",
 	    .StartupScenePath = "Scenes/Opening Scene.rod",
-	    .ScriptsProjectPath = "Scripts/My Game.csproj"};
-	const Rod::Project original{ManifestPath(), properties};
+	    .ScriptsProjectPath = "Scripts/My Game.csproj",
+	    .ShadersPath = "Custom Engine/Shaders"};
 	SECTION("new manifest") {}
 	SECTION("replace existing manifest")
 	{
 		WriteManifest("Name: Previous project\n");
 	}
+	SECTION("absolute shader directory")
+	{
+		properties.ShadersPath = ManifestPath().parent_path() / "External Shaders";
+	}
+	const Rod::Project original{ManifestPath(), properties};
 	Rod::ProjectSerializer::Serialize(original);
 
 	Rod::Project restored{ManifestPath(), {}};
@@ -68,6 +77,8 @@ TEST_CASE_METHOD(ProjectSerializationFixture, "Project manifests round trip all 
 	REQUIRE(restored.GetProperties().AssetsPath == properties.AssetsPath);
 	REQUIRE(restored.GetProperties().StartupScenePath == properties.StartupScenePath);
 	REQUIRE(restored.GetProperties().ScriptsProjectPath == properties.ScriptsProjectPath);
+	REQUIRE(restored.GetProperties().ShadersPath == properties.ShadersPath);
+	REQUIRE(restored.GetShadersPath() == ManifestPath().parent_path() / properties.ShadersPath);
 }
 
 TEST_CASE_METHOD(
@@ -85,6 +96,15 @@ TEST_CASE_METHOD(
 		WriteManifest("Name: New\nAssetsPath: Content\nStartupScenePath: Scenes/New.rod\n");
 	}
 
+	SECTION("invalid shader path")
+	{
+		WriteManifest("Name: New\nAssetsPath: Assets\nStartupScenePath: Main.rod\nScriptsProjectPath: Game.csproj\nShadersPath: [bad]\n");
+	}
+	SECTION("missing shader path")
+	{
+		WriteManifest("Name: New\nAssetsPath: Assets\nStartupScenePath: Main.rod\nScriptsProjectPath: Game.csproj\n");
+	}
+
 	Rod::Project project{ManifestPath(), {}};
 	const auto original = project.GetProperties();
 	REQUIRE_THROWS_AS(Rod::ProjectSerializer::Deserialize(project), std::runtime_error);
@@ -92,4 +112,49 @@ TEST_CASE_METHOD(
 	REQUIRE(project.GetProperties().AssetsPath == original.AssetsPath);
 	REQUIRE(project.GetProperties().StartupScenePath == original.StartupScenePath);
 	REQUIRE(project.GetProperties().ScriptsProjectPath == original.ScriptsProjectPath);
+	REQUIRE(project.GetProperties().ShadersPath == original.ShadersPath);
+}
+
+TEST_CASE_METHOD(ProjectSerializationFixture, "New projects create usable defaults without overwriting files", "[project]")
+{
+	const Rod::Project project{ManifestPath(), {}};
+	const auto root = project.GetDirectory();
+	REQUIRE(project.GetAssetsPath() == root / "Assets");
+	REQUIRE(project.GetStartupScenePath() == root / "Assets/Scenes/Main.rod");
+	REQUIRE(project.GetScriptProjectPath() == root / "Assets/Scripts/Game.csproj");
+	REQUIRE(project.GetShadersPath() == std::filesystem::absolute("RodAssets/Shaders").lexically_normal());
+	Rod::ProjectInitializer::CreateDefaultFiles(project);
+	REQUIRE(std::filesystem::is_directory(project.GetAssetsPath()));
+	REQUIRE(std::filesystem::is_regular_file(project.GetStartupScenePath()));
+	REQUIRE(std::filesystem::is_regular_file(project.GetScriptProjectPath()));
+	Rod::Scene scene;
+	Rod::SceneSerializer serializer(scene, project.GetDirectory());
+	REQUIRE_NOTHROW(serializer.DeserializeText(project.GetStartupScenePath().string()));
+	REQUIRE(static_cast<bool>(scene.GetPrimaryCameraEntity()));
+	std::ofstream file(project.GetScriptProjectPath());
+	file << "preserve this content";
+	file.close();
+	Rod::ProjectInitializer::CreateDefaultFiles(project);
+	std::ifstream restored(project.GetScriptProjectPath());
+	std::string contents;
+	std::getline(restored, contents);
+	REQUIRE(contents == "preserve this content");
+}
+
+TEST_CASE_METHOD(ProjectSerializationFixture, "Missing custom project files are rejected before creating defaults", "[project]")
+{
+	const Rod::Project project{ManifestPath(), {.ScriptsProjectPath = "Custom/Missing.csproj"}};
+	REQUIRE_THROWS_AS(Rod::ProjectInitializer::CreateDefaultFiles(project), std::runtime_error);
+	REQUIRE_FALSE(std::filesystem::exists(project.GetAssetsPath()));
+}
+
+TEST_CASE_METHOD(ProjectSerializationFixture, "Project defaults cannot escape through a directory symlink", "[project]")
+{
+	const auto assets = ManifestPath().parent_path() / "Assets";
+	std::error_code error;
+	std::filesystem::create_directory_symlink(ManifestPath().parent_path().parent_path(), assets, error);
+	if (error)
+		SKIP("Directory symlinks are unavailable: " << error.message());
+	const Rod::Project project{ManifestPath(), {}};
+	REQUIRE_THROWS_AS(Rod::ProjectInitializer::CreateDefaultFiles(project), std::runtime_error);
 }

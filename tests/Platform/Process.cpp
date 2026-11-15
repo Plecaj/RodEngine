@@ -56,7 +56,7 @@ TEST_CASE("Windows process starter returns before exit and preserves project arg
 	const auto output = directory.Path / "arguments.bin";
 	const auto release = directory.Path / "release";
 	const std::vector<std::string> projectArguments{
-	    R"(C:\Projects\My Game\project.rdproj)",
+	    R"(C:\Projects\My Game\project.rodproj)",
 	    R"(Game "one")",
 	    R"(Assets with spaces\)",
 	    "",

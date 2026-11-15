@@ -8,7 +8,7 @@ if(DOTNET_EXE)
     )
 
     add_custom_target(RodGameScripts-Build
-        COMMAND "${DOTNET_EXE}" build "${CMAKE_SOURCE_DIR}/Rod-Editor/assets/Scripts/RodGame.csproj"
+        COMMAND "${DOTNET_EXE}" build "${CMAKE_SOURCE_DIR}/Samples/Assets/Scripts/RodGame.csproj"
             --nologo /p:BuildProjectReferences=false
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
         VERBATIM
@@ -20,20 +20,33 @@ else()
 endif()
 
 function(rod_copy_assets target)
-    if(TARGET RodGameScripts-Build)
-        add_dependencies(${target} RodGameScripts-Build)
+    if(TARGET RodScriptCore-Build)
+        add_dependencies(${target} RodScriptCore-Build)
         add_custom_command(TARGET ${target} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_directory
                 "${ROD_SCRIPT_CORE_OUTPUT_DIR}"
-                "$<TARGET_FILE_DIR:${target}>/assets/Scripts/Core"
+                "$<TARGET_FILE_DIR:${target}>/RodAssets/Scripts/Core"
             VERBATIM
         )
     endif()
 
     add_custom_command(TARGET ${target} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_SOURCE_DIR}/Rod-Editor/assets"
-            "$<TARGET_FILE_DIR:${target}>/assets"
+            "${CMAKE_SOURCE_DIR}/RodAssets"
+            "$<TARGET_FILE_DIR:${target}>/RodAssets"
+        VERBATIM
+    )
+endfunction()
+
+function(rod_copy_samples target)
+    if(TARGET RodGameScripts-Build)
+        add_dependencies(${target} RodGameScripts-Build)
+    endif()
+
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/Samples"
+            "$<TARGET_FILE_DIR:${target}>/Samples"
         VERBATIM
     )
 endfunction()

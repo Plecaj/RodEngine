@@ -52,8 +52,8 @@ namespace Rod {
 	ContentBrowserPanel::ContentBrowserPanel(const std::filesystem::path& assetsPath)
 	    : m_AssetsPath(assetsPath), m_CurrentDirectory(assetsPath)
 	{
-		m_DirectoryIcon = Texture2D::Create("assets/textures/DirectoryIcon.png");
-		m_FileIcon = Texture2D::Create("assets/textures/FileIcon.png");
+		m_DirectoryIcon = Texture2D::Create("RodAssets/Textures/DirectoryIcon.png");
+		m_FileIcon = Texture2D::Create("RodAssets/Textures/FileIcon.png");
 	}
 
 	void ContentBrowserPanel::OnImGuiRender()

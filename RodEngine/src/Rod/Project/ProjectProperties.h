@@ -8,9 +8,9 @@ namespace Rod {
 	{
 		std::string Name = "Sandbox";
 		std::filesystem::path AssetsPath = "Assets";
-		std::filesystem::path StartupScenePath = "Scenes/Main.rod";
-		std::filesystem::path ScriptsProjectPath = "Scripts/Game.csproj";
-
-		static constexpr int PROPERTIES_COUNT = 4;
+		std::filesystem::path StartupScenePath = "Assets/Scenes/Main.rod";
+		std::filesystem::path ScriptsProjectPath = "Assets/Scripts/Game.csproj";
+		// Bundled engine shaders are the default; custom relative paths use the project directory.
+		std::filesystem::path ShadersPath = std::filesystem::absolute("RodAssets/Shaders").lexically_normal();
 	};
 }

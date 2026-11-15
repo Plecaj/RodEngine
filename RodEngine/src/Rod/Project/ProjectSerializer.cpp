@@ -22,6 +22,7 @@ namespace Rod {
 		out << YAML::Key << "AssetsPath" << YAML::Value << properties.AssetsPath.generic_string();
 		out << YAML::Key << "StartupScenePath" << YAML::Value << properties.StartupScenePath.generic_string();
 		out << YAML::Key << "ScriptsProjectPath" << YAML::Value << properties.ScriptsProjectPath.generic_string();
+		out << YAML::Key << "ShadersPath" << YAML::Value << properties.ShadersPath.generic_string();
 		out << YAML::EndMap;
 		if (!out.good())
 			throw std::runtime_error("Project save failed '" + manifestPath.string() + "': " + out.GetLastError());
@@ -35,6 +36,8 @@ namespace Rod {
 		{
 			if (manifestPath.empty())
 				throw std::runtime_error("Path empty");
+			if (manifestPath.extension() != ".rodproj")
+				throw std::runtime_error("Choose a .rodproj file.");
 
 			std::ifstream file(manifestPath);
 			if (!file.is_open())
@@ -45,7 +48,7 @@ namespace Rod {
 			if (!data.IsMap())
 				throw std::runtime_error("YAML mapping required");
 
-			for (const auto* key : {"Name", "AssetsPath", "StartupScenePath", "ScriptsProjectPath"})
+			for (const auto* key : {"Name", "AssetsPath", "StartupScenePath", "ScriptsProjectPath", "ShadersPath"})
 			{
 				const auto field = data[key];
 				if (!field.IsDefined())
@@ -58,7 +61,8 @@ namespace Rod {
 			    .Name = data["Name"].as<std::string>(),
 			    .AssetsPath = data["AssetsPath"].as<std::string>(),
 			    .StartupScenePath = data["StartupScenePath"].as<std::string>(),
-			    .ScriptsProjectPath = data["ScriptsProjectPath"].as<std::string>()};
+			    .ScriptsProjectPath = data["ScriptsProjectPath"].as<std::string>(),
+			    .ShadersPath = data["ShadersPath"].as<std::string>()};
 			project.SetProperties(std::move(properties));
 		}
 		catch (const std::exception& exception)

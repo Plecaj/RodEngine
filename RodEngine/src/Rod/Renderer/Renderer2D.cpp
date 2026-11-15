@@ -3,6 +3,7 @@
 #include "Renderer2D.h"
 
 #include "RenderCommand.h"
+#include "Renderer.h"
 #include "Shader.h"
 #include "VertexArray.h"
 
@@ -64,7 +65,7 @@ namespace Rod {
 		shaderOptions.OptimizationLevel = Shader::OptimizationLevel::Performance;
 		shaderOptions.GenerateDebugInfo = false;
 
-		g_Data->TextureShader = Shader::Create("assets/shaders/Texture.glsl", shaderOptions);
+		g_Data->TextureShader = Shader::Create((Renderer::GetShaderDirectory() / "Texture.glsl").string(), shaderOptions);
 		g_Data->QuadUniformBuffer = UniformBuffer::Create(sizeof(glm::mat4));
 	}
 

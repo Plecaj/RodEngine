@@ -3,6 +3,7 @@
 #include "Renderer3D.h"
 
 #include "Rod/Renderer/RenderCommand.h"
+#include "Rod/Renderer/Renderer.h"
 
 #include <limits>
 
@@ -159,8 +160,8 @@ namespace Rod {
 		RD_PROFILE_FUNCTION();
 
 		s_SceneData = CreateScope<SceneData>();
-		s_SceneData->Shader = Shader::Create("assets/shaders/3D.glsl");
-		s_SceneData->ShadowShader = Shader::Create("assets/shaders/Shadow.glsl");
+		s_SceneData->Shader = Shader::Create((Renderer::GetShaderDirectory() / "3D.glsl").string());
+		s_SceneData->ShadowShader = Shader::Create((Renderer::GetShaderDirectory() / "Shadow.glsl").string());
 
 		std::array<int, MAX_LIGHT_COUNT> shadowMapSamplers{};
 		for (uint32_t i = 0; i < MAX_LIGHT_COUNT; i++)

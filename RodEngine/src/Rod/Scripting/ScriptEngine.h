@@ -44,13 +44,7 @@ namespace Rod {
 		struct ScriptEngineData;
 		static std::unique_ptr<ScriptEngineData> s_Data;
 
-		static std::filesystem::path GetEditorRoot();
-		static std::filesystem::path GetSourceRoot();
-		static std::filesystem::path
-		GetManagedAssemblyPath(const std::filesystem::path& projectPath, const std::string& requiredSidecar = "");
-		static std::filesystem::path SelectPackagedAssembly(
-		    const std::vector<std::filesystem::path>& candidates,
-		    const std::string& requiredSidecar = "");
+		static std::filesystem::path GetManagedAssemblyPath(const std::filesystem::path& projectPath);
 		static std::filesystem::path CreateAssemblyCachePath(const std::filesystem::path& assemblyPath);
 		static std::string CopyManagedString(void* value);
 		static ScriptPaths ResolveScriptPaths();

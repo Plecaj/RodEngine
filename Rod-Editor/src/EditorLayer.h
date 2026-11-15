@@ -78,7 +78,7 @@ namespace Rod {
 		bool PrepareExportFolders(const std::filesystem::path& exportAssetsPath);
 		bool
 		CopyRuntimeExecutable(const std::filesystem::path& runtimeExecutable, const std::filesystem::path& exportRoot);
-		bool CopyGameAssets(const std::filesystem::path& exportAssetsPath);
+		bool CopyEngineAssets(const std::filesystem::path& exportAssetsPath);
 
 	private:
 		const Project& m_Project;

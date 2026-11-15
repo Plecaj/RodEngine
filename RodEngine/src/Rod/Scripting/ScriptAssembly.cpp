@@ -13,18 +13,15 @@ namespace Rod {
 	ScriptFieldType ScriptAssembly::ScriptFieldTypeFromString(const std::string& type)
 	{
 		static const std::unordered_map<std::string, ScriptFieldType> FIELD_TYPES = {
-		    {"Single", ScriptFieldType::Float},    {"float", ScriptFieldType::Float},
-		    {"Double", ScriptFieldType::Double},   {"double", ScriptFieldType::Double},
-		    {"Boolean", ScriptFieldType::Bool},    {"bool", ScriptFieldType::Bool},
-		    {"Char", ScriptFieldType::Char},       {"char", ScriptFieldType::Char},
+		    {"Single", ScriptFieldType::Float},    {"Double", ScriptFieldType::Double},
+		    {"Boolean", ScriptFieldType::Bool},    {"Char", ScriptFieldType::Char},
 		    {"Byte", ScriptFieldType::Byte},       {"Int16", ScriptFieldType::Short},
-		    {"Int32", ScriptFieldType::Int},       {"int", ScriptFieldType::Int},
-		    {"Int64", ScriptFieldType::Long},      {"long", ScriptFieldType::Long},
+		    {"Int32", ScriptFieldType::Int},       {"Int64", ScriptFieldType::Long},
 		    {"SByte", ScriptFieldType::UByte},     {"UInt16", ScriptFieldType::UShort},
 		    {"UInt32", ScriptFieldType::UInt},     {"UInt64", ScriptFieldType::ULong},
 		    {"Vector2", ScriptFieldType::Vector2}, {"Vector3", ScriptFieldType::Vector3},
 		    {"Vector4", ScriptFieldType::Vector4}, {"Entity", ScriptFieldType::Entity},
-		    {"String", ScriptFieldType::String},   {"string", ScriptFieldType::String}};
+		    {"String", ScriptFieldType::String}};
 
 		auto it = FIELD_TYPES.find(type);
 		return it != FIELD_TYPES.end() ? it->second : ScriptFieldType::None;
@@ -47,8 +44,8 @@ namespace Rod {
 				if (fullName.empty() || !classJson.at("fields").is_array())
 					throw std::runtime_error(
 					    "Assembly metadata invalid '" + assemblyPath.string() + "': class/fields required");
-				const std::string namespaceName = classJson.value("namespace", "");
-				const std::string className = classJson.value("name", "");
+				const auto namespaceName = classJson.at("namespace").get<std::string>();
+				const auto className = classJson.at("name").get<std::string>();
 
 				ScriptClass scriptClass(fullName, namespaceName, className);
 
@@ -56,11 +53,11 @@ namespace Rod {
 				{
 					ScriptField field;
 					field.Name = fieldJson.at("name").get<std::string>();
-					field.TypeName = fieldJson.value("type", "");
+					field.TypeName = fieldJson.at("type").get<std::string>();
 					field.Type = ScriptFieldTypeFromString(field.TypeName);
 
 					if (field.Type != ScriptFieldType::None)
-						scriptClass.GetFields()[field.Name] = {field, fieldJson.value("defaultValue", "")};
+						scriptClass.GetFields()[field.Name] = {field, fieldJson.at("defaultValue").get<std::string>()};
 				}
 
 				m_Classes[fullName] = std::move(scriptClass);

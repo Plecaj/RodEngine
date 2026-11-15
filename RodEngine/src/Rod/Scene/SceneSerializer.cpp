@@ -338,14 +338,10 @@ namespace Rod {
 			return;
 
 		auto& material = mesh.Material;
-		if (meshComponent["Albedo"])
-			material.SetAlbedo(meshComponent["Albedo"].as<glm::vec4>());
-		if (meshComponent["Emissive"])
-			material.SetEmissive(meshComponent["Emissive"].as<glm::vec3>());
-		if (meshComponent["Roughness"])
-			material.SetRoughness(meshComponent["Roughness"].as<float>());
-		if (meshComponent["Metallic"])
-			material.SetMetallic(meshComponent["Metallic"].as<float>());
+		material.SetAlbedo(meshComponent["Albedo"].as<glm::vec4>());
+		material.SetEmissive(meshComponent["Emissive"].as<glm::vec3>());
+		material.SetRoughness(meshComponent["Roughness"].as<float>());
+		material.SetMetallic(meshComponent["Metallic"].as<float>());
 	}
 
 	void SceneSerializer::DeserializeDirectionalLightComponent(const YAML::Node& entityNode, Entity entity)
@@ -367,22 +363,22 @@ namespace Rod {
 			return;
 
 		auto& script = entity.AddComponent<ScriptComponent>();
-		script.ClassName = scriptComponent["ClassName"] ? scriptComponent["ClassName"].as<std::string>() : "";
+		script.ClassName = scriptComponent["ClassName"].as<std::string>();
 
 		auto fields = scriptComponent["Fields"];
-		if (!fields)
-			return;
+		if (!fields.IsSequence())
+			throw std::runtime_error("Field 'Fields': sequence required");
 
 		for (auto fieldNode : fields)
 		{
 			ScriptField field;
 			field.Name = fieldNode["Name"].as<std::string>();
 			field.Type = static_cast<ScriptFieldType>(fieldNode["Type"].as<int>());
-			field.TypeName = fieldNode["TypeName"] ? fieldNode["TypeName"].as<std::string>() : "";
+			field.TypeName = fieldNode["TypeName"].as<std::string>();
 
 			ScriptFieldInstance instance;
 			instance.Field = field;
-			instance.Value = fieldNode["Value"] ? fieldNode["Value"].as<std::string>() : "";
+			instance.Value = fieldNode["Value"].as<std::string>();
 			script.Fields[field.Name] = instance;
 		}
 	}
@@ -431,17 +427,14 @@ namespace Rod {
 				throw std::runtime_error("Field 'Scene': text required");
 
 			const auto entities = data["Entities"];
-			if (entities.IsDefined())
+			if (!entities.IsSequence())
+				throw std::runtime_error("Field 'Entities': sequence required");
+			createdEntities.reserve(entities.size());
+			for (const auto& entityNode : entities)
 			{
-				if (!entities.IsSequence())
-					throw std::runtime_error("Field 'Entities': sequence required");
-				createdEntities.reserve(entities.size());
-				for (const auto& entityNode : entities)
-				{
-					if (!entityNode.IsMap() || !entityNode["Entity"])
-						throw std::runtime_error("Field 'Entity': ID required");
-					DeserializeEntity(m_Scene, entityNode, createdEntities);
-				}
+				if (!entityNode.IsMap() || !entityNode["Entity"])
+					throw std::runtime_error("Field 'Entity': ID required");
+				DeserializeEntity(m_Scene, entityNode, createdEntities);
 			}
 		}
 		catch (const std::exception& exception)

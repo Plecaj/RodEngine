@@ -18,28 +18,12 @@ namespace Utils {
 	{
 		if (argc <= 1)
 			return std::nullopt;
-		if (argc == 2)
-		{
-			Rod::Project project{std::filesystem::absolute(argv[1]).lexically_normal(), {}};
-			Rod::ProjectSerializer::Deserialize(project);
-			return project;
-		}
+		if (argc != 2)
+			throw std::invalid_argument("Expected a single .rodproj manifest argument");
 
-		if (argc != Rod::Project::GetRequiredMembersCount() + 1)
-			throw std::invalid_argument("Entry point argument count does not match required count");
-
-		constexpr int manifestArgument = 1;
-		constexpr int nameArgument = 2;
-		constexpr int assetsArgument = 3;
-		constexpr int startupSceneArgument = 4;
-		constexpr int scriptsProjectArgument = 5;
-		return Rod::Project{
-		    argv[manifestArgument],
-		    Rod::ProjectProperties{
-		        .Name = argv[nameArgument],
-		        .AssetsPath = argv[assetsArgument],
-		        .StartupScenePath = argv[startupSceneArgument],
-		        .ScriptsProjectPath = argv[scriptsProjectArgument]}};
+		Rod::Project project{std::filesystem::absolute(argv[1]).lexically_normal(), {}};
+		Rod::ProjectSerializer::Deserialize(project);
+		return project;
 	}
 }
 

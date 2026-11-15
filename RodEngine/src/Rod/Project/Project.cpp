@@ -29,4 +29,11 @@ namespace Rod {
 		return (GetDirectory() / m_Properties.ScriptsProjectPath).lexically_normal();
 	}
 
+	std::filesystem::path Project::GetShadersPath() const
+	{
+		if (m_Properties.ShadersPath.empty())
+			return {};
+		return (GetDirectory() / m_Properties.ShadersPath).lexically_normal();
+	}
+
 }

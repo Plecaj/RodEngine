@@ -22,7 +22,7 @@ if(DOTNET_EXE AND ROD_DOTNET_HOST_INCLUDE_DIR AND ROD_DOTNET_HOST_LIBRARY AND TA
     add_dependencies(RodEngineTests RodGameScripts-Build)
     target_compile_definitions(RodEngineTests PRIVATE
         ROD_TEST_CORE_ASSEMBLY_PATH="${ROD_SCRIPT_CORE_OUTPUT_DIR}/Rod.ScriptCore.dll"
-        ROD_TEST_GAME_ASSEMBLY_PATH="${PROJECT_SOURCE_DIR}/Rod-Editor/assets/Scripts/bin/Debug/net9.0/RodGame.dll"
+        ROD_TEST_GAME_ASSEMBLY_PATH="${PROJECT_SOURCE_DIR}/Samples/Assets/Scripts/bin/Debug/net9.0/RodGame.dll"
     )
 endif()
 

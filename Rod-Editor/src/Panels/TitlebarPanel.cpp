@@ -113,7 +113,7 @@ namespace Rod {
 
 	TitlebarPanel::TitlebarPanel()
 	{
-		m_Logo = Texture2D::Create("assets/textures/titlebarLogo.png");
+		m_Logo = Texture2D::Create("RodAssets/Textures/titlebarLogo.png");
 		m_ButtonSize = ImVec2(BUTTON_WIDTH, static_cast<float>(HEIGHT));
 	}
 

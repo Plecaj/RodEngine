@@ -18,16 +18,13 @@ namespace Rod {
 		[[nodiscard]] std::filesystem::path GetAssetsPath() const;
 		[[nodiscard]] std::filesystem::path GetStartupScenePath() const;
 		[[nodiscard]] std::filesystem::path GetScriptProjectPath() const;
+		[[nodiscard]] std::filesystem::path GetShadersPath() const;
 
 		void SetProperties(ProjectProperties properties) { m_Properties = std::move(properties); };
-
-		static constexpr int GetRequiredMembersCount() { return MEMBERS_COUNT; }
 
 	private:
 		std::filesystem::path m_ManifestPath;
 		ProjectProperties m_Properties;
-
-		static constexpr int MEMBERS_COUNT = ProjectProperties::PROPERTIES_COUNT + 1;
 	};
 
 }

@@ -188,7 +188,7 @@ namespace Rod {
 
 	bool OpenGLShader::OpenSpirv(const shaderc_shader_kind& kind, const std::string& cacheKey)
 	{
-		const std::filesystem::path filename = m_CacheDirectory / cacheKey;
+		const std::filesystem::path filename = ShaderCacheDatabase::Get().GetCacheDirectory() / cacheKey;
 		std::ifstream in(filename, std::ios::binary | std::ios::ate);
 		if (!in)
 		{

@@ -32,7 +32,7 @@ namespace Rod {
 
 		WindowProps LauncherWindowProps()
 		{
-			WindowProps props{g_WindowTitle, g_LauncherWidth, g_LauncherHeight, "assets/textures/logo.png", true};
+			WindowProps props{g_WindowTitle, g_LauncherWidth, g_LauncherHeight, "RodAssets/Textures/logo.png", true};
 			props.NativeTitlebar = true;
 			props.Resizable = false;
 			props.Centered = true;
@@ -45,7 +45,7 @@ namespace Rod {
 	public:
 		LauncherLayer() : Layer("LauncherLayer") {}
 
-		void OnAttach() override { m_FolderIcon = Texture2D::Create("assets/textures/DirectoryIcon.png"); }
+		void OnAttach() override { m_FolderIcon = Texture2D::Create("RodAssets/Textures/DirectoryIcon.png"); }
 
 		void OnImGuiRender() override
 		{
@@ -182,10 +182,11 @@ namespace Rod {
 		{
 			try
 			{
-				const auto path = FileDialogs::OpenFile("Rod Project (*.rodproj, *.rdproj)\0*.rodproj;*.rdproj\0");
+				const auto path = FileDialogs::OpenFile("Rod Project (*.rodproj)\0*.rodproj\0");
 				if (path.empty())
 					return;
-				Project project{std::filesystem::absolute(path).lexically_normal(), {}};
+				const std::filesystem::path manifestPath = path;
+				Project project{std::filesystem::absolute(manifestPath).lexically_normal(), {}};
 				ProjectSerializer::Deserialize(project);
 				m_Project = std::move(project);
 				LaunchEditor();
@@ -201,15 +202,8 @@ namespace Rod {
 		{
 			try
 			{
-				const auto& properties = m_Project->GetProperties();
 				const auto executable = std::filesystem::current_path() / "Rod-Editor" ROD_EXECUTABLE_SUFFIX;
-				const auto result = Process::Start(
-				    {executable.string(),
-				     m_Project->GetManifestPath().string(),
-				     properties.Name,
-				     properties.AssetsPath.string(),
-				     properties.StartupScenePath.string(),
-				     properties.ScriptsProjectPath.string()});
+				const auto result = Process::Start({executable.string(), m_Project->GetManifestPath().string()});
 				if (result.ExitCode != 0)
 					throw std::runtime_error("Could not launch editor: " + result.Output);
 				m_Error.clear();

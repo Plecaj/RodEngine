@@ -2,7 +2,9 @@
 
 #include "ProjectSetupPanel.h"
 
+#include "Rod/Project/ProjectInitializer.h"
 #include "Rod/Project/ProjectSerializer.h"
+#include "Rod/Utils/PlatformUtils.h"
 
 #include "imgui.h"
 
@@ -16,8 +18,6 @@ namespace Rod {
 		constexpr float g_FooterHeight = 76.0f;
 		constexpr float g_FieldSpacing = 12.0f;
 		constexpr ImVec2 g_ButtonSize{144.0f, 36.0f};
-		constexpr auto g_DefaultName = "Sandbox";
-		constexpr auto g_DefaultAssetDirectory = "Assets";
 
 		bool HasText(const char* value)
 		{
@@ -29,7 +29,19 @@ namespace Rod {
 	{
 		m_Open = true;
 		m_Step = Step::Directory;
+		m_Name.fill('\0');
+		m_Directory.clear();
+		ResetDefaultPaths();
 		m_Error.clear();
+	}
+
+	void ProjectSetupPanel::ResetDefaultPaths()
+	{
+		const ProjectProperties defaults;
+		m_AssetDirectory = defaults.AssetsPath;
+		m_StartScene = defaults.StartupScenePath;
+		m_ScriptProject = defaults.ScriptsProjectPath;
+		m_ShaderDirectory = defaults.ShadersPath;
 	}
 
 	std::optional<Project> ProjectSetupPanel::OnImGuiRender()
@@ -44,59 +56,122 @@ namespace Rod {
 			ImGui::TextUnformatted("New Project");
 			ImGui::TextDisabled("Step %zu of %zu - %s", stepIndex + 1, titles.size(), titles[stepIndex]);
 			ImGui::Dummy(ImVec2{0.0f, g_FieldSpacing});
-			switch (m_Step)
+			try
 			{
-				case Step::Directory:
-					DrawDirectory();
-					break;
-				case Step::Details:
-					DrawDetails();
-					break;
-				case Step::Files:
-					DrawFiles();
-					break;
+				switch (m_Step)
+				{
+					case Step::Directory:
+						DrawDirectory();
+						break;
+					case Step::Details:
+						DrawDetails();
+						break;
+					case Step::Files:
+						DrawFiles();
+						break;
+				}
 			}
+			catch (const std::exception& exception)
+			{
+				m_Error = exception.what();
+			}
+			if (!m_Error.empty())
+				ImGui::TextWrapped("%s", m_Error.c_str());
 		}
 		ImGui::EndChild();
 		return DrawNavigation();
 	}
 
-	void ProjectSetupPanel::DrawField(const char* label, const char* hint, std::span<char> value)
+	bool ProjectSetupPanel::DrawPathPicker(const char* label, const std::filesystem::path& value)
 	{
 		ImGui::PushID(label);
 		ImGui::TextUnformatted(label);
-		ImGui::SetNextItemWidth(-1.0f);
-		ImGui::InputTextWithHint("##Value", hint, value.data(), value.size());
+		const bool browse = ImGui::Button("Browse...", g_ButtonSize);
+		ImGui::SameLine();
+		ImGui::TextWrapped("%s", value.empty() ? "No selection" : value.string().c_str());
 		ImGui::Dummy(ImVec2{0.0f, g_FieldSpacing});
 		ImGui::PopID();
+		return browse;
+	}
+
+	void ProjectSetupPanel::PickProjectPath(
+	    std::filesystem::path& value,
+	    const char* filter,
+	    const char* extension)
+	{
+		const auto selected = filter ? FileDialogs::OpenFile(filter, m_Directory.string())
+		                             : FileDialogs::SelectFolder(m_Directory.string());
+		if (selected.empty())
+			return;
+		if (filter ? !std::filesystem::is_regular_file(selected) : !std::filesystem::is_directory(selected))
+			throw std::runtime_error(filter ? "Choose an existing file." : "Choose an existing folder.");
+		const auto relative = std::filesystem::relative(std::filesystem::canonical(selected), m_Directory);
+		if (relative.empty() || relative.has_root_path() || std::ranges::find(relative, "..") != relative.end())
+			throw std::runtime_error("Choose a path inside the project folder.");
+		if (extension && relative.extension() != extension)
+			throw std::runtime_error(std::string("Choose a ") + extension + " file.");
+		value = relative;
+		m_Error.clear();
 	}
 
 	void ProjectSetupPanel::DrawDirectory()
 	{
-		DrawField("Directory", "D:/Projects", m_Directory);
-		ImGui::TextWrapped("Choose the parent directory. A folder with the project name will be created inside it.");
+		if (DrawPathPicker("Project folder", m_Directory))
+		{
+			const auto selected = FileDialogs::SelectFolder(m_Directory.string());
+			if (!selected.empty())
+			{
+				if (!std::filesystem::is_directory(selected))
+					throw std::runtime_error("Choose an existing project folder.");
+				const auto directory = std::filesystem::canonical(selected);
+				if (directory != m_Directory)
+				{
+					m_Directory = directory;
+					ResetDefaultPaths();
+				}
+				m_Error.clear();
+			}
+		}
+		ImGui::TextWrapped("Choose or create the project folder in the system dialog. The manifest will be saved there.");
 	}
 
 	void ProjectSetupPanel::DrawDetails()
 	{
-		DrawField("Project name", g_DefaultName, m_Name);
-		DrawField("Asset directory", g_DefaultAssetDirectory, m_AssetDirectory);
-		ImGui::TextDisabled("The asset directory is relative to the project folder.");
-		ImGui::TextWrapped("Project folder: %s", ProjectFolder().c_str());
+		ImGui::TextUnformatted("Project name");
+		ImGui::SetNextItemWidth(-1.0f);
+		ImGui::InputTextWithHint("##ProjectName", m_Directory.filename().string().c_str(), m_Name.data(), m_Name.size());
+		ImGui::Dummy(ImVec2{0.0f, g_FieldSpacing});
+		if (DrawPathPicker("Asset directory", m_AssetDirectory))
+		{
+			const auto previous = m_AssetDirectory;
+			PickProjectPath(m_AssetDirectory);
+			if (m_StartScene == previous / "Scenes/Main.rod")
+				m_StartScene = m_AssetDirectory / "Scenes/Main.rod";
+			if (m_ScriptProject == previous / "Scripts/Game.csproj")
+				m_ScriptProject = m_AssetDirectory / "Scripts/Game.csproj";
+		}
+		if (DrawPathPicker("Engine shader directory", m_ShaderDirectory))
+		{
+			const auto selected = FileDialogs::SelectFolder(m_ShaderDirectory.string());
+			if (!selected.empty())
+			{
+				if (!std::filesystem::is_directory(selected))
+					throw std::runtime_error("Choose an existing shader folder.");
+				m_ShaderDirectory = std::filesystem::canonical(selected);
+				m_Error.clear();
+			}
+		}
+		ImGui::TextWrapped("Project folder: %s", m_Directory.string().c_str());
 	}
 
 	void ProjectSetupPanel::DrawFiles()
 	{
-		const std::string defaultScene = AssetDirectory() + "/Scenes/Main.rod";
-		const std::string defaultScriptProject = AssetDirectory() + "/Scripts/" + ProjectName() + ".csproj";
-		DrawField("Start scene", defaultScene.c_str(), m_StartScene);
-		DrawField("Script project", defaultScriptProject.c_str(), m_ScriptProject);
-		ImGui::TextDisabled("Paths are relative to the project folder.");
-		ImGui::TextWrapped("Project file: %s/%s.rdproj", ProjectFolder().c_str(), ProjectName().c_str());
-		ImGui::TextWrapped(
-		    "The manifest and asset directory will be created. Scene and script files must be provided separately.");
-		if (!m_Error.empty())
-			ImGui::TextWrapped("%s", m_Error.c_str());
+		if (DrawPathPicker("Start scene", m_StartScene))
+			PickProjectPath(m_StartScene, "Rod Scene (*.rod)\0*.rod\0", ".rod");
+		if (DrawPathPicker("Script project", m_ScriptProject))
+			PickProjectPath(m_ScriptProject, "C# Project (*.csproj)\0*.csproj\0", ".csproj");
+		ImGui::TextWrapped("Default scene and script files will be created if missing. Browse to use existing files.");
+		ImGui::TextWrapped("Project file: %s", (m_Directory / (ProjectName() + ".rodproj")).string().c_str());
 	}
 
 	std::optional<Project> ProjectSetupPanel::DrawNavigation()
@@ -147,55 +222,50 @@ namespace Rod {
 	{
 		const std::filesystem::path name = ProjectName();
 		if (name.has_parent_path() || name.has_root_path() || name == "." || name == ".." || name.filename().empty())
-			throw std::runtime_error("Project name must be a single folder name.");
+			throw std::runtime_error("Project name must be a single file name.");
 
-		const auto assets = AssetDirectory();
-		ProjectProperties properties{
-		    .Name = ProjectName(),
-		    .AssetsPath = assets,
-		    .StartupScenePath = HasText(m_StartScene.data()) ? m_StartScene.data() : assets + "/Scenes/Main.rod",
-		    .ScriptsProjectPath = HasText(m_ScriptProject.data()) ? m_ScriptProject.data()
-		                                                          : assets + "/Scripts/" + ProjectName() + ".csproj"};
-		for (const auto& path : {properties.AssetsPath, properties.StartupScenePath, properties.ScriptsProjectPath})
+		const auto directory = std::filesystem::canonical(m_Directory);
+		for (const auto& entry : std::filesystem::directory_iterator(directory))
 		{
-			if (path.has_root_path() || path.empty() || std::ranges::find(path, "..") != path.end())
-				throw std::runtime_error("Project paths must be relative and remain inside the project folder.");
+			const auto extension = entry.path().extension();
+			if (extension == ".rodproj")
+				throw std::runtime_error("This folder already has a project manifest. Open it from the launcher.");
+		}
+		for (const auto* shader : {"Texture.glsl", "3D.glsl", "Shadow.glsl"})
+		{
+			if (!std::filesystem::is_regular_file(m_ShaderDirectory / shader))
+				throw std::runtime_error(std::string("Shader folder is missing ") + shader + ".");
 		}
 
-		const auto directory = std::filesystem::absolute(ProjectFolder()).lexically_normal();
-		if (std::filesystem::exists(directory))
-			throw std::runtime_error("Project folder already exists. Choose another name or open its manifest.");
-		std::filesystem::create_directories(directory.parent_path());
-		if (!std::filesystem::create_directory(directory))
-			throw std::runtime_error("Project folder already exists.");
-
-		Project project{directory / (ProjectName() + ".rdproj"), std::move(properties)};
-		std::filesystem::create_directories(project.GetAssetsPath());
+		ProjectProperties properties{
+		    .Name = ProjectName(),
+		    .AssetsPath = m_AssetDirectory,
+		    .StartupScenePath = m_StartScene,
+		    .ScriptsProjectPath = m_ScriptProject,
+		    .ShadersPath = std::filesystem::canonical(m_ShaderDirectory)};
+		Project project{directory / (ProjectName() + ".rodproj"), std::move(properties)};
+		ProjectInitializer::CreateDefaultFiles(project);
 		ProjectSerializer::Serialize(project);
 		return project;
 	}
 
 	bool ProjectSetupPanel::CanContinue() const
 	{
-		return m_Step != Step::Directory || HasText(m_Directory.data());
+		switch (m_Step)
+		{
+			case Step::Directory:
+				return !m_Directory.empty();
+			case Step::Details:
+				return !m_AssetDirectory.empty();
+			case Step::Files:
+				return !m_StartScene.empty() && !m_ScriptProject.empty();
+		}
+		return false;
 	}
 
 	std::string ProjectSetupPanel::ProjectName() const
 	{
-		return HasText(m_Name.data()) ? m_Name.data() : g_DefaultName;
-	}
-
-	std::string ProjectSetupPanel::AssetDirectory() const
-	{
-		return HasText(m_AssetDirectory.data()) ? m_AssetDirectory.data() : g_DefaultAssetDirectory;
-	}
-
-	std::string ProjectSetupPanel::ProjectFolder() const
-	{
-		std::string directory = m_Directory.data();
-		if (!directory.empty() && directory.back() != '/' && directory.back() != '\\')
-			directory += '/';
-		return directory + ProjectName();
+		return HasText(m_Name.data()) ? m_Name.data() : m_Directory.filename().string();
 	}
 
 }

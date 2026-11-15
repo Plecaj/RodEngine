@@ -8,7 +8,7 @@ Entities:
       Rotation: [-0, 0, -0]
       Scale: [8, 0.2, 8]
     MeshComponent:
-      Path: assets/Meshes/Cube.glb
+      Path: Assets/Meshes/Cube.glb
       Albedo: [0.8, 0.8, 0.8, 1]
       Emissive: [0, 0, 0]
       Roughness: 0.5
@@ -50,7 +50,7 @@ Entities:
       Rotation: [0.34906584, 0.34906575, 8.19564e-08]
       Scale: [0.99999964, 1, 0.9999995]
     MeshComponent:
-      Path: assets/Meshes/Cube.glb
+      Path: Assets/Meshes/Cube.glb
       Albedo: [0.54826254, 0.17146435, 0.17146435, 1]
       Emissive: [0, 0, 0]
       Roughness: 0.5

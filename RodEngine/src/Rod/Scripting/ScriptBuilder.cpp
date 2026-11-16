@@ -6,6 +6,11 @@
 
 namespace Rod {
 
+	std::filesystem::path ScriptBuilder::GetAssemblyPath(const std::filesystem::path& projectPath)
+	{
+		return projectPath.parent_path() / "bin/Debug/net9.0" / (projectPath.stem().string() + ".dll");
+	}
+
 	ScriptBuildResult ScriptBuilder::BuildProject(const std::filesystem::path& projectPath)
 	{
 		if (!std::filesystem::exists(projectPath))

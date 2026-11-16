@@ -31,19 +31,18 @@ rod_copy_samples(Rod-Runtime)
 
 set(ROD_GAME_EXPORT_DIR "${CMAKE_BINARY_DIR}/export/RodGame")
 
+add_executable(Rod-Package tools/PackageMain.cpp)
+rod_configure_cpp_target(Rod-Package)
+target_link_libraries(Rod-Package PRIVATE Rod::Engine Rod::ProjectOptions Rod::ProjectWarnings)
+target_compile_definitions(Rod-Package PRIVATE ROD_EXECUTABLE_SUFFIX="${CMAKE_EXECUTABLE_SUFFIX}")
+rod_set_common_output_directories(Rod-Package)
+add_dependencies(Rod-Package Rod-Runtime)
+
 add_custom_target(RodGame-Export
-    COMMAND ${CMAKE_COMMAND} -E make_directory
+    COMMAND "$<TARGET_FILE:Rod-Package>"
+        "${CMAKE_SOURCE_DIR}/Samples/Samples.rodproj"
         "${ROD_GAME_EXPORT_DIR}"
-    COMMAND ${CMAKE_COMMAND} -E copy
-        "$<TARGET_FILE:Rod-Runtime>"
-        "${ROD_GAME_EXPORT_DIR}/RodGame${CMAKE_EXECUTABLE_SUFFIX}"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "$<TARGET_FILE_DIR:Rod-Runtime>/RodAssets"
-        "${ROD_GAME_EXPORT_DIR}/RodAssets"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "$<TARGET_FILE_DIR:Rod-Runtime>/Samples"
-        "${ROD_GAME_EXPORT_DIR}/Samples"
-    DEPENDS Rod-Runtime
+    DEPENDS Rod-Package
     VERBATIM
 )
 

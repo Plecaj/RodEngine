@@ -7,11 +7,13 @@
 
 namespace Rod {
 
-	static std::string ShowFileDialog(
-	    const char* filter,
-	    bool save,
-	    const std::string& initialDirectory = {},
-	    bool directory = false)
+	std::filesystem::path Platform::GetExecutablePath()
+	{
+		return std::filesystem::read_symlink("/proc/self/exe");
+	}
+
+	static std::string
+	ShowFileDialog(const char* filter, bool save, const std::string& initialDirectory = {}, bool directory = false)
 	{
 		std::vector<std::string> arguments = {"zenity", "--file-selection"};
 		if (directory)

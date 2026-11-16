@@ -1,7 +1,9 @@
 #include "rdpch.h"
 
-#include "Rod/Core/Core.h"
 #include "Rod/Core/EntryPoint.h" // IWYU pragma: keep
+#include "Rod/Project/ProjectExporter.h"
+#include "Rod/Project/ProjectSerializer.h"
+#include "Rod/Utils/PlatformUtils.h"
 #include "RuntimeLayer.h"
 
 #include <optional>
@@ -19,8 +21,12 @@ namespace Rod {
 
 	Application* CreateApplication(const std::optional<Project>& project)
 	{
-		RD_CORE_ASSERT(project.has_value(), "Project must be provided for runtime");
-		return new RodRuntime(project.value());
+		const auto directory = Platform::GetExecutablePath().parent_path();
+		Project runtimeProject = project ? *project : Project{directory / ProjectExporter::MANIFEST_FILENAME, {}};
+		if (!project)
+			ProjectSerializer::Deserialize(runtimeProject);
+		std::filesystem::current_path(directory);
+		return new RodRuntime(std::move(runtimeProject));
 	}
 
 }

@@ -3,6 +3,7 @@ include(vendor/Catch2)
 add_executable(RodEngineTests
     Math/Math.cpp
     Project/Serialization.cpp
+    Project/Export.cpp
     Platform/SharedLibrary.cpp
     Renderer/Mesh.cpp
     Renderer/Texture.cpp

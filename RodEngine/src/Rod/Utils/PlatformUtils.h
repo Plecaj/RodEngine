@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <string>
 
 namespace Rod {
@@ -8,6 +9,7 @@ namespace Rod {
 	{
 	public:
 		static float GetTime();
+		[[nodiscard]] static std::filesystem::path GetExecutablePath();
 	};
 
 	class FileDialogs

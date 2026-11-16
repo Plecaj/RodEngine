@@ -33,8 +33,8 @@ namespace Rod {
 		static void SerializeTransformComponent(YAML::Emitter& out, const TransformComponent& transform);
 		static void SerializeCameraComponent(YAML::Emitter& out, const CameraComponent& cameraComponent);
 		static std::string NormalizeAssetPath(std::string path);
-		std::string SerializeAssetPath(const std::string& path) const;
-		std::string ResolveAssetPath(const std::string& path) const;
+		[[nodiscard]] std::string SerializeAssetPath(const std::string& path) const;
+		[[nodiscard]] std::string ResolveAssetPath(const std::string& path) const;
 		void SerializeSpriteRendererComponent(YAML::Emitter& out, const SpriteRendererComponent& sprite) const;
 		void SerializeMeshComponent(YAML::Emitter& out, const MeshComponent& meshComponent) const;
 		static void SerializeDirectionalLightComponent(YAML::Emitter& out, const DirectionalLightComponent& light);

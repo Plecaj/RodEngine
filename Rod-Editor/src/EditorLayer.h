@@ -73,13 +73,6 @@ namespace Rod {
 		void DeserializeScene(const std::filesystem::path& path);
 		void SerializeScene(const std::filesystem::path& path);
 
-		[[nodiscard]] static std::filesystem::path GetRuntimeExecutablePath();
-		[[nodiscard]] static std::filesystem::path GetExportRootPath();
-		bool PrepareExportFolders(const std::filesystem::path& exportAssetsPath);
-		bool
-		CopyRuntimeExecutable(const std::filesystem::path& runtimeExecutable, const std::filesystem::path& exportRoot);
-		bool CopyEngineAssets(const std::filesystem::path& exportAssetsPath);
-
 	private:
 		const Project& m_Project;
 		Scene m_EditorScene;

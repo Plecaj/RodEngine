@@ -7,17 +7,35 @@
 #include <Windows.h>
 
 #include <commdlg.h>
-#include <shobjidl.h>
-#include <wrl/client.h>
-
 #include <filesystem>
 #include <memory>
+#include <shobjidl.h>
+#include <system_error>
+#include <wrl/client.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include "Rod/Core/Application.h"
 
 #include <GLFW/glfw3native.h>
 
 namespace Rod {
+
+	std::filesystem::path Platform::GetExecutablePath()
+	{
+		constexpr auto growthFactor = 2U;
+		std::wstring path(MAX_PATH, L'\0');
+		for (;;)
+		{
+			const DWORD size = GetModuleFileNameW(nullptr, path.data(), static_cast<DWORD>(path.size()));
+			if (!size)
+				throw std::system_error(static_cast<int>(GetLastError()), std::system_category());
+			if (size < path.size())
+			{
+				path.resize(size);
+				return path;
+			}
+			path.resize(path.size() * growthFactor);
+		}
+	}
 
 	static HWND GetOwnerWindow()
 	{
@@ -68,11 +86,14 @@ namespace Rod {
 
 		Microsoft::WRL::ComPtr<IFileOpenDialog> dialog;
 		if (FAILED(CoCreateInstance(
-		        __uuidof(FileOpenDialog), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(dialog.GetAddressOf()))))
+		        __uuidof(FileOpenDialog),
+		        nullptr,
+		        CLSCTX_INPROC_SERVER,
+		        IID_PPV_ARGS(dialog.GetAddressOf()))))
 			return {};
 		DWORD options = 0;
-		if (FAILED(dialog->GetOptions(&options))
-		    || FAILED(dialog->SetOptions(options | FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM | FOS_NOCHANGEDIR)))
+		if (FAILED(dialog->GetOptions(&options)) ||
+		    FAILED(dialog->SetOptions(options | FOS_PICKFOLDERS | FOS_FORCEFILESYSTEM | FOS_NOCHANGEDIR)))
 			return {};
 
 		if (!initialDirectory.empty())

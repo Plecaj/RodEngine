@@ -2,6 +2,8 @@
 
 #include "EditorLayer.h"
 
+#include "Rod/Project/ProjectExporter.h"
+#include "Rod/Scripting/ScriptBuilder.h"
 #include "Rod/Scripting/ScriptEngine.h"
 #include "Rod/Utils/PlatformUtils.h"
 
@@ -9,8 +11,8 @@
 #include "imgui_internal.h"
 
 #include "ImGuizmo.h"
-
 #include <exception>
+#include <stdexcept>
 
 namespace Rod {
 
@@ -80,8 +82,8 @@ namespace Rod {
 	}
 
 	EditorLayer::EditorLayer(const Project& project)
-	    : Layer("Editor Layer"), m_Project(project),
-	      m_SceneHierarchyPanel(project.GetAssetsPath()), m_ContentBrowserPanel(project.GetAssetsPath())
+	    : Layer("Editor Layer"), m_Project(project), m_SceneHierarchyPanel(project.GetAssetsPath()),
+	      m_ContentBrowserPanel(project.GetAssetsPath())
 	{}
 
 	void EditorLayer::OnAttach()
@@ -311,18 +313,18 @@ namespace Rod {
 		const Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
 		m_ViewportPanel.OnImGuiRender(
 		    {*m_Framebuffer,
-			 *m_ActiveScene,
-			 selectedEntity,
-			 m_EditorCamera,
-			 m_SceneState,
-			 m_GizmoType,
-			 m_ViewportSize,
-			 m_PendingViewportSize,
-			 m_ViewportBounds,
-			 m_ViewportFocused,
-			 m_ViewportHovered,
-			 m_Project.GetAssetsPath(),
-			 [this](const std::filesystem::path& path) { OpenScene(path); }});
+		     *m_ActiveScene,
+		     selectedEntity,
+		     m_EditorCamera,
+		     m_SceneState,
+		     m_GizmoType,
+		     m_ViewportSize,
+		     m_PendingViewportSize,
+		     m_ViewportBounds,
+		     m_ViewportFocused,
+		     m_ViewportHovered,
+		     m_Project.GetAssetsPath(),
+		     [this](const std::filesystem::path& path) { OpenScene(path); }});
 
 		m_ToolbarPanel.OnImGuiRender(
 		    m_SceneState,
@@ -496,102 +498,20 @@ namespace Rod {
 
 	void EditorLayer::ExportGame()
 	{
-		Scene* sceneToExport = &m_EditorScene;
-		if (!sceneToExport)
-		{
-			RD_CORE_ERROR("No scene to export");
-			return;
-		}
-
-		const std::filesystem::path runtimeExecutable = GetRuntimeExecutablePath();
-		if (!std::filesystem::exists(runtimeExecutable))
-		{
-			RD_CORE_ERROR("Runtime not found: {}", runtimeExecutable.string());
-			return;
-		}
-
-		const std::filesystem::path exportRoot = GetExportRootPath();
-		const std::filesystem::path exportAssets = exportRoot / "Assets";
-
-		if (!PrepareExportFolders(exportAssets))
-			return;
-
-		if (!CopyRuntimeExecutable(runtimeExecutable, exportRoot))
-			return;
-
-		if (!CopyEngineAssets(exportRoot / "RodAssets"))
-			return;
-
-		SceneSerializer serializer(*sceneToExport);
 		try
 		{
-			serializer.SerializeText((exportAssets / "scenes" / "Startup.rod").string());
+			const auto scripts = ScriptBuilder::BuildProject(m_Project.GetScriptProjectPath());
+			if (!scripts.Success)
+				throw std::runtime_error("Script build failed: " + scripts.Output);
+			const auto directory = Platform::GetExecutablePath().parent_path();
+			const auto output = directory / "exports/RodGame";
+			ProjectExporter::Export(m_Project, directory / "Rod-Runtime" ROD_EXECUTABLE_SUFFIX, output, &m_EditorScene);
+			RD_CORE_INFO("Exported game to {}", output.string());
 		}
 		catch (const std::exception& exception)
 		{
-			RD_CORE_ERROR("{}", exception.what());
-			return;
+			RD_CORE_ERROR("Game export failed: {}", exception.what());
 		}
-		RD_CORE_INFO("Exported game to {}", exportRoot.string());
-	}
-
-	std::filesystem::path EditorLayer::GetRuntimeExecutablePath()
-	{
-		return std::filesystem::current_path() / "Rod-Runtime" ROD_EXECUTABLE_SUFFIX;
-	}
-
-	std::filesystem::path EditorLayer::GetExportRootPath()
-	{
-		return std::filesystem::current_path() / "exports" / "RodGame";
-	}
-
-	bool EditorLayer::PrepareExportFolders(const std::filesystem::path& exportAssetsPath)
-	{
-		std::error_code error;
-		std::filesystem::create_directories(exportAssetsPath / "scenes", error);
-		if (error)
-		{
-			RD_CORE_ERROR("Export folder failed: {}", error.message());
-			return false;
-		}
-
-		return true;
-	}
-
-	bool EditorLayer::CopyRuntimeExecutable(
-	    const std::filesystem::path& runtimeExecutable,
-	    const std::filesystem::path& exportRoot)
-	{
-		std::error_code error;
-		std::filesystem::copy_file(
-		    runtimeExecutable,
-		    exportRoot / "RodGame" ROD_EXECUTABLE_SUFFIX,
-		    std::filesystem::copy_options::overwrite_existing,
-		    error);
-		if (error)
-		{
-			RD_CORE_ERROR("Runtime copy failed: {}", error.message());
-			return false;
-		}
-
-		return true;
-	}
-
-	bool EditorLayer::CopyEngineAssets(const std::filesystem::path& exportAssetsPath)
-	{
-		std::error_code error;
-		std::filesystem::copy(
-		    std::filesystem::current_path() / "RodAssets",
-		    exportAssetsPath,
-		    std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing,
-		    error);
-		if (error)
-		{
-			RD_CORE_ERROR("Asset copy failed: {}", error.message());
-			return false;
-		}
-
-		return true;
 	}
 
 	void EditorLayer::OnScenePlay()

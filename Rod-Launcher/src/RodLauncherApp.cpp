@@ -62,10 +62,7 @@ namespace Rod {
 			if (m_ProjectSetup.IsOpen())
 			{
 				if (auto project = m_ProjectSetup.OnImGuiRender())
-				{
-					m_Project = std::move(project);
-					LaunchEditor();
-				}
+					LaunchEditor(*project);
 			}
 			else
 			{
@@ -188,8 +185,7 @@ namespace Rod {
 				const std::filesystem::path manifestPath = path;
 				Project project{std::filesystem::absolute(manifestPath).lexically_normal(), {}};
 				ProjectSerializer::Deserialize(project);
-				m_Project = std::move(project);
-				LaunchEditor();
+				LaunchEditor(project);
 			}
 			catch (const std::exception& exception)
 			{
@@ -198,12 +194,12 @@ namespace Rod {
 			}
 		}
 
-		void LaunchEditor()
+		void LaunchEditor(const Project& project)
 		{
 			try
 			{
 				const auto executable = std::filesystem::current_path() / "Rod-Editor" ROD_EXECUTABLE_SUFFIX;
-				const auto result = Process::Start({executable.string(), m_Project->GetManifestPath().string()});
+				const auto result = Process::Start({executable.string(), project.GetManifestPath().string()});
 				if (result.ExitCode != 0)
 					throw std::runtime_error("Could not launch editor: " + result.Output);
 				m_Error.clear();
@@ -286,7 +282,6 @@ namespace Rod {
 	private:
 		Scope<Texture2D> m_FolderIcon;
 		ProjectSetupPanel m_ProjectSetup;
-		std::optional<Project> m_Project;
 		std::string m_Error;
 	};
 

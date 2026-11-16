@@ -18,7 +18,8 @@ namespace Utils {
 	{
 		if (argc <= 1)
 			return std::nullopt;
-		if (argc != 2)
+		constexpr int argumentCount = 2;
+		if (argc != argumentCount)
 			throw std::invalid_argument("Expected a single .rodproj manifest argument");
 
 		Rod::Project project{std::filesystem::absolute(argv[1]).lexically_normal(), {}};

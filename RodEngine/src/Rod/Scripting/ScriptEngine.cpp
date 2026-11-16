@@ -104,8 +104,8 @@ namespace Rod {
 		};
 
 		explicit ScriptEngineData(ScriptPaths paths)
-		    : Paths(std::move(paths)), Runtime(Paths.RuntimeConfigPath, Paths.CoreAssemblyPath),
-		      Functions(Runtime), Host(Functions.Shutdown)
+		    : Paths(std::move(paths)), Runtime(Paths.RuntimeConfigPath, Paths.CoreAssemblyPath), Functions(Runtime),
+		      Host(Functions.Shutdown)
 		{
 			auto calls = ScriptGlue::GetNativeCalls();
 			if (Functions.Initialize(calls.data(), static_cast<int32_t>(calls.size())) != 0)
@@ -128,12 +128,6 @@ namespace Rod {
 	};
 
 	std::unique_ptr<ScriptEngine::ScriptEngineData> ScriptEngine::s_Data;
-
-	std::filesystem::path ScriptEngine::GetManagedAssemblyPath(const std::filesystem::path& projectPath)
-	{
-		const std::string assemblyName = projectPath.stem().string() + ".dll";
-		return projectPath.parent_path() / "bin" / "Debug" / "net9.0" / assemblyName;
-	}
 
 	std::filesystem::path ScriptEngine::CreateAssemblyCachePath(const std::filesystem::path& assemblyPath)
 	{
@@ -176,8 +170,8 @@ namespace Rod {
 			std::free(text);
 #endif
 		};
-		std::unique_ptr<void, decltype(release)> text(value, release);
-		return std::string(static_cast<const char*>(text.get()));
+		const std::unique_ptr<void, decltype(release)> text(value, release);
+		return {static_cast<const char*>(text.get())};
 	}
 
 	ScriptEngine::ScriptPaths ScriptEngine::ResolveScriptPaths()
@@ -195,7 +189,7 @@ namespace Rod {
 		    coreAssembly,
 		    coreAssembly.parent_path() / "Rod.ScriptCore.runtimeconfig.json",
 		    scriptProject,
-		    GetManagedAssemblyPath(scriptProject),
+		    ScriptBuilder::GetAssemblyPath(scriptProject),
 		    scriptProject.parent_path() / "Source",
 		    assetsPath / "Scripts" / "Cache"};
 	}
@@ -216,7 +210,7 @@ namespace Rod {
 			return;
 		}
 
-		if (BuildScripts())
+		if (!Application::Get().IsEditor() || BuildScripts())
 			ReloadAssembly();
 		RefreshSourceWriteTime();
 	}
@@ -239,7 +233,7 @@ namespace Rod {
 			return;
 
 		s_Data->Paths.ScriptProjectPath = projectPath;
-		s_Data->Paths.ScriptAssemblyPath = GetManagedAssemblyPath(projectPath);
+		s_Data->Paths.ScriptAssemblyPath = ScriptBuilder::GetAssemblyPath(projectPath);
 		s_Data->Paths.ScriptSourceDirectory = projectPath.parent_path() / "Source";
 	}
 
@@ -250,17 +244,6 @@ namespace Rod {
 		if (!s_Data)
 			return false;
 
-		if (!std::filesystem::exists(s_Data->Paths.ScriptProjectPath))
-		{
-			if (std::filesystem::exists(s_Data->Paths.ScriptAssemblyPath))
-			{
-				RD_CORE_TRACE(
-				    "Script project is not available. Using packaged script assembly: {}",
-				    s_Data->Paths.ScriptAssemblyPath.string());
-				return true;
-			}
-		}
-
 		ScriptBuildResult result = ScriptBuilder::BuildProject(s_Data->Paths.ScriptProjectPath);
 		if (!result.Success)
 		{
@@ -269,7 +252,7 @@ namespace Rod {
 		}
 
 		RD_CORE_TRACE("Script build succeeded:\n{}", result.Output);
-		s_Data->Paths.ScriptAssemblyPath = GetManagedAssemblyPath(s_Data->Paths.ScriptProjectPath);
+		s_Data->Paths.ScriptAssemblyPath = ScriptBuilder::GetAssemblyPath(s_Data->Paths.ScriptProjectPath);
 		return true;
 	}
 
@@ -284,7 +267,9 @@ namespace Rod {
 				RD_CORE_ERROR("Assembly missing '{}'", s_Data->Paths.ScriptAssemblyPath.string());
 				return false;
 			}
-			const auto cachedAssembly = CreateAssemblyCachePath(s_Data->Paths.ScriptAssemblyPath);
+			const auto cachedAssembly = Application::Get().IsEditor()
+			                                ? CreateAssemblyCachePath(s_Data->Paths.ScriptAssemblyPath)
+			                                : s_Data->Paths.ScriptAssemblyPath;
 			const auto metadataJson =
 			    CopyManagedString(s_Data->Functions.LoadAssembly(cachedAssembly.string().c_str()));
 			if (metadataJson.empty())
@@ -402,8 +387,7 @@ namespace Rod {
 
 	void ScriptEngine::SetRuntimeFieldValue(Entity entity, const std::string& fieldName)
 	{
-		if (!s_Data || !s_Data->RuntimeRunning || !entity ||
-		    !entity.HasComponent<ScriptComponent>())
+		if (!s_Data || !s_Data->RuntimeRunning || !entity || !entity.HasComponent<ScriptComponent>())
 			return;
 
 		auto& script = entity.GetComponent<ScriptComponent>();
@@ -473,7 +457,7 @@ namespace Rod {
 		for (const auto& [name, field] : script.Fields)
 		{
 			if (!field.Value.empty())
-			s_Data->Functions.SetFieldValue(
+				s_Data->Functions.SetFieldValue(
 				    static_cast<uint64_t>(entity.GetUUID()),
 				    name.c_str(),
 				    static_cast<int32_t>(field.Field.Type),

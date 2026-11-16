@@ -4,19 +4,7 @@
 #include <memory>
 #include <utility>
 
-#ifdef RD_PLATFORM_WINDOWS
-	#if RD_DYNAMIC_LINK
-		#ifdef RD_BUILD_DLL
-			#define ROD_API __declspec(dllexport)
-		#else
-			#define ROD_API __declspec(dllimport)
-		#endif
-	#else
-		#define ROD_API
-	#endif
-#elif defined(RD_PLATFORM_LINUX)
-	#define ROD_API
-#else
+#if !defined(RD_PLATFORM_WINDOWS) && !defined(RD_PLATFORM_LINUX)
 	#error Rod only supports Windows and Linux.
 #endif
 
@@ -63,8 +51,6 @@
 			(void)sizeof(x); \
 		} while (false);
 #endif
-
-#define BIT(x) (1 << (x))
 
 namespace Rod {
 	template <typename T>

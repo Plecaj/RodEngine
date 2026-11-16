@@ -24,6 +24,7 @@ namespace Rod {
 		};
 
 		void Flush();
+		[[nodiscard]] const std::filesystem::path& GetCacheDirectory() const { return m_CacheDirectory; }
 
 	private:
 		ShaderCacheDatabase();
@@ -35,7 +36,7 @@ namespace Rod {
 	private:
 		std::unordered_set<std::string> m_ValidKeys;
 
-		std::filesystem::path m_CacheDirectory = "assets/shaders/cached";
+		std::filesystem::path m_CacheDirectory;
 		std::filesystem::path m_CacheDatabase = m_CacheDirectory / "cache.yaml";
 		YAML::Node m_CacheData;
 	};

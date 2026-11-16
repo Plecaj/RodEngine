@@ -4,23 +4,19 @@
 
 #include "Rod/Renderer/RenderCommand.h"
 
+#include <exception>
+
 namespace Rod {
 
-	std::filesystem::path RuntimeLayer::ResolveStartupScenePath()
-	{
-		std::filesystem::path startupScene = "assets/scenes/Startup.rod";
-		if (std::filesystem::exists(startupScene))
-			return startupScene;
-
-		return "assets/scenes/Example3D.rod";
-	}
+	RuntimeLayer::RuntimeLayer(const Project& project) : m_Project(project)
+	{}
 
 	void RuntimeLayer::OnAttach()
 	{
 		ScriptEngine::Init();
 
 		m_Scene = CreateScope<Scene>();
-		const std::filesystem::path scenePath = ResolveStartupScenePath();
+		const std::filesystem::path scenePath = m_Project.GetStartupScenePath();
 		if (!std::filesystem::exists(scenePath))
 		{
 			RD_CORE_ERROR("Runtime startup scene was not found: {}", scenePath.string());
@@ -28,10 +24,14 @@ namespace Rod {
 			return;
 		}
 
-		SceneSerializer serializer(*m_Scene);
-		if (!serializer.DeserializeText(scenePath.string()))
+		SceneSerializer serializer(*m_Scene, m_Project.GetDirectory());
+		try
 		{
-			RD_CORE_ERROR("Failed to load runtime scene: {}", scenePath.string());
+			serializer.DeserializeText(scenePath.string());
+		}
+		catch (const std::exception& exception)
+		{
+			RD_CORE_ERROR("{}", exception.what());
 			Application::Get().Close();
 			return;
 		}
@@ -52,8 +52,6 @@ namespace Rod {
 
 	void RuntimeLayer::OnUpdate(Timestep ts)
 	{
-		ScriptEngine::OnUpdate();
-
 		RenderCommand::SetClearColor(CLEAR_COLOR);
 		RenderCommand::Clear();
 		Renderer2D::ResetStats();

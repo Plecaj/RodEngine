@@ -39,4 +39,4 @@ Entities:
     SpriteRendererComponent:
       Color: [1, 1, 1, 1]
       TilingFactor: 1
-      Texture: assets\textures\logo.png
+      Texture: Assets/Textures/logo.png

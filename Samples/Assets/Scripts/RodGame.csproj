@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../../Rod-ScriptCore/Rod.ScriptCore.csproj"
+                      Condition="Exists('../../../Rod-ScriptCore/Rod.ScriptCore.csproj')" />
+    <Reference Include="Rod.ScriptCore"
+               Condition="!Exists('../../../Rod-ScriptCore/Rod.ScriptCore.csproj')">
+      <HintPath>../../../RodAssets/Scripts/Core/Rod.ScriptCore.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+</Project>

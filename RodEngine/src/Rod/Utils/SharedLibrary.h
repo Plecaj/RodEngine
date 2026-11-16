@@ -1,26 +1,27 @@
 #pragma once
 
 #include <filesystem>
+#include <string>
 
 namespace Rod {
 
 	class SharedLibrary
 	{
 	public:
-		SharedLibrary() = default;
+		explicit SharedLibrary(const std::filesystem::path& path);
 		~SharedLibrary();
 		SharedLibrary(const SharedLibrary&) = delete;
 		SharedLibrary& operator=(const SharedLibrary&) = delete;
-		SharedLibrary(SharedLibrary&&) = delete;
-		SharedLibrary& operator=(SharedLibrary&&) = delete;
+		SharedLibrary(SharedLibrary&& other) noexcept;
+		SharedLibrary& operator=(SharedLibrary&& other) noexcept;
 
-		bool Load(const std::filesystem::path& path);
 		[[nodiscard]] bool IsLoaded() const noexcept { return m_Handle != nullptr; }
-		void Unload();
 		[[nodiscard]] void* GetFunction(const char* name) const;
 
 	private:
-		void* m_Handle = nullptr;
+		void Close() noexcept;
+
+		void* m_Handle;
 	};
 
 }

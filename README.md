@@ -100,15 +100,15 @@ cd build/clang/bin/Debug
 
 Run from the executable directory; assets loaded relative to the working directory.
 
-**Sample scenes:** `assets/scenes/Example.rod`, `assets/scenes/Example3D.rod`.
+Engine resources (shaders, fonts, icons, and the scripting core) live in `RodAssets/` beside the executables. Project files live in their own `Assets/` folder. Open `Samples/Samples.rodproj` with `Rod-Launcher` to try the bundled scenes, or run `Rod-Runtime Samples/Samples.rodproj` from the executable directory.
 
-The editor opens `Example3D.rod` on startup. Other scenes: **File → Open**.
+Project manifests use the `.rodproj` extension and contain `Name`, `AssetsPath`, `StartupScenePath`, `ScriptsProjectPath`, and `ShadersPath`. Relative paths resolve from the manifest's directory. The editor and runtime accept a manifest path; a packaged game loads `Game.rodproj` beside its executable automatically.
 
 ### Export
 
-**Editor:** File → Export game
-- Current editor scene + assets
-- Output: `exports/RodGame/`, relative to the editor working directory
+**File > Export Game** builds the project's scripts and packages the current scene into `exports/RodGame` beside the editor. The package contains `RodGame`, `Game.rodproj`, project assets, compiled scripts and their dependencies, the selected shaders, and the managed scripting core under `RodAssets/`. Script sources, intermediate build files, and caches are excluded.
+
+Exports target the current operating system and require an installed .NET 9 runtime; players do not need the .NET SDK. Export first assembles and validates a temporary package, then replaces an existing package after success. Symbolic links and asset references outside the packaged project are rejected.
 
 **CMake:**
 
@@ -116,8 +116,13 @@ The editor opens `Example3D.rod` on startup. Other scenes: **File → Open**.
 cmake --build build/clang --config Debug --target RodGame-Export
 ```
 
-- Bundled `Example3D.rod` as startup scene
-- Output: `build/clang/export/RodGame/`
+Use `build/vs` for MSVC. Output goes to `<build-directory>/export/RodGame`; run `RodGame` (`RodGame.exe` on Windows) without arguments. The package can be moved and launched from another working directory.
+
+The same exporter is available from the command line:
+
+```sh
+Rod-Package path/to/Game.rodproj path/to/output
+```
 
 Replace `build/clang` with `build/vs` for MSVC.
 

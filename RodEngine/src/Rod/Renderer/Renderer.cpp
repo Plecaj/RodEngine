@@ -6,10 +6,20 @@
 
 namespace Rod {
 
-	void Renderer::Init()
+	namespace {
+		std::filesystem::path g_ShaderDirectory;
+	}
+
+	const std::filesystem::path& Renderer::GetShaderDirectory()
+	{
+		return g_ShaderDirectory;
+	}
+
+	void Renderer::Init(const std::filesystem::path& shaderDirectory)
 	{
 		RD_PROFILE_FUNCTION();
 
+		g_ShaderDirectory = std::filesystem::absolute(shaderDirectory).lexically_normal();
 		RenderCommand::Init();
 	}
 

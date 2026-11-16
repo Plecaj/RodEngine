@@ -63,7 +63,6 @@ namespace Rod {
 
 		std::unordered_map<shaderc_shader_kind, std::vector<uint32_t>> m_SPIRV;
 
-		std::filesystem::path m_CacheDirectory = "assets/shaders/cached";
 	};
 
 }

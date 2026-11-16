@@ -5,76 +5,68 @@
 #include "Rod/Scripting/ScriptClass.h"
 #include "Rod/Scripting/ScriptField.h"
 
-#include <exception>
 #include <json.hpp>
+#include <stdexcept>
 
 namespace Rod {
 
 	ScriptFieldType ScriptAssembly::ScriptFieldTypeFromString(const std::string& type)
 	{
 		static const std::unordered_map<std::string, ScriptFieldType> FIELD_TYPES = {
-		    {"Single", ScriptFieldType::Float},    {"float", ScriptFieldType::Float},
-		    {"Double", ScriptFieldType::Double},   {"double", ScriptFieldType::Double},
-		    {"Boolean", ScriptFieldType::Bool},    {"bool", ScriptFieldType::Bool},
-		    {"Char", ScriptFieldType::Char},       {"char", ScriptFieldType::Char},
+		    {"Single", ScriptFieldType::Float},    {"Double", ScriptFieldType::Double},
+		    {"Boolean", ScriptFieldType::Bool},    {"Char", ScriptFieldType::Char},
 		    {"Byte", ScriptFieldType::Byte},       {"Int16", ScriptFieldType::Short},
-		    {"Int32", ScriptFieldType::Int},       {"int", ScriptFieldType::Int},
-		    {"Int64", ScriptFieldType::Long},      {"long", ScriptFieldType::Long},
+		    {"Int32", ScriptFieldType::Int},       {"Int64", ScriptFieldType::Long},
 		    {"SByte", ScriptFieldType::UByte},     {"UInt16", ScriptFieldType::UShort},
 		    {"UInt32", ScriptFieldType::UInt},     {"UInt64", ScriptFieldType::ULong},
 		    {"Vector2", ScriptFieldType::Vector2}, {"Vector3", ScriptFieldType::Vector3},
 		    {"Vector4", ScriptFieldType::Vector4}, {"Entity", ScriptFieldType::Entity},
-		    {"String", ScriptFieldType::String},   {"string", ScriptFieldType::String}};
+		    {"String", ScriptFieldType::String}};
 
 		auto it = FIELD_TYPES.find(type);
 		return it != FIELD_TYPES.end() ? it->second : ScriptFieldType::None;
 	}
 
-	bool ScriptAssembly::Load(const std::filesystem::path& assemblyPath, const std::string& metadataJson)
+	ScriptAssembly::ScriptAssembly(const std::filesystem::path& assemblyPath, const std::string& metadataJson)
+	    : m_AssemblyPath(assemblyPath)
 	{
-		Clear();
-		m_AssemblyPath = assemblyPath;
-
 		try
 		{
-			nlohmann::json metadata = nlohmann::json::parse(metadataJson);
-			for (const auto& classJson : metadata["classes"])
+			const auto metadata = nlohmann::json::parse(metadataJson);
+			if (metadata.contains("error"))
+				throw std::runtime_error(
+				    "Assembly load failed '" + assemblyPath.string() + "': " + metadata.at("error").get<std::string>());
+			if (!metadata.is_object() || !metadata.contains("classes") || !metadata.at("classes").is_array())
+				throw std::runtime_error("Assembly metadata invalid '" + assemblyPath.string() + "': classes required");
+			for (const auto& classJson : metadata.at("classes"))
 			{
-				const std::string fullName = classJson.value("fullName", "");
-				const std::string namespaceName = classJson.value("namespace", "");
-				const std::string className = classJson.value("name", "");
+				const auto fullName = classJson.at("fullName").get<std::string>();
+				if (fullName.empty() || !classJson.at("fields").is_array())
+					throw std::runtime_error(
+					    "Assembly metadata invalid '" + assemblyPath.string() + "': class/fields required");
+				const auto namespaceName = classJson.at("namespace").get<std::string>();
+				const auto className = classJson.at("name").get<std::string>();
 
 				ScriptClass scriptClass(fullName, namespaceName, className);
 
-				for (const auto& fieldJson : classJson["fields"])
+				for (const auto& fieldJson : classJson.at("fields"))
 				{
 					ScriptField field;
-					field.Name = fieldJson.value("name", "");
-					field.TypeName = fieldJson.value("type", "");
+					field.Name = fieldJson.at("name").get<std::string>();
+					field.TypeName = fieldJson.at("type").get<std::string>();
 					field.Type = ScriptFieldTypeFromString(field.TypeName);
 
 					if (field.Type != ScriptFieldType::None)
-						scriptClass.GetFields()[field.Name] = {field, fieldJson.value("defaultValue", "")};
+						scriptClass.GetFields()[field.Name] = {field, fieldJson.at("defaultValue").get<std::string>()};
 				}
 
-				if (!fullName.empty())
-					m_Classes[fullName] = scriptClass;
+				m_Classes[fullName] = std::move(scriptClass);
 			}
 		}
-		catch (const std::exception& e)
+		catch (const nlohmann::json::exception& exception)
 		{
-			RD_CORE_ERROR("Failed to parse script metadata: {}", e.what());
-			Clear();
-			return false;
+			throw std::runtime_error("Assembly metadata invalid '" + assemblyPath.string() + "': " + exception.what());
 		}
-
-		return true;
-	}
-
-	void ScriptAssembly::Clear()
-	{
-		m_Classes.clear();
-		m_AssemblyPath.clear();
 	}
 
 	bool ScriptAssembly::HasClass(const std::string& className) const

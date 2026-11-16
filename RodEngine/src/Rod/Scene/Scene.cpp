@@ -239,10 +239,18 @@ namespace Rod {
 	Entity Scene::CreateEntityWithUUID(UUID uuid, const std::string& name)
 	{
 		Entity entity = {m_Registry.create(), this};
-		entity.AddComponent<IDComponent>(uuid);
-		entity.AddComponent<TransformComponent>();
-		auto& tag = entity.AddComponent<TagComponent>();
-		tag.Tag = name.empty() ? "Entity" : name;
+		try
+		{
+			entity.AddComponent<IDComponent>(uuid);
+			entity.AddComponent<TransformComponent>();
+			auto& tag = entity.AddComponent<TagComponent>();
+			tag.Tag = name.empty() ? "Entity" : name;
+		}
+		catch (...)
+		{
+			m_Registry.destroy(static_cast<entt::entity>(entity));
+			throw;
+		}
 		return entity;
 	}
 

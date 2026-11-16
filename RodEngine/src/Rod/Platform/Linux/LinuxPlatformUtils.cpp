@@ -3,11 +3,23 @@
 #include "Rod/Utils/PlatformUtils.h"
 #include "Rod/Utils/Process.h"
 
+#include <filesystem>
+
 namespace Rod {
 
-	static std::string ShowFileDialog(const char* filter, bool save)
+	std::filesystem::path Platform::GetExecutablePath()
+	{
+		return std::filesystem::read_symlink("/proc/self/exe");
+	}
+
+	static std::string
+	ShowFileDialog(const char* filter, bool save, const std::string& initialDirectory = {}, bool directory = false)
 	{
 		std::vector<std::string> arguments = {"zenity", "--file-selection"};
+		if (directory)
+			arguments.emplace_back("--directory");
+		if (!initialDirectory.empty())
+			arguments.push_back("--filename=" + (std::filesystem::path(initialDirectory) / "").string());
 		if (save)
 		{
 			arguments.emplace_back("--save");
@@ -39,9 +51,14 @@ namespace Rod {
 		return result.Output;
 	}
 
-	std::string FileDialogs::OpenFile(const char* filter)
+	std::string FileDialogs::OpenFile(const char* filter, const std::string& initialDirectory)
 	{
-		return ShowFileDialog(filter, false);
+		return ShowFileDialog(filter, false, initialDirectory);
+	}
+
+	std::string FileDialogs::SelectFolder(const std::string& initialDirectory)
+	{
+		return ShowFileDialog(nullptr, false, initialDirectory, true);
 	}
 
 	std::string FileDialogs::SaveFile(const char* filter)

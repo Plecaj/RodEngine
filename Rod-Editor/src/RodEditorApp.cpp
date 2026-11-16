@@ -8,14 +8,26 @@ namespace Rod {
 	class RodEditor : public Application
 	{
 	public:
-		RodEditor() : Application("Rod Editor", "assets/textures/logo.png", true) { PushLayer(new EditorLayer()); }
+		explicit RodEditor(Project project)
+		    : Application(
+		          WindowProps{
+		              "Rod Editor",
+		              WindowProps::DEFAULT_WIDTH,
+		              WindowProps::DEFAULT_HEIGHT,
+		              "RodAssets/Textures/logo.png",
+		              true},
+		          std::move(project))
+		{
+			PushLayer(new EditorLayer(*GetProject()));
+		}
 
 		[[nodiscard]] virtual bool IsEditor() const override { return true; }
 	};
 
-	Application* CreateApplication()
+	Application* CreateApplication(const std::optional<Project>& project)
 	{
-		return new RodEditor();
+		RD_CORE_ASSERT(project.has_value(), "Project must be provided for editor");
+		return new RodEditor(project.value());
 	}
 
 }

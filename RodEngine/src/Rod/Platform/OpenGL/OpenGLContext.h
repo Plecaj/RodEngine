@@ -11,8 +11,12 @@ namespace Rod {
 	{
 	public:
 		explicit OpenGLContext(GLFWwindow* windowHandle);
+		~OpenGLContext() override = default;
+		OpenGLContext(const OpenGLContext&) = delete;
+		OpenGLContext& operator=(const OpenGLContext&) = delete;
+		OpenGLContext(OpenGLContext&&) = delete;
+		OpenGLContext& operator=(OpenGLContext&&) = delete;
 
-		virtual void Init() override;
 		virtual void SwapBuffers() override;
 
 	private:

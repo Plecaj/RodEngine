@@ -73,7 +73,13 @@ namespace Rod {
 	{
 		struct ComApartment
 		{
-			HRESULT Result = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+			ComApartment() noexcept = default;
+			ComApartment(const ComApartment&) = delete;
+			ComApartment& operator=(const ComApartment&) = delete;
+			ComApartment(ComApartment&&) = delete;
+			ComApartment& operator=(ComApartment&&) = delete;
+
+			const HRESULT Result = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 			~ComApartment()
 			{
 				if (SUCCEEDED(Result))

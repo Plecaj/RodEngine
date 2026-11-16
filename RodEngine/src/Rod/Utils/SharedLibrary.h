@@ -16,7 +16,7 @@ namespace Rod {
 		SharedLibrary& operator=(SharedLibrary&& other) noexcept;
 
 		[[nodiscard]] bool IsLoaded() const noexcept { return m_Handle != nullptr; }
-		[[nodiscard]] void* GetFunction(const char* name) const;
+		[[nodiscard]] void* GetFunction(const char* name) const noexcept;
 
 	private:
 		void Close() noexcept;

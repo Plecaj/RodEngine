@@ -9,7 +9,7 @@ namespace Rod {
 	class LayerStack
 	{
 	public:
-		LayerStack();
+		LayerStack() noexcept;
 		~LayerStack();
 		LayerStack(const LayerStack&) = delete;
 		LayerStack& operator=(const LayerStack&) = delete;

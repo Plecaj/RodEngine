@@ -34,7 +34,7 @@ namespace {
 
 	protected:
 		[[nodiscard]] std::filesystem::path HistoryPath() const { return m_Directory / "RecentProjects.yaml"; }
-		Rod::Project MakeProject(const std::string& name) const
+		[[nodiscard]] Rod::Project MakeProject(const std::string& name) const
 		{
 			const auto path = m_Directory / (name + ".rodproj");
 			std::ofstream file(path);

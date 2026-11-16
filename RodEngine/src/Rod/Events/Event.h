@@ -39,21 +39,21 @@ namespace Rod {
 	};
 
 #define EVENT_CLASS_TYPE(type) \
-	[[nodiscard]] static EventType GetStaticType() noexcept \
+	[[nodiscard]] static constexpr EventType GetStaticType() noexcept \
 	{ \
 		return EventType::type; \
 	} \
-	[[nodiscard]] virtual EventType GetEventType() const noexcept override \
+	[[nodiscard]] virtual constexpr EventType GetEventType() const noexcept override \
 	{ \
 		return GetStaticType(); \
 	} \
-	[[nodiscard]] virtual const char* GetName() const noexcept override \
+	[[nodiscard]] virtual constexpr const char* GetName() const noexcept override \
 	{ \
 		return #type; \
 	}
 
 #define EVENT_CLASS_CATEGORY(category) \
-	[[nodiscard]] virtual int GetCategoryFlags() const noexcept override \
+	[[nodiscard]] virtual constexpr int GetCategoryFlags() const noexcept override \
 	{ \
 		return category; \
 	}
@@ -70,12 +70,12 @@ namespace Rod {
 
 		bool Handled = false;
 
-		[[nodiscard]] virtual EventType GetEventType() const noexcept = 0;
-		[[nodiscard]] virtual const char* GetName() const noexcept = 0;
-		[[nodiscard]] virtual int GetCategoryFlags() const noexcept = 0;
+		[[nodiscard]] virtual constexpr EventType GetEventType() const noexcept = 0;
+		[[nodiscard]] virtual constexpr const char* GetName() const noexcept = 0;
+		[[nodiscard]] virtual constexpr int GetCategoryFlags() const noexcept = 0;
 		[[nodiscard]] virtual std::string ToString() const { return GetName(); }
 
-		[[nodiscard]] bool IsInCategory(EventCategory category) const noexcept
+		[[nodiscard]] constexpr bool IsInCategory(EventCategory category) const noexcept
 		{
 			return (GetCategoryFlags() & category) != 0;
 		}
@@ -84,10 +84,11 @@ namespace Rod {
 	class EventDispatcher
 	{
 	public:
-		explicit EventDispatcher(Event& event) noexcept : m_Event(event) {}
+		constexpr explicit EventDispatcher(Event& event) noexcept : m_Event(event) {}
 
 		template <typename T, typename F>
-		bool Dispatch(const F& func)
+		constexpr bool Dispatch(const F& func) noexcept(
+		    noexcept(T::GetStaticType()) && noexcept(m_Event.Handled |= func(static_cast<T&>(m_Event))))
 		{
 			if (m_Event.GetEventType() == T::GetStaticType())
 			{

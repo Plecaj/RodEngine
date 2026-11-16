@@ -7,15 +7,15 @@ namespace Rod {
 	class Material
 	{
 	public:
-		[[nodiscard]] const glm::vec4& GetAlbedo() const noexcept { return m_Albedo; }
-		[[nodiscard]] float GetRoughness() const noexcept { return m_Roughness; }
-		[[nodiscard]] float GetMetallic() const noexcept { return m_Metallic; }
-		[[nodiscard]] const glm::vec3& GetEmissive() const noexcept { return m_Emissive; }
+		[[nodiscard]] constexpr const glm::vec4& GetAlbedo() const noexcept { return m_Albedo; }
+		[[nodiscard]] constexpr float GetRoughness() const noexcept { return m_Roughness; }
+		[[nodiscard]] constexpr float GetMetallic() const noexcept { return m_Metallic; }
+		[[nodiscard]] constexpr const glm::vec3& GetEmissive() const noexcept { return m_Emissive; }
 
-		void SetAlbedo(const glm::vec4& albedo) noexcept { m_Albedo = albedo; }
-		void SetRoughness(float roughness) noexcept { m_Roughness = roughness; }
-		void SetMetallic(float metallic) noexcept { m_Metallic = metallic; }
-		void SetEmissive(const glm::vec3& emissive) noexcept { m_Emissive = emissive; }
+		constexpr void SetAlbedo(const glm::vec4& albedo) noexcept { m_Albedo = albedo; }
+		constexpr void SetRoughness(float roughness) noexcept { m_Roughness = roughness; }
+		constexpr void SetMetallic(float metallic) noexcept { m_Metallic = metallic; }
+		constexpr void SetEmissive(const glm::vec3& emissive) noexcept { m_Emissive = emissive; }
 
 	private:
 		glm::vec4 m_Albedo = glm::vec4(1.0f);

@@ -30,7 +30,7 @@ namespace Rod {
 		    uint32_t width = DEFAULT_WIDTH,
 		    uint32_t height = DEFAULT_HEIGHT,
 		    std::string taskbarIconFilepath = "",
-		    bool usesCustomUi = false)
+		    bool usesCustomUi = false) noexcept
 		    : Title(std::move(title)), Width(width), Height(height),
 		      TaskbarIconFilepath(std::move(taskbarIconFilepath)), UsesCustomUi(usesCustomUi),
 		      NativeTitlebar(!usesCustomUi)

@@ -6,12 +6,12 @@
 
 namespace Rod {
 
-	SceneCamera::SceneCamera()
+	SceneCamera::SceneCamera() noexcept
 	{
 		RecalculateProjection();
 	}
 
-	void SceneCamera::SetViewportSize(uint32_t width, uint32_t height)
+	void SceneCamera::SetViewportSize(uint32_t width, uint32_t height) noexcept
 	{
 		if (width == 0 || height == 0)
 			return;
@@ -20,7 +20,7 @@ namespace Rod {
 		RecalculateProjection();
 	}
 
-	void SceneCamera::SetPerspective(float verticalFOV, float nearClip, float farClip)
+	void SceneCamera::SetPerspective(float verticalFOV, float nearClip, float farClip) noexcept
 	{
 		m_ProjectionType = ProjectionType::Perspective;
 		m_PerspectiveFOV = verticalFOV;
@@ -29,7 +29,7 @@ namespace Rod {
 		RecalculateProjection();
 	}
 
-	void SceneCamera::SetOrthographic(float size, float nearClip, float farClip)
+	void SceneCamera::SetOrthographic(float size, float nearClip, float farClip) noexcept
 	{
 		m_ProjectionType = ProjectionType::Orthographic;
 		m_OrthographicSize = size;
@@ -38,7 +38,7 @@ namespace Rod {
 		RecalculateProjection();
 	}
 
-	void SceneCamera::RecalculateProjection()
+	void SceneCamera::RecalculateProjection() noexcept
 	{
 		if (m_ProjectionType == ProjectionType::Perspective)
 		{

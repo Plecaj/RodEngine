@@ -3,7 +3,6 @@
 #include "Rod/Utils/SharedLibrary.h"
 
 #include <dlfcn.h>
-
 #include <stdexcept>
 
 namespace Rod {
@@ -24,7 +23,7 @@ namespace Rod {
 		}
 	}
 
-	void* SharedLibrary::GetFunction(const char* name) const
+	void* SharedLibrary::GetFunction(const char* name) const noexcept
 	{
 		return m_Handle ? dlsym(m_Handle, name) : nullptr;
 	}

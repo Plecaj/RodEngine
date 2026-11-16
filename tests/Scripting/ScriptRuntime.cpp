@@ -1,7 +1,8 @@
 #include "rdpch.h"
 
-#include "Rod/Scripting/ScriptAssembly.h"
 #include "Rod/Scripting/ScriptRuntime.h"
+
+#include "Rod/Scripting/ScriptAssembly.h"
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -34,7 +35,9 @@ TEST_CASE("Failed managed assembly loads preserve the active assembly", "[script
 	REQUIRE(load != nullptr);
 	REQUIRE(create != nullptr);
 	REQUIRE(shutdown != nullptr);
-	auto stop = [shutdown](void*) { shutdown(); };
+	auto stop = [shutdown](void*) {
+		shutdown();
+	};
 	std::unique_ptr<void, decltype(stop)> hostGuard(&runtime, stop);
 	auto loadAssembly = [load](const std::string& path) {
 		auto release = [](void* text) {

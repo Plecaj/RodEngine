@@ -10,17 +10,17 @@ namespace Rod {
 	class Project
 	{
 	public:
-		Project(const std::filesystem::path& manifestPath, ProjectProperties properties);
+		Project(std::filesystem::path manifestPath, ProjectProperties properties) noexcept;
 
-		[[nodiscard]] const ProjectProperties& GetProperties() const { return m_Properties; }
-		[[nodiscard]] const std::filesystem::path& GetManifestPath() const { return m_ManifestPath; }
+		[[nodiscard]] const ProjectProperties& GetProperties() const noexcept { return m_Properties; }
+		[[nodiscard]] const std::filesystem::path& GetManifestPath() const noexcept { return m_ManifestPath; }
 		[[nodiscard]] std::filesystem::path GetDirectory() const { return m_ManifestPath.parent_path(); }
 		[[nodiscard]] std::filesystem::path GetAssetsPath() const;
 		[[nodiscard]] std::filesystem::path GetStartupScenePath() const;
 		[[nodiscard]] std::filesystem::path GetScriptProjectPath() const;
 		[[nodiscard]] std::filesystem::path GetShadersPath() const;
 
-		void SetProperties(ProjectProperties properties) { m_Properties = std::move(properties); };
+		void SetProperties(ProjectProperties properties) noexcept { m_Properties = std::move(properties); };
 
 	private:
 		std::filesystem::path m_ManifestPath;

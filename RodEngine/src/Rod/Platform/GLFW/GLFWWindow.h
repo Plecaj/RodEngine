@@ -36,7 +36,6 @@ namespace Rod {
 
 	private:
 		void Init(const WindowProps& props);
-		void InitGLFW();
 		void CreateNativeWindow(const WindowProps& props);
 		void SetGLFWCallbacks();
 		void SetWindowCallbacks();
@@ -45,7 +44,7 @@ namespace Rod {
 		void SetTaskbarIcon(const std::string& iconFilepath) const;
 		void ResetWindowDrag() const;
 		void UpdateWindowDrag() const;
-		glm::vec2 GetMouseScreenPosition() const;
+		[[nodiscard]] glm::vec2 GetMouseScreenPosition() const;
 
 	private:
 		struct WindowData
@@ -68,7 +67,7 @@ namespace Rod {
 		mutable glm::vec2 m_WindowDragStartMouseScreen = {0.0f, 0.0f};
 		mutable glm::ivec2 m_WindowDragStartPosition = {0, 0};
 
-		static WindowData& GetWindowData(GLFWwindow* window);
+		[[nodiscard]] static WindowData& GetWindowData(GLFWwindow* window);
 	};
 
 }

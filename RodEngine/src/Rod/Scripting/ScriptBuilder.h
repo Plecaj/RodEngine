@@ -15,6 +15,6 @@ namespace Rod {
 	{
 	public:
 		[[nodiscard]] static std::filesystem::path GetAssemblyPath(const std::filesystem::path& projectPath);
-		static ScriptBuildResult BuildProject(const std::filesystem::path& projectPath);
+		[[nodiscard]] static ScriptBuildResult BuildProject(const std::filesystem::path& projectPath);
 	};
 }

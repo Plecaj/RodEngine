@@ -12,7 +12,4 @@ namespace Rod {
 
 	UUID::UUID() : m_UUID(g_UniformDistribution(g_Engine))
 	{}
-
-	UUID::UUID(uint64_t uuid) noexcept : m_UUID(uuid)
-	{}
 }

@@ -9,7 +9,7 @@ namespace Rod {
 	public:
 		PerformancePanel() = default;
 
-		void OnImGuiRender(float deltaTime);
+		static void OnImGuiRender(float deltaTime);
 	};
 
 }

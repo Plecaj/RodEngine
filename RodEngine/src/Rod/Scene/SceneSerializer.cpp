@@ -10,7 +10,7 @@
 #include "Rod/Scripting/ScriptField.h"
 #include "Rod/Utils/FileUtils.h"
 
-#include <yaml-cpp/yaml.h>
+#include <yaml-cpp/yaml.h> // IWYU pragma: keep
 
 #include <fstream>
 #include <stdexcept>
@@ -70,6 +70,170 @@ namespace YAML {
 namespace Rod {
 
 	namespace {
+		YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec3& v)
+		{
+			out << YAML::Flow;
+			out << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
+			return out;
+		}
+
+		YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec4& v)
+		{
+			out << YAML::Flow;
+			out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
+			return out;
+		}
+
+		void SerializeTagComponent(YAML::Emitter& out, const TagComponent& tag)
+		{
+			out << YAML::Key << "TagComponent";
+			out << YAML::BeginMap;
+			out << YAML::Key << "Tag" << YAML::Value << tag.Tag;
+			out << YAML::EndMap;
+		}
+
+		void SerializeTransformComponent(YAML::Emitter& out, const TransformComponent& transform)
+		{
+			out << YAML::Key << "TransformComponent";
+			out << YAML::BeginMap;
+			out << YAML::Key << "Translation" << YAML::Value << transform.Translation;
+			out << YAML::Key << "Rotation" << YAML::Value << transform.Rotation;
+			out << YAML::Key << "Scale" << YAML::Value << transform.Scale;
+			out << YAML::EndMap;
+		}
+
+		void SerializeCameraComponent(YAML::Emitter& out, const CameraComponent& cameraComponent)
+		{
+			const auto& camera = cameraComponent.Camera;
+
+			out << YAML::Key << "CameraComponent";
+			out << YAML::BeginMap;
+			out << YAML::Key << "Camera" << YAML::Value;
+			out << YAML::BeginMap;
+			out << YAML::Key << "ProjectionType" << YAML::Value << static_cast<int>(camera.GetProjectionType());
+			out << YAML::Key << "PerspectiveFOV" << YAML::Value << camera.GetPerspectiveVerticalFOV();
+			out << YAML::Key << "PerspectiveNear" << YAML::Value << camera.GetPerspectiveNearClip();
+			out << YAML::Key << "PerspectiveFar" << YAML::Value << camera.GetPerspectiveFarClip();
+			out << YAML::Key << "OrthographicSize" << YAML::Value << camera.GetOrthographicSize();
+			out << YAML::Key << "OrthographicNear" << YAML::Value << camera.GetOrthographicNearClip();
+			out << YAML::Key << "OrthographicFar" << YAML::Value << camera.GetOrthographicFarClip();
+			out << YAML::EndMap;
+
+			out << YAML::Key << "Primary" << YAML::Value << cameraComponent.Primary;
+			out << YAML::Key << "FixedAspectRatio" << YAML::Value << cameraComponent.FixedAspectRatio;
+			out << YAML::EndMap;
+		}
+
+		[[nodiscard]] std::string NormalizeAssetPath(std::string path)
+		{
+			std::replace(path.begin(), path.end(), '\\', '/');
+			return path;
+		}
+
+		void SerializeDirectionalLightComponent(YAML::Emitter& out, const DirectionalLightComponent& light)
+		{
+			out << YAML::Key << "DirectionalLightComponent";
+			out << YAML::BeginMap;
+			out << YAML::Key << "Direction" << YAML::Value << light.Direction;
+			out << YAML::Key << "Color" << YAML::Value << light.Color;
+			out << YAML::Key << "Intensity" << YAML::Value << light.Intensity;
+			out << YAML::EndMap;
+		}
+
+		void SerializeScriptComponent(YAML::Emitter& out, const ScriptComponent& script)
+		{
+			out << YAML::Key << "ScriptComponent";
+			out << YAML::BeginMap;
+			out << YAML::Key << "ClassName" << YAML::Value << script.ClassName;
+			out << YAML::Key << "Fields" << YAML::Value << YAML::BeginSeq;
+			for (const auto& [name, field] : script.Fields)
+			{
+				out << YAML::BeginMap;
+				out << YAML::Key << "Name" << YAML::Value << name;
+				out << YAML::Key << "Type" << YAML::Value << static_cast<int>(field.Field.Type);
+				out << YAML::Key << "TypeName" << YAML::Value << field.Field.TypeName;
+				out << YAML::Key << "Value" << YAML::Value << field.Value;
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
+			out << YAML::EndMap;
+		}
+
+		void DeserializeTransformComponent(const YAML::Node& entityNode, Entity entity)
+		{
+			auto transformComponent = entityNode["TransformComponent"];
+			if (!transformComponent)
+				return;
+
+			auto& transform = entity.GetComponent<TransformComponent>();
+			transform.Translation = transformComponent["Translation"].as<glm::vec3>();
+			transform.Rotation = transformComponent["Rotation"].as<glm::vec3>();
+			transform.Scale = transformComponent["Scale"].as<glm::vec3>();
+		}
+
+		void DeserializeCameraComponent(const YAML::Node& entityNode, Entity entity)
+		{
+			auto cameraComponent = entityNode["CameraComponent"];
+			if (!cameraComponent)
+				return;
+
+			auto& camera = entity.AddComponent<CameraComponent>();
+			auto cameraProps = cameraComponent["Camera"];
+
+			camera.Camera.SetProjectionType(
+			    static_cast<SceneCamera::ProjectionType>(cameraProps["ProjectionType"].as<int>()));
+			camera.Camera.SetPerspectiveVerticalFOV(cameraProps["PerspectiveFOV"].as<float>());
+			camera.Camera.SetPerspectiveNearClip(cameraProps["PerspectiveNear"].as<float>());
+			camera.Camera.SetPerspectiveFarClip(cameraProps["PerspectiveFar"].as<float>());
+			camera.Camera.SetOrthographicSize(cameraProps["OrthographicSize"].as<float>());
+			camera.Camera.SetOrthographicNearClip(cameraProps["OrthographicNear"].as<float>());
+			camera.Camera.SetOrthographicFarClip(cameraProps["OrthographicFar"].as<float>());
+
+			camera.Primary = cameraComponent["Primary"].as<bool>();
+			camera.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();
+		}
+
+		void DeserializeDirectionalLightComponent(const YAML::Node& entityNode, Entity entity)
+		{
+			auto directionalLightComponent = entityNode["DirectionalLightComponent"];
+			if (!directionalLightComponent)
+				return;
+
+			auto& light = entity.AddComponent<DirectionalLightComponent>();
+			light.Direction = directionalLightComponent["Direction"].as<glm::vec3>();
+			light.Color = directionalLightComponent["Color"].as<glm::vec3>();
+			light.Intensity = directionalLightComponent["Intensity"].as<float>();
+		}
+
+		void DeserializeScriptComponent(const YAML::Node& entityNode, Entity entity)
+		{
+			auto scriptComponent = entityNode["ScriptComponent"];
+			if (!scriptComponent)
+				return;
+
+			auto& script = entity.AddComponent<ScriptComponent>();
+			script.ClassName = scriptComponent["ClassName"].as<std::string>();
+
+			auto fields = scriptComponent["Fields"];
+			if (!fields.IsSequence())
+				throw std::runtime_error("Field 'Fields': sequence required");
+
+			for (auto fieldNode : fields)
+			{
+				ScriptField field;
+				field.Name = fieldNode["Name"].as<std::string>();
+				field.Type = static_cast<ScriptFieldType>(fieldNode["Type"].as<int>());
+				field.TypeName = fieldNode["TypeName"].as<std::string>();
+
+				ScriptFieldInstance instance;
+				instance.Field = field;
+				instance.Value = fieldNode["Value"].as<std::string>();
+				script.Fields[field.Name] = instance;
+			}
+		}
+	}
+
+	namespace {
 		std::string RollbackLoad(Scene& scene, const std::vector<Entity>& createdEntities)
 		{
 			std::string rollbackErrors;
@@ -94,69 +258,9 @@ namespace Rod {
 		}
 	}
 
-	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec3& v)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
-		return out;
-	}
-
-	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec4& v)
-	{
-		out << YAML::Flow;
-		out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
-		return out;
-	}
-
-	SceneSerializer::SceneSerializer(Scene& scene, std::filesystem::path projectDirectory)
+	SceneSerializer::SceneSerializer(Scene& scene, std::filesystem::path projectDirectory) noexcept
 	    : m_Scene(scene), m_ProjectDirectory(std::move(projectDirectory))
 	{}
-
-	void SceneSerializer::SerializeTagComponent(YAML::Emitter& out, const TagComponent& tag)
-	{
-		out << YAML::Key << "TagComponent";
-		out << YAML::BeginMap;
-		out << YAML::Key << "Tag" << YAML::Value << tag.Tag;
-		out << YAML::EndMap;
-	}
-
-	void SceneSerializer::SerializeTransformComponent(YAML::Emitter& out, const TransformComponent& transform)
-	{
-		out << YAML::Key << "TransformComponent";
-		out << YAML::BeginMap;
-		out << YAML::Key << "Translation" << YAML::Value << transform.Translation;
-		out << YAML::Key << "Rotation" << YAML::Value << transform.Rotation;
-		out << YAML::Key << "Scale" << YAML::Value << transform.Scale;
-		out << YAML::EndMap;
-	}
-
-	void SceneSerializer::SerializeCameraComponent(YAML::Emitter& out, const CameraComponent& cameraComponent)
-	{
-		const auto& camera = cameraComponent.Camera;
-
-		out << YAML::Key << "CameraComponent";
-		out << YAML::BeginMap;
-		out << YAML::Key << "Camera" << YAML::Value;
-		out << YAML::BeginMap;
-		out << YAML::Key << "ProjectionType" << YAML::Value << static_cast<int>(camera.GetProjectionType());
-		out << YAML::Key << "PerspectiveFOV" << YAML::Value << camera.GetPerspectiveVerticalFOV();
-		out << YAML::Key << "PerspectiveNear" << YAML::Value << camera.GetPerspectiveNearClip();
-		out << YAML::Key << "PerspectiveFar" << YAML::Value << camera.GetPerspectiveFarClip();
-		out << YAML::Key << "OrthographicSize" << YAML::Value << camera.GetOrthographicSize();
-		out << YAML::Key << "OrthographicNear" << YAML::Value << camera.GetOrthographicNearClip();
-		out << YAML::Key << "OrthographicFar" << YAML::Value << camera.GetOrthographicFarClip();
-		out << YAML::EndMap;
-
-		out << YAML::Key << "Primary" << YAML::Value << cameraComponent.Primary;
-		out << YAML::Key << "FixedAspectRatio" << YAML::Value << cameraComponent.FixedAspectRatio;
-		out << YAML::EndMap;
-	}
-
-	std::string SceneSerializer::NormalizeAssetPath(std::string path)
-	{
-		std::replace(path.begin(), path.end(), '\\', '/');
-		return path;
-	}
 
 	std::string SceneSerializer::SerializeAssetPath(const std::string& path) const
 	{
@@ -202,35 +306,6 @@ namespace Rod {
 		out << YAML::EndMap;
 	}
 
-	void SceneSerializer::SerializeDirectionalLightComponent(YAML::Emitter& out, const DirectionalLightComponent& light)
-	{
-		out << YAML::Key << "DirectionalLightComponent";
-		out << YAML::BeginMap;
-		out << YAML::Key << "Direction" << YAML::Value << light.Direction;
-		out << YAML::Key << "Color" << YAML::Value << light.Color;
-		out << YAML::Key << "Intensity" << YAML::Value << light.Intensity;
-		out << YAML::EndMap;
-	}
-
-	void SceneSerializer::SerializeScriptComponent(YAML::Emitter& out, const ScriptComponent& script)
-	{
-		out << YAML::Key << "ScriptComponent";
-		out << YAML::BeginMap;
-		out << YAML::Key << "ClassName" << YAML::Value << script.ClassName;
-		out << YAML::Key << "Fields" << YAML::Value << YAML::BeginSeq;
-		for (const auto& [name, field] : script.Fields)
-		{
-			out << YAML::BeginMap;
-			out << YAML::Key << "Name" << YAML::Value << name;
-			out << YAML::Key << "Type" << YAML::Value << static_cast<int>(field.Field.Type);
-			out << YAML::Key << "TypeName" << YAML::Value << field.Field.TypeName;
-			out << YAML::Key << "Value" << YAML::Value << field.Value;
-			out << YAML::EndMap;
-		}
-		out << YAML::EndSeq;
-		out << YAML::EndMap;
-	}
-
 	void SceneSerializer::SerializeEntity(YAML::Emitter& out, Entity entity) const
 	{
 		out << YAML::BeginMap;
@@ -254,7 +329,7 @@ namespace Rod {
 		out << YAML::EndMap;
 	}
 
-	void SceneSerializer::SerializeText(const std::string& filepath)
+	void SceneSerializer::SerializeText(const std::string& filepath) const
 	{
 		YAML::Emitter out;
 		out << YAML::BeginMap;
@@ -272,40 +347,6 @@ namespace Rod {
 		if (!out.good())
 			throw std::runtime_error("Scene save failed '" + filepath + "': " + out.GetLastError());
 		WriteTextFile(filepath, out.c_str());
-	}
-
-	void SceneSerializer::DeserializeTransformComponent(const YAML::Node& entityNode, Entity entity)
-	{
-		auto transformComponent = entityNode["TransformComponent"];
-		if (!transformComponent)
-			return;
-
-		auto& transform = entity.GetComponent<TransformComponent>();
-		transform.Translation = transformComponent["Translation"].as<glm::vec3>();
-		transform.Rotation = transformComponent["Rotation"].as<glm::vec3>();
-		transform.Scale = transformComponent["Scale"].as<glm::vec3>();
-	}
-
-	void SceneSerializer::DeserializeCameraComponent(const YAML::Node& entityNode, Entity entity)
-	{
-		auto cameraComponent = entityNode["CameraComponent"];
-		if (!cameraComponent)
-			return;
-
-		auto& camera = entity.AddComponent<CameraComponent>();
-		auto cameraProps = cameraComponent["Camera"];
-
-		camera.Camera.SetProjectionType(
-		    static_cast<SceneCamera::ProjectionType>(cameraProps["ProjectionType"].as<int>()));
-		camera.Camera.SetPerspectiveVerticalFOV(cameraProps["PerspectiveFOV"].as<float>());
-		camera.Camera.SetPerspectiveNearClip(cameraProps["PerspectiveNear"].as<float>());
-		camera.Camera.SetPerspectiveFarClip(cameraProps["PerspectiveFar"].as<float>());
-		camera.Camera.SetOrthographicSize(cameraProps["OrthographicSize"].as<float>());
-		camera.Camera.SetOrthographicNearClip(cameraProps["OrthographicNear"].as<float>());
-		camera.Camera.SetOrthographicFarClip(cameraProps["OrthographicFar"].as<float>());
-
-		camera.Primary = cameraComponent["Primary"].as<bool>();
-		camera.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();
 	}
 
 	void SceneSerializer::DeserializeSpriteRendererComponent(const YAML::Node& entityNode, Entity entity) const
@@ -344,45 +385,6 @@ namespace Rod {
 		material.SetMetallic(meshComponent["Metallic"].as<float>());
 	}
 
-	void SceneSerializer::DeserializeDirectionalLightComponent(const YAML::Node& entityNode, Entity entity)
-	{
-		auto directionalLightComponent = entityNode["DirectionalLightComponent"];
-		if (!directionalLightComponent)
-			return;
-
-		auto& light = entity.AddComponent<DirectionalLightComponent>();
-		light.Direction = directionalLightComponent["Direction"].as<glm::vec3>();
-		light.Color = directionalLightComponent["Color"].as<glm::vec3>();
-		light.Intensity = directionalLightComponent["Intensity"].as<float>();
-	}
-
-	void SceneSerializer::DeserializeScriptComponent(const YAML::Node& entityNode, Entity entity)
-	{
-		auto scriptComponent = entityNode["ScriptComponent"];
-		if (!scriptComponent)
-			return;
-
-		auto& script = entity.AddComponent<ScriptComponent>();
-		script.ClassName = scriptComponent["ClassName"].as<std::string>();
-
-		auto fields = scriptComponent["Fields"];
-		if (!fields.IsSequence())
-			throw std::runtime_error("Field 'Fields': sequence required");
-
-		for (auto fieldNode : fields)
-		{
-			ScriptField field;
-			field.Name = fieldNode["Name"].as<std::string>();
-			field.Type = static_cast<ScriptFieldType>(fieldNode["Type"].as<int>());
-			field.TypeName = fieldNode["TypeName"].as<std::string>();
-
-			ScriptFieldInstance instance;
-			instance.Field = field;
-			instance.Value = fieldNode["Value"].as<std::string>();
-			script.Fields[field.Name] = instance;
-		}
-	}
-
 	void SceneSerializer::DeserializeEntity(
 	    Scene& scene,
 	    const YAML::Node& entityNode,
@@ -397,7 +399,7 @@ namespace Rod {
 		if (tagComponent)
 			name = tagComponent["Tag"].as<std::string>();
 
-		Entity entity = scene.CreateEntityWithUUID(UUID{uuid}, name);
+		const Entity entity = scene.CreateEntityWithUUID(UUID{uuid}, name);
 		createdEntities.push_back(entity);
 		DeserializeTransformComponent(entityNode, entity);
 		DeserializeCameraComponent(entityNode, entity);
@@ -407,7 +409,7 @@ namespace Rod {
 		DeserializeScriptComponent(entityNode, entity);
 	}
 
-	void SceneSerializer::DeserializeText(const std::string& filepath)
+	void SceneSerializer::DeserializeText(const std::string& filepath) const
 	{
 		std::vector<Entity> createdEntities;
 		try

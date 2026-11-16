@@ -42,7 +42,7 @@ namespace Rod {
 
 		[[nodiscard]] bool operator==(const Scene& other) const;
 
-		[[nodiscard]] bool IsValidEntityHandle(entt::entity entity) const { return m_Registry.valid(entity); }
+		[[nodiscard]] bool IsValidEntityHandle(entt::entity entity) const noexcept { return m_Registry.valid(entity); }
 
 	private:
 		template <typename... Components>

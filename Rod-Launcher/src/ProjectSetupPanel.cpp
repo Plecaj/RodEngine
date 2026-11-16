@@ -19,7 +19,7 @@ namespace Rod {
 		constexpr float g_FieldSpacing = 12.0f;
 		constexpr ImVec2 g_ButtonSize{144.0f, 36.0f};
 
-		bool HasText(const char* value)
+		[[nodiscard]] constexpr bool HasText(const char* value) noexcept
 		{
 			return std::string_view(value).find_first_not_of(" \t\r\n") != std::string_view::npos;
 		}
@@ -94,10 +94,7 @@ namespace Rod {
 		return browse;
 	}
 
-	void ProjectSetupPanel::PickProjectPath(
-	    std::filesystem::path& value,
-	    const char* filter,
-	    const char* extension)
+	void ProjectSetupPanel::PickProjectPath(std::filesystem::path& value, const char* filter, const char* extension)
 	{
 		const auto selected = filter ? FileDialogs::OpenFile(filter, m_Directory.string())
 		                             : FileDialogs::SelectFolder(m_Directory.string());
@@ -108,7 +105,7 @@ namespace Rod {
 		const auto relative = std::filesystem::relative(std::filesystem::canonical(selected), m_Directory);
 		if (relative.empty() || relative.has_root_path() || std::ranges::find(relative, "..") != relative.end())
 			throw std::runtime_error("Choose a path inside the project folder.");
-		if (extension && relative.extension() != extension)
+		if (extension != nullptr && relative.extension() != extension)
 			throw std::runtime_error(std::string("Choose a ") + extension + " file.");
 		value = relative;
 		m_Error.clear();
@@ -132,14 +129,19 @@ namespace Rod {
 				m_Error.clear();
 			}
 		}
-		ImGui::TextWrapped("Choose or create the project folder in the system dialog. The manifest will be saved there.");
+		ImGui::TextWrapped(
+		    "Choose or create the project folder in the system dialog. The manifest will be saved there.");
 	}
 
 	void ProjectSetupPanel::DrawDetails()
 	{
 		ImGui::TextUnformatted("Project name");
 		ImGui::SetNextItemWidth(-1.0f);
-		ImGui::InputTextWithHint("##ProjectName", m_Directory.filename().string().c_str(), m_Name.data(), m_Name.size());
+		ImGui::InputTextWithHint(
+		    "##ProjectName",
+		    m_Directory.filename().string().c_str(),
+		    m_Name.data(),
+		    m_Name.size());
 		ImGui::Dummy(ImVec2{0.0f, g_FieldSpacing});
 		if (DrawPathPicker("Asset directory", m_AssetDirectory))
 		{
@@ -249,7 +251,7 @@ namespace Rod {
 		return project;
 	}
 
-	bool ProjectSetupPanel::CanContinue() const
+	bool ProjectSetupPanel::CanContinue() const noexcept
 	{
 		switch (m_Step)
 		{

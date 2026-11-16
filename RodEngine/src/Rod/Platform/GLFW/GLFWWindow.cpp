@@ -23,6 +23,20 @@ namespace Rod {
 		RD_CORE_ERROR("GLFW Error ({0}): {1}", error, description);
 	}
 
+	namespace {
+
+		void InitGLFW()
+		{
+			if (g_WindowCount > 0)
+				return;
+
+			RD_PROFILE_SCOPE("glfw init");
+			glfwSetErrorCallback(GLFWErrorCallback);
+			if (glfwInit() == GLFW_FALSE)
+				throw std::runtime_error("Could not initialize GLFW.");
+		}
+	}
+
 	Scope<Window> Window::Create(const WindowProps& props)
 	{
 		return CreateScope<GLFWWindow>(props);
@@ -61,17 +75,6 @@ namespace Rod {
 		SetTaskbarIcon(props.TaskbarIconFilepath);
 	}
 
-	void GLFWWindow::InitGLFW()
-	{
-		if (g_WindowCount > 0)
-			return;
-
-		RD_PROFILE_SCOPE("glfw init");
-		glfwSetErrorCallback(GLFWErrorCallback);
-		if (glfwInit() == GLFW_FALSE)
-			throw std::runtime_error("Could not initialize GLFW.");
-	}
-
 	void GLFWWindow::CreateNativeWindow(const WindowProps& props)
 	{
 		RD_PROFILE_SCOPE("glfw create window");
@@ -96,7 +99,7 @@ namespace Rod {
 		    m_Data.Title.c_str(),
 		    nullptr,
 		    nullptr));
-		if (!m_Window.get())
+		if (!m_Window)
 		{
 			if (g_WindowCount == 0)
 				glfwTerminate();

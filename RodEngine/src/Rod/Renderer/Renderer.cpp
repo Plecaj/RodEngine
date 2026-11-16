@@ -10,7 +10,7 @@ namespace Rod {
 		std::filesystem::path g_ShaderDirectory;
 	}
 
-	const std::filesystem::path& Renderer::GetShaderDirectory()
+	const std::filesystem::path& Renderer::GetShaderDirectory() noexcept
 	{
 		return g_ShaderDirectory;
 	}

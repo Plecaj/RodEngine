@@ -15,31 +15,21 @@ namespace Rod {
 	public:
 		TitlebarPanel();
 
-		void OnImGuiRender();
+		void OnImGuiRender() const;
 
-		void SetNewSceneCallback(std::function<void()> callback) { m_NewScene = std::move(callback); }
-		void SetOpenSceneCallback(std::function<void()> callback) { m_OpenScene = std::move(callback); }
-		void SetSaveSceneCallback(std::function<void()> callback) { m_SaveScene = std::move(callback); }
-		void SetSaveSceneAsCallback(std::function<void()> callback) { m_SaveSceneAs = std::move(callback); }
-		void SetExportGameCallback(std::function<void()> callback) { m_ExportGame = std::move(callback); }
+		void SetNewSceneCallback(std::function<void()> callback) noexcept { m_NewScene = std::move(callback); }
+		void SetOpenSceneCallback(std::function<void()> callback) noexcept { m_OpenScene = std::move(callback); }
+		void SetSaveSceneCallback(std::function<void()> callback) noexcept { m_SaveScene = std::move(callback); }
+		void SetSaveSceneAsCallback(std::function<void()> callback) noexcept { m_SaveSceneAs = std::move(callback); }
+		void SetExportGameCallback(std::function<void()> callback) noexcept { m_ExportGame = std::move(callback); }
 
-		[[nodiscard]] uint32_t GetHeight() const { return HEIGHT; }
+		[[nodiscard]] static constexpr uint32_t GetHeight() noexcept { return HEIGHT; }
 
 	private:
-		enum class ButtonIcon : uint8_t
-		{
-			Minimize,
-			Maximize,
-			Restore,
-			Close
-		};
 		static constexpr uint32_t HEIGHT = 36;
 		static constexpr float BUTTON_WIDTH = 46.0f;
-		static bool DrawTitlebarButton(const char* id, ButtonIcon icon, const ImVec2& size);
-		static void DrawButtonIcon(ImDrawList& drawList, ButtonIcon icon, const ImVec2& center);
-		static void RunCallback(const std::function<void()>& callback);
-		void DrawFileMenu();
-		void DrawButtons();
+		void DrawFileMenu() const;
+		void DrawButtons() const;
 
 	private:
 		ImVec2 m_ButtonSize;

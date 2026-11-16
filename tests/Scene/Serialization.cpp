@@ -19,13 +19,13 @@ namespace {
 	{
 	public:
 		explicit PathOnlyTexture(std::string path) : m_Path(std::move(path)) {}
-		uint32_t GetWidth() const noexcept override { return 1; }
-		uint32_t GetHeight() const noexcept override { return 1; }
-		uint32_t GetRendererID() const noexcept override { return 0; }
+		[[nodiscard]] uint32_t GetWidth() const noexcept override { return 1; }
+		[[nodiscard]] uint32_t GetHeight() const noexcept override { return 1; }
+		[[nodiscard]] uint32_t GetRendererID() const noexcept override { return 0; }
 		void SetData(const void*, uint32_t) override {}
-		std::string GetPath() const override { return m_Path; }
+		[[nodiscard]] std::string GetPath() const override { return m_Path; }
 		void Bind(uint32_t) const override {}
-		bool operator==(const Rod::Texture& other) const noexcept override { return this == &other; }
+		[[nodiscard]] bool operator==(const Rod::Texture& other) const noexcept override { return this == &other; }
 
 	private:
 		std::string m_Path;
@@ -314,7 +314,8 @@ TEST_CASE_METHOD(SerializationFixture, "Empty scenes load", "[scene][serializati
 
 TEST_CASE_METHOD(SerializationFixture, "Invalid scene files preserve the scene", "[scene][serialization]")
 {
-	SECTION("missing file") {}
+	SECTION("missing file")
+	{}
 	SECTION("malformed YAML")
 	{
 		WriteScene("Scene: [unterminated\n");
@@ -375,7 +376,8 @@ TEST_CASE_METHOD(SerializationFixture, "Missing textures roll back scene loading
 	WriteScene(
 	    "Scene: Invalid\nEntities:\n  - Entity: 1001\n  - Entity: 1002\n"
 	    "    SpriteRendererComponent:\n      Color: [1, 1, 1, 1]\n      TilingFactor: 1\n"
-	    "      Texture: " + Filepath() + ".missing.png\n");
+	    "      Texture: " +
+	    Filepath() + ".missing.png\n");
 	Rod::Scene scene;
 	scene.CreateEntityWithUUID(Rod::UUID{EXISTING_ID}, "Existing");
 	const Rod::Scene original = scene;
@@ -387,7 +389,8 @@ TEST_CASE_METHOD(SerializationFixture, "Missing meshes roll back scene loading",
 {
 	WriteScene(
 	    "Scene: Invalid\nEntities:\n  - Entity: 1001\n  - Entity: 1002\n"
-	    "    MeshComponent:\n      Path: " + Filepath() + ".missing.glb\n");
+	    "    MeshComponent:\n      Path: " +
+	    Filepath() + ".missing.glb\n");
 	Rod::Scene scene;
 	scene.CreateEntityWithUUID(Rod::UUID{EXISTING_ID}, "Existing");
 	const Rod::Scene original = scene;

@@ -26,8 +26,6 @@ namespace Rod {
 		}
 
 	private:
-		static ScriptFieldType ScriptFieldTypeFromString(const std::string& type);
-
 		std::unordered_map<std::string, ScriptClass> m_Classes;
 		std::filesystem::path m_AssemblyPath;
 	};

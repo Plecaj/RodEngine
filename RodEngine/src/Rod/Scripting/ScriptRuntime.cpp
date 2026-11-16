@@ -17,6 +17,29 @@
 
 namespace Rod {
 
+	namespace {
+
+		[[nodiscard]] std::filesystem::path GetHostFxrPath()
+		{
+#ifdef ROD_HAS_DOTNET_HOST
+			size_t size = 0;
+			get_hostfxr_path(nullptr, &size, nullptr);
+			std::vector<char_t> path(size);
+			if (size == 0 || get_hostfxr_path(path.data(), &size, nullptr) != 0)
+				throw std::runtime_error("hostfxr missing; install .NET 9");
+			return path.data();
+#else
+			throw std::runtime_error("Scripting unavailable: .NET host missing");
+#endif
+		}
+
+		[[nodiscard]] std::shared_ptr<const SharedLibrary> GetHostFxrLibrary()
+		{
+			static const auto LIBRARY = std::make_shared<const SharedLibrary>(GetHostFxrPath());
+			return LIBRARY;
+		}
+	}
+
 	ScriptRuntime::ScriptRuntime(ScriptRuntime&& other) noexcept
 	    : m_HostFxr(std::move(other.m_HostFxr)),
 	      m_LoadAssemblyAndGetFunctionPointer(std::exchange(other.m_LoadAssemblyAndGetFunctionPointer, nullptr)),
@@ -60,30 +83,10 @@ namespace Rod {
 	}
 #endif
 
-	std::filesystem::path ScriptRuntime::GetHostFxrPath()
-	{
-#ifdef ROD_HAS_DOTNET_HOST
-		size_t size = 0;
-		get_hostfxr_path(nullptr, &size, nullptr);
-		std::vector<char_t> path(size);
-		if (size == 0 || get_hostfxr_path(path.data(), &size, nullptr) != 0)
-			throw std::runtime_error("hostfxr missing; install .NET 9");
-		return path.data();
-#else
-		throw std::runtime_error("Scripting unavailable: .NET host missing");
-#endif
-	}
-
-	std::shared_ptr<const SharedLibrary> ScriptRuntime::GetHostFxrLibrary()
-	{
-		static const auto library = std::make_shared<const SharedLibrary>(GetHostFxrPath());
-		return library;
-	}
-
 	ScriptRuntime::ScriptRuntime(
 	    const std::filesystem::path& runtimeConfigPath,
 	    const std::filesystem::path& coreAssemblyPath)
-	    : m_HostFxr(GetHostFxrLibrary()), m_LoadAssemblyAndGetFunctionPointer(nullptr)
+	    : m_HostFxr(GetHostFxrLibrary())
 	{
 #ifdef ROD_HAS_DOTNET_HOST
 		if (runtimeConfigPath.empty() || coreAssemblyPath.empty())
@@ -106,17 +109,13 @@ namespace Rod {
 			throw std::runtime_error("hostfxr symbols missing");
 
 		hostfxr_handle context = nullptr;
-		int32_t result =
-		    initializeForRuntimeConfig(configPath.c_str(), nullptr, &context);
-		std::unique_ptr<void, hostfxr_close_fn> ownedContext(context, close);
+		int32_t result = initializeForRuntimeConfig(configPath.c_str(), nullptr, &context);
+		const std::unique_ptr<void, hostfxr_close_fn> ownedContext(context, close);
 		if (result < 0 || !ownedContext)
 			throw std::runtime_error("Runtime init failed '" + configPath.string() + "': " + std::to_string(result));
 
 		void* delegate = nullptr;
-		result = getRuntimeDelegate(
-		    ownedContext.get(),
-		    hdt_load_assembly_and_get_function_pointer,
-		    &delegate);
+		result = getRuntimeDelegate(ownedContext.get(), hdt_load_assembly_and_get_function_pointer, &delegate);
 
 		if (result != 0 || !delegate)
 			throw std::runtime_error("Runtime delegate unavailable: " + std::to_string(result));
@@ -134,6 +133,8 @@ namespace Rod {
 			return nullptr;
 
 #ifdef ROD_HAS_DOTNET_HOST
+		// hostfxr requires it
+		// NOLINTNEXTLINE(misc-const-correctness)
 		void* function = nullptr;
 		auto loadAssemblyAndGetFunctionPointer =
 		    std::bit_cast<load_assembly_and_get_function_pointer_fn>(m_LoadAssemblyAndGetFunctionPointer);

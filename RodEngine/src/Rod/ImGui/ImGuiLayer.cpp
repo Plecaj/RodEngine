@@ -87,7 +87,8 @@ namespace Rod {
 		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
 		io.Fonts->AddFontFromFileTTF("RodAssets/Fonts/OpenSans/OpenSans-Bold.ttf", g_DefaultFontSize);
-		io.FontDefault = io.Fonts->AddFontFromFileTTF("RodAssets/Fonts/OpenSans/OpenSans-Regular.ttf", g_DefaultFontSize);
+		io.FontDefault =
+		    io.Fonts->AddFontFromFileTTF("RodAssets/Fonts/OpenSans/OpenSans-Regular.ttf", g_DefaultFontSize);
 
 		ImGui::StyleColorsDark();
 

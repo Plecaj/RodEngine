@@ -19,65 +19,65 @@ namespace Rod {
 		};
 
 	public:
-		SceneCamera();
+		SceneCamera() noexcept;
 
-		void SetViewportSize(uint32_t width, uint32_t height);
+		void SetViewportSize(uint32_t width, uint32_t height) noexcept;
 
-		void SetProjectionType(ProjectionType type)
+		void SetProjectionType(ProjectionType type) noexcept
 		{
 			m_ProjectionType = type;
 			RecalculateProjection();
 		}
 		[[nodiscard]] ProjectionType GetProjectionType() const noexcept { return m_ProjectionType; }
 
-		void SetPerspective(float verticalFOV, float nearClip, float farClip);
+		void SetPerspective(float verticalFOV, float nearClip, float farClip) noexcept;
 
 		[[nodiscard]] float GetPerspectiveVerticalFOV() const noexcept { return m_PerspectiveFOV; }
-		void SetPerspectiveVerticalFOV(float fov)
+		void SetPerspectiveVerticalFOV(float fov) noexcept
 		{
 			m_PerspectiveFOV = fov;
 			RecalculateProjection();
 		}
 
 		[[nodiscard]] float GetPerspectiveNearClip() const noexcept { return m_PerspectiveNear; }
-		void SetPerspectiveNearClip(float nearClip)
+		void SetPerspectiveNearClip(float nearClip) noexcept
 		{
 			m_PerspectiveNear = nearClip;
 			RecalculateProjection();
 		}
 
 		[[nodiscard]] float GetPerspectiveFarClip() const noexcept { return m_PerspectiveFar; }
-		void SetPerspectiveFarClip(float farClip)
+		void SetPerspectiveFarClip(float farClip) noexcept
 		{
 			m_PerspectiveFar = farClip;
 			RecalculateProjection();
 		}
 
-		void SetOrthographic(float size, float nearClip, float farClip);
+		void SetOrthographic(float size, float nearClip, float farClip) noexcept;
 
 		[[nodiscard]] float GetOrthographicSize() const noexcept { return m_OrthographicSize; }
-		void SetOrthographicSize(float size)
+		void SetOrthographicSize(float size) noexcept
 		{
 			m_OrthographicSize = size;
 			RecalculateProjection();
 		}
 
 		[[nodiscard]] float GetOrthographicNearClip() const noexcept { return m_OrthographicNear; }
-		void SetOrthographicNearClip(float nearClip)
+		void SetOrthographicNearClip(float nearClip) noexcept
 		{
 			m_OrthographicNear = nearClip;
 			RecalculateProjection();
 		}
 
 		[[nodiscard]] float GetOrthographicFarClip() const noexcept { return m_OrthographicFar; }
-		void SetOrthographicFarClip(float farClip)
+		void SetOrthographicFarClip(float farClip) noexcept
 		{
 			m_OrthographicFar = farClip;
 			RecalculateProjection();
 		}
 
 	private:
-		void RecalculateProjection();
+		void RecalculateProjection() noexcept;
 
 	private:
 		ProjectionType m_ProjectionType = ProjectionType::Orthographic;

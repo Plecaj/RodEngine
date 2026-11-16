@@ -123,7 +123,7 @@ namespace Rod {
 				OpenProject(*selected);
 		}
 
-		bool DrawRecentProject(const RecentProject& project) const
+		[[nodiscard]] bool DrawRecentProject(const RecentProject& project) const
 		{
 			constexpr ImVec2 nameOffset{28.0f, 6.0f};
 			constexpr ImVec2 iconOffset{8.0f, 26.0f};

@@ -1,7 +1,8 @@
 #include "rdpch.h"
 
-#include "Rod/Core/UUID.h"
 #include "Rod/Renderer/Mesh.h"
+
+#include "Rod/Core/UUID.h"
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -32,7 +33,7 @@ namespace {
 		}
 
 	protected:
-		std::string Filepath() const { return (m_Directory / "mesh.glb").string(); }
+		[[nodiscard]] std::string Filepath() const { return (m_Directory / "mesh.glb").string(); }
 
 	private:
 		std::filesystem::path m_Directory;
@@ -41,7 +42,8 @@ namespace {
 
 TEST_CASE_METHOD(MeshLoadingFixture, "Mesh construction rejects missing or corrupt files", "[renderer][loading]")
 {
-	SECTION("missing file") {}
+	SECTION("missing file")
+	{}
 	SECTION("corrupt file")
 	{
 		std::ofstream file(Filepath());

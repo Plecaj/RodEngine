@@ -8,7 +8,7 @@ namespace Rod {
 	{
 	public:
 		Camera() = default;
-		explicit Camera(const glm::mat4& projection) : m_Projection(projection) {};
+		constexpr explicit Camera(const glm::mat4& projection) noexcept : m_Projection(projection) {};
 
 		virtual ~Camera() = default;
 		Camera(const Camera&) = default;
@@ -16,7 +16,7 @@ namespace Rod {
 		Camera(Camera&&) = default;
 		Camera& operator=(Camera&&) = default;
 
-		[[nodiscard]] const glm::mat4& GetProjection() const noexcept { return m_Projection; }
+		[[nodiscard]] constexpr const glm::mat4& GetProjection() const noexcept { return m_Projection; }
 
 	protected:
 		glm::mat4 m_Projection = glm::mat4(1.0f);

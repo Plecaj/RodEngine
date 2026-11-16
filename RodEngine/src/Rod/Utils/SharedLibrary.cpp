@@ -11,8 +11,7 @@ namespace Rod {
 		Close();
 	}
 
-	SharedLibrary::SharedLibrary(SharedLibrary&& other) noexcept
-	    : m_Handle(std::exchange(other.m_Handle, nullptr))
+	SharedLibrary::SharedLibrary(SharedLibrary&& other) noexcept : m_Handle(std::exchange(other.m_Handle, nullptr))
 	{}
 
 	SharedLibrary& SharedLibrary::operator=(SharedLibrary&& other) noexcept

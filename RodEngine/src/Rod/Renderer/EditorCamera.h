@@ -14,8 +14,8 @@ namespace Rod {
 	class EditorCamera : public Camera
 	{
 	public:
-		EditorCamera() = default;
-		EditorCamera(float fov, float aspectRatio, float nearClip, float farClip);
+		EditorCamera() noexcept = default;
+		EditorCamera(float fov, float aspectRatio, float nearClip, float farClip) noexcept;
 
 		void OnUpdate(Timestep ts);
 		void OnEvent(Event& e);
@@ -23,7 +23,7 @@ namespace Rod {
 		[[nodiscard]] float GetDistance() const noexcept { return m_Distance; }
 		void SetDistance(float distance) noexcept { m_Distance = distance; }
 
-		void SetViewportSize(float width, float height)
+		void SetViewportSize(float width, float height) noexcept
 		{
 			m_ViewportWidth = width;
 			m_ViewportHeight = height;
@@ -31,13 +31,13 @@ namespace Rod {
 		}
 
 		[[nodiscard]] const glm::mat4& GetViewMatrix() const noexcept { return m_ViewMatrix; }
-		[[nodiscard]] glm::mat4 GetViewProjection() const { return m_Projection * m_ViewMatrix; }
+		[[nodiscard]] glm::mat4 GetViewProjection() const noexcept { return m_Projection * m_ViewMatrix; }
 
-		[[nodiscard]] glm::vec3 GetUpDirection() const;
-		[[nodiscard]] glm::vec3 GetRightDirection() const;
-		[[nodiscard]] glm::vec3 GetForwardDirection() const;
+		[[nodiscard]] glm::vec3 GetUpDirection() const noexcept;
+		[[nodiscard]] glm::vec3 GetRightDirection() const noexcept;
+		[[nodiscard]] glm::vec3 GetForwardDirection() const noexcept;
 		[[nodiscard]] const glm::vec3& GetPosition() const noexcept { return m_Position; }
-		[[nodiscard]] glm::quat GetOrientation() const;
+		[[nodiscard]] glm::quat GetOrientation() const noexcept;
 
 		[[nodiscard]] float GetPitch() const noexcept { return m_Pitch; }
 		[[nodiscard]] float GetYaw() const noexcept { return m_Yaw; }
@@ -45,32 +45,25 @@ namespace Rod {
 		void SetControlsEnabled(bool controlsEnabled) noexcept { m_ControlsEnabled = controlsEnabled; };
 
 	private:
-		static constexpr float PAN_VIEWPORT_SCALE = 1000.0f;
-		static constexpr float MAX_PAN_VIEWPORT_FACTOR = 2.4f;
-		static constexpr float PAN_QUADRATIC_COEFFICIENT = 0.0366f;
-		static constexpr float PAN_LINEAR_COEFFICIENT = 0.1778f;
-		static constexpr float PAN_CONSTANT_COEFFICIENT = 0.3021f;
 		static constexpr float ROTATION_SPEED = 0.8f;
 		static constexpr float ZOOM_DISTANCE_SCALE = 0.2f;
 		static constexpr float MAX_ZOOM_SPEED = 100.0f;
 		static constexpr float MOUSE_DELTA_SCALE = 0.003f;
 		static constexpr float SCROLL_DELTA_SCALE = 0.1f;
 
-		[[nodiscard]] static float PanFactor(float viewportSize);
-		void UpdateProjection();
-		void UpdateView();
+		void UpdateProjection() noexcept;
+		void UpdateView() noexcept;
 
-		bool OnMouseScroll(MouseScrolledEvent& e);
+		bool OnMouseScroll(MouseScrolledEvent& e) noexcept;
 
-		void MousePan(const glm::vec2& delta);
-		void MouseRotate(const glm::vec2& delta);
-		void MouseZoom(float delta);
+		void MousePan(const glm::vec2& delta) noexcept;
+		void MouseRotate(const glm::vec2& delta) noexcept;
+		void MouseZoom(float delta) noexcept;
 
-		[[nodiscard]] glm::vec3 CalculatePosition() const;
+		[[nodiscard]] glm::vec3 CalculatePosition() const noexcept;
 
-		[[nodiscard]] std::pair<float, float> PanSpeed() const;
-		[[nodiscard]] float RotationSpeed() const;
-		[[nodiscard]] float ZoomSpeed() const;
+		[[nodiscard]] std::pair<float, float> PanSpeed() const noexcept;
+		[[nodiscard]] float ZoomSpeed() const noexcept;
 
 	private:
 		static constexpr float DEFAULT_FOV = 45.0f;

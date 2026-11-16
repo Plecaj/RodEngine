@@ -18,7 +18,7 @@ namespace Rod {
 
 	private:
 		bool OnWindowResize(WindowResizeEvent& event);
-		bool OnKeyPressed(KeyPressedEvent& event);
+		static bool OnKeyPressed(KeyPressedEvent& event) noexcept;
 
 	private:
 		const Project& m_Project;

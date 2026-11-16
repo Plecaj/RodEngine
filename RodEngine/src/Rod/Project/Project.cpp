@@ -4,8 +4,8 @@
 
 namespace Rod {
 
-	Project::Project(const std::filesystem::path& manifestPath, ProjectProperties properties)
-	    : m_ManifestPath(manifestPath), m_Properties(std::move(properties))
+	Project::Project(std::filesystem::path manifestPath, ProjectProperties properties) noexcept
+	    : m_ManifestPath(std::move(manifestPath)), m_Properties(std::move(properties))
 	{}
 
 	std::filesystem::path Project::GetAssetsPath() const

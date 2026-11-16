@@ -6,7 +6,7 @@
 
 namespace Rod {
 
-	LayerStack::LayerStack() = default;
+	LayerStack::LayerStack() noexcept = default;
 
 	LayerStack::~LayerStack()
 	{

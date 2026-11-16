@@ -22,7 +22,7 @@ namespace Rod {
 		UUID ID;
 
 		IDComponent() = default;
-		explicit IDComponent(UUID id) : ID(id) {}
+		constexpr explicit IDComponent(UUID id) noexcept : ID(id) {}
 	};
 
 	struct TagComponent
@@ -30,7 +30,9 @@ namespace Rod {
 		std::string Tag;
 
 		TagComponent() = default;
-		explicit TagComponent(std::string tag) : Tag(std::move(tag)) {}
+		constexpr explicit TagComponent(std::string tag) noexcept(noexcept(std::string(std::move(tag))))
+		    : Tag(std::move(tag))
+		{}
 	};
 
 	struct TransformComponent
@@ -40,9 +42,9 @@ namespace Rod {
 		glm::vec3 Scale = glm::vec3(1.0f);
 
 		TransformComponent() = default;
-		explicit TransformComponent(const glm::vec3& translation) : Translation(translation) {}
+		constexpr explicit TransformComponent(const glm::vec3& translation) noexcept : Translation(translation) {}
 
-		[[nodiscard]] glm::mat4 GetTransform() const
+		[[nodiscard]] glm::mat4 GetTransform() const noexcept
 		{
 			const glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), Rotation.x, {1, 0, 0}) *
 			                           glm::rotate(glm::mat4(1.0f), Rotation.y, {0, 1, 0}) *
@@ -59,7 +61,7 @@ namespace Rod {
 		float TilingFactor = 1.0f;
 
 		SpriteRendererComponent() = default;
-		explicit SpriteRendererComponent(const glm::vec4& color) : Color(color) {}
+		explicit SpriteRendererComponent(const glm::vec4& color) noexcept : Color(color) {}
 	};
 
 	struct MeshComponent
@@ -67,7 +69,7 @@ namespace Rod {
 		Ref<Rod::Mesh> Mesh;
 		Rod::Material Material;
 
-		void SetMesh(Ref<Rod::Mesh> mesh)
+		void SetMesh(Ref<Rod::Mesh> mesh) noexcept
 		{
 			Mesh = std::move(mesh);
 			Material = Mesh ? Mesh->GetMaterial() : Rod::Material{};
@@ -82,7 +84,7 @@ namespace Rod {
 		float Intensity = 1.0f;
 
 		DirectionalLightComponent() = default;
-		DirectionalLightComponent(const glm::vec3& direction, const glm::vec3& color, float intensity = 1.0f)
+		DirectionalLightComponent(const glm::vec3& direction, const glm::vec3& color, float intensity = 1.0f) noexcept
 		    : Direction(direction), Color(color), Intensity(intensity)
 		{}
 	};
@@ -104,7 +106,7 @@ namespace Rod {
 		void (*DestroyScript)(NativeScriptComponent*) = nullptr;
 
 		template <typename T>
-		void Bind()
+		void Bind() noexcept
 		{
 			InstantiateScript = []() {
 				return static_cast<ScriptableEntity*>(new T());

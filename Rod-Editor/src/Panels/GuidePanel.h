@@ -9,7 +9,7 @@ namespace Rod {
 	public:
 		GuidePanel() = default;
 
-		void OnImGuiRender();
+		static void OnImGuiRender();
 	};
 
 }

@@ -27,7 +27,7 @@ namespace Rod {
 	};
 
 	// NOLINTBEGIN(readability-magic-numbers)
-	[[nodiscard]] static uint32_t ShaderDataTypeSize(ShaderDataType type)
+	[[nodiscard]] constexpr uint32_t ShaderDataTypeSize(ShaderDataType type)
 	{
 		switch (type)
 		{
@@ -70,14 +70,14 @@ namespace Rod {
 		uint32_t Offset;
 		bool Normalized;
 
-		BufferElement(ShaderDataType type, std::string name, bool normalized = false)
+		constexpr BufferElement(ShaderDataType type, std::string name, bool normalized = false)
 		    : Type(type), Name(std::move(name)), Size(ShaderDataTypeSize(type)), Offset(0), Normalized(normalized)
 		{}
 
 		BufferElement() : Type(ShaderDataType::None), Name({}), Size(0), Offset(0), Normalized(false) {};
 
 		// NOLINTBEGIN(readability-magic-numbers)
-		[[nodiscard]] uint32_t GetComponentCount() const
+		[[nodiscard]] constexpr uint32_t GetComponentCount() const
 		{
 			switch (Type)
 			{
@@ -122,7 +122,7 @@ namespace Rod {
 		{
 			CalculateOffsetsAndStride();
 		}
-		[[nodiscard]] uint32_t GetStride() const noexcept { return m_Stride; };
+		[[nodiscard]] constexpr uint32_t GetStride() const noexcept { return m_Stride; };
 		[[nodiscard]] const std::vector<BufferElement>& GetElements() const noexcept { return m_Elements; }
 
 		[[nodiscard]] std::vector<BufferElement>::iterator begin() noexcept { return m_Elements.begin(); }
@@ -131,7 +131,7 @@ namespace Rod {
 		[[nodiscard]] std::vector<BufferElement>::const_iterator end() const noexcept { return m_Elements.end(); }
 
 	private:
-		void CalculateOffsetsAndStride()
+		void CalculateOffsetsAndStride() noexcept
 		{
 			uint32_t offset = 0;
 			m_Stride = 0;

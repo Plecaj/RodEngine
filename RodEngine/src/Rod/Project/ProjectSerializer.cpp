@@ -5,7 +5,7 @@
 #include "Project.h"
 #include "Rod/Utils/FileUtils.h"
 
-#include <yaml-cpp/yaml.h>
+#include <yaml-cpp/yaml.h> // IWYU pragma: keep
 
 #include <fstream>
 #include <stdexcept>
@@ -68,7 +68,8 @@ namespace Rod {
 		catch (const std::exception& exception)
 		{
 			throw std::runtime_error(
-			    "Project load failed '" + manifestPath.string() + "': " + exception.what() + " | Properties unchanged.");
+			    "Project load failed '" + manifestPath.string() + "': " + exception.what() +
+			    " | Properties unchanged.");
 		}
 	}
 

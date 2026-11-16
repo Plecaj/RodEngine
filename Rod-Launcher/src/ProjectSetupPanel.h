@@ -15,7 +15,7 @@ namespace Rod {
 	public:
 		void Open();
 		[[nodiscard]] bool IsOpen() const noexcept { return m_Open; }
-		std::optional<Project> OnImGuiRender();
+		[[nodiscard]] std::optional<Project> OnImGuiRender();
 
 	private:
 		enum class Step : uint8_t
@@ -25,18 +25,16 @@ namespace Rod {
 			Files
 		};
 
-		static bool DrawPathPicker(const char* label, const std::filesystem::path& value);
-		void PickProjectPath(
-		    std::filesystem::path& value,
-		    const char* filter = nullptr,
-		    const char* extension = nullptr);
+		[[nodiscard]] static bool DrawPathPicker(const char* label, const std::filesystem::path& value);
+		void
+		PickProjectPath(std::filesystem::path& value, const char* filter = nullptr, const char* extension = nullptr);
 		void ResetDefaultPaths();
 		void DrawDirectory();
 		void DrawDetails();
 		void DrawFiles();
-		std::optional<Project> DrawNavigation();
+		[[nodiscard]] std::optional<Project> DrawNavigation();
 		[[nodiscard]] Project CreateProject() const;
-		[[nodiscard]] bool CanContinue() const;
+		[[nodiscard]] bool CanContinue() const noexcept;
 		[[nodiscard]] std::string ProjectName() const;
 
 		static constexpr size_t FIELD_CAPACITY = 1024;

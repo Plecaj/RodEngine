@@ -22,6 +22,25 @@
 
 namespace Rod {
 
+	namespace {
+
+		[[nodiscard]] std::string CopyManagedString(void* value)
+		{
+			if (!value)
+				return {};
+
+			auto release = [](void* text) {
+#ifdef RD_PLATFORM_WINDOWS
+				CoTaskMemFree(text);
+#else
+				std::free(text);
+#endif
+			};
+			const std::unique_ptr<void, decltype(release)> text(value, release);
+			return {static_cast<const char*>(text.get())};
+		}
+	}
+
 	struct ScriptEngine::ScriptPaths
 	{
 		std::filesystem::path CoreAssemblyPath;
@@ -156,22 +175,6 @@ namespace Rod {
 		}
 
 		return cachedAssembly;
-	}
-
-	std::string ScriptEngine::CopyManagedString(void* value)
-	{
-		if (!value)
-			return {};
-
-		auto release = [](void* text) {
-#ifdef RD_PLATFORM_WINDOWS
-			CoTaskMemFree(text);
-#else
-			std::free(text);
-#endif
-		};
-		const std::unique_ptr<void, decltype(release)> text(value, release);
-		return {static_cast<const char*>(text.get())};
 	}
 
 	ScriptEngine::ScriptPaths ScriptEngine::ResolveScriptPaths()

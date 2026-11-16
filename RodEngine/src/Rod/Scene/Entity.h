@@ -15,8 +15,8 @@ namespace Rod {
 	class Entity
 	{
 	public:
-		Entity() = default;
-		Entity(entt::entity handle, Scene* scene) noexcept;
+		constexpr Entity() noexcept = default;
+		constexpr Entity(entt::entity handle, Scene* scene) noexcept : m_EntityHandle(handle), m_Scene(scene) {}
 
 		template <typename T, typename... Args>
 		T& AddComponent(Args&&... args)
@@ -54,22 +54,25 @@ namespace Rod {
 			m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		}
 
-		[[nodiscard]] explicit operator bool() const
+		[[nodiscard]] explicit operator bool() const noexcept
 		{
 			return m_EntityHandle != entt::null && m_Scene != nullptr && m_Scene->m_Registry.valid(m_EntityHandle);
 		}
-		[[nodiscard]] explicit operator uint32_t() const noexcept { return static_cast<uint32_t>(m_EntityHandle); }
-		[[nodiscard]] explicit operator entt::entity() const noexcept { return m_EntityHandle; }
+		[[nodiscard]] constexpr explicit operator uint32_t() const noexcept
+		{
+			return static_cast<uint32_t>(m_EntityHandle);
+		}
+		[[nodiscard]] constexpr explicit operator entt::entity() const noexcept { return m_EntityHandle; }
 
 		[[nodiscard]] UUID GetUUID() const;
 		[[nodiscard]] const std::string& GetName() const;
 
-		[[nodiscard]] bool operator==(const Entity& other) const noexcept
+		[[nodiscard]] constexpr bool operator==(const Entity& other) const noexcept
 		{
 			return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene;
 		}
 
-		[[nodiscard]] bool operator!=(const Entity& other) const noexcept { return !(*this == other); }
+		[[nodiscard]] constexpr bool operator!=(const Entity& other) const noexcept { return !(*this == other); }
 
 	private:
 		entt::entity m_EntityHandle = entt::null;

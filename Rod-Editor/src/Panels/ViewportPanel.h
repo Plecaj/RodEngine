@@ -36,14 +36,15 @@ namespace Rod {
 			const std::filesystem::path& AssetsPath;
 			const std::function<void(const std::filesystem::path&)>& OpenScene;
 		};
-		void OnImGuiRender(const RenderContext& context);
+		static void OnImGuiRender(const RenderContext& context);
 
 	private:
 		static constexpr size_t VECTOR_COMPONENT_COUNT = 3;
 		static constexpr float ROTATION_SNAP = 45.0f;
 		static constexpr float TRANSLATION_SNAP = 0.5f;
-		static std::filesystem::path AcceptSceneDrop(const std::filesystem::path& assetsPath);
-		static bool GetCameraMatrices(const RenderContext& context, glm::mat4& view, glm::mat4& projection);
+		[[nodiscard]] static std::filesystem::path AcceptSceneDrop(const std::filesystem::path& assetsPath);
+		[[nodiscard]] static bool
+		GetCameraMatrices(const RenderContext& context, glm::mat4& view, glm::mat4& projection);
 		static void DrawGizmo(const RenderContext& context);
 	};
 

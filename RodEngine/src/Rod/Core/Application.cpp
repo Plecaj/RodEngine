@@ -15,8 +15,7 @@ namespace Rod {
 
 	Application* Application::s_Instance = nullptr;
 
-	Application::Application(const WindowProps& props, std::optional<Project> project)
-	    : m_Project(std::move(project))
+	Application::Application(const WindowProps& props, std::optional<Project> project) : m_Project(std::move(project))
 	{
 		RD_PROFILE_FUNCTION();
 		RD_CORE_ASSERT(!s_Instance, "Application already exists!")
@@ -60,7 +59,7 @@ namespace Rod {
 		overlay->OnAttach();
 	}
 
-	void Application::Close()
+	void Application::Close() noexcept
 	{
 		m_Running = false;
 	}
@@ -160,7 +159,7 @@ namespace Rod {
 		m_ImGuiLayer->End();
 	}
 
-	bool Application::OnWindowClose(WindowCloseEvent& e)
+	bool Application::OnWindowClose(WindowCloseEvent& e) noexcept
 	{
 		(void)e;
 

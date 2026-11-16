@@ -80,30 +80,32 @@ namespace Rod {
 		std::filesystem::create_directories(assets);
 		if (!std::filesystem::exists(scene))
 		{
+			constexpr float starterCameraDistance = 8.0f;
 			Scene starter;
 			auto camera = starter.CreateEntity("Camera");
 			camera.AddComponent<CameraComponent>();
-			camera.GetComponent<TransformComponent>().Translation.z = 8.0f;
-			SceneSerializer serializer(starter, root);
+			camera.GetComponent<TransformComponent>().Translation.z = starterCameraDistance;
+			const SceneSerializer serializer(starter, root);
 			serializer.SerializeText(scene.string());
 		}
 		if (!std::filesystem::exists(scripts))
 		{
 			const auto core = std::filesystem::absolute("RodAssets/Scripts/Core/Rod.ScriptCore.dll");
-			const std::string contents =
-			    "<Project Sdk=\"Microsoft.NET.Sdk\">\n"
-			    "  <PropertyGroup>\n"
-			    "    <TargetFramework>net9.0</TargetFramework>\n"
-			    "    <Nullable>enable</Nullable>\n"
-			    "    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>\n"
-			    "    <ImplicitUsings>enable</ImplicitUsings>\n"
-			    "  </PropertyGroup>\n"
-			    "  <ItemGroup>\n"
-			    "    <Reference Include=\"Rod.ScriptCore\">\n"
-			    "      <HintPath>" + EscapeXml(core.generic_string()) + "</HintPath>\n"
-			    "    </Reference>\n"
-			    "  </ItemGroup>\n"
-			    "</Project>\n";
+			const std::string contents = "<Project Sdk=\"Microsoft.NET.Sdk\">\n"
+			                             "  <PropertyGroup>\n"
+			                             "    <TargetFramework>net9.0</TargetFramework>\n"
+			                             "    <Nullable>enable</Nullable>\n"
+			                             "    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>\n"
+			                             "    <ImplicitUsings>enable</ImplicitUsings>\n"
+			                             "  </PropertyGroup>\n"
+			                             "  <ItemGroup>\n"
+			                             "    <Reference Include=\"Rod.ScriptCore\">\n"
+			                             "      <HintPath>" +
+			                             EscapeXml(core.generic_string()) +
+			                             "</HintPath>\n"
+			                             "    </Reference>\n"
+			                             "  </ItemGroup>\n"
+			                             "</Project>\n";
 			WriteTextFile(scripts, contents);
 			std::filesystem::create_directories(scripts.parent_path() / "Source");
 		}

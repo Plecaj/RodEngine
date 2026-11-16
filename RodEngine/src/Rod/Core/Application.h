@@ -34,7 +34,7 @@ namespace Rod {
 		[[nodiscard]] Project* GetProject() noexcept { return m_Project ? &*m_Project : nullptr; }
 		[[nodiscard]] const Project* GetProject() const noexcept { return m_Project ? &*m_Project : nullptr; }
 
-		void Close();
+		void Close() noexcept;
 
 		void Minimize();
 		[[nodiscard]] bool IsMinimized() const noexcept { return m_Minimized; }
@@ -47,16 +47,16 @@ namespace Rod {
 
 		[[nodiscard]] ImGuiLayer* GetImGuiLayer() noexcept { return m_ImGuiLayer; };
 
-		[[nodiscard]] virtual bool IsEditor() const { return false; }
+		[[nodiscard]] virtual bool IsEditor() const noexcept { return false; }
 
 		[[nodiscard]] static Application& Get() noexcept { return *s_Instance; };
 
 	private:
-		Timestep CalculateTimestep();
+		[[nodiscard]] Timestep CalculateTimestep();
 		void UpdateLayers(Timestep timestep);
 		void RenderImGui();
 
-		bool OnWindowClose(WindowCloseEvent& e);
+		bool OnWindowClose(WindowCloseEvent& e) noexcept;
 		bool OnWindowResize(WindowResizeEvent& e);
 
 	private:
@@ -72,5 +72,5 @@ namespace Rod {
 	};
 
 	// To be defined in CLIENT
-	Application* CreateApplication(const std::optional<Project>& project);
+	[[nodiscard]] Application* CreateApplication(const std::optional<Project>& project);
 }

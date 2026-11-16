@@ -12,14 +12,14 @@ namespace Rod {
 	class SceneHierarchyPanel
 	{
 	public:
-		explicit SceneHierarchyPanel(const std::filesystem::path& assetsPath);
+		explicit SceneHierarchyPanel(std::filesystem::path assetsPath) noexcept;
 
 		void SetContext(Scene* scene);
 
 		void OnImGuiRender();
 
-		[[nodiscard]] Entity GetSelectedEntity() const { return m_SelectionContext; }
-		void SetSelectedEntity(Entity entity) { m_SelectionContext = entity; }
+		[[nodiscard]] constexpr Entity GetSelectedEntity() const noexcept { return m_SelectionContext; }
+		constexpr void SetSelectedEntity(Entity entity) noexcept { m_SelectionContext = entity; }
 
 	private:
 		static constexpr uintptr_t ENTITY_CHILD_NODE_ID = 90714394;
@@ -48,8 +48,6 @@ namespace Rod {
 			ImVec4 Normal;
 			ImVec4 Hovered;
 		};
-		static const void* NodeID(uintptr_t value);
-		static bool DrawMoreOptionsButton(const char* id, const ImVec2& size);
 		static void DrawAxisControl(
 		    const AxisStyle& style,
 		    float& value,
@@ -83,17 +81,17 @@ namespace Rod {
 
 		void DrawEntityNode(Entity entity);
 		void HandleHierarchyBlankSpace();
-		bool HandleEntityContextMenu();
+		[[nodiscard]] static bool HandleEntityContextMenu();
 
-		void DrawTag(Entity entity);
-		void DrawAddComponentButton(Entity entity);
+		static void DrawTag(Entity entity);
+		static void DrawAddComponentButton(Entity entity);
 
-		void DrawTransformComponent(Entity entity);
-		void DrawCameraComponent(Entity entity);
+		static void DrawTransformComponent(Entity entity);
+		static void DrawCameraComponent(Entity entity);
 		void DrawSpriteRendererComponent(Entity entity);
 		void DrawMeshComponent(Entity entity);
-		void DrawDirectionalLightComponent(Entity entity);
-		void DrawScriptComponent(Entity entity);
+		static void DrawDirectionalLightComponent(Entity entity);
+		static void DrawScriptComponent(Entity entity);
 
 		void DrawComponents(Entity entity);
 

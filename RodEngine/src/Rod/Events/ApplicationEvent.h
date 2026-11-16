@@ -9,10 +9,11 @@ namespace Rod {
 	class WindowResizeEvent : public Event
 	{
 	public:
-		WindowResizeEvent(unsigned int width, unsigned int height) noexcept : m_Width(width), m_Height(height) {}
+		constexpr WindowResizeEvent(unsigned int width, unsigned int height) noexcept : m_Width(width), m_Height(height)
+		{}
 
-		[[nodiscard]] unsigned int GetWidth() const noexcept { return m_Width; }
-		[[nodiscard]] unsigned int GetHeight() const noexcept { return m_Height; }
+		[[nodiscard]] constexpr unsigned int GetWidth() const noexcept { return m_Width; }
+		[[nodiscard]] constexpr unsigned int GetHeight() const noexcept { return m_Height; }
 
 		[[nodiscard]] virtual std::string ToString() const override
 		{

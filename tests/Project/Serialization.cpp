@@ -3,10 +3,10 @@
 #include "Rod/Core/UUID.h"
 #include "Rod/Project/Project.h"
 #include "Rod/Project/ProjectInitializer.h"
+#include "Rod/Project/ProjectSerializer.h"
 #include "Rod/Scene/Entity.h"
 #include "Rod/Scene/Scene.h"
 #include "Rod/Scene/SceneSerializer.h"
-#include "Rod/Project/ProjectSerializer.h"
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -59,7 +59,8 @@ TEST_CASE_METHOD(ProjectSerializationFixture, "Project manifests round trip all 
 	    .StartupScenePath = "Scenes/Opening Scene.rod",
 	    .ScriptsProjectPath = "Scripts/My Game.csproj",
 	    .ShadersPath = "Custom Engine/Shaders"};
-	SECTION("new manifest") {}
+	SECTION("new manifest")
+	{}
 	SECTION("replace existing manifest")
 	{
 		WriteManifest("Name: Previous project\n");
@@ -86,7 +87,8 @@ TEST_CASE_METHOD(
     "Invalid project manifests preserve existing properties",
     "[project][serialization]")
 {
-	SECTION("missing file") {}
+	SECTION("missing file")
+	{}
 	SECTION("malformed YAML")
 	{
 		WriteManifest("Name: [unterminated\n");
@@ -98,7 +100,9 @@ TEST_CASE_METHOD(
 
 	SECTION("invalid shader path")
 	{
-		WriteManifest("Name: New\nAssetsPath: Assets\nStartupScenePath: Main.rod\nScriptsProjectPath: Game.csproj\nShadersPath: [bad]\n");
+		WriteManifest(
+		    "Name: New\nAssetsPath: Assets\nStartupScenePath: Main.rod\nScriptsProjectPath: Game.csproj\nShadersPath: "
+		    "[bad]\n");
 	}
 	SECTION("missing shader path")
 	{
@@ -115,7 +119,10 @@ TEST_CASE_METHOD(
 	REQUIRE(project.GetProperties().ShadersPath == original.ShadersPath);
 }
 
-TEST_CASE_METHOD(ProjectSerializationFixture, "New projects create usable defaults without overwriting files", "[project]")
+TEST_CASE_METHOD(
+    ProjectSerializationFixture,
+    "New projects create usable defaults without overwriting files",
+    "[project]")
 {
 	const Rod::Project project{ManifestPath(), {}};
 	const auto root = project.GetDirectory();
@@ -128,7 +135,7 @@ TEST_CASE_METHOD(ProjectSerializationFixture, "New projects create usable defaul
 	REQUIRE(std::filesystem::is_regular_file(project.GetStartupScenePath()));
 	REQUIRE(std::filesystem::is_regular_file(project.GetScriptProjectPath()));
 	Rod::Scene scene;
-	Rod::SceneSerializer serializer(scene, project.GetDirectory());
+	const Rod::SceneSerializer serializer(scene, project.GetDirectory());
 	REQUIRE_NOTHROW(serializer.DeserializeText(project.GetStartupScenePath().string()));
 	REQUIRE(static_cast<bool>(scene.GetPrimaryCameraEntity()));
 	std::ofstream file(project.GetScriptProjectPath());
@@ -141,7 +148,10 @@ TEST_CASE_METHOD(ProjectSerializationFixture, "New projects create usable defaul
 	REQUIRE(contents == "preserve this content");
 }
 
-TEST_CASE_METHOD(ProjectSerializationFixture, "Missing custom project files are rejected before creating defaults", "[project]")
+TEST_CASE_METHOD(
+    ProjectSerializationFixture,
+    "Missing custom project files are rejected before creating defaults",
+    "[project]")
 {
 	const Rod::Project project{ManifestPath(), {.ScriptsProjectPath = "Custom/Missing.csproj"}};
 	REQUIRE_THROWS_AS(Rod::ProjectInitializer::CreateDefaultFiles(project), std::runtime_error);

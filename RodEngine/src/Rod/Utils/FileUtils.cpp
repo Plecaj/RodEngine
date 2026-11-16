@@ -32,7 +32,8 @@ namespace Rod {
 		{
 			std::error_code error;
 			std::filesystem::remove(temporaryPath, error);
-			std::string message = "File write failed '" + path.string() + "': " + exception.what() + " | File unchanged.";
+			std::string message =
+			    "File write failed '" + path.string() + "': " + exception.what() + " | File unchanged.";
 			if (error)
 				message += " | Cleanup failed '" + temporaryPath.string() + "': " + error.message();
 			throw std::runtime_error(message);

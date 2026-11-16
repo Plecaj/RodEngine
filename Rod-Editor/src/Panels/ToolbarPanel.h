@@ -14,7 +14,7 @@ namespace Rod {
 	public:
 		ToolbarPanel() = default;
 
-		void OnImGuiRender(
+		static void OnImGuiRender(
 		    SceneState sceneState,
 		    const Texture2D& playButton,
 		    const Texture2D& stopButton,

@@ -6,109 +6,119 @@
 
 namespace Rod {
 
-	bool TitlebarPanel::DrawTitlebarButton(const char* id, ButtonIcon icon, const ImVec2& size)
-	{
-		constexpr float half = 0.5f;
-		constexpr ImU32 closeActive = IM_COL32(150, 36, 44, 255);
-		constexpr ImU32 closeHovered = IM_COL32(196, 43, 54, 255);
-		constexpr ImU32 buttonActive = IM_COL32(66, 72, 80, 255);
-		constexpr ImU32 buttonHovered = IM_COL32(50, 56, 63, 255);
-		ImGui::InvisibleButton(id, size);
-
-		const bool hovered = ImGui::IsItemHovered();
-		const bool active = ImGui::IsItemActive();
-		const bool isClose = icon == ButtonIcon::Close;
-
-		ImDrawList* drawList = ImGui::GetWindowDrawList();
-		const ImVec2 min = ImGui::GetItemRectMin();
-		const ImVec2 max = ImGui::GetItemRectMax();
-		ImU32 background = IM_COL32(0, 0, 0, 0);
-
-		if (hovered || active)
+	namespace {
+		enum class ButtonIcon : uint8_t
 		{
-			if (isClose)
-				background = active ? closeActive : closeHovered;
-			else
-				background = active ? buttonActive : buttonHovered;
+			Minimize,
+			Maximize,
+			Restore,
+			Close
+		};
+
+		void DrawButtonIcon(ImDrawList& drawList, ButtonIcon icon, const ImVec2& center)
+		{
+			constexpr float half = 0.5f;
+			constexpr float restoreOffset = 2.0f;
+			constexpr float minimizeOffset = 4.0f;
+			constexpr ImU32 iconColor = IM_COL32(230, 233, 238, 255);
+			constexpr float stroke = 1.6f;
+
+			switch (icon)
+			{
+				case ButtonIcon::Minimize: {
+					constexpr float width = 10.0f;
+					drawList.AddLine(
+					    ImVec2(center.x - width * half, center.y + minimizeOffset),
+					    ImVec2(center.x + width * half, center.y + minimizeOffset),
+					    iconColor,
+					    stroke);
+					break;
+				}
+				case ButtonIcon::Maximize: {
+					constexpr float side = 10.0f;
+					drawList.AddRect(
+					    ImVec2(center.x - side * half, center.y - side * half),
+					    ImVec2(center.x + side * half, center.y + side * half),
+					    iconColor,
+					    0.0f,
+					    0,
+					    stroke);
+					break;
+				}
+				case ButtonIcon::Restore: {
+					constexpr float side = 9.0f;
+					drawList.AddRect(
+					    ImVec2(center.x - side * half - restoreOffset, center.y - side * half + restoreOffset),
+					    ImVec2(center.x + side * half - restoreOffset, center.y + side * half + restoreOffset),
+					    iconColor,
+					    0.0f,
+					    0,
+					    stroke);
+					drawList.AddRect(
+					    ImVec2(center.x - side * half + restoreOffset, center.y - side * half - restoreOffset),
+					    ImVec2(center.x + side * half + restoreOffset, center.y + side * half - restoreOffset),
+					    iconColor,
+					    0.0f,
+					    0,
+					    stroke);
+					break;
+				}
+				case ButtonIcon::Close: {
+					constexpr float radius = 5.0f;
+					drawList.AddLine(
+					    ImVec2(center.x - radius, center.y - radius),
+					    ImVec2(center.x + radius, center.y + radius),
+					    iconColor,
+					    stroke);
+					drawList.AddLine(
+					    ImVec2(center.x + radius, center.y - radius),
+					    ImVec2(center.x - radius, center.y + radius),
+					    iconColor,
+					    stroke);
+					break;
+				}
+			}
 		}
 
-		drawList->AddRectFilled(min, max, background, 0.0f);
-
-		const ImVec2 center{(min.x + max.x) * half, (min.y + max.y) * half};
-		DrawButtonIcon(*drawList, icon, center);
-
-		return ImGui::IsItemClicked(ImGuiMouseButton_Left);
-	}
-
-	void TitlebarPanel::DrawButtonIcon(ImDrawList& drawList, ButtonIcon icon, const ImVec2& center)
-	{
-		constexpr float half = 0.5f;
-		constexpr float restoreOffset = 2.0f;
-		constexpr float minimizeOffset = 4.0f;
-		constexpr ImU32 iconColor = IM_COL32(230, 233, 238, 255);
-		constexpr float stroke = 1.6f;
-
-		switch (icon)
+		[[nodiscard]] bool DrawTitlebarButton(const char* id, ButtonIcon icon, const ImVec2& size)
 		{
-			case ButtonIcon::Minimize: {
-				constexpr float width = 10.0f;
-				drawList.AddLine(
-				    ImVec2(center.x - width * half, center.y + minimizeOffset),
-				    ImVec2(center.x + width * half, center.y + minimizeOffset),
-				    iconColor,
-				    stroke);
-				break;
-			}
-			case ButtonIcon::Maximize: {
-				constexpr float side = 10.0f;
-				drawList.AddRect(
-				    ImVec2(center.x - side * half, center.y - side * half),
-				    ImVec2(center.x + side * half, center.y + side * half),
-				    iconColor,
-				    0.0f,
-				    0,
-				    stroke);
-				break;
-			}
-			case ButtonIcon::Restore: {
-				constexpr float side = 9.0f;
-				drawList.AddRect(
-				    ImVec2(center.x - side * half - restoreOffset, center.y - side * half + restoreOffset),
-				    ImVec2(center.x + side * half - restoreOffset, center.y + side * half + restoreOffset),
-				    iconColor,
-				    0.0f,
-				    0,
-				    stroke);
-				drawList.AddRect(
-				    ImVec2(center.x - side * half + restoreOffset, center.y - side * half - restoreOffset),
-				    ImVec2(center.x + side * half + restoreOffset, center.y + side * half - restoreOffset),
-				    iconColor,
-				    0.0f,
-				    0,
-				    stroke);
-				break;
-			}
-			case ButtonIcon::Close: {
-				constexpr float radius = 5.0f;
-				drawList.AddLine(
-				    ImVec2(center.x - radius, center.y - radius),
-				    ImVec2(center.x + radius, center.y + radius),
-				    iconColor,
-				    stroke);
-				drawList.AddLine(
-				    ImVec2(center.x + radius, center.y - radius),
-				    ImVec2(center.x - radius, center.y + radius),
-				    iconColor,
-				    stroke);
-				break;
-			}
-		}
-	}
+			constexpr float half = 0.5f;
+			constexpr ImU32 closeActive = IM_COL32(150, 36, 44, 255);
+			constexpr ImU32 closeHovered = IM_COL32(196, 43, 54, 255);
+			constexpr ImU32 buttonActive = IM_COL32(66, 72, 80, 255);
+			constexpr ImU32 buttonHovered = IM_COL32(50, 56, 63, 255);
+			ImGui::InvisibleButton(id, size);
 
-	void TitlebarPanel::RunCallback(const std::function<void()>& callback)
-	{
-		if (callback)
-			callback();
+			const bool hovered = ImGui::IsItemHovered();
+			const bool active = ImGui::IsItemActive();
+			const bool isClose = icon == ButtonIcon::Close;
+
+			ImDrawList* drawList = ImGui::GetWindowDrawList();
+			const ImVec2 min = ImGui::GetItemRectMin();
+			const ImVec2 max = ImGui::GetItemRectMax();
+			ImU32 background = IM_COL32(0, 0, 0, 0);
+
+			if (hovered || active)
+			{
+				if (isClose)
+					background = active ? closeActive : closeHovered;
+				else
+					background = active ? buttonActive : buttonHovered;
+			}
+
+			drawList->AddRectFilled(min, max, background, 0.0f);
+
+			const ImVec2 center{(min.x + max.x) * half, (min.y + max.y) * half};
+			DrawButtonIcon(*drawList, icon, center);
+
+			return ImGui::IsItemClicked(ImGuiMouseButton_Left);
+		}
+
+		void RunCallback(const std::function<void()>& callback)
+		{
+			if (callback)
+				callback();
+		}
 	}
 
 	TitlebarPanel::TitlebarPanel()
@@ -117,7 +127,7 @@ namespace Rod {
 		m_ButtonSize = ImVec2(BUTTON_WIDTH, static_cast<float>(HEIGHT));
 	}
 
-	void TitlebarPanel::OnImGuiRender()
+	void TitlebarPanel::OnImGuiRender() const
 	{
 		constexpr ImU32 backgroundColor = IM_COL32(19, 22, 26, 255);
 		constexpr ImU32 borderColor = IM_COL32(45, 51, 60, 255);
@@ -166,7 +176,7 @@ namespace Rod {
 			Application::Get().BeginWindowDrag();
 	}
 
-	void TitlebarPanel::DrawFileMenu()
+	void TitlebarPanel::DrawFileMenu() const
 	{
 		constexpr ImVec2 framePadding{10.0f, 4.0f};
 		constexpr float frameRounding = 3.0f;
@@ -202,7 +212,7 @@ namespace Rod {
 		ImGui::PopStyleVar(styleVariableCount);
 	}
 
-	void TitlebarPanel::DrawButtons()
+	void TitlebarPanel::DrawButtons() const
 	{
 		if (DrawTitlebarButton("##Minimize", ButtonIcon::Minimize, m_ButtonSize))
 			Application::Get().Minimize();

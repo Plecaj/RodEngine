@@ -53,9 +53,9 @@ namespace Rod {
 		struct ShadowData;
 		struct DrawData;
 
-		static FrustumCorners GetFrustumCornersWorldSpace(const glm::mat4& viewProjection);
+		[[nodiscard]] static FrustumCorners GetFrustumCornersWorldSpace(const glm::mat4& viewProjection);
 		static void LimitFrustumDepth(FrustumCorners& corners, float maxDistance);
-		static glm::mat4
+		[[nodiscard]] static glm::mat4
 		CreateDirectionalLightViewProjection(const glm::vec3& lightDirection, const glm::mat4& cameraViewProjection);
 
 		static void SetupScene(std::vector<DirectionalLightComponent>& lights);

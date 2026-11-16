@@ -10,7 +10,7 @@ namespace Rod {
 	class Layer
 	{
 	public:
-		explicit Layer(std::string name = "Layer");
+		explicit Layer(std::string name = "Layer") noexcept;
 		virtual ~Layer();
 		Layer(const Layer&) = delete;
 		Layer& operator=(const Layer&) = delete;

@@ -3,6 +3,7 @@
 #include "Rod/Renderer/Shader.h"
 
 #include <glm/glm.hpp>
+#include <shaderc/shaderc.hpp>
 
 #include <filesystem>
 #include <unordered_map>
@@ -46,10 +47,10 @@ namespace Rod {
 		void UploadUniformMat4(const std::string& name, const glm::mat4& matrix);
 
 	private:
-		int GetUniformLocation(const std::string& name) const;
+		[[nodiscard]] int GetUniformLocation(const std::string& name) const;
 
-		bool OpenSpirv(const shaderc_shader_kind& kind, const std::string& cacheKey);
-		std::vector<uint32_t> CompileSpirv(
+		[[nodiscard]] bool OpenSpirv(const shaderc_shader_kind& kind, const std::string& cacheKey);
+		[[nodiscard]] std::vector<uint32_t> CompileSpirv(
 		    const shaderc_shader_kind& kind,
 		    const std::string& source,
 		    shaderc::Compiler& compiler,
@@ -62,7 +63,6 @@ namespace Rod {
 		std::string m_Name;
 
 		std::unordered_map<shaderc_shader_kind, std::vector<uint32_t>> m_SPIRV;
-
 	};
 
 }

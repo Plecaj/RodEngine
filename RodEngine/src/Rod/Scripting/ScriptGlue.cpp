@@ -20,6 +20,35 @@
 
 namespace Rod {
 
+	namespace {
+
+		template <typename Function>
+		[[nodiscard]] NativeCall MakeNativeCall(const char* name, Function function) noexcept
+		{
+			return {name, std::bit_cast<void*>(function)};
+		}
+
+		[[nodiscard]] Entity GetEntity(uint64_t entityID)
+		{
+			Scene* scene = ScriptGlue::GetSceneContext();
+			if (!scene)
+				return {};
+			return scene->FindEntityByUUID(UUID{entityID});
+		}
+
+		[[nodiscard]] void* AllocateString(const std::string& value) noexcept
+		{
+#ifdef RD_PLATFORM_WINDOWS
+			auto* buffer = static_cast<char*>(CoTaskMemAlloc(value.size() + 1));
+#else
+			auto* buffer = static_cast<char*>(std::malloc(value.size() + 1));
+#endif
+			if (buffer)
+				std::memcpy(buffer, value.c_str(), value.size() + 1);
+			return buffer;
+		}
+	}
+
 	struct ScriptGlue::ScriptVec2
 	{
 		float X, Y;
@@ -49,32 +78,6 @@ namespace Rod {
 
 	Scene* ScriptGlue::s_SceneContext = nullptr;
 
-	template <typename Function>
-	NativeCall ScriptGlue::MakeNativeCall(const char* name, Function function)
-	{
-		return {name, std::bit_cast<void*>(function)};
-	}
-
-	Entity ScriptGlue::GetEntity(uint64_t entityID)
-	{
-		Scene* scene = ScriptGlue::GetSceneContext();
-		if (!scene)
-			return {};
-		return scene->FindEntityByUUID(UUID{entityID});
-	}
-
-	void* ScriptGlue::AllocateString(const std::string& value)
-	{
-#ifdef RD_PLATFORM_WINDOWS
-		auto* buffer = static_cast<char*>(CoTaskMemAlloc(value.size() + 1));
-#else
-		auto* buffer = static_cast<char*>(std::malloc(value.size() + 1));
-#endif
-		if (buffer)
-			std::memcpy(buffer, value.c_str(), value.size() + 1);
-		return buffer;
-	}
-
 	glm::vec3 ScriptGlue::ToGLM(ScriptVec3 value)
 	{
 		return {value.X, value.Y, value.Z};
@@ -85,12 +88,12 @@ namespace Rod {
 		return {value.X, value.Y, value.Z, value.W};
 	}
 
-	ScriptGlue::ScriptVec3 ScriptGlue::ToScript(const glm::vec3& value)
+	ScriptGlue::ScriptVec3 ScriptGlue::ToScript(const glm::vec3& value) noexcept
 	{
 		return {value.x, value.y, value.z};
 	}
 
-	ScriptGlue::ScriptVec4 ScriptGlue::ToScript(const glm::vec4& value)
+	ScriptGlue::ScriptVec4 ScriptGlue::ToScript(const glm::vec4& value) noexcept
 	{
 		return {value.x, value.y, value.z, value.w};
 	}
@@ -648,7 +651,7 @@ namespace Rod {
 			entity.GetComponent<ScriptComponent>().ClassName = className ? className : "";
 	}
 
-	void ScriptGlue::SetSceneContext(Scene* scene)
+	void ScriptGlue::SetSceneContext(Scene* scene) noexcept
 	{
 		s_SceneContext = scene;
 	}

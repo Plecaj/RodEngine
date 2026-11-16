@@ -44,12 +44,11 @@ namespace Rod {
 		struct ScriptEngineData;
 		static std::unique_ptr<ScriptEngineData> s_Data;
 
-		static std::filesystem::path CreateAssemblyCachePath(const std::filesystem::path& assemblyPath);
-		static std::string CopyManagedString(void* value);
-		static ScriptPaths ResolveScriptPaths();
+		[[nodiscard]] static std::filesystem::path CreateAssemblyCachePath(const std::filesystem::path& assemblyPath);
+		[[nodiscard]] static ScriptPaths ResolveScriptPaths();
 
 		static void RefreshSourceWriteTime();
-		static std::filesystem::file_time_type GetLatestSourceWriteTime();
+		[[nodiscard]] static std::filesystem::file_time_type GetLatestSourceWriteTime();
 		static void ApplyScriptFields(Entity entity);
 	};
 }

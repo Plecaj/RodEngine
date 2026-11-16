@@ -3,6 +3,8 @@
 #include "EditorLayer.h"
 #include "Rod/Core/EntryPoint.h" // IWYU pragma: keep
 
+#include <stdexcept>
+
 namespace Rod {
 
 	class RodEditor : public Application
@@ -21,13 +23,14 @@ namespace Rod {
 			PushLayer(new EditorLayer(*GetProject()));
 		}
 
-		[[nodiscard]] virtual bool IsEditor() const override { return true; }
+		[[nodiscard]] virtual bool IsEditor() const noexcept override { return true; }
 	};
 
 	Application* CreateApplication(const std::optional<Project>& project)
 	{
-		RD_CORE_ASSERT(project.has_value(), "Project must be provided for editor");
-		return new RodEditor(project.value());
+		if (!project)
+			throw std::invalid_argument("Project must be provided for editor");
+		return new RodEditor(*project);
 	}
 
 }

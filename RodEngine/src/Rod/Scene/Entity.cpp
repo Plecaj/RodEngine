@@ -8,9 +8,6 @@
 
 namespace Rod {
 
-	Entity::Entity(entt::entity handle, Scene* scene) noexcept : m_EntityHandle(handle), m_Scene(scene)
-	{}
-
 	UUID Entity::GetUUID() const
 	{
 		return GetComponent<IDComponent>().ID;

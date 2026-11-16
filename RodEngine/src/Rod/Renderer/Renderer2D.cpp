@@ -65,7 +65,8 @@ namespace Rod {
 		shaderOptions.OptimizationLevel = Shader::OptimizationLevel::Performance;
 		shaderOptions.GenerateDebugInfo = false;
 
-		g_Data->TextureShader = Shader::Create((Renderer::GetShaderDirectory() / "Texture.glsl").string(), shaderOptions);
+		g_Data->TextureShader =
+		    Shader::Create((Renderer::GetShaderDirectory() / "Texture.glsl").string(), shaderOptions);
 		g_Data->QuadUniformBuffer = UniformBuffer::Create(sizeof(glm::mat4));
 	}
 
@@ -269,12 +270,12 @@ namespace Rod {
 			DrawQuad(transform, src.Color, entityID);
 	}
 
-	void Renderer2D::ResetStats()
+	void Renderer2D::ResetStats() noexcept
 	{
 		g_Data->Stats = {};
 	}
 
-	Renderer2D::Statistics Renderer2D::GetStats()
+	Renderer2D::Statistics Renderer2D::GetStats() noexcept
 	{
 		return g_Data->Stats;
 	}

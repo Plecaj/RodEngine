@@ -91,7 +91,7 @@ namespace Rod {
 			m_OutputStream.flush();
 		}
 
-		static Instrumentor& Get()
+		[[nodiscard]] static Instrumentor& Get()
 		{
 			static Instrumentor s_Instance;
 			return s_Instance;
@@ -101,7 +101,7 @@ namespace Rod {
 	class InstrumentationTimer
 	{
 	public:
-		explicit InstrumentationTimer(const char* name) : m_Name(name)
+		explicit InstrumentationTimer(const char* name) noexcept : m_Name(name)
 		{
 			m_StartTimepoint = std::chrono::high_resolution_clock::now();
 		}
@@ -118,14 +118,14 @@ namespace Rod {
 
 		void Stop()
 		{
-			auto endTimepoint = std::chrono::high_resolution_clock::now();
+			const auto endTimepoint = std::chrono::high_resolution_clock::now();
 
-			long long start =
+			const long long start =
 			    std::chrono::time_point_cast<std::chrono::microseconds>(m_StartTimepoint).time_since_epoch().count();
-			long long end =
+			const long long end =
 			    std::chrono::time_point_cast<std::chrono::microseconds>(endTimepoint).time_since_epoch().count();
 
-			size_t threadID = std::hash<std::thread::id>{}(std::this_thread::get_id());
+			const size_t threadID = std::hash<std::thread::id>{}(std::this_thread::get_id());
 			Instrumentor::Get().WriteProfile({m_Name, start, end, threadID});
 
 			m_Stopped = true;

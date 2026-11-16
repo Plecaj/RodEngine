@@ -14,7 +14,63 @@
 
 namespace Rod {
 
-	SceneHierarchyPanel::SceneHierarchyPanel(const std::filesystem::path& assetsPath) : m_AssetsPath(assetsPath)
+	namespace {
+
+		[[nodiscard]] const void* NodeID(uintptr_t value) noexcept
+		{
+			// ImGui hashes this opaque identifier without dereferencing it.
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast,performance-no-int-to-ptr)
+			return reinterpret_cast<const void*>(value);
+		}
+
+		[[nodiscard]] bool DrawMoreOptionsButton(const char* id, const ImVec2& size)
+		{
+			constexpr float half = 0.5f;
+			constexpr float rounding = 3.0f;
+			constexpr float spacing = 4.0f;
+			constexpr float radius = 1.6f;
+			ImGui::InvisibleButton(id, size);
+			const bool hovered = ImGui::IsItemHovered();
+			const bool active = ImGui::IsItemActive();
+			ImDrawList* drawList = ImGui::GetWindowDrawList();
+			const ImVec2 min = ImGui::GetItemRectMin();
+			const ImVec2 max = ImGui::GetItemRectMax();
+			const ImU32 background = active    ? IM_COL32(40, 45, 53, 255)
+			                         : hovered ? IM_COL32(50, 56, 66, 255)
+			                                   : IM_COL32(0, 0, 0, 0);
+			constexpr ImU32 dotColor = IM_COL32(220, 225, 232, 255);
+			drawList->AddRectFilled(min, max, background, rounding);
+			const ImVec2 center{(min.x + max.x) * half, (min.y + max.y) * half};
+			drawList->AddCircleFilled({center.x - spacing, center.y}, radius, dotColor);
+			drawList->AddCircleFilled(center, radius, dotColor);
+			drawList->AddCircleFilled({center.x + spacing, center.y}, radius, dotColor);
+			return ImGui::IsItemClicked(ImGuiMouseButton_Left);
+		}
+
+		void HandleMeshDrop(MeshComponent& component, const std::filesystem::path& assetsPath)
+		{
+			if (!ImGui::BeginDragDropTarget())
+				return;
+
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_MESH_ITEM"))
+			{
+				const char* path = static_cast<const char*>(payload->Data);
+				const std::filesystem::path meshAssetPath = assetsPath / path;
+				try
+				{
+					component.SetMesh(CreateRef<Mesh>(meshAssetPath.string()));
+				}
+				catch (const std::runtime_error& exception)
+				{
+					RD_CORE_ERROR("{}", exception.what());
+				}
+			}
+			ImGui::EndDragDropTarget();
+		}
+	}
+
+	SceneHierarchyPanel::SceneHierarchyPanel(std::filesystem::path assetsPath) noexcept
+	    : m_AssetsPath(std::move(assetsPath))
 	{}
 
 	void SceneHierarchyPanel::SetContext(Scene* scene)
@@ -116,37 +172,6 @@ namespace Rod {
 			ImGui::EndPopup();
 		}
 		return entityDeleted;
-	}
-
-	const void* SceneHierarchyPanel::NodeID(uintptr_t value)
-	{
-		// ImGui hashes this opaque identifier without dereferencing it.
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast,performance-no-int-to-ptr)
-		return reinterpret_cast<const void*>(value);
-	}
-
-	bool SceneHierarchyPanel::DrawMoreOptionsButton(const char* id, const ImVec2& size)
-	{
-		constexpr float half = 0.5f;
-		constexpr float rounding = 3.0f;
-		constexpr float spacing = 4.0f;
-		constexpr float radius = 1.6f;
-		ImGui::InvisibleButton(id, size);
-		const bool hovered = ImGui::IsItemHovered();
-		const bool active = ImGui::IsItemActive();
-		ImDrawList* drawList = ImGui::GetWindowDrawList();
-		const ImVec2 min = ImGui::GetItemRectMin();
-		const ImVec2 max = ImGui::GetItemRectMax();
-		const ImU32 background = active    ? IM_COL32(40, 45, 53, 255)
-		                         : hovered ? IM_COL32(50, 56, 66, 255)
-		                                   : IM_COL32(0, 0, 0, 0);
-		constexpr ImU32 dotColor = IM_COL32(220, 225, 232, 255);
-		drawList->AddRectFilled(min, max, background, rounding);
-		const ImVec2 center{(min.x + max.x) * half, (min.y + max.y) * half};
-		drawList->AddCircleFilled({center.x - spacing, center.y}, radius, dotColor);
-		drawList->AddCircleFilled(center, radius, dotColor);
-		drawList->AddCircleFilled({center.x + spacing, center.y}, radius, dotColor);
-		return ImGui::IsItemClicked(ImGuiMouseButton_Left);
 	}
 
 	void SceneHierarchyPanel::DrawAxisControl(
@@ -441,23 +466,7 @@ namespace Rod {
 				return;
 			}
 
-			if (ImGui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_MESH_ITEM"))
-				{
-					const char* path = static_cast<const char*>(payload->Data);
-					const std::filesystem::path meshAssetPath = m_AssetsPath / path;
-					try
-					{
-						component.SetMesh(CreateRef<Mesh>(meshAssetPath.string()));
-					}
-					catch (const std::runtime_error& exception)
-					{
-						RD_CORE_ERROR("{}", exception.what());
-					}
-				}
-				ImGui::EndDragDropTarget();
-			}
+			HandleMeshDrop(component, m_AssetsPath);
 			if (!component.Mesh)
 				return;
 

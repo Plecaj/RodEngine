@@ -3,7 +3,6 @@
 #include "RendererAPI.h"
 
 #include <glm/glm.hpp>
-#include <shaderc/shaderc.hpp>
 
 #include <cstdint>
 #include <string>
@@ -50,12 +49,6 @@ namespace Rod {
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
-
-	private:
-		static std::string Trim(const std::string& value);
-		static shaderc_shader_kind ShadercTypeFromString(const std::string& type);
-		static std::string ReadFile(const std::string& filepath);
-		static std::unordered_map<shaderc_shader_kind, std::string> PreProcess(const std::string& source);
 	};
 
 	inline Shader::ShaderOptions::ShaderOptions() = default;

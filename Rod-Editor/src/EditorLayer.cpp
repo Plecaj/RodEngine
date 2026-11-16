@@ -483,7 +483,7 @@ namespace Rod {
 	{
 		Scene loadedScene;
 		loadedScene.OnViewportResize(static_cast<uint32_t>(m_ViewportSize.x), static_cast<uint32_t>(m_ViewportSize.y));
-		SceneSerializer serializer(loadedScene, m_Project.GetDirectory());
+		const SceneSerializer serializer(loadedScene, m_Project.GetDirectory());
 		serializer.DeserializeText(path.string());
 
 		NewScene();
@@ -492,7 +492,7 @@ namespace Rod {
 
 	void EditorLayer::SerializeScene(const std::filesystem::path& path)
 	{
-		SceneSerializer serializer(*m_ActiveScene, m_Project.GetDirectory());
+		const SceneSerializer serializer(*m_ActiveScene, m_Project.GetDirectory());
 		serializer.SerializeText(path.string());
 	}
 

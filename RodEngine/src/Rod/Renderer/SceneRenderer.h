@@ -22,7 +22,7 @@ namespace Rod {
 
 	private:
 		struct RuntimeCameraData;
-		static RuntimeCameraData FindRuntimeCamera(Scene& scene);
+		[[nodiscard]] static RuntimeCameraData FindRuntimeCamera(Scene& scene);
 		static std::vector<DirectionalLightComponent> CollectLights(Scene& scene);
 		static void SubmitMeshes(Scene& scene);
 		static void SubmitSprites(Scene& scene);

@@ -21,9 +21,9 @@ namespace Rod {
 	class ScriptGlue
 	{
 	public:
-		static void SetSceneContext(Scene* scene);
-		static Scene* GetSceneContext() { return s_SceneContext; }
-		static std::vector<NativeCall> GetNativeCalls();
+		static void SetSceneContext(Scene* scene) noexcept;
+		[[nodiscard]] static Scene* GetSceneContext() noexcept { return s_SceneContext; }
+		[[nodiscard]] static std::vector<NativeCall> GetNativeCalls();
 
 	private:
 		struct ScriptVec2;
@@ -35,14 +35,10 @@ namespace Rod {
 		static constexpr int32_t LOG_LEVEL_WARNING = 2;
 		static constexpr int32_t LOG_LEVEL_ERROR = 3;
 
-		template <typename Function>
-		static NativeCall MakeNativeCall(const char* name, Function function);
-		static Entity GetEntity(uint64_t entityID);
-		static void* AllocateString(const std::string& value);
-		static glm::vec3 ToGLM(ScriptVec3 value);
-		static glm::vec4 ToGLM(ScriptVec4 value);
-		static ScriptVec3 ToScript(const glm::vec3& value);
-		static ScriptVec4 ToScript(const glm::vec4& value);
+		[[nodiscard]] static glm::vec3 ToGLM(ScriptVec3 value);
+		[[nodiscard]] static glm::vec4 ToGLM(ScriptVec4 value);
+		[[nodiscard]] static ScriptVec3 ToScript(const glm::vec3& value) noexcept;
+		[[nodiscard]] static ScriptVec4 ToScript(const glm::vec4& value) noexcept;
 		static void RD_CDECL LogMessage(int32_t level, const char* message);
 		static bool RD_CDECL InputIsKeyPressed(int32_t keycode);
 		static bool RD_CDECL InputIsMouseButtonPressed(int32_t button);

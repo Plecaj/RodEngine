@@ -12,7 +12,7 @@ namespace Rod {
 	class SubTexture2D
 	{
 	public:
-		SubTexture2D(const Ref<Texture2D>& texture, const glm::vec2& min, const glm::vec2& max);
+		SubTexture2D(const Ref<Texture2D>& texture, const glm::vec2& min, const glm::vec2& max) noexcept;
 
 		[[nodiscard]] const Ref<Texture2D>& GetTexture() const noexcept { return m_Texture; }
 		[[nodiscard]] const glm::vec2* GetTexCoords() const noexcept { return m_TexCoords.data(); }
@@ -21,7 +21,7 @@ namespace Rod {
 		    const Ref<Texture2D>& texture,
 		    glm::vec2 coords,
 		    glm::vec2 cellSize,
-		    glm::vec2 spriteSize = {1, 1});
+		    glm::vec2 spriteSize = {1, 1}) noexcept;
 
 	private:
 		Ref<Texture2D> m_Texture;

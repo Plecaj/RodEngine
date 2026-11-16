@@ -10,21 +10,32 @@
 
 namespace Rod {
 
-	ScriptFieldType ScriptAssembly::ScriptFieldTypeFromString(const std::string& type)
-	{
-		static const std::unordered_map<std::string, ScriptFieldType> FIELD_TYPES = {
-		    {"Single", ScriptFieldType::Float},    {"Double", ScriptFieldType::Double},
-		    {"Boolean", ScriptFieldType::Bool},    {"Char", ScriptFieldType::Char},
-		    {"Byte", ScriptFieldType::Byte},       {"Int16", ScriptFieldType::Short},
-		    {"Int32", ScriptFieldType::Int},       {"Int64", ScriptFieldType::Long},
-		    {"SByte", ScriptFieldType::UByte},     {"UInt16", ScriptFieldType::UShort},
-		    {"UInt32", ScriptFieldType::UInt},     {"UInt64", ScriptFieldType::ULong},
-		    {"Vector2", ScriptFieldType::Vector2}, {"Vector3", ScriptFieldType::Vector3},
-		    {"Vector4", ScriptFieldType::Vector4}, {"Entity", ScriptFieldType::Entity},
-		    {"String", ScriptFieldType::String}};
+	namespace {
 
-		auto it = FIELD_TYPES.find(type);
-		return it != FIELD_TYPES.end() ? it->second : ScriptFieldType::None;
+		[[nodiscard]] ScriptFieldType ScriptFieldTypeFromString(const std::string& type)
+		{
+			static const std::unordered_map<std::string, ScriptFieldType> FIELD_TYPES = {
+			    {"Single", ScriptFieldType::Float},
+			    {"Double", ScriptFieldType::Double},
+			    {"Boolean", ScriptFieldType::Bool},
+			    {"Char", ScriptFieldType::Char},
+			    {"Byte", ScriptFieldType::Byte},
+			    {"Int16", ScriptFieldType::Short},
+			    {"Int32", ScriptFieldType::Int},
+			    {"Int64", ScriptFieldType::Long},
+			    {"SByte", ScriptFieldType::UByte},
+			    {"UInt16", ScriptFieldType::UShort},
+			    {"UInt32", ScriptFieldType::UInt},
+			    {"UInt64", ScriptFieldType::ULong},
+			    {"Vector2", ScriptFieldType::Vector2},
+			    {"Vector3", ScriptFieldType::Vector3},
+			    {"Vector4", ScriptFieldType::Vector4},
+			    {"Entity", ScriptFieldType::Entity},
+			    {"String", ScriptFieldType::String}};
+
+			auto it = FIELD_TYPES.find(type);
+			return it != FIELD_TYPES.end() ? it->second : ScriptFieldType::None;
+		}
 	}
 
 	ScriptAssembly::ScriptAssembly(const std::filesystem::path& assemblyPath, const std::string& metadataJson)

@@ -4,7 +4,7 @@
 
 #include "Rod/Utils/FileUtils.h"
 
-#include <yaml-cpp/yaml.h>
+#include <yaml-cpp/yaml.h> // IWYU pragma: keep
 
 #include <algorithm>
 #include <chrono>

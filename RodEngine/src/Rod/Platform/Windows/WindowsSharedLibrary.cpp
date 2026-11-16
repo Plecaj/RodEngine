@@ -4,6 +4,7 @@
 
 // NOLINTBEGIN(misc-include-cleaner,cppcoreguidelines-pro-type-reinterpret-cast)
 #include <Windows.h>
+
 #include <system_error>
 
 namespace Rod {
@@ -26,7 +27,7 @@ namespace Rod {
 		}
 	}
 
-	void* SharedLibrary::GetFunction(const char* name) const
+	void* SharedLibrary::GetFunction(const char* name) const noexcept
 	{
 		return m_Handle ? reinterpret_cast<void*>(GetProcAddress(static_cast<HMODULE>(m_Handle), name)) : nullptr;
 	}

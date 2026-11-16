@@ -24,7 +24,7 @@ namespace Rod {
 			return;
 		}
 
-		SceneSerializer serializer(*m_Scene, m_Project.GetDirectory());
+		const SceneSerializer serializer(*m_Scene, m_Project.GetDirectory());
 		try
 		{
 			serializer.DeserializeText(scenePath.string());
@@ -64,7 +64,7 @@ namespace Rod {
 	{
 		EventDispatcher dispatcher(event);
 		dispatcher.Dispatch<WindowResizeEvent>(RD_BIND_EVENT_FN(RuntimeLayer::OnWindowResize));
-		dispatcher.Dispatch<KeyPressedEvent>(RD_BIND_EVENT_FN(RuntimeLayer::OnKeyPressed));
+		dispatcher.Dispatch<KeyPressedEvent>(OnKeyPressed);
 	}
 
 	bool RuntimeLayer::OnWindowResize(WindowResizeEvent& event)
@@ -75,7 +75,7 @@ namespace Rod {
 		return false;
 	}
 
-	bool RuntimeLayer::OnKeyPressed(KeyPressedEvent& event)
+	bool RuntimeLayer::OnKeyPressed(KeyPressedEvent& event) noexcept
 	{
 		if (event.GetKeyCode() == Key::Escape)
 		{

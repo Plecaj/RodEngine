@@ -14,8 +14,8 @@ namespace Rod {
 	class Process
 	{
 	public:
-		static ProcessResult Start(const std::vector<std::string>& arguments);
-		static ProcessResult Run(const std::vector<std::string>& arguments, bool captureErrors = true);
+		[[nodiscard]] static ProcessResult Start(const std::vector<std::string>& arguments);
+		[[nodiscard]] static ProcessResult Run(const std::vector<std::string>& arguments, bool captureErrors = true);
 	};
 
 }

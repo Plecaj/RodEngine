@@ -7,17 +7,43 @@
   },
   "configurePresets": [
     {
+      "name": "base",
+      "hidden": true,
+      "cacheVariables": {
+        "ROD_CXX_STANDARD": "23",
+        "BUILD_TESTING": "ON",
+        "ROD_BUILD_EDITOR": "ON",
+        "ROD_BUILD_LAUNCHER": "ON",
+        "ROD_BUILD_RUNTIME": "ON"
+      }
+    },
+    {
+      "name": "clang-base",
+      "hidden": true,
+      "inherits": "base",
+      "generator": "Ninja Multi-Config",
+      "binaryDir": "${sourceDir}/build/clang",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "analysis-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/analysis",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
       "name": "vs",
-      "displayName": "Visual Studio MSVC",
-      "description": "MSVC-first configuration for Visual Studio development.",
+      "displayName": "Windows / MSVC",
+      "inherits": "base",
       "generator": "Visual Studio 17 2022",
       "architecture": "x64",
       "toolset": "host=x64",
       "binaryDir": "${sourceDir}/build/vs",
-      "cacheVariables": {
-        "ROD_CXX_STANDARD": "23",
-        "ROD_BUILD_EDITOR": "ON"
-      },
       "vendor": {
         "microsoft.com/VisualStudioSettings/CMake/1.0": {
           "hostOS": "Windows",
@@ -36,10 +62,8 @@
     },
     {
       "name": "windows-clang",
-      "displayName": "Windows Clang",
-      "description": "Clang with the MSVC toolchain.",
-      "generator": "Ninja Multi-Config",
-      "binaryDir": "${sourceDir}/build/clang",
+      "displayName": "Windows / Clang",
+      "inherits": "clang-base",
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
@@ -47,16 +71,13 @@
       },
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang-cl",
-        "CMAKE_CXX_COMPILER": "clang-cl",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "ROD_CXX_STANDARD": "23"
+        "CMAKE_CXX_COMPILER": "clang-cl"
       }
     },
     {
       "name": "linux-clang",
-      "displayName": "Linux Clang",
-      "generator": "Ninja Multi-Config",
-      "binaryDir": "${sourceDir}/build/clang",
+      "displayName": "Linux / Clang",
+      "inherits": "clang-base",
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
@@ -65,77 +86,29 @@
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-        "ROD_CXX_STANDARD": "23",
         "GLFW_BUILD_X11": "ON",
         "GLFW_BUILD_WAYLAND": "OFF"
       }
     },
     {
       "name": "windows-clang-analysis",
-      "displayName": "Windows Clang Debug Analysis",
-      "inherits": "windows-clang",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/analysis",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_DISABLE_PRECOMPILE_HEADERS": "OFF",
-        "BUILD_TESTING": "ON",
-        "ROD_BUILD_EDITOR": "ON",
-        "ROD_BUILD_RUNTIME": "ON"
-      }
+      "displayName": "Windows / Clang Debug Analysis",
+      "inherits": [
+        "analysis-base",
+        "windows-clang"
+      ]
     },
     {
       "name": "linux-clang-analysis",
-      "displayName": "Linux Clang Debug Analysis",
-      "inherits": "linux-clang",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build/analysis",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_DISABLE_PRECOMPILE_HEADERS": "OFF",
-        "BUILD_TESTING": "ON",
-        "ROD_BUILD_EDITOR": "ON",
-        "ROD_BUILD_RUNTIME": "ON"
-      }
-    },
-    {
-      "name": "vs-tests",
-      "displayName": "MSVC Unit Tests",
-      "inherits": "vs",
-      "binaryDir": "${sourceDir}/build/${presetName}",
-      "cacheVariables": {
-        "BUILD_TESTING": "ON",
-        "ROD_BUILD_EDITOR": "OFF",
-        "ROD_BUILD_RUNTIME": "OFF"
-      }
-    },
-    {
-      "name": "windows-clang-tests",
-      "displayName": "Windows Clang Unit Tests",
-      "inherits": "windows-clang",
-      "binaryDir": "${sourceDir}/build/${presetName}",
-      "cacheVariables": {
-        "BUILD_TESTING": "ON",
-        "ROD_BUILD_EDITOR": "OFF",
-        "ROD_BUILD_RUNTIME": "OFF"
-      }
-    },
-    {
-      "name": "linux-clang-tests",
-      "displayName": "Linux Clang Unit Tests",
-      "inherits": "linux-clang",
-      "binaryDir": "${sourceDir}/build/${presetName}",
-      "cacheVariables": {
-        "BUILD_TESTING": "ON",
-        "ROD_BUILD_EDITOR": "OFF",
-        "ROD_BUILD_RUNTIME": "OFF"
-      }
+      "displayName": "Linux / Clang Debug Analysis",
+      "inherits": [
+        "analysis-base",
+        "linux-clang"
+      ]
     },
     {
       "name": "linux-clang-sanitizers",
-      "displayName": "Linux Clang ASan + LSan + UBSan",
-      "description": "Instrument native code and dependencies for memory errors, leaks, and undefined behavior.",
+      "displayName": "Linux / Clang ASan + LSan + UBSan",
       "inherits": "linux-clang-analysis",
       "binaryDir": "${sourceDir}/build/${presetName}",
       "cacheVariables": {
@@ -151,92 +124,78 @@
   "buildPresets": [
     {
       "name": "vs-debug",
-      "displayName": "VS Debug",
       "configurePreset": "vs",
-      "configuration": "Debug",
-      "targets": [
-        "Rod-Editor"
-      ]
+      "configuration": "Debug"
     },
     {
       "name": "vs-release",
-      "displayName": "VS Release",
       "configurePreset": "vs",
-      "configuration": "Release",
-      "targets": [
-        "Rod-Editor"
-      ]
+      "configuration": "Release"
     },
     {
       "name": "vs-dist",
-      "displayName": "VS Dist",
       "configurePreset": "vs",
-      "configuration": "Dist",
+      "configuration": "Dist"
+    },
+    {
+      "name": "vs-tests",
+      "inherits": "vs-debug",
       "targets": [
-        "Rod-Editor"
+        "RodEngineTests"
       ]
     },
     {
       "name": "windows-clang-debug",
-      "displayName": "Windows Clang Debug",
       "configurePreset": "windows-clang",
       "configuration": "Debug"
     },
     {
       "name": "windows-clang-release",
-      "displayName": "Windows Clang Release",
       "configurePreset": "windows-clang",
       "configuration": "Release"
     },
     {
       "name": "windows-clang-dist",
-      "displayName": "Windows Clang Dist",
       "configurePreset": "windows-clang",
       "configuration": "Dist"
     },
     {
+      "name": "windows-clang-tests",
+      "inherits": "windows-clang-debug",
+      "targets": [
+        "RodEngineTests"
+      ]
+    },
+    {
       "name": "linux-clang-debug",
-      "displayName": "Linux Clang Debug",
       "configurePreset": "linux-clang",
       "configuration": "Debug"
     },
     {
       "name": "linux-clang-release",
-      "displayName": "Linux Clang Release",
       "configurePreset": "linux-clang",
       "configuration": "Release"
     },
     {
       "name": "linux-clang-dist",
-      "displayName": "Linux Clang Dist",
       "configurePreset": "linux-clang",
       "configuration": "Dist"
     },
     {
-      "name": "vs-tests",
-      "configurePreset": "vs-tests",
-      "configuration": "Debug",
-      "targets": ["RodEngineTests"]
-    },
-    {
-      "name": "windows-clang-tests",
-      "configurePreset": "windows-clang-tests",
-      "configuration": "Debug",
-      "targets": ["RodEngineTests"]
-    },
-    {
       "name": "linux-clang-tests",
-      "configurePreset": "linux-clang-tests",
-      "configuration": "Debug",
-      "targets": ["RodEngineTests"]
+      "inherits": "linux-clang-debug",
+      "targets": [
+        "RodEngineTests"
+      ]
     },
     {
       "name": "linux-clang-sanitizers",
-      "configurePreset": "linux-clang-sanitizers"
+      "configurePreset": "linux-clang-sanitizers",
+      "configuration": "Debug"
     },
     {
       "name": "linux-clang-sanitizers-tests",
-      "configurePreset": "linux-clang-sanitizers",
+      "inherits": "linux-clang-sanitizers",
       "targets": [
         "RodEngineTests"
       ]
@@ -244,46 +203,206 @@
   ],
   "testPresets": [
     {
-      "name": "vs-tests",
-      "configurePreset": "vs-tests",
-      "configuration": "Debug",
+      "name": "test-base",
+      "hidden": true,
       "output": {
         "outputOnFailure": true,
-        "outputJUnitFile": "${sourceDir}/build/${presetName}/test-results.xml"
-      },
-      "execution": { "noTestsAction": "error" }
-    },
-    {
-      "name": "windows-clang-tests",
-      "configurePreset": "windows-clang-tests",
-      "configuration": "Debug",
-      "output": {
-        "outputOnFailure": true,
-        "outputJUnitFile": "${sourceDir}/build/${presetName}/test-results.xml"
-      },
-      "execution": { "noTestsAction": "error" }
-    },
-    {
-      "name": "linux-clang-tests",
-      "configurePreset": "linux-clang-tests",
-      "configuration": "Debug",
-      "output": {
-        "outputOnFailure": true,
-        "outputJUnitFile": "${sourceDir}/build/${presetName}/test-results.xml"
-      },
-      "execution": { "noTestsAction": "error" }
-    },
-    {
-      "name": "linux-clang-sanitizers",
-      "configurePreset": "linux-clang-sanitizers",
-      "configuration": "Debug",
-      "output": {
-        "outputOnFailure": true,
-        "outputJUnitFile": "${sourceDir}/build/${presetName}/test-results.xml"
+        "outputJUnitFile": "${sourceDir}/build/test-results-${presetName}.xml"
       },
       "execution": {
         "noTestsAction": "error"
       }
+    },
+    {
+      "name": "vs-debug",
+      "inherits": "test-base",
+      "configurePreset": "vs",
+      "configuration": "Debug"
+    },
+    {
+      "name": "vs-release",
+      "inherits": "test-base",
+      "configurePreset": "vs",
+      "configuration": "Release"
+    },
+    {
+      "name": "vs-dist",
+      "inherits": "test-base",
+      "configurePreset": "vs",
+      "configuration": "Dist"
+    },
+    {
+      "name": "vs-tests",
+      "inherits": "vs-debug"
+    },
+    {
+      "name": "windows-clang-debug",
+      "inherits": "test-base",
+      "configurePreset": "windows-clang",
+      "configuration": "Debug"
+    },
+    {
+      "name": "windows-clang-release",
+      "inherits": "test-base",
+      "configurePreset": "windows-clang",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-clang-dist",
+      "inherits": "test-base",
+      "configurePreset": "windows-clang",
+      "configuration": "Dist"
+    },
+    {
+      "name": "windows-clang-tests",
+      "inherits": "windows-clang-debug"
+    },
+    {
+      "name": "linux-clang-debug",
+      "inherits": "test-base",
+      "configurePreset": "linux-clang",
+      "configuration": "Debug"
+    },
+    {
+      "name": "linux-clang-release",
+      "inherits": "test-base",
+      "configurePreset": "linux-clang",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux-clang-dist",
+      "inherits": "test-base",
+      "configurePreset": "linux-clang",
+      "configuration": "Dist"
+    },
+    {
+      "name": "linux-clang-tests",
+      "inherits": "linux-clang-debug"
+    },
+    {
+      "name": "linux-clang-sanitizers",
+      "inherits": "test-base",
+      "configurePreset": "linux-clang-sanitizers",
+      "configuration": "Debug"
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "vs-debug",
+      "displayName": "vs / Debug: build and test",
+      "steps": [
+        { "type": "configure", "name": "vs" },
+        { "type": "build", "name": "vs-debug" },
+        { "type": "test", "name": "vs-debug" }
+      ]
+    },
+    {
+      "name": "vs-release",
+      "displayName": "vs / Release: build and test",
+      "steps": [
+        { "type": "configure", "name": "vs" },
+        { "type": "build", "name": "vs-release" },
+        { "type": "test", "name": "vs-release" }
+      ]
+    },
+    {
+      "name": "vs-dist",
+      "displayName": "vs / Dist: build and test",
+      "steps": [
+        { "type": "configure", "name": "vs" },
+        { "type": "build", "name": "vs-dist" },
+        { "type": "test", "name": "vs-dist" }
+      ]
+    },
+    {
+      "name": "vs-tests",
+      "displayName": "vs: Debug tests only",
+      "steps": [
+        { "type": "configure", "name": "vs" },
+        { "type": "build", "name": "vs-tests" },
+        { "type": "test", "name": "vs-tests" }
+      ]
+    },
+    {
+      "name": "windows-clang-debug",
+      "displayName": "windows-clang / Debug: build and test",
+      "steps": [
+        { "type": "configure", "name": "windows-clang" },
+        { "type": "build", "name": "windows-clang-debug" },
+        { "type": "test", "name": "windows-clang-debug" }
+      ]
+    },
+    {
+      "name": "windows-clang-release",
+      "displayName": "windows-clang / Release: build and test",
+      "steps": [
+        { "type": "configure", "name": "windows-clang" },
+        { "type": "build", "name": "windows-clang-release" },
+        { "type": "test", "name": "windows-clang-release" }
+      ]
+    },
+    {
+      "name": "windows-clang-dist",
+      "displayName": "windows-clang / Dist: build and test",
+      "steps": [
+        { "type": "configure", "name": "windows-clang" },
+        { "type": "build", "name": "windows-clang-dist" },
+        { "type": "test", "name": "windows-clang-dist" }
+      ]
+    },
+    {
+      "name": "windows-clang-tests",
+      "displayName": "windows-clang: Debug tests only",
+      "steps": [
+        { "type": "configure", "name": "windows-clang" },
+        { "type": "build", "name": "windows-clang-tests" },
+        { "type": "test", "name": "windows-clang-tests" }
+      ]
+    },
+    {
+      "name": "linux-clang-debug",
+      "displayName": "linux-clang / Debug: build and test",
+      "steps": [
+        { "type": "configure", "name": "linux-clang" },
+        { "type": "build", "name": "linux-clang-debug" },
+        { "type": "test", "name": "linux-clang-debug" }
+      ]
+    },
+    {
+      "name": "linux-clang-release",
+      "displayName": "linux-clang / Release: build and test",
+      "steps": [
+        { "type": "configure", "name": "linux-clang" },
+        { "type": "build", "name": "linux-clang-release" },
+        { "type": "test", "name": "linux-clang-release" }
+      ]
+    },
+    {
+      "name": "linux-clang-dist",
+      "displayName": "linux-clang / Dist: build and test",
+      "steps": [
+        { "type": "configure", "name": "linux-clang" },
+        { "type": "build", "name": "linux-clang-dist" },
+        { "type": "test", "name": "linux-clang-dist" }
+      ]
+    },
+    {
+      "name": "linux-clang-tests",
+      "displayName": "linux-clang: Debug tests only",
+      "steps": [
+        { "type": "configure", "name": "linux-clang" },
+        { "type": "build", "name": "linux-clang-tests" },
+        { "type": "test", "name": "linux-clang-tests" }
+      ]
+    },
+    {
+      "name": "linux-clang-sanitizers",
+      "displayName": "Linux / Clang: Debug tests with sanitizers",
+      "steps": [
+        { "type": "configure", "name": "linux-clang-sanitizers" },
+        { "type": "build", "name": "linux-clang-sanitizers-tests" },
+        { "type": "test", "name": "linux-clang-sanitizers" }
+      ]
     }
   ]
 }

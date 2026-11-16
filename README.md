@@ -73,15 +73,15 @@ cd RodEngine
 python RodEngine/vendor/shaderc/utils/git-sync-deps
 ```
 
-### Configure & Compile
+### Build & Test
 
-| Toolchain | Configure | Build (Debug) |
-|---|---|---|
-| Windows / MSVC | `cmake --preset vs` | `cmake --build --preset vs-debug` |
-| Windows / Clang | `cmake --preset windows-clang` | `cmake --build --preset windows-clang-debug` |
-| Linux / Clang | `cmake --preset linux-clang` | `cmake --build --preset linux-clang-debug` |
+| Toolchain | Debug workflow |
+|---|---|
+| Windows / MSVC | `cmake --workflow --preset vs-debug` |
+| Windows / Clang | `cmake --workflow --preset windows-clang-debug` |
+| Linux / Clang | `cmake --workflow --preset linux-clang-debug` |
 
-Build configurations: `Debug`, `Release`, `Dist`.
+Replace `-debug` with `-release` or `-dist` to build and test that configuration.
 
 ## Usage
 
@@ -130,19 +130,22 @@ Replace `build/clang` with `build/vs` for MSVC.
 
 Catch2 + CTest. Math, scenes, serialization, rendering utilities, scripting interop.
 
-Linux / Clang:
+To build and run only the Debug tests and their dependencies, use:
 
 ```bash
-cmake --preset linux-clang-tests
-cmake --build --preset linux-clang-tests
-ctest --preset linux-clang-tests
+cmake --workflow --preset linux-clang-tests
 ```
 
-Other presets: `vs-tests`, `windows-clang-tests`.
+Equivalent workflows: `vs-tests`, `windows-clang-tests`. 
+To rerun already-built tests, use `ctest --preset <name>`.
 
-Linux sanitizer configuration: `linux-clang-sanitizers` (ASan, LSan, UBSan).
+For Linux ASan, LSan, and UBSan checks, use
+`cmake --workflow --preset linux-clang-sanitizers`. This uses a separate instrumented
+Debug build. To also build the instrumented applications, use
+`cmake --build --preset linux-clang-sanitizers` after configuring it.
 
-GitHub Actions: Windows MSVC, Windows Clang, Linux Clang, Linux sanitizers.
+GitHub Actions runs the same test presets for Windows MSVC, Windows Clang,
+Linux Clang, and Linux sanitizers, with separate configure, build, and test steps.
 
 ## License
 

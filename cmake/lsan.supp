@@ -1,0 +1,2 @@
+# CoreCLR retains allocations until process exit.
+leak:libcoreclr.so

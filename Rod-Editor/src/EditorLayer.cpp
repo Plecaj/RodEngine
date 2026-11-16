@@ -84,9 +84,6 @@ namespace Rod {
 	EditorLayer::EditorLayer(const Project& project)
 	    : Layer("Editor Layer"), m_Project(project), m_SceneHierarchyPanel(project.GetAssetsPath()),
 	      m_ContentBrowserPanel(project.GetAssetsPath())
-	{}
-
-	void EditorLayer::OnAttach()
 	{
 		RD_PROFILE_FUNCTION();
 
@@ -95,7 +92,15 @@ namespace Rod {
 		OpenScene(m_Project.GetStartupScenePath());
 		SetupTitlebarCallbacks();
 		LoadEditorResources();
-		ScriptEngine::Init();
+		try
+		{
+			ScriptEngine::Init();
+		}
+		catch (...)
+		{
+			ScriptEngine::Shutdown();
+			throw;
+		}
 	}
 
 	void EditorLayer::CreateFramebuffer()
@@ -127,7 +132,7 @@ namespace Rod {
 		m_StopButton = Texture2D::Create("RodAssets/Textures/StopButton.png");
 	}
 
-	void EditorLayer::OnDetach()
+	EditorLayer::~EditorLayer()
 	{
 		RD_PROFILE_FUNCTION();
 		OnSceneStop();

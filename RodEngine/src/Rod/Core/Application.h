@@ -27,8 +27,8 @@ namespace Rod {
 
 		void OnEvent(Event& e);
 
-		void PushLayer(Layer* layer);
-		void PushOverlay(Layer* overlay);
+		void PushLayer(Scope<Layer> layer);
+		void PushOverlay(Scope<Layer> overlay);
 
 		[[nodiscard]] Window& GetWindow() noexcept { return *m_Window; };
 		[[nodiscard]] Project* GetProject() noexcept { return m_Project ? &*m_Project : nullptr; }

@@ -17,8 +17,6 @@ namespace Rod {
 		Layer(Layer&&) = delete;
 		Layer& operator=(Layer&&) = delete;
 
-		virtual void OnAttach() {};
-		virtual void OnDetach() {};
 		virtual void OnUpdate(Timestep){};
 		virtual void OnImGuiRender() {};
 		virtual void OnEvent(Event&) {};

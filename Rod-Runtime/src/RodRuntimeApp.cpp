@@ -15,7 +15,7 @@ namespace Rod {
 	public:
 		explicit RodRuntime(Project project) : Application(WindowProps{"Rod Game"}, std::move(project))
 		{
-			PushLayer(new RuntimeLayer(*GetProject()));
+			PushLayer(CreateScope<RuntimeLayer>(*GetProject()));
 		}
 	};
 

@@ -11,6 +11,7 @@
 #include <glad/glad.h>
 
 #include "ImGuizmo.h"
+#include <stdexcept>
 
 namespace Rod {
 
@@ -71,44 +72,54 @@ namespace Rod {
 	}
 
 	ImGuiLayer::ImGuiLayer() : Layer("ImGuiLayer")
-	{}
-
-	ImGuiLayer::~ImGuiLayer() = default;
-
-	void ImGuiLayer::OnAttach()
 	{
 		RD_PROFILE_FUNCTION();
 
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
-		ImGuiIO& io = ImGui::GetIO();
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-
-		io.Fonts->AddFontFromFileTTF("RodAssets/Fonts/OpenSans/OpenSans-Bold.ttf", g_DefaultFontSize);
-		io.FontDefault =
-		    io.Fonts->AddFontFromFileTTF("RodAssets/Fonts/OpenSans/OpenSans-Regular.ttf", g_DefaultFontSize);
-
-		ImGui::StyleColorsDark();
-
-		ImGuiStyle& style = ImGui::GetStyle();
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		try
 		{
-			style.WindowRounding = 0.0f;
-			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+			ImGuiIO& io = ImGui::GetIO();
+			io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+			io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+			io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
+			io.Fonts->AddFontFromFileTTF("RodAssets/Fonts/OpenSans/OpenSans-Bold.ttf", g_DefaultFontSize);
+			io.FontDefault =
+			    io.Fonts->AddFontFromFileTTF("RodAssets/Fonts/OpenSans/OpenSans-Regular.ttf", g_DefaultFontSize);
+
+			ImGui::StyleColorsDark();
+
+			ImGuiStyle& style = ImGui::GetStyle();
+			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+			{
+				style.WindowRounding = 0.0f;
+				style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+			}
+
+			SetDarkThemeColors();
+
+			Application& app = Application::Get();
+			auto* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
+
+			if (!ImGui_ImplGlfw_InitForOpenGL(window, true))
+				throw std::runtime_error("Failed to initialize the ImGui GLFW backend");
+			if (!ImGui_ImplOpenGL3_Init("#version 410"))
+				throw std::runtime_error("Failed to initialize the ImGui OpenGL backend");
 		}
-
-		SetDarkThemeColors();
-
-		Application& app = Application::Get();
-		auto* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
-
-		ImGui_ImplGlfw_InitForOpenGL(window, true);
-		ImGui_ImplOpenGL3_Init("#version 410");
+		catch (...)
+		{
+			const ImGuiIO& io = ImGui::GetIO();
+			if (io.BackendRendererUserData)
+				ImGui_ImplOpenGL3_Shutdown();
+			if (io.BackendPlatformUserData)
+				ImGui_ImplGlfw_Shutdown();
+			ImGui::DestroyContext();
+			throw;
+		}
 	}
 
-	void ImGuiLayer::OnDetach()
+	ImGuiLayer::~ImGuiLayer()
 	{
 		RD_PROFILE_FUNCTION();
 

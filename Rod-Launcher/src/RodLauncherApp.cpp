@@ -44,9 +44,7 @@ namespace Rod {
 	class LauncherLayer final : public Layer
 	{
 	public:
-		LauncherLayer() : Layer("LauncherLayer") {}
-
-		void OnAttach() override
+		LauncherLayer() : Layer("LauncherLayer")
 		{
 			m_FolderIcon = Texture2D::Create("RodAssets/Textures/DirectoryIcon.png");
 			try
@@ -320,7 +318,7 @@ namespace Rod {
 	class RodLauncher final : public Application
 	{
 	public:
-		RodLauncher() : Application(LauncherWindowProps(), std::nullopt) { PushLayer(new LauncherLayer()); }
+		RodLauncher() : Application(LauncherWindowProps(), std::nullopt) { PushLayer(CreateScope<LauncherLayer>()); }
 	};
 
 	Application* CreateApplication(const std::optional<Project>& project)

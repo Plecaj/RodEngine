@@ -20,9 +20,11 @@ namespace Rod {
 	{
 	public:
 		explicit EditorLayer(const Project& project);
-
-		virtual void OnAttach() override;
-		virtual void OnDetach() override;
+		~EditorLayer() override;
+		EditorLayer(const EditorLayer&) = delete;
+		EditorLayer& operator=(const EditorLayer&) = delete;
+		EditorLayer(EditorLayer&&) = delete;
+		EditorLayer& operator=(EditorLayer&&) = delete;
 
 		virtual void OnUpdate(Timestep ts) override;
 		virtual void OnImGuiRender() override;

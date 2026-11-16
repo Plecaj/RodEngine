@@ -9,12 +9,21 @@
 namespace Rod {
 
 	RuntimeLayer::RuntimeLayer(const Project& project) : m_Project(project)
-	{}
-
-	void RuntimeLayer::OnAttach()
 	{
-		ScriptEngine::Init();
+		try
+		{
+			ScriptEngine::Init();
+			LoadScene();
+		}
+		catch (...)
+		{
+			ScriptEngine::Shutdown();
+			throw;
+		}
+	}
 
+	void RuntimeLayer::LoadScene()
+	{
 		m_Scene = CreateScope<Scene>();
 		const std::filesystem::path scenePath = m_Project.GetStartupScenePath();
 		if (!std::filesystem::exists(scenePath))
@@ -42,7 +51,7 @@ namespace Rod {
 		m_RunningScene = true;
 	}
 
-	void RuntimeLayer::OnDetach()
+	RuntimeLayer::~RuntimeLayer()
 	{
 		if (m_RunningScene && m_Scene)
 			m_Scene->OnRuntimeStop();

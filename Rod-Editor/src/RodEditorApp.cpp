@@ -20,7 +20,7 @@ namespace Rod {
 		              true},
 		          std::move(project))
 		{
-			PushLayer(new EditorLayer(*GetProject()));
+			PushLayer(CreateScope<EditorLayer>(*GetProject()));
 		}
 
 		[[nodiscard]] virtual bool IsEditor() const noexcept override { return true; }

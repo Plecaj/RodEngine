@@ -10,13 +10,17 @@ namespace Rod {
 	{
 	public:
 		explicit RuntimeLayer(const Project& project);
+		~RuntimeLayer() override;
+		RuntimeLayer(const RuntimeLayer&) = delete;
+		RuntimeLayer& operator=(const RuntimeLayer&) = delete;
+		RuntimeLayer(RuntimeLayer&&) = delete;
+		RuntimeLayer& operator=(RuntimeLayer&&) = delete;
 
-		virtual void OnAttach() override;
-		virtual void OnDetach() override;
 		virtual void OnUpdate(Timestep ts) override;
 		virtual void OnEvent(Event& event) override;
 
 	private:
+		void LoadScene();
 		bool OnWindowResize(WindowResizeEvent& event);
 		static bool OnKeyPressed(KeyPressedEvent& event) noexcept;
 

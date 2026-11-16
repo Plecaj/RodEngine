@@ -29,8 +29,9 @@ namespace Rod {
 
 		if (props.UsesCustomUi)
 		{
-			m_ImGuiLayer = new ImGuiLayer;
-			PushOverlay(m_ImGuiLayer);
+			auto imGuiLayer = CreateScope<ImGuiLayer>();
+			m_ImGuiLayer = imGuiLayer.get();
+			PushOverlay(std::move(imGuiLayer));
 		}
 	}
 
@@ -38,25 +39,27 @@ namespace Rod {
 	{
 		RD_PROFILE_FUNCTION();
 
+		m_LayerStack.Clear();
+		m_ImGuiLayer = nullptr;
 		SceneRenderer::Shutdown();
 	}
 
-	void Application::PushLayer(Layer* layer)
+	void Application::PushLayer(Scope<Layer> layer)
 	{
 		RD_PROFILE_FUNCTION();
 
+		RD_CORE_ASSERT(layer, "Cannot push a null layer");
 		RD_CORE_INFO("Pushing layer: {0}", layer->GetName());
-		m_LayerStack.PushLayer(layer);
-		layer->OnAttach();
+		m_LayerStack.PushLayer(std::move(layer));
 	}
 
-	void Application::PushOverlay(Layer* overlay)
+	void Application::PushOverlay(Scope<Layer> overlay)
 	{
 		RD_PROFILE_FUNCTION();
 
+		RD_CORE_ASSERT(overlay, "Cannot push a null overlay");
 		RD_CORE_INFO("Pushing overlay: {0}", overlay->GetName());
-		m_LayerStack.PushOverlay(overlay);
-		overlay->OnAttach();
+		m_LayerStack.PushOverlay(std::move(overlay));
 	}
 
 	void Application::Close() noexcept
@@ -137,7 +140,7 @@ namespace Rod {
 
 		RD_PROFILE_SCOPE("Layers OnUpdate");
 
-		for (Layer* layer : m_LayerStack)
+		for (const auto& layer : m_LayerStack)
 			layer->OnUpdate(timestep);
 	}
 
@@ -151,7 +154,7 @@ namespace Rod {
 		{
 			RD_PROFILE_SCOPE("ImGui OnUpdate");
 
-			for (Layer* layer : m_LayerStack)
+			for (const auto& layer : m_LayerStack)
 				layer->OnImGuiRender();
 		}
 

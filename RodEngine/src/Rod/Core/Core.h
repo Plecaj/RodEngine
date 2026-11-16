@@ -1,7 +1,6 @@
 #pragma once
 
 #include <csignal>
-#include <functional>
 #include <memory>
 #include <utility>
 
@@ -66,8 +65,6 @@
 #endif
 
 #define BIT(x) (1 << (x))
-
-#define RD_BIND_EVENT_FN(fn) std::bind(&fn, this, std::placeholders::_1) // NOLINT(bugprone-macro-parentheses)
 
 namespace Rod {
 	template <typename T>

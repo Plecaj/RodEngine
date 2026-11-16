@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <ostream>
 #include <string>
+#include <utility>
 
 namespace Rod {
 
@@ -81,26 +82,15 @@ namespace Rod {
 		}
 	};
 
-	class EventDispatcher
+	template <typename T, typename F>
+	constexpr void HandleEvent(Event& event, F&& callback)
 	{
-	public:
-		constexpr explicit EventDispatcher(Event& event) noexcept : m_Event(event) {}
+		if (event.GetEventType() != T::GetStaticType())
+			return;
 
-		template <typename T, typename F>
-		constexpr bool Dispatch(const F& func) noexcept(
-		    noexcept(T::GetStaticType()) && noexcept(m_Event.Handled |= func(static_cast<T&>(m_Event))))
-		{
-			if (m_Event.GetEventType() == T::GetStaticType())
-			{
-				m_Event.Handled |= func(static_cast<T&>(m_Event));
-				return true;
-			}
-			return false;
-		}
-
-	private:
-		Event& m_Event;
-	};
+		if (std::forward<F>(callback)(static_cast<T&>(event)))
+			event.Handled = true;
+	}
 
 	inline std::ostream& operator<<(std::ostream& os, const Event& e)
 	{

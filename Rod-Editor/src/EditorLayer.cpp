@@ -339,9 +339,10 @@ namespace Rod {
 	{
 		m_EditorCamera.OnEvent(event);
 
-		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<KeyPressedEvent>(RD_BIND_EVENT_FN(EditorLayer::OnKeyPressed));
-		dispatcher.Dispatch<MouseButtonPressedEvent>(RD_BIND_EVENT_FN(EditorLayer::OnMouseButtonPressed));
+		HandleEvent<KeyPressedEvent>(event, [this](KeyPressedEvent& keyEvent) { return OnKeyPressed(keyEvent); });
+		HandleEvent<MouseButtonPressedEvent>(event, [this](MouseButtonPressedEvent& mouseEvent) {
+			return OnMouseButtonPressed(mouseEvent);
+		});
 	}
 
 	bool EditorLayer::OnKeyPressed(KeyPressedEvent& e)

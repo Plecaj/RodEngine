@@ -85,8 +85,7 @@ namespace Rod {
 
 	void EditorCamera::OnEvent(Event& e)
 	{
-		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<MouseScrolledEvent>(RD_BIND_EVENT_FN(EditorCamera::OnMouseScroll));
+		HandleEvent<MouseScrolledEvent>(e, [this](MouseScrolledEvent& event) { return OnMouseScroll(event); });
 	}
 
 	bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e) noexcept

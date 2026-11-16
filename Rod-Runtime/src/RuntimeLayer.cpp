@@ -62,9 +62,10 @@ namespace Rod {
 
 	void RuntimeLayer::OnEvent(Event& event)
 	{
-		EventDispatcher dispatcher(event);
-		dispatcher.Dispatch<WindowResizeEvent>(RD_BIND_EVENT_FN(RuntimeLayer::OnWindowResize));
-		dispatcher.Dispatch<KeyPressedEvent>(OnKeyPressed);
+		HandleEvent<WindowResizeEvent>(event, [this](WindowResizeEvent& resizeEvent) {
+			return OnWindowResize(resizeEvent);
+		});
+		HandleEvent<KeyPressedEvent>(event, OnKeyPressed);
 	}
 
 	bool RuntimeLayer::OnWindowResize(WindowResizeEvent& event)

@@ -22,7 +22,7 @@ namespace Rod {
 		s_Instance = this;
 
 		m_Window = Window::Create(props);
-		m_Window->SetEventCallback(RD_BIND_EVENT_FN(Application::OnEvent));
+		m_Window->SetEventCallback([this](Event& event) { OnEvent(event); });
 		m_Window->SetVSync(false);
 
 		SceneRenderer::Init(m_Project ? m_Project->GetShadersPath() : ProjectProperties{}.ShadersPath);
@@ -95,9 +95,8 @@ namespace Rod {
 	{
 		RD_PROFILE_FUNCTION();
 
-		EventDispatcher dispatcher(e);
-		dispatcher.Dispatch<WindowCloseEvent>(RD_BIND_EVENT_FN(Application::OnWindowClose));
-		dispatcher.Dispatch<WindowResizeEvent>(RD_BIND_EVENT_FN(Application::OnWindowResize));
+		HandleEvent<WindowCloseEvent>(e, [this](WindowCloseEvent& event) { return OnWindowClose(event); });
+		HandleEvent<WindowResizeEvent>(e, [this](WindowResizeEvent& event) { return OnWindowResize(event); });
 
 		for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
 		{

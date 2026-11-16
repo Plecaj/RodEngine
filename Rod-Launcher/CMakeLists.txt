@@ -2,6 +2,8 @@ add_executable(Rod-Launcher
     src/RodLauncherApp.cpp
     src/ProjectSetupPanel.cpp
     src/ProjectSetupPanel.h
+    src/RecentProjects.cpp
+    src/RecentProjects.h
 )
 
 rod_configure_cpp_target(Rod-Launcher)

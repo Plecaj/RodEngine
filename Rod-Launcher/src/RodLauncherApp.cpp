@@ -1,10 +1,12 @@
 #include "rdpch.h"
 
 #include "ProjectSetupPanel.h"
+#include "RecentProjects.h"
 #include "Rod/Core/Application.h"
 #include "Rod/Core/Core.h"
 #include "Rod/Core/EntryPoint.h" // IWYU pragma: keep
 #include "Rod/Core/Layer.h"
+#include "Rod/Core/Log.h"
 #include "Rod/Project/Project.h"
 #include "Rod/Project/ProjectSerializer.h"
 #include "Rod/Renderer/Texture.h"
@@ -13,7 +15,6 @@
 
 #include "imgui.h"
 
-#include <array>
 #include <exception>
 #include <optional>
 #include <stdexcept>
@@ -45,7 +46,19 @@ namespace Rod {
 	public:
 		LauncherLayer() : Layer("LauncherLayer") {}
 
-		void OnAttach() override { m_FolderIcon = Texture2D::Create("RodAssets/Textures/DirectoryIcon.png"); }
+		void OnAttach() override
+		{
+			m_FolderIcon = Texture2D::Create("RodAssets/Textures/DirectoryIcon.png");
+			try
+			{
+				m_RecentProjectsPath = Platform::GetExecutablePath().parent_path() / "RecentProjects.yaml";
+				m_RecentProjects.Load(m_RecentProjectsPath);
+			}
+			catch (const std::exception& exception)
+			{
+				RD_CORE_WARN("Could not load recent projects: {}", exception.what());
+			}
+		}
 
 		void OnImGuiRender() override
 		{
@@ -83,20 +96,8 @@ namespace Rod {
 			Open
 		};
 
-		struct RecentProject
+		void DrawRecentProjects()
 		{
-			const char* Name;
-			const char* Path;
-			const char* LastOpened;
-		};
-
-		void DrawRecentProjects() const
-		{
-			constexpr auto projects = std::to_array<RecentProject>({
-			    {"Sandbox", R"(C:\Dev\RodEngine\Sandbox)", "Yesterday"},
-			    {"LightingTests", R"(D:\Projects\LightingTests)", "Nov 4"},
-			    {"TestScene", R"(C:\Projects\TestScene)", "Oct 28"},
-			});
 			constexpr float headingTop = 220.0f;
 			constexpr float rowsTop = 248.0f;
 			constexpr float visibleRowCount = 3.0f;
@@ -104,53 +105,73 @@ namespace Rod {
 			ImGui::SetCursorPos(ImVec2{g_ContentPadding, headingTop});
 			ImGui::TextUnformatted("Recent Projects");
 			ImGui::SetCursorPos(ImVec2{g_ContentPadding, rowsTop});
+			std::optional<std::filesystem::path> selected;
 			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
 			if (ImGui::BeginChild("RecentProjects", ImVec2{width, visibleRowCount * g_RecentRowHeight}))
 			{
-				for (const RecentProject& project : projects)
-					DrawRecentProject(project);
+				if (m_RecentProjects.GetEntries().empty())
+					ImGui::TextDisabled("No recent projects. Create or open a project to get started.");
+				for (const RecentProject& project : m_RecentProjects.GetEntries())
+				{
+					if (DrawRecentProject(project))
+						selected = project.Path;
+				}
 			}
 			ImGui::EndChild();
 			ImGui::PopStyleVar();
+			if (selected)
+				OpenProject(*selected);
 		}
 
-		void DrawRecentProject(const RecentProject& project) const
+		bool DrawRecentProject(const RecentProject& project) const
 		{
 			constexpr ImVec2 nameOffset{28.0f, 6.0f};
 			constexpr ImVec2 iconOffset{8.0f, 26.0f};
 			constexpr float pathTop = 29.0f;
-			constexpr float dateTop = 19.0f;
+			constexpr float dateTop = 6.0f;
+			constexpr float dateSpacing = 12.0f;
 			constexpr float detailFontSize = 13.0f;
 			constexpr float folderScale = 0.5f;
 			const float width = ImGui::GetContentRegionAvail().x;
-			ImGui::PushID(project.Path);
-			ImGui::Selectable("##Project", false, ImGuiSelectableFlags_None, ImVec2{width, g_RecentRowHeight});
+			const auto path = project.Path.string();
+			ImGui::PushID(path.c_str());
+			const bool clicked =
+			    ImGui::Selectable("##Project", false, ImGuiSelectableFlags_None, ImVec2{width, g_RecentRowHeight});
 			const ImVec2 origin = ImGui::GetItemRectMin();
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("%s", path.c_str());
 			ImDrawList* drawList = ImGui::GetWindowDrawList();
 			const ImU32 mutedColor = ImGui::GetColorU32(ImGuiCol_TextDisabled);
-			const float dateWidth = ImGui::CalcTextSize(project.LastOpened).x * detailFontSize / ImGui::GetFontSize();
+			const float dateWidth =
+			    ImGui::CalcTextSize(project.LastOpened.c_str()).x * detailFontSize / ImGui::GetFontSize();
 			DrawFolderIcon(
 			    *drawList,
 			    ImVec2{origin.x + iconOffset.x, origin.y + iconOffset.y},
 			    mutedColor,
 			    folderScale);
+			drawList->PushClipRect(
+			    ImVec2{origin.x + nameOffset.x, origin.y},
+			    ImVec2{origin.x + width - dateWidth - dateSpacing, origin.y + g_RecentRowHeight},
+			    true);
 			drawList->AddText(
 			    ImVec2{origin.x + nameOffset.x, origin.y + nameOffset.y},
 			    ImGui::GetColorU32(ImGuiCol_Text),
-			    project.Name);
+			    project.Name.c_str());
+			drawList->PopClipRect();
 			drawList->AddText(
 			    ImGui::GetFont(),
 			    detailFontSize,
 			    ImVec2{origin.x + nameOffset.x, origin.y + pathTop},
 			    mutedColor,
-			    project.Path);
+			    path.c_str());
 			drawList->AddText(
 			    ImGui::GetFont(),
 			    detailFontSize,
 			    ImVec2{origin.x + width - dateWidth, origin.y + dateTop},
 			    mutedColor,
-			    project.LastOpened);
+			    project.LastOpened.c_str());
 			ImGui::PopID();
+			return clicked;
 		}
 
 		void DrawProjectActions()
@@ -175,14 +196,14 @@ namespace Rod {
 			    ImGui::GetColorU32(ImGuiCol_Separator));
 		}
 
-		void OpenProject()
+		void OpenProject(std::filesystem::path manifestPath = {})
 		{
 			try
 			{
-				const auto path = FileDialogs::OpenFile("Rod Project (*.rodproj)\0*.rodproj\0");
-				if (path.empty())
+				if (manifestPath.empty())
+					manifestPath = FileDialogs::OpenFile("Rod Project (*.rodproj)\0*.rodproj\0");
+				if (manifestPath.empty())
 					return;
-				const std::filesystem::path manifestPath = path;
 				Project project{std::filesystem::absolute(manifestPath).lexically_normal(), {}};
 				ProjectSerializer::Deserialize(project);
 				LaunchEditor(project);
@@ -202,6 +223,15 @@ namespace Rod {
 				const auto result = Process::Start({executable.string(), project.GetManifestPath().string()});
 				if (result.ExitCode != 0)
 					throw std::runtime_error("Could not launch editor: " + result.Output);
+				try
+				{
+					m_RecentProjects.Record(project);
+					m_RecentProjects.Save(m_RecentProjectsPath);
+				}
+				catch (const std::exception& exception)
+				{
+					RD_CORE_WARN("Could not save recent projects: {}", exception.what());
+				}
 				m_Error.clear();
 				Application::Get().Close();
 			}
@@ -281,6 +311,8 @@ namespace Rod {
 
 	private:
 		Scope<Texture2D> m_FolderIcon;
+		RecentProjects m_RecentProjects;
+		std::filesystem::path m_RecentProjectsPath;
 		ProjectSetupPanel m_ProjectSetup;
 		std::string m_Error;
 	};

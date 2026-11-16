@@ -4,6 +4,8 @@ add_executable(RodEngineTests
     Math/Math.cpp
     Project/Serialization.cpp
     Project/Export.cpp
+    Launcher/RecentProjects.cpp
+    ../Rod-Launcher/src/RecentProjects.cpp
     Platform/SharedLibrary.cpp
     Renderer/Mesh.cpp
     Renderer/Texture.cpp

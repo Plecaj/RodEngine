@@ -14,5 +14,7 @@ Sandbox/RodProfile-*.json
 Rod-Editor/RodProfile-*.json
 
 compile_commands.json
+RecentProjects.yaml
 
 Samples/Assets/Scripts/Cache/
+**/Shaders/Cached/

@@ -2,42 +2,25 @@
 
 #include "../../Rod-Launcher/src/RecentProjects.h"
 
-#include "Rod/Core/UUID.h"
+#include "../TemporaryDirectory.h"
 
 #include <catch2/catch_test_macros.hpp>
-#include <yaml-cpp/yaml.h>
+#include <yaml-cpp/emitter.h>
 
 #include <fstream>
-#include <system_error>
 
 namespace {
 	class RecentProjectsFixture
 	{
-	public:
-		RecentProjectsFixture()
-		{
-			do
-			{
-				m_Directory = std::filesystem::temp_directory_path() /
-				              ("rod-recent-projects-" + std::to_string(static_cast<uint64_t>(Rod::UUID{})));
-			} while (!std::filesystem::create_directory(m_Directory));
-		}
-		RecentProjectsFixture(const RecentProjectsFixture&) = delete;
-		RecentProjectsFixture& operator=(const RecentProjectsFixture&) = delete;
-		RecentProjectsFixture(RecentProjectsFixture&&) = delete;
-		RecentProjectsFixture& operator=(RecentProjectsFixture&&) = delete;
-		~RecentProjectsFixture()
-		{
-			std::error_code error;
-			std::filesystem::remove_all(m_Directory, error);
-		}
-
 	protected:
-		[[nodiscard]] std::filesystem::path HistoryPath() const { return m_Directory / "RecentProjects.yaml"; }
+		[[nodiscard]] std::filesystem::path HistoryPath() const
+		{
+			return m_Directory.GetPath() / "RecentProjects.yaml";
+		}
 		[[nodiscard]] Rod::Project MakeProject(const std::string& name) const
 		{
-			const auto path = m_Directory / (name + ".rodproj");
-			std::ofstream file(path);
+			const auto path = m_Directory.GetPath() / (name + ".rodproj");
+			const std::ofstream file(path);
 			REQUIRE(file.is_open());
 			return {path, {.Name = name}};
 		}
@@ -50,7 +33,7 @@ namespace {
 		}
 
 	private:
-		std::filesystem::path m_Directory;
+		Rod::Tests::TemporaryDirectory m_Directory;
 	};
 }
 
@@ -59,8 +42,10 @@ TEST_CASE_METHOD(
     "Recent projects retain the newest ten across reloads",
     "[launcher][recent-projects]")
 {
+	constexpr int recordedProjects = 12;
+	constexpr std::size_t dateLength = 10;
 	Rod::RecentProjects history;
-	for (int index = 0; index < 12; ++index)
+	for (int index = 0; index < recordedProjects; ++index)
 		history.Record(MakeProject("Project " + std::to_string(index)));
 	REQUIRE(history.GetEntries().size() == 10);
 	REQUIRE(history.GetEntries().front().Name == "Project 11");
@@ -70,16 +55,11 @@ TEST_CASE_METHOD(
 
 	Rod::RecentProjects restored;
 	restored.Load(HistoryPath());
-	REQUIRE(restored.GetEntries().size() == history.GetEntries().size());
-	for (std::size_t index = 0; index < history.GetEntries().size(); ++index)
-	{
-		const auto& original = history.GetEntries()[index];
-		const auto& loaded = restored.GetEntries()[index];
-		REQUIRE(loaded.Name == original.Name);
-		REQUIRE(loaded.Path == original.Path);
-		REQUIRE(loaded.LastOpened == original.LastOpened);
-		REQUIRE(loaded.LastOpened.size() == 10);
-	}
+	REQUIRE(
+	    std::ranges::equal(restored.GetEntries(), history.GetEntries(), [](const auto& loaded, const auto& original) {
+		    return loaded.Name == original.Name && loaded.Path == original.Path &&
+		           loaded.LastOpened == original.LastOpened && loaded.LastOpened.size() == dateLength;
+	    }));
 }
 
 TEST_CASE_METHOD(
@@ -135,14 +115,16 @@ TEST_CASE_METHOD(
     "History loading skips invalid and duplicate entries and enforces the limit",
     "[launcher][recent-projects]")
 {
+	constexpr int projectCount = 13;
+	constexpr int duplicateCount = 2;
 	YAML::Emitter out;
 	out << YAML::BeginMap << YAML::Key << "RecentProjects" << YAML::Value << YAML::BeginSeq;
 	out << "invalid entry";
 	out << YAML::BeginMap << YAML::Key << "Name" << YAML::Value << "Missing fields" << YAML::EndMap;
-	for (int index = 0; index < 13; ++index)
+	for (int index = 0; index < projectCount; ++index)
 	{
 		const auto project = MakeProject("Project " + std::to_string(index));
-		for (int duplicate = 0; duplicate < 2; ++duplicate)
+		for (int duplicate = 0; duplicate < duplicateCount; ++duplicate)
 		{
 			out << YAML::BeginMap;
 			out << YAML::Key << "Name" << YAML::Value << project.GetProperties().Name;

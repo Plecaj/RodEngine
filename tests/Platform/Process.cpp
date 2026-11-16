@@ -2,14 +2,13 @@
 
 #include "Rod/Utils/Process.h"
 
-#include "Rod/Core/UUID.h"
+#include "../TemporaryDirectory.h"
 
 #include <catch2/catch_test_macros.hpp>
 
 #include <chrono>
 #include <fstream>
 #include <iterator>
-#include <system_error>
 #include <thread>
 
 TEST_CASE("Windows process runner reports child output and exit status", "[process]")
@@ -36,25 +35,9 @@ TEST_CASE("Windows process starter reports launch failures", "[process]")
 
 TEST_CASE("Windows process starter returns before exit and preserves project arguments", "[process]")
 {
-	struct TemporaryDirectory
-	{
-		TemporaryDirectory()
-		{
-			do
-			{
-				Path = std::filesystem::temp_directory_path() /
-				       ("rod-process-" + std::to_string(static_cast<uint64_t>(Rod::UUID{})));
-			} while (!std::filesystem::create_directory(Path));
-		}
-		~TemporaryDirectory()
-		{
-			std::error_code error;
-			std::filesystem::remove_all(Path, error);
-		}
-		std::filesystem::path Path;
-	} directory;
-	const auto output = directory.Path / "arguments.bin";
-	const auto release = directory.Path / "release";
+	const Rod::Tests::TemporaryDirectory directory;
+	const auto output = directory.GetPath() / "arguments.bin";
+	const auto release = directory.GetPath() / "release";
 	const std::vector<std::string> projectArguments{
 	    R"(C:\Projects\My Game\project.rodproj)",
 	    R"(Game "one")",
@@ -70,8 +53,9 @@ TEST_CASE("Windows process starter returns before exit and preserves project arg
 	// The child cannot finish until Start has returned and this file is created.
 	std::ofstream(release).close();
 	const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
+	constexpr auto pollInterval = std::chrono::milliseconds(10);
 	while (!std::filesystem::exists(output) && std::chrono::steady_clock::now() < deadline)
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(pollInterval);
 	REQUIRE(std::filesystem::exists(output));
 	std::ifstream file(output, std::ios::binary);
 	const std::string actual{std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};

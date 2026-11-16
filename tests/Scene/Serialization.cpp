@@ -1,5 +1,6 @@
 #include "rdpch.h"
 
+#include "../TemporaryDirectory.h"
 #include "Rod/Scene/Components.h"
 #include "Rod/Scene/Entity.h"
 #include "Rod/Scene/Scene.h"
@@ -8,11 +9,11 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 #include <catch2/matchers/catch_matchers_string.hpp>
-#include <yaml-cpp/yaml.h>
+#include <yaml-cpp/node/parse.h>
+#include <yaml-cpp/yaml.h> // IWYU pragma: keep
 
 #include <fstream>
 #include <stdexcept>
-#include <system_error>
 
 namespace {
 	class PathOnlyTexture : public Rod::Texture2D
@@ -38,20 +39,6 @@ namespace {
 		{
 			if (!Rod::Log::GetCoreLogger())
 				Rod::Log::Init();
-			do
-			{
-				m_Directory = std::filesystem::temp_directory_path() /
-				              ("rod-serialization-" + std::to_string(static_cast<uint64_t>(Rod::UUID{})));
-			} while (!std::filesystem::create_directory(m_Directory));
-		}
-		SerializationFixture(const SerializationFixture&) = delete;
-		SerializationFixture& operator=(const SerializationFixture&) = delete;
-		SerializationFixture(SerializationFixture&&) = delete;
-		SerializationFixture& operator=(SerializationFixture&&) = delete;
-		~SerializationFixture()
-		{
-			std::error_code error;
-			std::filesystem::remove_all(m_Directory, error);
 		}
 
 	protected:
@@ -62,7 +49,7 @@ namespace {
 		static constexpr glm::uvec2 VIEWPORT_SIZE{1920, 1080};
 		static constexpr double TOLERANCE = 0.00001;
 
-		[[nodiscard]] std::string Filepath() const { return (m_Directory / "scene.rod").string(); }
+		[[nodiscard]] std::string Filepath() const { return (m_Directory.GetPath() / "scene.rod").string(); }
 		void WriteScene(const std::string& text) const
 		{
 			std::ofstream file(Filepath());
@@ -81,7 +68,7 @@ namespace {
 		}
 
 	private:
-		std::filesystem::path m_Directory;
+		Rod::Tests::TemporaryDirectory m_Directory;
 	};
 
 	class RoundTripFixture : public SerializationFixture

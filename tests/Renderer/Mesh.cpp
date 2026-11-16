@@ -2,52 +2,23 @@
 
 #include "Rod/Renderer/Mesh.h"
 
-#include "Rod/Core/UUID.h"
+#include "../TemporaryDirectory.h"
 
 #include <catch2/catch_test_macros.hpp>
 
 #include <fstream>
 #include <stdexcept>
-#include <system_error>
 
-namespace {
-	class MeshLoadingFixture
-	{
-	public:
-		MeshLoadingFixture()
-		{
-			do
-			{
-				m_Directory = std::filesystem::temp_directory_path() /
-				              ("rod-mesh-loading-" + std::to_string(static_cast<uint64_t>(Rod::UUID{})));
-			} while (!std::filesystem::create_directory(m_Directory));
-		}
-		MeshLoadingFixture(const MeshLoadingFixture&) = delete;
-		MeshLoadingFixture& operator=(const MeshLoadingFixture&) = delete;
-		MeshLoadingFixture(MeshLoadingFixture&&) = delete;
-		MeshLoadingFixture& operator=(MeshLoadingFixture&&) = delete;
-		~MeshLoadingFixture()
-		{
-			std::error_code error;
-			std::filesystem::remove_all(m_Directory, error);
-		}
-
-	protected:
-		[[nodiscard]] std::string Filepath() const { return (m_Directory / "mesh.glb").string(); }
-
-	private:
-		std::filesystem::path m_Directory;
-	};
-}
-
-TEST_CASE_METHOD(MeshLoadingFixture, "Mesh construction rejects missing or corrupt files", "[renderer][loading]")
+TEST_CASE("Mesh construction rejects missing or corrupt files", "[renderer][loading]")
 {
+	const Rod::Tests::TemporaryDirectory directory;
+	const auto filepath = (directory.GetPath() / "mesh.glb").string();
 	SECTION("missing file")
 	{}
 	SECTION("corrupt file")
 	{
-		std::ofstream file(Filepath());
+		std::ofstream file(filepath);
 		file << "not a GLB";
 	}
-	REQUIRE_THROWS_AS(Rod::Mesh(Filepath()), std::runtime_error);
+	REQUIRE_THROWS_AS(Rod::Mesh(filepath), std::runtime_error);
 }

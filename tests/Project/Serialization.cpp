@@ -1,6 +1,6 @@
 #include "rdpch.h"
 
-#include "Rod/Core/UUID.h"
+#include "../TemporaryDirectory.h"
 #include "Rod/Project/Project.h"
 #include "Rod/Project/ProjectInitializer.h"
 #include "Rod/Project/ProjectSerializer.h"
@@ -12,32 +12,12 @@
 
 #include <fstream>
 #include <stdexcept>
-#include <system_error>
 
 namespace {
 	class ProjectSerializationFixture
 	{
-	public:
-		ProjectSerializationFixture()
-		{
-			do
-			{
-				m_Directory = std::filesystem::temp_directory_path() /
-				              ("rod-project-serialization-" + std::to_string(static_cast<uint64_t>(Rod::UUID{})));
-			} while (!std::filesystem::create_directory(m_Directory));
-		}
-		ProjectSerializationFixture(const ProjectSerializationFixture&) = delete;
-		ProjectSerializationFixture& operator=(const ProjectSerializationFixture&) = delete;
-		ProjectSerializationFixture(ProjectSerializationFixture&&) = delete;
-		ProjectSerializationFixture& operator=(ProjectSerializationFixture&&) = delete;
-		~ProjectSerializationFixture()
-		{
-			std::error_code error;
-			std::filesystem::remove_all(m_Directory, error);
-		}
-
 	protected:
-		[[nodiscard]] std::filesystem::path ManifestPath() const { return m_Directory / "project.rodproj"; }
+		[[nodiscard]] std::filesystem::path ManifestPath() const { return m_Directory.GetPath() / "project.rodproj"; }
 		void WriteManifest(const std::string& text) const
 		{
 			std::ofstream file(ManifestPath());
@@ -47,7 +27,7 @@ namespace {
 		}
 
 	private:
-		std::filesystem::path m_Directory;
+		Rod::Tests::TemporaryDirectory m_Directory;
 	};
 }
 
@@ -137,7 +117,8 @@ TEST_CASE_METHOD(
 	Rod::Scene scene;
 	const Rod::SceneSerializer serializer(scene, project.GetDirectory());
 	REQUIRE_NOTHROW(serializer.DeserializeText(project.GetStartupScenePath().string()));
-	REQUIRE(static_cast<bool>(scene.GetPrimaryCameraEntity()));
+	const Rod::Entity camera = scene.GetPrimaryCameraEntity();
+	REQUIRE(camera);
 	std::ofstream file(project.GetScriptProjectPath());
 	file << "preserve this content";
 	file.close();

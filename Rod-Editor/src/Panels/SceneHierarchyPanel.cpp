@@ -69,67 +69,57 @@ namespace Rod {
 		}
 	}
 
-	SceneHierarchyPanel::SceneHierarchyPanel(std::filesystem::path assetsPath) noexcept
-	    : m_AssetsPath(std::move(assetsPath))
+	SceneHierarchyPanel::SceneHierarchyPanel(
+	    std::filesystem::path assetsPath,
+	    EditorInteractionState& interaction) noexcept
+	    : m_AssetsPath(std::move(assetsPath)), m_Interaction(interaction)
 	{}
 
-	void SceneHierarchyPanel::SetContext(ObserverPtr<Scene> scene)
+	void SceneHierarchyPanel::OnImGuiRender(Scene& scene) const
 	{
-		m_Context = scene;
-		m_SelectionContext = {};
-	}
-
-	void SceneHierarchyPanel::OnImGuiRender()
-	{
-		DrawSceneHierarchy();
+		DrawSceneHierarchy(scene);
 		DrawPropertiesPanel();
 	}
 
-	void SceneHierarchyPanel::DrawSceneHierarchy()
+	void SceneHierarchyPanel::DrawSceneHierarchy(Scene& scene) const
 	{
 		ImGui::Begin("Scene Hierarchy");
-		if (!m_Context)
+		for (auto entityID : scene.m_Registry.storage<entt::entity>())
 		{
-			ImGui::End();
-			return;
+			const Entity entity{entityID, scene};
+			DrawEntityNode(scene, entity);
 		}
 
-		for (auto entityID : m_Context->m_Registry.storage<entt::entity>())
-		{
-			const Entity entity{entityID, *m_Context};
-			DrawEntityNode(entity);
-		}
-
-		HandleHierarchyBlankSpace();
+		HandleHierarchyBlankSpace(scene);
 
 		ImGui::End();
 	}
 
-	void SceneHierarchyPanel::DrawPropertiesPanel()
+	void SceneHierarchyPanel::DrawPropertiesPanel() const
 	{
 		ImGui::Begin("Properties");
 
-		if (m_SelectionContext)
-			DrawComponents(m_SelectionContext);
+		if (m_Interaction.SelectedEntity)
+			DrawComponents(m_Interaction.SelectedEntity);
 
 		ImGui::End();
 	}
 
-	void SceneHierarchyPanel::DrawEntityNode(Entity entity)
+	void SceneHierarchyPanel::DrawEntityNode(Scene& scene, Entity entity) const
 	{
 		if (!entity)
 			return;
 
 		auto& tag = entity.GetComponent<TagComponent>().Tag;
 
-		ImGuiTreeNodeFlags flags =
-		    ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
+		ImGuiTreeNodeFlags flags = ((m_Interaction.SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) |
+		                           ImGuiTreeNodeFlags_OpenOnArrow;
 		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
 
 		const bool opened = ImGui::TreeNodeEx(NodeID(static_cast<uint32_t>(entity)), flags, "%s", tag.c_str());
 
 		if (ImGui::IsItemClicked())
-			m_SelectionContext = entity;
+			m_Interaction.SelectedEntity = entity;
 
 		const bool entityDeleted = HandleEntityContextMenu();
 
@@ -143,21 +133,21 @@ namespace Rod {
 
 		if (entityDeleted)
 		{
-			m_Context->DestroyEntity(entity);
-			if (m_SelectionContext == entity)
-				m_SelectionContext = {};
+			scene.DestroyEntity(entity);
+			if (m_Interaction.SelectedEntity == entity)
+				m_Interaction.SelectedEntity = {};
 		}
 	}
 
-	void SceneHierarchyPanel::HandleHierarchyBlankSpace()
+	void SceneHierarchyPanel::HandleHierarchyBlankSpace(Scene& scene) const
 	{
 		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
-			m_SelectionContext = {};
+			m_Interaction.SelectedEntity = {};
 
 		if (ImGui::BeginPopupContextWindow(nullptr, 1 | ImGuiPopupFlags_NoOpenOverItems))
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))
-				m_Context->CreateEntity("Empty Entity");
+				scene.CreateEntity("Empty Entity");
 			ImGui::EndPopup();
 		}
 	}
@@ -280,7 +270,7 @@ namespace Rod {
 			entity.RemoveComponent<T>();
 	}
 
-	void SceneHierarchyPanel::DrawComponents(Entity entity)
+	void SceneHierarchyPanel::DrawComponents(Entity entity) const
 	{
 		DrawTag(entity);
 		DrawAddComponentButton(entity);
@@ -429,7 +419,7 @@ namespace Rod {
 		});
 	}
 
-	void SceneHierarchyPanel::DrawSpriteRendererComponent(Entity entity)
+	void SceneHierarchyPanel::DrawSpriteRendererComponent(Entity entity) const
 	{
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [this](auto& component) {
 			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
@@ -454,7 +444,7 @@ namespace Rod {
 		});
 	}
 
-	void SceneHierarchyPanel::DrawMeshComponent(Entity entity)
+	void SceneHierarchyPanel::DrawMeshComponent(Entity entity) const
 	{
 		DrawComponent<MeshComponent>("Mesh", entity, [this](auto& component) {
 			const std::string meshPath = component.Mesh ? component.Mesh->GetPath() : "None";

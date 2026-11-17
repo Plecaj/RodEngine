@@ -12,15 +12,16 @@ namespace Rod {
 	class ToolbarPanel
 	{
 	public:
-		ToolbarPanel() = default;
+		ToolbarPanel();
 
-		static void OnImGuiRender(
+		void OnImGuiRender(
 		    SceneState sceneState,
-		    const Texture2D& playButton,
-		    const Texture2D& stopButton,
 		    ImGuiID dockID,
 		    const std::function<void()>& onPlay,
-		    const std::function<void()>& onStop);
+		    const std::function<void()>& onStop) const;
+
+	private:
+		Scope<Texture2D> m_PlayButton, m_StopButton;
 	};
 
 }

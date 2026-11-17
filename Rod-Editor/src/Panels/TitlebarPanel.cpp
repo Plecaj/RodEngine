@@ -2,6 +2,7 @@
 
 #include "TitlebarPanel.h"
 
+#include "../EditorCommands.h"
 #include "Rod/Core/Application.h"
 
 namespace Rod {
@@ -113,15 +114,9 @@ namespace Rod {
 
 			return ImGui::IsItemClicked(ImGuiMouseButton_Left);
 		}
-
-		void RunCallback(const std::function<void()>& callback)
-		{
-			if (callback)
-				callback();
-		}
 	}
 
-	TitlebarPanel::TitlebarPanel()
+	TitlebarPanel::TitlebarPanel(EditorCommands& commands) : m_Commands(commands)
 	{
 		m_Logo = Texture2D::Create("RodAssets/Textures/titlebarLogo.png");
 		m_ButtonSize = ImVec2(s_ButtonWidth, static_cast<float>(s_Height));
@@ -191,16 +186,16 @@ namespace Rod {
 		if (ImGui::BeginPopup("FileMenuPopup"))
 		{
 			if (ImGui::MenuItem("New", "Ctrl+N"))
-				RunCallback(m_NewScene);
+				m_Commands.NewScene();
 			if (ImGui::MenuItem("Open...", "Ctrl+O"))
-				RunCallback(m_OpenScene);
+				m_Commands.OpenScene();
 			if (ImGui::MenuItem("Save", "Ctrl+S"))
-				RunCallback(m_SaveScene);
+				m_Commands.SaveScene();
 			if (ImGui::MenuItem("Save as...", "Ctrl+Shift+S"))
-				RunCallback(m_SaveSceneAs);
+				m_Commands.SaveSceneAs();
 			ImGui::Separator();
 			if (ImGui::MenuItem("Export game"))
-				RunCallback(m_ExportGame);
+				m_Commands.ExportGame();
 			ImGui::Separator();
 			if (ImGui::MenuItem("Exit"))
 				Application::Get().Close();

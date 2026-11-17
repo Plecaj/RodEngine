@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../EditorInteractionState.h"
 #include "Rod.h"
 
 #include <imgui.h>
@@ -12,14 +13,9 @@ namespace Rod {
 	class SceneHierarchyPanel
 	{
 	public:
-		explicit SceneHierarchyPanel(std::filesystem::path assetsPath) noexcept;
+		SceneHierarchyPanel(std::filesystem::path assetsPath, EditorInteractionState& interaction) noexcept;
 
-		void SetContext(ObserverPtr<Scene> scene);
-
-		void OnImGuiRender();
-
-		[[nodiscard]] constexpr Entity GetSelectedEntity() const noexcept { return m_SelectionContext; }
-		constexpr void SetSelectedEntity(Entity entity) noexcept { m_SelectionContext = entity; }
+		void OnImGuiRender(Scene& scene) const;
 
 	private:
 		static constexpr uintptr_t s_EntityChildNodeID = 90714394;
@@ -76,11 +72,11 @@ namespace Rod {
 		static bool DrawVectorScriptField(const std::string& name, ScriptFieldInstance& field);
 		static bool DrawScriptField(const std::string& name, ScriptFieldInstance& field);
 
-		void DrawSceneHierarchy();
-		void DrawPropertiesPanel();
+		void DrawSceneHierarchy(Scene& scene) const;
+		void DrawPropertiesPanel() const;
 
-		void DrawEntityNode(Entity entity);
-		void HandleHierarchyBlankSpace();
+		void DrawEntityNode(Scene& scene, Entity entity) const;
+		void HandleHierarchyBlankSpace(Scene& scene) const;
 		[[nodiscard]] static bool HandleEntityContextMenu();
 
 		static void DrawTag(Entity entity);
@@ -88,17 +84,16 @@ namespace Rod {
 
 		static void DrawTransformComponent(Entity entity);
 		static void DrawCameraComponent(Entity entity);
-		void DrawSpriteRendererComponent(Entity entity);
-		void DrawMeshComponent(Entity entity);
+		void DrawSpriteRendererComponent(Entity entity) const;
+		void DrawMeshComponent(Entity entity) const;
 		static void DrawDirectionalLightComponent(Entity entity);
 		static void DrawScriptComponent(Entity entity);
 
-		void DrawComponents(Entity entity);
+		void DrawComponents(Entity entity) const;
 
 	private:
 		std::filesystem::path m_AssetsPath;
-		ObserverPtr<Scene> m_Context = nullptr;
-		Entity m_SelectionContext;
+		EditorInteractionState& m_Interaction;
 	};
 
 }

@@ -7,6 +7,10 @@ add_executable(RodEngineTests
     Project/Export.cpp
     Launcher/RecentProjects.cpp
     ../Rod-Launcher/src/RecentProjects.cpp
+    Editor/SceneManager.cpp
+    ../Rod-Editor/src/EditorSceneManager.cpp
+    Editor/Commands.cpp
+    ../Rod-Editor/src/EditorCommands.cpp
     Platform/SharedLibrary.cpp
     Renderer/Mesh.cpp
     Renderer/Texture.cpp
@@ -46,6 +50,7 @@ rod_configure_cpp_target(RodEngineTests)
 
 # Use Catch2's standard line-number fallback instead of the __COUNTER__ extension.
 target_compile_definitions(RodEngineTests PRIVATE CATCH_CONFIG_NO_COUNTER)
+target_compile_definitions(RodEngineTests PRIVATE ROD_EXECUTABLE_SUFFIX="${CMAKE_EXECUTABLE_SUFFIX}")
 
 target_link_libraries(RodEngineTests PRIVATE
     Rod::Engine

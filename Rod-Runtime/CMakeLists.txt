@@ -1,19 +1,8 @@
-include(RodSources)
-
 add_executable(Rod-Runtime)
 
 rod_configure_cpp_target(Rod-Runtime)
 
-rod_collect_sources(ROD_RUNTIME_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src")
-rod_collect_headers(ROD_RUNTIME_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/src")
-
-target_sources(Rod-Runtime PRIVATE ${ROD_RUNTIME_SOURCES})
-
-target_sources(Rod-Runtime PRIVATE
-    FILE_SET HEADERS
-    BASE_DIRS src
-    FILES ${ROD_RUNTIME_HEADERS}
-)
+add_subdirectory(src)
 
 target_include_directories(Rod-Runtime PRIVATE src)
 

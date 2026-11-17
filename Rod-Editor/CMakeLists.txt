@@ -1,19 +1,8 @@
-include(RodSources)
-
 add_executable(Rod-Editor)
 
 rod_configure_cpp_target(Rod-Editor)
 
-rod_collect_sources(ROD_EDITOR_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src")
-rod_collect_headers(ROD_EDITOR_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/src")
-
-target_sources(Rod-Editor PRIVATE ${ROD_EDITOR_SOURCES})
-
-target_sources(Rod-Editor PRIVATE
-    FILE_SET HEADERS
-    BASE_DIRS src
-    FILES ${ROD_EDITOR_HEADERS}
-)
+add_subdirectory(src)
 
 target_include_directories(Rod-Editor PRIVATE src)
 

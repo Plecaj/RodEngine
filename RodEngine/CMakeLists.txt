@@ -1,26 +1,9 @@
-include(RodSources)
-
 add_library(RodEngine STATIC)
 add_library(Rod::Engine ALIAS RodEngine)
 
 rod_configure_cpp_target(RodEngine)
 
-rod_collect_sources(ROD_ENGINE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src")
-rod_collect_headers(ROD_ENGINE_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/src")
-
-if(WIN32)
-    list(FILTER ROD_ENGINE_SOURCES EXCLUDE REGEX "/Platform/Linux/")
-else()
-    list(FILTER ROD_ENGINE_SOURCES EXCLUDE REGEX "/Platform/Windows/")
-endif()
-
-target_sources(RodEngine PRIVATE ${ROD_ENGINE_SOURCES})
-
-target_sources(RodEngine PUBLIC
-    FILE_SET HEADERS
-    BASE_DIRS src
-    FILES ${ROD_ENGINE_HEADERS}
-)
+add_subdirectory(src)
 
 target_include_directories(RodEngine PUBLIC src)
 

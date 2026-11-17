@@ -25,7 +25,7 @@ namespace Rod {
 		static bool ReloadAssembly();
 		static void OnUpdate();
 
-		static void OnRuntimeStart(Scene* scene);
+		static void OnRuntimeStart(Scene& scene);
 		static void OnRuntimeStop();
 		static void OnRuntimeUpdate(Timestep ts);
 
@@ -37,7 +37,7 @@ namespace Rod {
 		[[nodiscard]] static bool IsInitialized() noexcept;
 		[[nodiscard]] static bool IsRuntimeRunning() noexcept;
 		[[nodiscard]] static const std::unordered_map<std::string, ScriptClass>& GetScriptClasses();
-		[[nodiscard]] static ScriptClass* GetScriptClass(const std::string& className);
+		[[nodiscard]] static ObserverPtr<ScriptClass> GetScriptClass(const std::string& className);
 
 	private:
 		struct ScriptPaths;

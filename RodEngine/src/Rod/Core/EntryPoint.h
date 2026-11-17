@@ -36,10 +36,10 @@ int main(int argc, char** argv)
 		RD_CORE_WARN("Initialized Log!");
 
 		RD_PROFILE_BEGIN_SESSION("Startup", "RodProfile-Startup.json");
-		Rod::Scope<Rod::Application> app(Rod::CreateApplication(Utils::GetProjectDataFromArguments(argc, argv)));
+		auto app = Rod::CreateApplication(Utils::GetProjectDataFromArguments(argc, argv));
 		RD_PROFILE_END_SESSION();
 
-		RD_PROFILE_BEGIN_SESSION("Running", "RodProfile-Startup.json");
+		RD_PROFILE_BEGIN_SESSION("Running", "RodProfile-Running.json");
 		app->Run();
 		RD_PROFILE_END_SESSION();
 

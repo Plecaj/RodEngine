@@ -2,7 +2,9 @@
 
 #include "Rod/Core/Core.h"
 
+#include <cstddef>
 #include <cstdint>
+#include <span>
 #include <string>
 
 namespace Rod {
@@ -21,7 +23,7 @@ namespace Rod {
 		[[nodiscard]] virtual uint32_t GetHeight() const noexcept = 0;
 		[[nodiscard]] virtual uint32_t GetRendererID() const noexcept = 0;
 
-		virtual void SetData(const void* data, uint32_t size) = 0;
+		virtual void SetData(std::span<const std::byte> data) = 0;
 
 		[[nodiscard]] virtual std::string GetPath() const = 0;
 

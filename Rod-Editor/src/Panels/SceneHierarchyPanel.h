@@ -14,7 +14,7 @@ namespace Rod {
 	public:
 		explicit SceneHierarchyPanel(std::filesystem::path assetsPath) noexcept;
 
-		void SetContext(Scene* scene);
+		void SetContext(ObserverPtr<Scene> scene);
 
 		void OnImGuiRender();
 
@@ -97,7 +97,7 @@ namespace Rod {
 
 	private:
 		std::filesystem::path m_AssetsPath;
-		Scene* m_Context = nullptr;
+		ObserverPtr<Scene> m_Context = nullptr;
 		Entity m_SelectionContext;
 	};
 

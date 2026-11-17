@@ -2,7 +2,9 @@
 
 #include "Rod/Renderer/Buffer.h"
 
+#include <cstddef>
 #include <cstdint>
+#include <span>
 
 namespace Rod {
 
@@ -10,7 +12,7 @@ namespace Rod {
 	{
 	public:
 		explicit OpenGLVertexBuffer(uint32_t size);
-		OpenGLVertexBuffer(float* vertices, uint32_t size);
+		explicit OpenGLVertexBuffer(std::span<const std::byte> vertices);
 		virtual ~OpenGLVertexBuffer() override;
 		OpenGLVertexBuffer(const OpenGLVertexBuffer&) = delete;
 		OpenGLVertexBuffer& operator=(const OpenGLVertexBuffer&) = delete;
@@ -20,7 +22,7 @@ namespace Rod {
 		virtual void Bind() const override;
 		virtual void Unbind() const override;
 
-		virtual void SetData(const void* data, uint32_t size) override;
+		virtual void SetData(std::span<const std::byte> data) override;
 
 		[[nodiscard]] virtual const BufferLayout& GetLayout() const noexcept override { return m_Layout; };
 		virtual void SetBufferLayout(const BufferLayout& layout) override { m_Layout = layout; };
@@ -33,7 +35,7 @@ namespace Rod {
 	class OpenGLIndexBuffer : public IndexBuffer
 	{
 	public:
-		OpenGLIndexBuffer(uint32_t* indices, uint32_t count);
+		explicit OpenGLIndexBuffer(std::span<const uint32_t> indices);
 		virtual ~OpenGLIndexBuffer() override;
 		OpenGLIndexBuffer(const OpenGLIndexBuffer&) = delete;
 		OpenGLIndexBuffer& operator=(const OpenGLIndexBuffer&) = delete;
@@ -47,7 +49,7 @@ namespace Rod {
 
 	private:
 		uint32_t m_RendererID = 0;
-		uint32_t m_Count;
+		uint32_t m_Count = 0;
 	};
 
 	class OpenGLUniformBuffer : public UniformBuffer
@@ -64,7 +66,7 @@ namespace Rod {
 		virtual void Unbind() const override;
 		virtual void BindBase(uint32_t bindingIndex) const override;
 
-		virtual void SetData(void* data, uint32_t size) override;
+		virtual void SetData(std::span<const std::byte> data) override;
 
 	private:
 		uint32_t m_RendererID = 0;

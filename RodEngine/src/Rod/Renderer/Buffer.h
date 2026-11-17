@@ -2,8 +2,10 @@
 
 #include "Rod/Core/Core.h"
 
+#include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
@@ -123,7 +125,7 @@ namespace Rod {
 			CalculateOffsetsAndStride();
 		}
 		[[nodiscard]] constexpr uint32_t GetStride() const noexcept { return m_Stride; };
-		[[nodiscard]] const std::vector<BufferElement>& GetElements() const noexcept { return m_Elements; }
+		[[nodiscard]] std::span<const BufferElement> GetElements() const noexcept { return m_Elements; }
 
 		[[nodiscard]] std::vector<BufferElement>::iterator begin() noexcept { return m_Elements.begin(); }
 		[[nodiscard]] std::vector<BufferElement>::iterator end() noexcept { return m_Elements.end(); }
@@ -161,13 +163,13 @@ namespace Rod {
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 
-		virtual void SetData(const void* data, uint32_t size) = 0;
+		virtual void SetData(std::span<const std::byte> data) = 0;
 
 		virtual void SetBufferLayout(const BufferLayout& layout) = 0;
 		[[nodiscard]] virtual const BufferLayout& GetLayout() const noexcept = 0;
 
 		[[nodiscard]] static Scope<VertexBuffer> Create(uint32_t size);
-		[[nodiscard]] static Scope<VertexBuffer> Create(float* vertices, uint32_t size);
+		[[nodiscard]] static Scope<VertexBuffer> Create(std::span<const std::byte> vertices);
 	};
 
 	class IndexBuffer
@@ -185,7 +187,7 @@ namespace Rod {
 
 		[[nodiscard]] virtual uint32_t GetCount() const noexcept = 0;
 
-		[[nodiscard]] static Scope<IndexBuffer> Create(uint32_t* indices, uint32_t count);
+		[[nodiscard]] static Scope<IndexBuffer> Create(std::span<const uint32_t> indices);
 	};
 
 	class UniformBuffer
@@ -202,7 +204,7 @@ namespace Rod {
 		virtual void Unbind() const = 0;
 		virtual void BindBase(uint32_t bindingIndex) const = 0;
 
-		virtual void SetData(void* data, uint32_t size) = 0;
+		virtual void SetData(std::span<const std::byte> data) = 0;
 
 		[[nodiscard]] static Scope<UniformBuffer> Create(uint32_t size);
 	};

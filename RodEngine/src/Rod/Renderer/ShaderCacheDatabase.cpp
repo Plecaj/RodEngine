@@ -35,7 +35,7 @@ namespace Rod {
 		SaveDatabase();
 	}
 
-	bool ShaderCacheDatabase::CacheShader(const std::string& key, const std::vector<uint32_t>& data)
+	bool ShaderCacheDatabase::CacheShader(const std::string& key, std::span<const uint32_t> data)
 	{
 		const auto maxWords = static_cast<size_t>(std::numeric_limits<std::streamsize>::max()) / sizeof(uint32_t);
 		if (data.size() > maxWords)
@@ -48,7 +48,7 @@ namespace Rod {
 		if (!fout)
 			return false;
 
-		const auto byteCount = static_cast<std::streamsize>(data.size() * sizeof(uint32_t));
+		const auto byteCount = static_cast<std::streamsize>(data.size_bytes());
 		// Binary streams consume the object representation of the SPIR-V words as bytes.
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
 		fout.write(reinterpret_cast<const char*>(data.data()), byteCount);

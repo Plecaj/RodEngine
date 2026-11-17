@@ -16,7 +16,9 @@
 
 #include <fstream>
 #include <ios>
+#include <span>
 #include <stdexcept>
+#include <utility>
 
 namespace Rod {
 
@@ -327,11 +329,11 @@ namespace Rod {
 		UploadUniformInt(name, value);
 	}
 
-	void OpenGLShader::SetIntArray(const std::string& name, const int* values, uint32_t count)
+	void OpenGLShader::SetIntArray(const std::string& name, std::span<const int> values)
 	{
 		RD_PROFILE_FUNCTION();
 
-		UploadUniformIntArray(name, values, count);
+		UploadUniformIntArray(name, values);
 	}
 
 	void OpenGLShader::SetFloat(const std::string& name, const float value)
@@ -368,10 +370,12 @@ namespace Rod {
 		glUniform1i(location, value);
 	}
 
-	void OpenGLShader::UploadUniformIntArray(const std::string& name, const int* values, uint32_t count)
+	void OpenGLShader::UploadUniformIntArray(const std::string& name, std::span<const int> values)
 	{
+		RD_CORE_ASSERT(std::in_range<GLsizei>(values.size()), "Uniform integer array exceeds the OpenGL count limit");
+
 		const GLint location = GetUniformLocation(name);
-		glUniform1iv(location, static_cast<GLsizei>(count), values);
+		glUniform1iv(location, static_cast<GLsizei>(values.size()), values.data());
 	}
 
 	void OpenGLShader::UploadUniformFloat(const std::string& name, float value)

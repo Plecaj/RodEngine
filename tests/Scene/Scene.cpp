@@ -239,7 +239,7 @@ TEST_CASE("Scene moves rebind native scripts and release replaced instances", "[
 	auto entity = source.CreateEntityWithUUID(Rod::UUID{g_PlayerID}, "Player");
 	auto& script = entity.AddComponent<Rod::NativeScriptComponent>();
 	script.Bind<TrackedScript>();
-	script.Instance = new TrackedScript;
+	script.Instance = Rod::CreateScope<TrackedScript>();
 
 	Rod::Scene moved(std::move(source));
 	auto movedEntity = moved.FindEntityByName("Player");
@@ -251,7 +251,7 @@ TEST_CASE("Scene moves rebind native scripts and release replaced instances", "[
 	auto old = destination.CreateEntity("Old");
 	auto& oldScript = old.AddComponent<Rod::NativeScriptComponent>();
 	oldScript.Bind<TrackedScript>();
-	oldScript.Instance = new TrackedScript;
+	oldScript.Instance = Rod::CreateScope<TrackedScript>();
 	destination = std::move(moved);
 	REQUIRE(TrackedScript::s_Destroyed == 1);
 	auto player = destination.FindEntityByName("Player");

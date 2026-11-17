@@ -2,6 +2,9 @@
 
 #include "Rod/Renderer/VertexArray.h"
 
+#include <span>
+#include <vector>
+
 namespace Rod {
 
 	class OpenGLVertexArray : public VertexArray
@@ -20,11 +23,11 @@ namespace Rod {
 		virtual void AddVertexBuffer(Scope<VertexBuffer> vertexBuffer) override;
 		virtual void SetIndexBuffer(Scope<IndexBuffer> indexBuffer) override;
 
-		[[nodiscard]] virtual const std::vector<Scope<VertexBuffer>>& GetVertexBuffers() const noexcept override
+		[[nodiscard]] virtual std::span<const Scope<VertexBuffer>> GetVertexBuffers() const noexcept override
 		{
 			return m_VertexBuffers;
 		}
-		[[nodiscard]] virtual const IndexBuffer* GetIndexBuffer() const noexcept override
+		[[nodiscard]] virtual ObserverPtr<const IndexBuffer> GetIndexBuffer() const noexcept override
 		{
 			return m_IndexBuffer.get();
 		}

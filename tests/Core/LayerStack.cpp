@@ -45,13 +45,13 @@ TEST_CASE("Layer stack pops destroy only entries from the matching partition", "
 		auto& overlayObserver = *overlay;
 		stack.PushLayer(std::move(layer));
 		stack.PushOverlay(std::move(overlay));
-		stack.PopOverlay(&layerObserver);
-		stack.PopLayer(&overlayObserver);
+		stack.PopOverlay(layerObserver);
+		stack.PopLayer(overlayObserver);
 		REQUIRE(destroyed.empty());
 
-		stack.PopLayer(&layerObserver);
+		stack.PopLayer(layerObserver);
 		REQUIRE(destroyed == "L");
-		stack.PopOverlay(&overlayObserver);
+		stack.PopOverlay(overlayObserver);
 		REQUIRE(destroyed == "LO");
 	}
 	REQUIRE(destroyed == "LO");

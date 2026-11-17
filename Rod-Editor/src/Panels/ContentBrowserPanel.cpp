@@ -19,7 +19,7 @@ namespace Rod {
 			const bool hovered = ImGui::IsItemHovered();
 			const bool active = ImGui::IsItemActive();
 
-			ImDrawList* drawList = ImGui::GetWindowDrawList();
+			ImDrawList& drawList = *ImGui::GetWindowDrawList();
 			const ImVec2 min = ImGui::GetItemRectMin();
 			const ImVec2 max = ImGui::GetItemRectMax();
 			const ImU32 background = active    ? IM_COL32(31, 35, 42, 255)
@@ -27,22 +27,22 @@ namespace Rod {
 			                                   : IM_COL32(25, 29, 35, 255);
 			constexpr ImU32 arrow = IM_COL32(224, 229, 236, 255);
 
-			drawList->AddRectFilled(min, max, background, cornerRadius);
+			drawList.AddRectFilled(min, max, background, cornerRadius);
 
 			const ImVec2 center = ImVec2((min.x + max.x) * half, (min.y + max.y) * half);
 			constexpr float width = 13.0f;
 			constexpr float height = 9.0f;
-			drawList->AddLine(
+			drawList.AddLine(
 			    ImVec2(center.x - width * half, center.y),
 			    ImVec2(center.x + width * half, center.y),
 			    arrow,
 			    stroke);
-			drawList->AddLine(
+			drawList.AddLine(
 			    ImVec2(center.x - width * half, center.y),
 			    ImVec2(center.x - width * half + height * arrowWingScale, center.y - height * half),
 			    arrow,
 			    stroke);
-			drawList->AddLine(
+			drawList.AddLine(
 			    ImVec2(center.x - width * half, center.y),
 			    ImVec2(center.x - width * half + height * arrowWingScale, center.y + height * half),
 			    arrow,

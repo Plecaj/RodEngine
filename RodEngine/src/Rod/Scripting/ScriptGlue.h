@@ -21,8 +21,8 @@ namespace Rod {
 	class ScriptGlue
 	{
 	public:
-		static void SetSceneContext(Scene* scene) noexcept;
-		[[nodiscard]] static Scene* GetSceneContext() noexcept { return s_SceneContext; }
+		static void SetSceneContext(ObserverPtr<Scene> scene) noexcept;
+		[[nodiscard]] static ObserverPtr<Scene> GetSceneContext() noexcept { return s_SceneContext; }
 		[[nodiscard]] static std::vector<NativeCall> GetNativeCalls();
 
 	private:
@@ -100,6 +100,6 @@ namespace Rod {
 		static void* RD_CDECL ScriptGetClassName(uint64_t entityID);
 		static void RD_CDECL ScriptSetClassName(uint64_t entityID, const char* className);
 
-		static Scene* s_SceneContext;
+		static ObserverPtr<Scene> s_SceneContext;
 	};
 }

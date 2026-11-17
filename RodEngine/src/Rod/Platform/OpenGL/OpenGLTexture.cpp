@@ -2,7 +2,7 @@
 
 #include "OpenGLTexture.h"
 
-#include "stb_image.h"
+#include "Rod/Platform/StbImage.h"
 
 #include <glad/glad.h>
 
@@ -36,11 +36,11 @@ namespace Rod {
 
 		int width{}, height{}, channels{};
 		stbi_set_flip_vertically_on_load(1);
-		stbi_uc* data = nullptr;
+		ImagePixels data;
 
 		{
 			RD_PROFILE_SCOPE("stbi_load - OpenGLTexture2D::OpenGLTexture2D(const std::string& path)");
-			data = stbi_load(path.c_str(), &width, &height, &channels, 0);
+			data.reset(stbi_load(path.c_str(), &width, &height, &channels, 0));
 		}
 
 		if (!data)
@@ -66,10 +66,7 @@ namespace Rod {
 		m_DataFormat = dataFormat;
 
 		if (!internalFormat || !dataFormat)
-		{
-			stbi_image_free(data);
 			throw std::runtime_error("Unsupported texture format: " + path);
-		}
 
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 		glTextureStorage2D(
@@ -91,9 +88,7 @@ namespace Rod {
 		    static_cast<GLsizei>(m_Height),
 		    dataFormat,
 		    GL_UNSIGNED_BYTE,
-		    data);
-
-		stbi_image_free(data);
+		    data.get());
 	}
 
 	OpenGLTexture2D::~OpenGLTexture2D()
@@ -103,18 +98,13 @@ namespace Rod {
 		glDeleteTextures(1, &m_RendererID);
 	}
 
-	void OpenGLTexture2D::SetData(const void* data, uint32_t size)
+	void OpenGLTexture2D::SetData(std::span<const std::byte> data)
 	{
 
-		const uint32_t bytesPerPixel = m_DataFormat == GL_RGBA ? g_RgbaChannelCount : g_RgbChannelCount;
-		const uint32_t dataSize = m_Width * m_Height * bytesPerPixel;
-		const bool isCompleteTexture = size == dataSize;
-		RD_CORE_ASSERT(isCompleteTexture, "Data must be entire texture");
-		if (!isCompleteTexture)
-		{
-			RD_CORE_ERROR("Texture data size mismatch. Expected {0} bytes, got {1}.", dataSize, size);
-			return;
-		}
+		RD_CORE_ASSERT(
+		    data.size_bytes() == static_cast<size_t>(m_Width) * m_Height *
+		                             (m_DataFormat == GL_RGBA ? g_RgbaChannelCount : g_RgbChannelCount),
+		    "Data must be entire texture");
 
 		glTextureSubImage2D(
 		    m_RendererID,
@@ -125,7 +115,7 @@ namespace Rod {
 		    static_cast<GLsizei>(m_Height),
 		    m_DataFormat,
 		    GL_UNSIGNED_BYTE,
-		    data);
+		    data.data());
 	}
 
 	void OpenGLTexture2D::Bind(uint32_t slot) const

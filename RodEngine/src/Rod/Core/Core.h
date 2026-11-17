@@ -54,7 +54,10 @@
 
 namespace Rod {
 	template <typename T>
-	using Scope = std::unique_ptr<T>;
+	using ObserverPtr = T*;
+
+	template <typename T, typename Deleter = std::default_delete<T>>
+	using Scope = std::unique_ptr<T, Deleter>;
 
 	template <typename T, typename... Args>
 	[[nodiscard]] constexpr Scope<T> CreateScope(Args&&... args)

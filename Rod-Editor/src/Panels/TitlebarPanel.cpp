@@ -93,7 +93,7 @@ namespace Rod {
 			const bool active = ImGui::IsItemActive();
 			const bool isClose = icon == ButtonIcon::Close;
 
-			ImDrawList* drawList = ImGui::GetWindowDrawList();
+			ImDrawList& drawList = *ImGui::GetWindowDrawList();
 			const ImVec2 min = ImGui::GetItemRectMin();
 			const ImVec2 max = ImGui::GetItemRectMax();
 			ImU32 background = IM_COL32(0, 0, 0, 0);
@@ -106,10 +106,10 @@ namespace Rod {
 					background = active ? buttonActive : buttonHovered;
 			}
 
-			drawList->AddRectFilled(min, max, background, 0.0f);
+			drawList.AddRectFilled(min, max, background, 0.0f);
 
 			const ImVec2 center{(min.x + max.x) * half, (min.y + max.y) * half};
-			DrawButtonIcon(*drawList, icon, center);
+			DrawButtonIcon(drawList, icon, center);
 
 			return ImGui::IsItemClicked(ImGuiMouseButton_Left);
 		}
@@ -137,15 +137,12 @@ namespace Rod {
 		constexpr float windowButtonCount = 3.0f;
 		const float rowY = ImGui::GetCursorPosY();
 
-		ImDrawList* drawList = ImGui::GetWindowDrawList();
+		ImDrawList& drawList = *ImGui::GetWindowDrawList();
 		const ImVec2 windowMin = ImGui::GetWindowPos();
 		const ImVec2 windowMax =
 		    ImVec2(windowMin.x + ImGui::GetWindowWidth(), windowMin.y + static_cast<float>(HEIGHT));
-		drawList->AddRectFilled(windowMin, windowMax, backgroundColor);
-		drawList->AddLine(
-		    ImVec2(windowMin.x, windowMax.y - 1.0f),
-		    ImVec2(windowMax.x, windowMax.y - 1.0f),
-		    borderColor);
+		drawList.AddRectFilled(windowMin, windowMax, backgroundColor);
+		drawList.AddLine(ImVec2(windowMin.x, windowMax.y - 1.0f), ImVec2(windowMax.x, windowMax.y - 1.0f), borderColor);
 
 		constexpr ImVec2 logoSize = {28.0f, 28.0f};
 		ImGui::SetCursorPos(ImVec2(logoInset.x, rowY + logoInset.y));

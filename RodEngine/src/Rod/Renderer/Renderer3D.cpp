@@ -168,10 +168,7 @@ namespace Rod {
 			shadowMapSamplers[i] = static_cast<int>(i);
 
 		s_SceneData->Shader->Bind();
-		s_SceneData->Shader->SetIntArray(
-		    "u_ShadowMaps",
-		    shadowMapSamplers.data(),
-		    static_cast<uint32_t>(shadowMapSamplers.size()));
+		s_SceneData->Shader->SetIntArray("u_ShadowMaps", shadowMapSamplers);
 
 		s_SceneData->SceneUBO = UniformBuffer::Create(sizeof(SceneMatrices));
 		s_SceneData->MaterialUBO = UniformBuffer::Create(sizeof(MaterialData));
@@ -190,7 +187,7 @@ namespace Rod {
 	void Renderer3D::BeginScene(
 	    const Camera& camera,
 	    const glm::mat4& transform,
-	    std::vector<DirectionalLightComponent>& lights)
+	    std::span<const DirectionalLightComponent> lights)
 	{
 		RD_PROFILE_FUNCTION();
 
@@ -199,7 +196,7 @@ namespace Rod {
 		SetupScene(lights);
 	}
 
-	void Renderer3D::BeginScene(const EditorCamera& camera, std::vector<DirectionalLightComponent>& lights)
+	void Renderer3D::BeginScene(const EditorCamera& camera, std::span<const DirectionalLightComponent> lights)
 	{
 		RD_PROFILE_FUNCTION();
 
@@ -238,18 +235,18 @@ namespace Rod {
 			matrices.Transform = command.Transform;
 
 			s_SceneData->SceneUBO->BindBase(SCENE_BINDING);
-			s_SceneData->SceneUBO->SetData(&matrices, sizeof(SceneMatrices));
+			s_SceneData->SceneUBO->SetData(std::as_bytes(std::span{&matrices, 1}));
 
 			MaterialData materialData{};
 			materialData.Albedo = command.Material.GetAlbedo();
 			materialData.Emissive = command.Material.GetEmissive();
 			s_SceneData->MaterialUBO->BindBase(MATERIAL_BINDING);
-			s_SceneData->MaterialUBO->SetData(&materialData, sizeof(MaterialData));
+			s_SceneData->MaterialUBO->SetData(std::as_bytes(std::span{&materialData, 1}));
 
 			DrawData drawData{};
 			drawData.EntityID = command.EntityID;
 			s_SceneData->DrawUBO->BindBase(DRAW_BINDING);
-			s_SceneData->DrawUBO->SetData(&drawData, sizeof(DrawData));
+			s_SceneData->DrawUBO->SetData(std::as_bytes(std::span{&drawData, 1}));
 
 			command.Mesh->GetVAO()->Bind();
 			command.Mesh->GetVAO()->GetIndexBuffer()->Bind();
@@ -257,7 +254,7 @@ namespace Rod {
 		}
 	}
 
-	void Renderer3D::SetupScene(std::vector<DirectionalLightComponent>& lights)
+	void Renderer3D::SetupScene(std::span<const DirectionalLightComponent> lights)
 	{
 		const auto lightCount = static_cast<uint32_t>(std::min(lights.size(), MAX_LIGHT_COUNT));
 
@@ -298,10 +295,10 @@ namespace Rod {
 		lightData.Count = lightCount;
 
 		s_SceneData->LightsUBO->BindBase(LIGHTS_BINDING);
-		s_SceneData->LightsUBO->SetData(&lightData, sizeof(LightsData));
+		s_SceneData->LightsUBO->SetData(std::as_bytes(std::span{&lightData, 1}));
 
 		s_SceneData->ShadowUBO->BindBase(SHADOW_BINDING);
-		s_SceneData->ShadowUBO->SetData(&shadowData, sizeof(ShadowData));
+		s_SceneData->ShadowUBO->SetData(std::as_bytes(std::span{&shadowData, 1}));
 	}
 
 	void Renderer3D::DepthPass()
@@ -326,7 +323,7 @@ namespace Rod {
 				matrices.Transform = command.Transform;
 
 				s_SceneData->SceneUBO->BindBase(SCENE_BINDING);
-				s_SceneData->SceneUBO->SetData(&matrices, sizeof(SceneMatrices));
+				s_SceneData->SceneUBO->SetData(std::as_bytes(std::span{&matrices, 1}));
 
 				command.Mesh->GetVAO()->Bind();
 				command.Mesh->GetVAO()->GetIndexBuffer()->Bind();

@@ -19,8 +19,8 @@ namespace Rod {
 
 		void PushLayer(Scope<Layer> layer);
 		void PushOverlay(Scope<Layer> overlay);
-		void PopLayer(Layer* layer);
-		void PopOverlay(Layer* overlay);
+		void PopLayer(Layer& layer);
+		void PopOverlay(Layer& overlay);
 		void Clear() noexcept;
 
 		[[nodiscard]] std::vector<Scope<Layer>>::const_iterator begin() const noexcept { return m_Layers.begin(); }

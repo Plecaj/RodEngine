@@ -4,16 +4,17 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <cstdint>
 #include <filesystem>
+#include <span>
 #include <unordered_set>
-#include <vector>
 
 namespace Rod {
 
 	class ShaderCacheDatabase
 	{
 	public:
-		[[nodiscard]] bool CacheShader(const std::string& key, const std::vector<uint32_t>& data);
+		[[nodiscard]] bool CacheShader(const std::string& key, std::span<const uint32_t> data);
 		void AddValidKey(const std::string& key) { m_ValidKeys.insert(key); }
 		[[nodiscard]] bool Contains(const std::string& key) const;
 

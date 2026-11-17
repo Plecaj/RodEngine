@@ -79,7 +79,7 @@ namespace Rod {
 		const Project& m_Project;
 		Scene m_EditorScene;
 		Scene m_RuntimeScene;
-		Scene* m_ActiveScene = nullptr;
+		ObserverPtr<Scene> m_ActiveScene = nullptr;
 
 		EditorCamera m_EditorCamera;
 

@@ -9,6 +9,8 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <span>
+#include <vector>
 
 namespace Rod {
 
@@ -19,8 +21,8 @@ namespace Rod {
 		static void Shutdown();
 
 		static void
-		BeginScene(const Camera& camera, const glm::mat4& transform, std::vector<DirectionalLightComponent>& lights);
-		static void BeginScene(const EditorCamera& camera, std::vector<DirectionalLightComponent>& lights);
+		BeginScene(const Camera& camera, const glm::mat4& transform, std::span<const DirectionalLightComponent> lights);
+		static void BeginScene(const EditorCamera& camera, std::span<const DirectionalLightComponent> lights);
 		static void EndScene();
 
 		static void
@@ -58,7 +60,7 @@ namespace Rod {
 		[[nodiscard]] static glm::mat4
 		CreateDirectionalLightViewProjection(const glm::vec3& lightDirection, const glm::mat4& cameraViewProjection);
 
-		static void SetupScene(std::vector<DirectionalLightComponent>& lights);
+		static void SetupScene(std::span<const DirectionalLightComponent> lights);
 		static void DepthPass();
 		static void GeometryPass();
 

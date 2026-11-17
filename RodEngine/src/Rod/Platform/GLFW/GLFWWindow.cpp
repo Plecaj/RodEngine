@@ -7,11 +7,11 @@
 #include "Rod/Events/KeyEvent.h"
 #include "Rod/Events/MouseEvent.h"
 #include "Rod/Platform/OpenGL/OpenGLContext.h"
+#include "Rod/Platform/StbImage.h"
 
 #include <GLFW/glfw3.h>
 #include <glm/ext/vector_float2.hpp>
 
-#include <stb_image.h>
 #include <stdexcept>
 
 namespace Rod {
@@ -222,7 +222,7 @@ namespace Rod {
 		GLFWimage icon;
 
 		int width{}, height{}, channels{};
-		auto data = stbi_load(iconFilepath.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+		const ImagePixels data(stbi_load(iconFilepath.c_str(), &width, &height, &channels, STBI_rgb_alpha));
 
 		if (!data)
 		{
@@ -232,10 +232,9 @@ namespace Rod {
 
 		icon.width = width;
 		icon.height = height;
-		icon.pixels = data;
+		icon.pixels = data.get();
 
 		glfwSetWindowIcon(m_Window.get(), 1, &icon);
-		stbi_image_free(data);
 	}
 
 	GLFWWindow::WindowData& GLFWWindow::GetWindowData(GLFWwindow* window)

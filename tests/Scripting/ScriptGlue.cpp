@@ -33,7 +33,7 @@ namespace {
 		}
 
 	private:
-		Rod::Scene* m_PreviousScene = Rod::ScriptGlue::GetSceneContext();
+		Rod::ObserverPtr<Rod::Scene> m_PreviousScene = Rod::ScriptGlue::GetSceneContext();
 		const std::vector<Rod::NativeCall> m_Calls = Rod::ScriptGlue::GetNativeCalls();
 	};
 }

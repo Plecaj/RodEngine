@@ -22,7 +22,7 @@ namespace Rod {
 		return nullptr;
 	}
 
-	Scope<VertexBuffer> VertexBuffer::Create(float* vertices, uint32_t size)
+	Scope<VertexBuffer> VertexBuffer::Create(std::span<const std::byte> vertices)
 	{
 		switch (RendererAPI::GetAPI())
 		{
@@ -30,14 +30,14 @@ namespace Rod {
 				RD_CORE_ASSERT(false, "RendererAPI::None is currently not supported");
 				return nullptr;
 			case RendererAPI::API::OpenGL:
-				return CreateScope<OpenGLVertexBuffer>(vertices, size);
+				return CreateScope<OpenGLVertexBuffer>(vertices);
 		}
 
 		RD_CORE_ASSERT(false, "Unknown RendererAPI");
 		return nullptr;
 	};
 
-	Scope<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t count)
+	Scope<IndexBuffer> IndexBuffer::Create(std::span<const uint32_t> indices)
 	{
 		switch (RendererAPI::GetAPI())
 		{
@@ -45,7 +45,7 @@ namespace Rod {
 				RD_CORE_ASSERT(false, "RendererAPI::None is currently not supported");
 				return nullptr;
 			case RendererAPI::API::OpenGL:
-				return CreateScope<OpenGLIndexBuffer>(indices, count);
+				return CreateScope<OpenGLIndexBuffer>(indices);
 		}
 
 		RD_CORE_ASSERT(false, "Unknown RendererAPI");

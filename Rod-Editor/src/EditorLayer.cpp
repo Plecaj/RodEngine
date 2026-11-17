@@ -200,7 +200,7 @@ namespace Rod {
 		    mouseY < static_cast<int>(viewportSize.y))
 		{
 			const int pixelData = m_Framebuffer->ReadPixel(1, mouseX, mouseY);
-			m_HoveredEntity = pixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(pixelData), m_ActiveScene);
+			m_HoveredEntity = pixelData == -1 ? Entity() : Entity(static_cast<entt::entity>(pixelData), *m_ActiveScene);
 		}
 	}
 
@@ -213,10 +213,10 @@ namespace Rod {
 	void EditorLayer::RenderTitlebar()
 	{
 		auto titlebarHeight = static_cast<float>(m_TitlebarPanel.GetHeight());
-		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+		const ImGuiViewport& viewport = *ImGui::GetMainViewport();
 
-		ImGui::SetNextWindowPos(viewport->WorkPos);
-		ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, titlebarHeight));
+		ImGui::SetNextWindowPos(viewport.WorkPos);
+		ImGui::SetNextWindowSize(ImVec2(viewport.WorkSize.x, titlebarHeight));
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
@@ -244,22 +244,22 @@ namespace Rod {
 		static ImGuiDockNodeFlags s_DockspaceFlags = ImGuiDockNodeFlags_None;
 
 		auto titlebarHeight = static_cast<float>(m_TitlebarPanel.GetHeight());
-		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+		const ImGuiViewport& viewport = *ImGui::GetMainViewport();
 
 		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoSavedSettings;
 
-		const ImVec2 dockPos = ImVec2(viewport->WorkPos.x, viewport->WorkPos.y + titlebarHeight);
-		const ImVec2 dockSize = ImVec2(viewport->WorkSize.x, viewport->WorkSize.y - titlebarHeight);
+		const ImVec2 dockPos = ImVec2(viewport.WorkPos.x, viewport.WorkPos.y + titlebarHeight);
+		const ImVec2 dockSize = ImVec2(viewport.WorkSize.x, viewport.WorkSize.y - titlebarHeight);
 
 		ImGui::SetNextWindowPos(dockPos);
 		ImGui::SetNextWindowSize(dockSize);
-		ImGui::SetNextWindowViewport(viewport->ID);
+		ImGui::SetNextWindowViewport(viewport.ID);
 
 		if (FULLSCREEN)
 		{
 			ImGui::SetNextWindowPos(dockPos);
 			ImGui::SetNextWindowSize(dockSize);
-			ImGui::SetNextWindowViewport(viewport->ID);
+			ImGui::SetNextWindowViewport(viewport.ID);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 			windowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |

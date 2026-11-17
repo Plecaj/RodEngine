@@ -31,8 +31,11 @@ namespace Rod {
 		void PushOverlay(Scope<Layer> overlay);
 
 		[[nodiscard]] Window& GetWindow() noexcept { return *m_Window; };
-		[[nodiscard]] Project* GetProject() noexcept { return m_Project ? &*m_Project : nullptr; }
-		[[nodiscard]] const Project* GetProject() const noexcept { return m_Project ? &*m_Project : nullptr; }
+		[[nodiscard]] ObserverPtr<Project> GetProject() noexcept { return m_Project ? &*m_Project : nullptr; }
+		[[nodiscard]] ObserverPtr<const Project> GetProject() const noexcept
+		{
+			return m_Project ? &*m_Project : nullptr;
+		}
 
 		void Close() noexcept;
 
@@ -45,7 +48,7 @@ namespace Rod {
 		void RestoreWindow();
 		void BeginWindowDrag();
 
-		[[nodiscard]] ImGuiLayer* GetImGuiLayer() noexcept { return m_ImGuiLayer; };
+		[[nodiscard]] ObserverPtr<ImGuiLayer> GetImGuiLayer() noexcept { return m_ImGuiLayer; };
 
 		[[nodiscard]] virtual bool IsEditor() const noexcept { return false; }
 
@@ -62,15 +65,15 @@ namespace Rod {
 	private:
 		std::optional<Project> m_Project;
 		Scope<Window> m_Window;
-		ImGuiLayer* m_ImGuiLayer = nullptr;
+		ObserverPtr<ImGuiLayer> m_ImGuiLayer = nullptr;
 		bool m_Running = true, m_Minimized = false, m_Maximized = false;
 		LayerStack m_LayerStack;
 		float m_LastFrameTime = 0.0f;
 
 	private:
-		static Application* s_Instance;
+		static ObserverPtr<Application> s_Instance;
 	};
 
 	// To be defined in CLIENT
-	[[nodiscard]] Application* CreateApplication(const std::optional<Project>& project);
+	[[nodiscard]] Scope<Application> CreateApplication(const std::optional<Project>& project);
 }

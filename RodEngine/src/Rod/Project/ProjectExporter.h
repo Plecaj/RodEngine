@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Rod/Core/Core.h"
+
 #include <filesystem>
 
 namespace Rod {
@@ -16,7 +18,7 @@ namespace Rod {
 		    const Project& project,
 		    const std::filesystem::path& runtimeExecutable,
 		    const std::filesystem::path& outputDirectory,
-		    Scene* startupScene = nullptr);
+		    ObserverPtr<Scene> startupScene = nullptr);
 	};
 
 }

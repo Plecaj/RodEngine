@@ -5,6 +5,7 @@
 #include <cstring>
 #include <limits>
 #include <stdexcept>
+#include <vector>
 
 namespace Rod {
 
@@ -14,14 +15,14 @@ namespace Rod {
 		constexpr size_t g_VertexComponentCount = g_VectorComponentCount * 2;
 
 		template <typename T>
-		[[nodiscard]] T ReadScalar(const uint8_t* data) noexcept
+		[[nodiscard]] T ReadScalar(std::span<const uint8_t> data, size_t offset) noexcept
 		{
 			T value{};
-			std::memcpy(&value, data, sizeof(value));
+			std::memcpy(&value, data.subspan(offset, sizeof(value)).data(), sizeof(value));
 			return value;
 		}
 
-		[[nodiscard]] const uint8_t*
+		[[nodiscard]] std::span<const uint8_t>
 		AccessorData(const tinygltf::Model& model, const tinygltf::Accessor& accessor, size_t elementSize)
 		{
 			if (accessor.sparse.isSparse || accessor.bufferView < 0 ||
@@ -39,7 +40,7 @@ namespace Rod {
 			if (accessor.count == 0 || stride < elementSize || available < elementSize ||
 			    accessor.count - 1 > (available - elementSize) / stride)
 				throw std::runtime_error("Mesh accessor bounds invalid");
-			return buffer.data.data() + view.byteOffset + accessor.byteOffset;
+			return std::span{buffer.data}.subspan(view.byteOffset + accessor.byteOffset, available);
 		}
 
 		[[nodiscard]] std::vector<float>
@@ -59,7 +60,7 @@ namespace Rod {
 			const size_t packedStride = g_VectorComponentCount * sizeof(float);
 			const auto positionByteStride = model.bufferViews[static_cast<size_t>(accessor.bufferView)].byteStride;
 			const size_t positionStride = positionByteStride ? positionByteStride : packedStride;
-			const uint8_t* normals = nullptr;
+			std::span<const uint8_t> normals;
 			size_t normalStride = 0;
 			const auto normal = primitive.attributes.find("NORMAL");
 			if (normal != primitive.attributes.end())
@@ -81,11 +82,11 @@ namespace Rod {
 			{
 				for (size_t component = 0; component < g_VectorComponentCount; ++component)
 					vertices.push_back(
-					    ReadScalar<float>(positions + vertex * positionStride + component * sizeof(float)));
+					    ReadScalar<float>(positions, vertex * positionStride + component * sizeof(float)));
 				for (size_t component = 0; component < g_VectorComponentCount; ++component)
 					vertices.push_back(
-					    normals ? ReadScalar<float>(normals + vertex * normalStride + component * sizeof(float))
-					            : 0.0f);
+					    !normals.empty() ? ReadScalar<float>(normals, vertex * normalStride + component * sizeof(float))
+					                     : 0.0f);
 			}
 			return vertices;
 		}
@@ -113,17 +114,17 @@ namespace Rod {
 			indices.reserve(accessor.count);
 			for (size_t index = 0; index < accessor.count; ++index)
 			{
-				const uint8_t* element = data + index * stride;
+				const size_t offset = index * stride;
 				if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)
-					indices.push_back(ReadScalar<uint16_t>(element));
+					indices.push_back(ReadScalar<uint16_t>(data, offset));
 				else
-					indices.push_back(ReadScalar<uint32_t>(element));
+					indices.push_back(ReadScalar<uint32_t>(data, offset));
 			}
 			return indices;
 		}
 
 		template <typename Vector>
-		[[nodiscard]] Vector ToFloatVector(const std::vector<double>& values)
+		[[nodiscard]] Vector ToFloatVector(std::span<const double> values)
 		{
 			Vector result(0.0f);
 			for (typename Vector::length_type component = 0; component < result.length(); ++component)
@@ -174,16 +175,15 @@ namespace Rod {
 		throw std::runtime_error("Mesh load failed '" + path + "': " + exception.what());
 	}
 
-	void Mesh::ProcessPrimitive(std::vector<float>& vertices, std::vector<uint32_t>& indices)
+	void Mesh::ProcessPrimitive(std::span<const float> vertices, std::span<const uint32_t> indices)
 	{
 		RD_PROFILE_FUNCTION();
 		m_VAO = VertexArray::Create();
-		auto vertexBuffer =
-		    VertexBuffer::Create(vertices.data(), static_cast<uint32_t>(vertices.size() * sizeof(float)));
+		auto vertexBuffer = VertexBuffer::Create(std::as_bytes(vertices));
 		const BufferLayout layout = {{ShaderDataType::Float3, "a_Position"}, {ShaderDataType::Float3, "a_Normal"}};
 		vertexBuffer->SetBufferLayout(layout);
 
-		auto indexBuffer = IndexBuffer::Create(indices.data(), static_cast<uint32_t>(indices.size()));
+		auto indexBuffer = IndexBuffer::Create(indices);
 		m_VAO->AddVertexBuffer(std::move(vertexBuffer));
 		m_VAO->SetIndexBuffer(std::move(indexBuffer));
 	}

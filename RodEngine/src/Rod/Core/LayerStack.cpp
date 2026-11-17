@@ -24,10 +24,11 @@ namespace Rod {
 		m_Layers.emplace_back(std::move(overlay));
 	}
 
-	void LayerStack::PopLayer(Layer* layer)
+	void LayerStack::PopLayer(Layer& layer)
 	{
 		auto layerEnd = m_Layers.begin() + m_LayerInsertIndex;
-		auto it = std::find_if(m_Layers.begin(), layerEnd, [layer](const auto& entry) { return entry.get() == layer; });
+		auto it =
+		    std::find_if(m_Layers.begin(), layerEnd, [&layer](const auto& entry) { return entry.get() == &layer; });
 		if (it != layerEnd)
 		{
 			m_Layers.erase(it);
@@ -35,11 +36,12 @@ namespace Rod {
 		}
 	}
 
-	void LayerStack::PopOverlay(Layer* overlay)
+	void LayerStack::PopOverlay(Layer& overlay)
 	{
 		auto overlayBegin = m_Layers.begin() + m_LayerInsertIndex;
-		auto it =
-		    std::find_if(overlayBegin, m_Layers.end(), [overlay](const auto& entry) { return entry.get() == overlay; });
+		auto it = std::find_if(overlayBegin, m_Layers.end(), [&overlay](const auto& entry) {
+			return entry.get() == &overlay;
+		});
 		if (it != m_Layers.end())
 		{
 			m_Layers.erase(it);

@@ -16,7 +16,7 @@ namespace Rod {
 	{
 	public:
 		constexpr Entity() noexcept = default;
-		constexpr Entity(entt::entity handle, Scene* scene) noexcept : m_EntityHandle(handle), m_Scene(scene) {}
+		constexpr Entity(entt::entity handle, Scene& scene) noexcept : m_EntityHandle(handle), m_Scene(&scene) {}
 
 		template <typename T, typename... Args>
 		T& AddComponent(Args&&... args)
@@ -76,7 +76,7 @@ namespace Rod {
 
 	private:
 		entt::entity m_EntityHandle = entt::null;
-		Scene* m_Scene = nullptr;
+		ObserverPtr<Scene> m_Scene = nullptr;
 	};
 
 }

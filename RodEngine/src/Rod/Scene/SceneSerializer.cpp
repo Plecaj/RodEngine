@@ -338,7 +338,7 @@ namespace Rod {
 		auto view = m_Scene.m_Registry.view<IDComponent>();
 		for (auto entityID : view)
 		{
-			const Entity entity = {entityID, &m_Scene};
+			const Entity entity = {entityID, m_Scene};
 			if (entity)
 				SerializeEntity(out, entity);
 		}

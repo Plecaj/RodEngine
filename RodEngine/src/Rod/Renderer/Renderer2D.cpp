@@ -7,6 +7,8 @@
 #include "Shader.h"
 #include "VertexArray.h"
 
+#include <span>
+
 namespace Rod {
 
 	struct QuadVertex
@@ -28,7 +30,7 @@ namespace Rod {
 		static constexpr uint32_t MAX_TEXTURE_SLOTS = 32;
 
 		Scope<VertexArray> QuadVertexArray;
-		VertexBuffer* QuadVertexBuffer = nullptr; // Owned by QuadVertexArray.
+		ObserverPtr<VertexBuffer> QuadVertexBuffer = nullptr;
 		Scope<UniformBuffer> QuadUniformBuffer;
 		Scope<Shader> TextureShader;
 		Ref<Texture2D> WhiteTexture;
@@ -77,7 +79,7 @@ namespace Rod {
 			samplers[i] = static_cast<int>(i);
 
 		g_Data->TextureShader->Bind();
-		g_Data->TextureShader->SetIntArray("u_Textures", samplers.data(), static_cast<uint32_t>(samplers.size()));
+		g_Data->TextureShader->SetIntArray("u_Textures", samplers);
 	}
 
 	void Renderer2D::InitQuadVertexArray()
@@ -107,7 +109,7 @@ namespace Rod {
 			offset += QUAD_VERTEX_COUNT;
 		}
 
-		auto quadIB = IndexBuffer::Create(quadIndices.data(), Renderer2DData::MAX_INDICES_COUNT);
+		auto quadIB = IndexBuffer::Create(quadIndices);
 		g_Data->QuadVertexArray->SetIndexBuffer(std::move(quadIB));
 	}
 
@@ -115,7 +117,7 @@ namespace Rod {
 	{
 		g_Data->WhiteTexture = Texture2D::Create(1, 1);
 		constexpr uint32_t whiteTextureData = 0xffffffff;
-		g_Data->WhiteTexture->SetData(&whiteTextureData, sizeof(whiteTextureData));
+		g_Data->WhiteTexture->SetData(std::as_bytes(std::span{&whiteTextureData, 1}));
 
 		g_Data->TextureSlots[0] = g_Data->WhiteTexture;
 	}
@@ -146,7 +148,7 @@ namespace Rod {
 		g_Data->TextureShader->Bind();
 
 		g_Data->QuadUniformBuffer->BindBase(0);
-		g_Data->QuadUniformBuffer->SetData(&viewProj, sizeof(viewProj));
+		g_Data->QuadUniformBuffer->SetData(std::as_bytes(std::span{&viewProj, 1}));
 
 		BeginBatch();
 	}
@@ -160,7 +162,7 @@ namespace Rod {
 		g_Data->TextureShader->Bind();
 
 		g_Data->QuadUniformBuffer->BindBase(0);
-		g_Data->QuadUniformBuffer->SetData(&viewProj, sizeof(viewProj));
+		g_Data->QuadUniformBuffer->SetData(std::as_bytes(std::span{&viewProj, 1}));
 
 		BeginBatch();
 	}
@@ -294,8 +296,8 @@ namespace Rod {
 		RD_PROFILE_FUNCTION();
 
 		const auto vertexCount = static_cast<size_t>(g_Data->QuadVertexBufferPtr - g_Data->QuadVertexBufferBase.data());
-		const auto dataSize = static_cast<uint32_t>(vertexCount * sizeof(QuadVertex));
-		g_Data->QuadVertexBuffer->SetData(g_Data->QuadVertexBufferBase.data(), dataSize);
+		const auto vertices = std::span{g_Data->QuadVertexBufferBase}.first(vertexCount);
+		g_Data->QuadVertexBuffer->SetData(std::as_bytes(vertices));
 	}
 
 	void Renderer2D::Flush()

@@ -6,16 +6,19 @@
 
 #include <array>
 #include <cstddef>
+#include <span>
 
 namespace Rod {
 
 	class SubTexture2D
 	{
+		static constexpr size_t TEX_COORD_COUNT = 4;
+
 	public:
 		SubTexture2D(const Ref<Texture2D>& texture, const glm::vec2& min, const glm::vec2& max) noexcept;
 
 		[[nodiscard]] const Ref<Texture2D>& GetTexture() const noexcept { return m_Texture; }
-		[[nodiscard]] const glm::vec2* GetTexCoords() const noexcept { return m_TexCoords.data(); }
+		[[nodiscard]] std::span<const glm::vec2, TEX_COORD_COUNT> GetTexCoords() const noexcept { return m_TexCoords; }
 
 		[[nodiscard]] static SubTexture2D CreateFromCoords(
 		    const Ref<Texture2D>& texture,
@@ -26,7 +29,6 @@ namespace Rod {
 	private:
 		Ref<Texture2D> m_Texture;
 
-		static constexpr size_t TEX_COORD_COUNT = 4;
 		std::array<glm::vec2, TEX_COORD_COUNT> m_TexCoords;
 	};
 

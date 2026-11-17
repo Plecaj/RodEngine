@@ -19,14 +19,14 @@ namespace Rod {
 		}
 	};
 
-	Application* CreateApplication(const std::optional<Project>& project)
+	Scope<Application> CreateApplication(const std::optional<Project>& project)
 	{
 		const auto directory = Platform::GetExecutablePath().parent_path();
 		Project runtimeProject = project ? *project : Project{directory / ProjectExporter::MANIFEST_FILENAME, {}};
 		if (!project)
 			ProjectSerializer::Deserialize(runtimeProject);
 		std::filesystem::current_path(directory);
-		return new RodRuntime(std::move(runtimeProject));
+		return CreateScope<RodRuntime>(std::move(runtimeProject));
 	}
 
 }

@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <filesystem>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -22,7 +23,7 @@ namespace Rod {
 		void Load(const std::filesystem::path& path);
 		void Save(const std::filesystem::path& path) const;
 		void Record(const Project& project);
-		[[nodiscard]] const std::vector<RecentProject>& GetEntries() const noexcept { return m_Entries; }
+		[[nodiscard]] std::span<const RecentProject> GetEntries() const noexcept { return m_Entries; }
 
 	private:
 		static constexpr std::size_t MAX_PROJECTS = 10;

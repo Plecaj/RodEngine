@@ -10,6 +10,7 @@
 #include <filesystem>
 #include <memory>
 #include <shobjidl.h>
+#include <span>
 #include <system_error>
 #include <wrl/client.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -43,13 +44,13 @@ namespace Rod {
 		return glfwGetWin32Window(window);
 	}
 
-	static OPENFILENAMEA CreateOpenFileName(char* fileBuffer, DWORD bufferSize, const char* filter, DWORD flags)
+	static OPENFILENAMEA CreateOpenFileName(std::span<char, MAX_PATH> fileBuffer, const char* filter, DWORD flags)
 	{
 		OPENFILENAMEA ofn = {};
 		ofn.lStructSize = sizeof(OPENFILENAMEA);
 		ofn.hwndOwner = GetOwnerWindow();
-		ofn.lpstrFile = fileBuffer;
-		ofn.nMaxFile = bufferSize;
+		ofn.lpstrFile = fileBuffer.data();
+		ofn.nMaxFile = static_cast<DWORD>(fileBuffer.size());
 		ofn.lpstrFilter = filter;
 		ofn.nFilterIndex = 1;
 		ofn.Flags = flags | OFN_NOCHANGEDIR;
@@ -60,7 +61,7 @@ namespace Rod {
 	std::string FileDialogs::OpenFile(const char* filter, const std::string& initialDirectory)
 	{
 		CHAR szFile[MAX_PATH] = {0};
-		auto ofn = CreateOpenFileName(szFile, sizeof(szFile), filter, OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST);
+		auto ofn = CreateOpenFileName(szFile, filter, OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST);
 		ofn.lpstrInitialDir = initialDirectory.empty() ? nullptr : initialDirectory.c_str();
 
 		if (GetOpenFileNameA(&ofn))
@@ -125,7 +126,7 @@ namespace Rod {
 	std::string FileDialogs::SaveFile(const char* filter)
 	{
 		CHAR szFile[MAX_PATH] = {0};
-		auto ofn = CreateOpenFileName(szFile, sizeof(szFile), filter, OFN_PATHMUSTEXIST);
+		auto ofn = CreateOpenFileName(szFile, filter, OFN_PATHMUSTEXIST);
 
 		if (GetSaveFileNameA(&ofn))
 			return ofn.lpstrFile;

@@ -135,9 +135,7 @@ namespace Rod {
 			           leftEntity,
 			           right,
 			           rightEntity,
-			           [](const auto& a, const auto& b) {
-				           return a.InstantiateScript == b.InstantiateScript && a.DestroyScript == b.DestroyScript;
-			           });
+			           [](const auto& a, const auto& b) { return a.InstantiateScript == b.InstantiateScript; });
 		}
 	}
 
@@ -187,9 +185,9 @@ namespace Rod {
 		{
 			const UUID uuid = other.m_Registry.get<IDComponent>(entityID).ID;
 			auto dstEntity = entityMap.at(static_cast<uint64_t>(uuid));
-			auto srcComponent = other.m_Registry.get<NativeScriptComponent>(entityID);
-			srcComponent.Instance = nullptr;
-			this->m_Registry.emplace_or_replace<NativeScriptComponent>(dstEntity, srcComponent);
+			const auto& srcComponent = other.m_Registry.get<NativeScriptComponent>(entityID);
+			auto& dstComponent = this->m_Registry.emplace_or_replace<NativeScriptComponent>(dstEntity);
+			dstComponent.InstantiateScript = srcComponent.InstantiateScript;
 		}
 	}
 
@@ -227,7 +225,7 @@ namespace Rod {
 	{
 		std::as_const(m_Registry).view<NativeScriptComponent>().each([this](auto entity, const auto& script) {
 			if (script.Instance)
-				script.Instance->m_Entity = Entity{entity, this};
+				script.Instance->m_Entity = Entity{entity, *this};
 		});
 	}
 
@@ -238,7 +236,7 @@ namespace Rod {
 
 	Entity Scene::CreateEntityWithUUID(UUID uuid, const std::string& name)
 	{
-		Entity entity = {m_Registry.create(), this};
+		Entity entity = {m_Registry.create(), *this};
 		try
 		{
 			entity.AddComponent<IDComponent>(uuid);
@@ -264,7 +262,7 @@ namespace Rod {
 
 	void Scene::OnRuntimeStart()
 	{
-		ScriptEngine::OnRuntimeStart(this);
+		ScriptEngine::OnRuntimeStart(*this);
 	}
 
 	void Scene::OnRuntimeStop()
@@ -328,10 +326,7 @@ namespace Rod {
 			return;
 
 		script.Instance->OnDestroy();
-		if (script.DestroyScript)
-			script.DestroyScript(&script);
-		else
-			script.Instance = nullptr;
+		script.Instance.reset();
 	}
 
 	void Scene::UpdateNativeScript(entt::entity entity, NativeScriptComponent& script, Timestep& ts)
@@ -340,7 +335,7 @@ namespace Rod {
 		{
 			RD_CORE_ASSERT(script.InstantiateScript, "Native script is not bound");
 			script.Instance = script.InstantiateScript();
-			script.Instance->m_Entity = Entity{entity, this};
+			script.Instance->m_Entity = Entity{entity, *this};
 			script.Instance->OnCreate();
 		}
 		script.Instance->OnUpdate(ts);
@@ -375,7 +370,7 @@ namespace Rod {
 		{
 			const auto& camera = view.get<CameraComponent>(entity);
 			if (camera.Primary)
-				return Entity{entity, this};
+				return Entity{entity, *this};
 		}
 		return {};
 	}
@@ -387,7 +382,7 @@ namespace Rod {
 		{
 			const auto& id = view.get<IDComponent>(entity);
 			if (id.ID == uuid)
-				return Entity{entity, this};
+				return Entity{entity, *this};
 		}
 		return {};
 	}
@@ -399,7 +394,7 @@ namespace Rod {
 		{
 			const auto& tag = view.get<TagComponent>(entity);
 			if (tag.Tag == name)
-				return Entity{entity, this};
+				return Entity{entity, *this};
 		}
 		return {};
 	}

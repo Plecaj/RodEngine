@@ -32,18 +32,18 @@ namespace Rod {
 			ImGui::InvisibleButton(id, size);
 			const bool hovered = ImGui::IsItemHovered();
 			const bool active = ImGui::IsItemActive();
-			ImDrawList* drawList = ImGui::GetWindowDrawList();
+			ImDrawList& drawList = *ImGui::GetWindowDrawList();
 			const ImVec2 min = ImGui::GetItemRectMin();
 			const ImVec2 max = ImGui::GetItemRectMax();
 			const ImU32 background = active    ? IM_COL32(40, 45, 53, 255)
 			                         : hovered ? IM_COL32(50, 56, 66, 255)
 			                                   : IM_COL32(0, 0, 0, 0);
 			constexpr ImU32 dotColor = IM_COL32(220, 225, 232, 255);
-			drawList->AddRectFilled(min, max, background, rounding);
+			drawList.AddRectFilled(min, max, background, rounding);
 			const ImVec2 center{(min.x + max.x) * half, (min.y + max.y) * half};
-			drawList->AddCircleFilled({center.x - spacing, center.y}, radius, dotColor);
-			drawList->AddCircleFilled(center, radius, dotColor);
-			drawList->AddCircleFilled({center.x + spacing, center.y}, radius, dotColor);
+			drawList.AddCircleFilled({center.x - spacing, center.y}, radius, dotColor);
+			drawList.AddCircleFilled(center, radius, dotColor);
+			drawList.AddCircleFilled({center.x + spacing, center.y}, radius, dotColor);
 			return ImGui::IsItemClicked(ImGuiMouseButton_Left);
 		}
 
@@ -73,7 +73,7 @@ namespace Rod {
 	    : m_AssetsPath(std::move(assetsPath))
 	{}
 
-	void SceneHierarchyPanel::SetContext(Scene* scene)
+	void SceneHierarchyPanel::SetContext(ObserverPtr<Scene> scene)
 	{
 		m_Context = scene;
 		m_SelectionContext = {};
@@ -96,7 +96,7 @@ namespace Rod {
 
 		for (auto entityID : m_Context->m_Registry.storage<entt::entity>())
 		{
-			const Entity entity{entityID, m_Context};
+			const Entity entity{entityID, *m_Context};
 			DrawEntityNode(entity);
 		}
 
@@ -528,7 +528,7 @@ namespace Rod {
 
 	void SceneHierarchyPanel::SyncScriptFields(ScriptComponent& component)
 	{
-		ScriptClass* scriptClass = ScriptEngine::GetScriptClass(component.ClassName);
+		const auto* scriptClass = ScriptEngine::GetScriptClass(component.ClassName);
 		if (!scriptClass)
 			return;
 

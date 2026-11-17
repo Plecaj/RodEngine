@@ -100,20 +100,15 @@ namespace Rod {
 
 	struct NativeScriptComponent
 	{
-		ScriptableEntity* Instance = nullptr;
+		Scope<ScriptableEntity> Instance;
 
-		ScriptableEntity* (*InstantiateScript)() = nullptr;
-		void (*DestroyScript)(NativeScriptComponent*) = nullptr;
+		Scope<ScriptableEntity> (*InstantiateScript)() = nullptr;
 
 		template <typename T>
 		void Bind() noexcept
 		{
-			InstantiateScript = []() {
-				return static_cast<ScriptableEntity*>(new T());
-			};
-			DestroyScript = [](NativeScriptComponent* nsc) {
-				delete nsc->Instance;
-				nsc->Instance = nullptr;
+			InstantiateScript = []() -> Scope<ScriptableEntity> {
+				return CreateScope<T>();
 			};
 		}
 	};

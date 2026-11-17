@@ -12,9 +12,11 @@ TEST_CASE("Shared libraries load functions and transfer ownership", "[platform][
 	REQUIRE_THROWS_AS(Rod::SharedLibrary(std::string(ROD_TEST_LIBRARY_PATH) + ".missing"), std::runtime_error);
 	Rod::SharedLibrary library(ROD_TEST_LIBRARY_PATH);
 	auto moved = std::move(library);
+	// NOLINTNEXTLINE(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
 	REQUIRE_FALSE(library.IsLoaded());
 	Rod::SharedLibrary replacement(ROD_TEST_LIBRARY_PATH);
 	replacement = std::move(moved);
+	// NOLINTNEXTLINE(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
 	REQUIRE_FALSE(moved.IsLoaded());
 	const auto function = std::bit_cast<int (*)()>(replacement.GetFunction("RodTestValue"));
 	REQUIRE(function != nullptr);

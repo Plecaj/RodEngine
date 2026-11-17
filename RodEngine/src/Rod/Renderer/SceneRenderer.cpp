@@ -12,7 +12,7 @@ namespace Rod {
 
 	struct SceneRenderer::RuntimeCameraData
 	{
-		Camera* MainCamera = nullptr;
+		ObserverPtr<Camera> MainCamera = nullptr;
 		glm::mat4 Transform = glm::mat4(1.0f);
 
 		[[nodiscard]] bool IsValid() const { return MainCamera != nullptr; }

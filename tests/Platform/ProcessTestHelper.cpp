@@ -4,8 +4,11 @@
 #include <thread>
 
 int main(int argc, char** argv)
+try
 {
-	if (argc < 3)
+	constexpr int firstPayloadArgument = 3;
+	constexpr auto pollInterval = std::chrono::milliseconds(10);
+	if (argc < firstPayloadArgument)
 		return 1;
 	const std::filesystem::path output = argv[1];
 	const std::filesystem::path release = argv[2];
@@ -14,16 +17,20 @@ int main(int argc, char** argv)
 	{
 		if (std::chrono::steady_clock::now() >= deadline)
 			return 1;
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		std::this_thread::sleep_for(pollInterval);
 	}
 
 	const auto temporary = output.string() + ".tmp";
 	std::ofstream file(temporary, std::ios::binary);
-	for (int index = 3; index < argc; ++index)
+	for (int index = firstPayloadArgument; index < argc; ++index)
 		file << argv[index] << '\0';
 	file.close();
 	if (!file)
 		return 1;
 	std::filesystem::rename(temporary, output);
 	return 0;
+}
+catch (...)
+{
+	return 1;
 }

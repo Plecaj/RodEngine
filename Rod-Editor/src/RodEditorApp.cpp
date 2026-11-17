@@ -26,11 +26,11 @@ namespace Rod {
 		[[nodiscard]] virtual bool IsEditor() const noexcept override { return true; }
 	};
 
-	Application* CreateApplication(const std::optional<Project>& project)
+	Scope<Application> CreateApplication(const std::optional<Project>& project)
 	{
 		if (!project)
 			throw std::invalid_argument("Project must be provided for editor");
-		return new RodEditor(*project);
+		return CreateScope<RodEditor>(*project);
 	}
 
 }

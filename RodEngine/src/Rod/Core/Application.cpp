@@ -13,7 +13,7 @@
 
 namespace Rod {
 
-	Application* Application::s_Instance = nullptr;
+	ObserverPtr<Application> Application::s_Instance = nullptr;
 
 	Application::Application(const WindowProps& props, std::optional<Project> project) : m_Project(std::move(project))
 	{

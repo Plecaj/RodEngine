@@ -21,7 +21,7 @@ namespace Rod {
 		[[nodiscard]] virtual uint32_t GetHeight() const noexcept override { return m_Height; }
 		[[nodiscard]] virtual uint32_t GetRendererID() const noexcept override { return m_RendererID; };
 
-		virtual void SetData(const void* data, uint32_t size) override;
+		virtual void SetData(std::span<const std::byte> data) override;
 
 		[[nodiscard]] virtual std::string GetPath() const override { return m_Path; };
 

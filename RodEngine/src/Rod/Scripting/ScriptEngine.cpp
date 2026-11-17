@@ -141,7 +141,7 @@ namespace Rod {
 		HostFunctions Functions;
 		HostLifetime Host;
 		std::optional<ScriptAssembly> AppAssembly;
-		Scene* SceneContext = nullptr;
+		ObserverPtr<Scene> SceneContext = nullptr;
 		bool RuntimeRunning = false;
 		std::filesystem::file_time_type LastSourceWriteTime = std::filesystem::file_time_type::min();
 	};
@@ -179,7 +179,7 @@ namespace Rod {
 
 	ScriptEngine::ScriptPaths ScriptEngine::ResolveScriptPaths()
 	{
-		const Project* project = Application::Get().GetProject();
+		ObserverPtr<const Project> project = Application::Get().GetProject();
 		if (!project)
 			throw std::runtime_error("Scripting requires an application project");
 		const auto assetsPath = project->GetAssetsPath();
@@ -305,27 +305,27 @@ namespace Rod {
 			return;
 
 		const bool wasRunning = s_Data->RuntimeRunning;
-		Scene* scene = s_Data->SceneContext;
+		ObserverPtr<Scene> scene = s_Data->SceneContext;
 		if (wasRunning)
 			OnRuntimeStop();
 
 		ReloadAssembly();
 		if (wasRunning)
-			OnRuntimeStart(scene);
+			OnRuntimeStart(*scene);
 	}
 
-	void ScriptEngine::OnRuntimeStart(Scene* scene)
+	void ScriptEngine::OnRuntimeStart(Scene& scene)
 	{
 		if (!s_Data)
 			Init();
 		if (!s_Data)
 			return;
 
-		s_Data->SceneContext = scene;
+		s_Data->SceneContext = &scene;
 		s_Data->RuntimeRunning = true;
-		ScriptGlue::SetSceneContext(scene);
+		ScriptGlue::SetSceneContext(&scene);
 
-		auto view = scene->m_Registry.view<IDComponent, ScriptComponent>();
+		auto view = scene.m_Registry.view<IDComponent, ScriptComponent>();
 		for (auto entityID : view)
 			OnCreateEntity(Entity{entityID, scene});
 	}
@@ -339,7 +339,7 @@ namespace Rod {
 		{
 			auto view = s_Data->SceneContext->m_Registry.view<IDComponent, ScriptComponent>();
 			for (auto entityID : view)
-				OnDestroyEntity(Entity{entityID, s_Data->SceneContext});
+				OnDestroyEntity(Entity{entityID, *s_Data->SceneContext});
 		}
 
 		s_Data->RuntimeRunning = false;
@@ -354,7 +354,7 @@ namespace Rod {
 
 		auto view = s_Data->SceneContext->m_Registry.view<IDComponent, ScriptComponent>();
 		for (auto entityID : view)
-			OnUpdateEntity(Entity{entityID, s_Data->SceneContext}, ts);
+			OnUpdateEntity(Entity{entityID, *s_Data->SceneContext}, ts);
 	}
 
 	void ScriptEngine::OnCreateEntity(Entity entity)
@@ -422,7 +422,7 @@ namespace Rod {
 		return s_Data && s_Data->AppAssembly ? s_Data->AppAssembly->GetClasses() : EMPTY_CLASSES;
 	}
 
-	ScriptClass* ScriptEngine::GetScriptClass(const std::string& className)
+	ObserverPtr<ScriptClass> ScriptEngine::GetScriptClass(const std::string& className)
 	{
 		return s_Data && s_Data->AppAssembly ? s_Data->AppAssembly->GetClass(className) : nullptr;
 	}

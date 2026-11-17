@@ -60,10 +60,10 @@ namespace Rod {
 
 		void OnImGuiRender() override
 		{
-			const ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImGui::SetNextWindowPos(viewport->Pos);
-			ImGui::SetNextWindowSize(viewport->Size);
-			ImGui::SetNextWindowViewport(viewport->ID);
+			const ImGuiViewport& viewport = *ImGui::GetMainViewport();
+			ImGui::SetNextWindowPos(viewport.Pos);
+			ImGui::SetNextWindowSize(viewport.Size);
+			ImGui::SetNextWindowViewport(viewport.ID);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 			constexpr ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking |
@@ -138,31 +138,27 @@ namespace Rod {
 			const ImVec2 origin = ImGui::GetItemRectMin();
 			if (ImGui::IsItemHovered())
 				ImGui::SetTooltip("%s", path.c_str());
-			ImDrawList* drawList = ImGui::GetWindowDrawList();
+			ImDrawList& drawList = *ImGui::GetWindowDrawList();
 			const ImU32 mutedColor = ImGui::GetColorU32(ImGuiCol_TextDisabled);
 			const float dateWidth =
 			    ImGui::CalcTextSize(project.LastOpened.c_str()).x * detailFontSize / ImGui::GetFontSize();
-			DrawFolderIcon(
-			    *drawList,
-			    ImVec2{origin.x + iconOffset.x, origin.y + iconOffset.y},
-			    mutedColor,
-			    folderScale);
-			drawList->PushClipRect(
+			DrawFolderIcon(drawList, ImVec2{origin.x + iconOffset.x, origin.y + iconOffset.y}, mutedColor, folderScale);
+			drawList.PushClipRect(
 			    ImVec2{origin.x + nameOffset.x, origin.y},
 			    ImVec2{origin.x + width - dateWidth - dateSpacing, origin.y + g_RecentRowHeight},
 			    true);
-			drawList->AddText(
+			drawList.AddText(
 			    ImVec2{origin.x + nameOffset.x, origin.y + nameOffset.y},
 			    ImGui::GetColorU32(ImGuiCol_Text),
 			    project.Name.c_str());
-			drawList->PopClipRect();
-			drawList->AddText(
+			drawList.PopClipRect();
+			drawList.AddText(
 			    ImGui::GetFont(),
 			    detailFontSize,
 			    ImVec2{origin.x + nameOffset.x, origin.y + pathTop},
 			    mutedColor,
 			    path.c_str());
-			drawList->AddText(
+			drawList.AddText(
 			    ImGui::GetFont(),
 			    detailFontSize,
 			    ImVec2{origin.x + width - dateWidth, origin.y + dateTop},
@@ -266,10 +262,10 @@ namespace Rod {
 			const ImVec2 min = ImGui::GetItemRectMin();
 			const float centerX = min.x + g_ActionCardSize.x * half;
 			const float labelWidth = ImGui::CalcTextSize(label).x;
-			ImDrawList* drawList = ImGui::GetWindowDrawList();
+			ImDrawList& drawList = *ImGui::GetWindowDrawList();
 			const ImU32 color = ImGui::GetColorU32(ImGuiCol_Text);
-			DrawActionIcon(*drawList, action, ImVec2{centerX, min.y + iconTop}, color);
-			drawList->AddText(ImVec2{centerX - labelWidth * half, min.y + labelTop}, color, label);
+			DrawActionIcon(drawList, action, ImVec2{centerX, min.y + iconTop}, color);
+			drawList.AddText(ImVec2{centerX - labelWidth * half, min.y + labelTop}, color, label);
 			ImGui::PopID();
 			return clicked;
 		}
@@ -321,9 +317,9 @@ namespace Rod {
 		RodLauncher() : Application(LauncherWindowProps(), std::nullopt) { PushLayer(CreateScope<LauncherLayer>()); }
 	};
 
-	Application* CreateApplication(const std::optional<Project>& project)
+	Scope<Application> CreateApplication(const std::optional<Project>& project)
 	{
 		RD_CORE_ASSERT(!project, "Launcher does not accept a project argument");
-		return new RodLauncher();
+		return CreateScope<RodLauncher>();
 	}
 }

@@ -81,7 +81,7 @@ python RodEngine/vendor/shaderc/utils/git-sync-deps
 | Windows / Clang | `cmake --workflow --preset windows-clang-debug` |
 | Linux / Clang | `cmake --workflow --preset linux-clang-debug` |
 
-Replace `-debug` with `-release` or `-dist` to build and test that configuration.
+Replace `-debug` with `-release` to build and test the Release configuration.
 
 ## Usage
 

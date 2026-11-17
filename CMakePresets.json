@@ -133,11 +133,6 @@
       "configuration": "Release"
     },
     {
-      "name": "vs-dist",
-      "configurePreset": "vs",
-      "configuration": "Dist"
-    },
-    {
       "name": "vs-tests",
       "inherits": "vs-debug",
       "targets": [
@@ -155,11 +150,6 @@
       "configuration": "Release"
     },
     {
-      "name": "windows-clang-dist",
-      "configurePreset": "windows-clang",
-      "configuration": "Dist"
-    },
-    {
       "name": "windows-clang-tests",
       "inherits": "windows-clang-debug",
       "targets": [
@@ -175,11 +165,6 @@
       "name": "linux-clang-release",
       "configurePreset": "linux-clang",
       "configuration": "Release"
-    },
-    {
-      "name": "linux-clang-dist",
-      "configurePreset": "linux-clang",
-      "configuration": "Dist"
     },
     {
       "name": "linux-clang-tests",
@@ -226,12 +211,6 @@
       "configuration": "Release"
     },
     {
-      "name": "vs-dist",
-      "inherits": "test-base",
-      "configurePreset": "vs",
-      "configuration": "Dist"
-    },
-    {
       "name": "vs-tests",
       "inherits": "vs-debug"
     },
@@ -248,12 +227,6 @@
       "configuration": "Release"
     },
     {
-      "name": "windows-clang-dist",
-      "inherits": "test-base",
-      "configurePreset": "windows-clang",
-      "configuration": "Dist"
-    },
-    {
       "name": "windows-clang-tests",
       "inherits": "windows-clang-debug"
     },
@@ -268,12 +241,6 @@
       "inherits": "test-base",
       "configurePreset": "linux-clang",
       "configuration": "Release"
-    },
-    {
-      "name": "linux-clang-dist",
-      "inherits": "test-base",
-      "configurePreset": "linux-clang",
-      "configuration": "Dist"
     },
     {
       "name": "linux-clang-tests",
@@ -306,15 +273,6 @@
       ]
     },
     {
-      "name": "vs-dist",
-      "displayName": "vs / Dist: build and test",
-      "steps": [
-        { "type": "configure", "name": "vs" },
-        { "type": "build", "name": "vs-dist" },
-        { "type": "test", "name": "vs-dist" }
-      ]
-    },
-    {
       "name": "vs-tests",
       "displayName": "vs: Debug tests only",
       "steps": [
@@ -342,15 +300,6 @@
       ]
     },
     {
-      "name": "windows-clang-dist",
-      "displayName": "windows-clang / Dist: build and test",
-      "steps": [
-        { "type": "configure", "name": "windows-clang" },
-        { "type": "build", "name": "windows-clang-dist" },
-        { "type": "test", "name": "windows-clang-dist" }
-      ]
-    },
-    {
       "name": "windows-clang-tests",
       "displayName": "windows-clang: Debug tests only",
       "steps": [
@@ -375,15 +324,6 @@
         { "type": "configure", "name": "linux-clang" },
         { "type": "build", "name": "linux-clang-release" },
         { "type": "test", "name": "linux-clang-release" }
-      ]
-    },
-    {
-      "name": "linux-clang-dist",
-      "displayName": "linux-clang / Dist: build and test",
-      "steps": [
-        { "type": "configure", "name": "linux-clang" },
-        { "type": "build", "name": "linux-clang-dist" },
-        { "type": "test", "name": "linux-clang-dist" }
       ]
     },
     {

@@ -17,7 +17,6 @@ endfunction()
 target_compile_definitions(RodProjectOptions INTERFACE
     $<$<CONFIG:Debug>:RD_DEBUG>
     $<$<CONFIG:Release>:RD_RELEASE>
-    $<$<CONFIG:Dist>:RD_DIST>
 )
 
 target_compile_definitions(RodProjectOptions INTERFACE GLFW_INCLUDE_NONE)
@@ -38,7 +37,6 @@ if(MSVC)
         /Zc:__cplusplus
         $<$<CONFIG:Debug>:/Od;/Zi>
         $<$<CONFIG:Release>:/O2;/Zi>
-        $<$<CONFIG:Dist>:/O2>
     )
     target_link_options(RodProjectOptions INTERFACE
         $<$<CONFIG:Release>:/DEBUG>
@@ -50,10 +48,6 @@ if(MSVC)
             /diagnostics:caret
             /external:anglebrackets
             /external:W0
-            $<$<CONFIG:Dist>:/GL>
-        )
-        target_link_options(RodProjectOptions INTERFACE
-            $<$<CONFIG:Dist>:/LTCG>
         )
     endif()
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")

@@ -48,20 +48,16 @@ endif()
 
 rod_configure_cpp_target(RodEngineTests)
 
-# Use Catch2's standard line-number fallback instead of the __COUNTER__ extension.
 target_compile_definitions(RodEngineTests PRIVATE CATCH_CONFIG_NO_COUNTER)
-target_compile_definitions(RodEngineTests PRIVATE ROD_EXECUTABLE_SUFFIX="${CMAKE_EXECUTABLE_SUFFIX}")
-
 target_link_libraries(RodEngineTests PRIVATE
     Rod::Engine
     Rod::Glad
     Rod::YamlCpp
-    Rod::ProjectOptions
-    Rod::ProjectWarnings
     Catch2::Catch2WithMain
 )
 
-rod_set_common_output_directories(RodEngineTests)
-rod_copy_dotnet_host(RodEngineTests)
+if(TARGET RodDotnetHost-Copy)
+    add_dependencies(RodEngineTests RodDotnetHost-Copy)
+endif()
 
 catch_discover_tests(RodEngineTests)

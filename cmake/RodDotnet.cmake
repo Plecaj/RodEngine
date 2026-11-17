@@ -64,9 +64,8 @@ if(DOTNET_EXE)
 endif()
 
 if(DOTNET_EXE AND ROD_DOTNET_HOST_INCLUDE_DIR AND ROD_DOTNET_HOST_LIBRARY)
-  find_package(Threads REQUIRED)
   target_include_directories(RodEngine SYSTEM PRIVATE "${ROD_DOTNET_HOST_INCLUDE_DIR}")
-  target_link_libraries(RodEngine PRIVATE "${ROD_DOTNET_HOST_LIBRARY}" Threads::Threads)
+  target_link_libraries(RodEngine PRIVATE "${ROD_DOTNET_HOST_LIBRARY}")
   target_compile_definitions(RodEngine PRIVATE
         ROD_HAS_DOTNET_HOST
         $<$<NOT:$<PLATFORM_ID:Windows>>:NETHOST_USE_AS_STATIC>
@@ -75,13 +74,13 @@ else()
   message(WARNING ".NET hosting files were not found. Install the .NET 9 SDK to enable C# scripting.")
 endif()
 
-function(rod_copy_dotnet_host target)
-  if(WIN32 AND ROD_DOTNET_HOST_RUNTIME_LIBRARY)
-    add_custom_command(TARGET ${target} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${ROD_DOTNET_HOST_RUNTIME_LIBRARY}"
-                "$<TARGET_FILE_DIR:${target}>"
-            VERBATIM
-        )
-  endif()
-endfunction()
+if(WIN32 AND DOTNET_EXE AND ROD_DOTNET_HOST_RUNTIME_LIBRARY)
+    add_custom_target(RodDotnetHost-Copy
+        COMMAND "${CMAKE_COMMAND}" -E make_directory "${ROD_RUNTIME_OUTPUT_DIR}"
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+            "${ROD_DOTNET_HOST_RUNTIME_LIBRARY}"
+            "${ROD_RUNTIME_OUTPUT_DIR}/nethost.dll"
+        COMMENT "Copying .NET host"
+        VERBATIM
+    )
+endif()

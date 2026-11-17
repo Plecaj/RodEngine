@@ -19,34 +19,36 @@ else()
     message(WARNING "dotnet was not found. C# scripting projects will not be built by CMake.")
 endif()
 
-function(rod_copy_assets target)
-    if(TARGET RodScriptCore-Build)
-        add_dependencies(${target} RodScriptCore-Build)
-        add_custom_command(TARGET ${target} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_directory
-                "${ROD_SCRIPT_CORE_OUTPUT_DIR}"
-                "$<TARGET_FILE_DIR:${target}>/RodAssets/Scripts/Core"
-            VERBATIM
-        )
-    endif()
+add_custom_target(RodAssets-Copy
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory
+        "${CMAKE_SOURCE_DIR}/RodAssets"
+        "${ROD_RUNTIME_OUTPUT_DIR}/RodAssets"
+    COMMENT "Copying engine assets"
+    VERBATIM
+)
 
-    add_custom_command(TARGET ${target} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_SOURCE_DIR}/RodAssets"
-            "$<TARGET_FILE_DIR:${target}>/RodAssets"
+if(TARGET RodScriptCore-Build)
+    add_dependencies(RodAssets-Copy RodScriptCore-Build)
+    add_custom_command(TARGET RodAssets-Copy POST_BUILD
+        COMMAND "${CMAKE_COMMAND}" -E copy_directory
+            "${ROD_SCRIPT_CORE_OUTPUT_DIR}"
+            "${ROD_RUNTIME_OUTPUT_DIR}/RodAssets/Scripts/Core"
         VERBATIM
     )
-endfunction()
+endif()
 
-function(rod_copy_samples target)
-    if(TARGET RodGameScripts-Build)
-        add_dependencies(${target} RodGameScripts-Build)
-    endif()
+if(TARGET RodDotnetHost-Copy)
+    add_dependencies(RodAssets-Copy RodDotnetHost-Copy)
+endif()
 
-    add_custom_command(TARGET ${target} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_SOURCE_DIR}/Samples"
-            "$<TARGET_FILE_DIR:${target}>/Samples"
-        VERBATIM
-    )
-endfunction()
+add_custom_target(RodSamples-Copy
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory
+        "${CMAKE_SOURCE_DIR}/Samples"
+        "${ROD_RUNTIME_OUTPUT_DIR}/Samples"
+    COMMENT "Copying samples"
+    VERBATIM
+)
+
+if(TARGET RodGameScripts-Build)
+    add_dependencies(RodSamples-Copy RodGameScripts-Build)
+endif()

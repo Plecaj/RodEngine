@@ -6,25 +6,15 @@ add_subdirectory(src)
 
 target_include_directories(Rod-Runtime PRIVATE src)
 
-target_link_libraries(Rod-Runtime PRIVATE
-    Rod::Engine
-    Rod::ProjectOptions
-    Rod::ProjectWarnings
-)
+target_link_libraries(Rod-Runtime PRIVATE Rod::Engine)
 
-rod_set_common_output_directories(Rod-Runtime)
-rod_copy_dotnet_host(Rod-Runtime)
-
-rod_copy_assets(Rod-Runtime)
-rod_copy_samples(Rod-Runtime)
+add_dependencies(Rod-Runtime RodAssets-Copy RodSamples-Copy)
 
 set(ROD_GAME_EXPORT_DIR "${CMAKE_BINARY_DIR}/export/RodGame")
 
 add_executable(Rod-Package tools/PackageMain.cpp)
 rod_configure_cpp_target(Rod-Package)
-target_link_libraries(Rod-Package PRIVATE Rod::Engine Rod::ProjectOptions Rod::ProjectWarnings)
-target_compile_definitions(Rod-Package PRIVATE ROD_EXECUTABLE_SUFFIX="${CMAKE_EXECUTABLE_SUFFIX}")
-rod_set_common_output_directories(Rod-Package)
+target_link_libraries(Rod-Package PRIVATE Rod::Engine)
 add_dependencies(Rod-Package Rod-Runtime)
 
 add_custom_target(RodGame-Export

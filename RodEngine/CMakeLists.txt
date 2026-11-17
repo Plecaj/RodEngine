@@ -5,8 +5,6 @@ rod_configure_cpp_target(RodEngine)
 
 add_subdirectory(src)
 
-target_include_directories(RodEngine PUBLIC src)
-
 find_package(Threads REQUIRED)
 
 target_link_libraries(RodEngine
@@ -16,7 +14,6 @@ target_link_libraries(RodEngine
         Rod::Entt
         Rod::Spdlog
     PRIVATE
-        Rod::ProjectWarnings
         Rod::Glad
         Rod::GLFW
         Rod::ImGui
@@ -36,5 +33,3 @@ target_compile_definitions(RodEngine PRIVATE
 )
 
 include(RodDotnet)
-
-rod_set_common_output_directories(RodEngine)

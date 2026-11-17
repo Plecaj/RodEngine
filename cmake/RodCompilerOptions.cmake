@@ -12,6 +12,13 @@ function(rod_configure_cpp_target target)
         DISABLE_PRECOMPILE_HEADERS OFF
     )
     target_precompile_headers(${target} PRIVATE "${PROJECT_SOURCE_DIR}/RodEngine/src/rdpch.h")
+    target_link_libraries(${target} PRIVATE Rod::ProjectWarnings)
+    rod_set_common_output_directories(${target})
+
+    get_target_property(target_type ${target} TYPE)
+    if(target_type STREQUAL "EXECUTABLE")
+        target_compile_definitions(${target} PRIVATE ROD_EXECUTABLE_SUFFIX="${CMAKE_EXECUTABLE_SUFFIX}")
+    endif()
 endfunction()
 
 target_compile_definitions(RodProjectOptions INTERFACE

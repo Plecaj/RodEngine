@@ -8,6 +8,8 @@ target_include_directories(Rod-Editor PRIVATE src)
 
 target_link_libraries(Rod-Editor PRIVATE
     Rod::Engine
+    Rod::ImGui
+    Rod::ImGuizmo
     Rod::ProjectOptions
     Rod::ProjectWarnings
 )

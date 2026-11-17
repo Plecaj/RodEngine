@@ -8,7 +8,11 @@
 #include <memory>
 #include <span>
 #include <string>
-#include <tiny_gltf.h>
+
+namespace tinygltf {
+	class Model;
+	struct Primitive;
+}
 
 namespace Rod {
 	class Mesh

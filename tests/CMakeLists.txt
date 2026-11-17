@@ -54,6 +54,8 @@ target_compile_definitions(RodEngineTests PRIVATE ROD_EXECUTABLE_SUFFIX="${CMAKE
 
 target_link_libraries(RodEngineTests PRIVATE
     Rod::Engine
+    Rod::Glad
+    Rod::YamlCpp
     Rod::ProjectOptions
     Rod::ProjectWarnings
     Catch2::Catch2WithMain

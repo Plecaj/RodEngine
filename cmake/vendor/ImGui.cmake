@@ -19,6 +19,6 @@ target_include_directories(RodImGui SYSTEM PUBLIC
     "${ROD_VENDOR_DIR}/imgui"
     "${ROD_VENDOR_DIR}/imgui/backends"
 )
-target_link_libraries(RodImGui PUBLIC Rod::Glad Rod::GLFW)
+target_link_libraries(RodImGui PRIVATE Rod::Glad Rod::GLFW)
 
 rod_set_common_output_directories(RodImGui)

@@ -6,6 +6,8 @@ rod_configure_cpp_target(Rod-Launcher)
 
 target_link_libraries(Rod-Launcher PRIVATE
     Rod::Engine
+    Rod::ImGui
+    Rod::YamlCpp
     Rod::ProjectOptions
     Rod::ProjectWarnings
 )

@@ -12,20 +12,20 @@ find_package(Threads REQUIRED)
 target_link_libraries(RodEngine
     PUBLIC
         Rod::ProjectOptions
+        Rod::Glm
+        Rod::Entt
+        Rod::Spdlog
+    PRIVATE
         Rod::ProjectWarnings
         Rod::Glad
         Rod::GLFW
-        Rod::Glm
         Rod::ImGui
         Rod::ImGuizmo
-        Rod::Entt
         Rod::YamlCpp
         Rod::Json
-        Rod::Spdlog
         Rod::Shaderc
         Rod::Stb
         Rod::TinyGltf
-    PRIVATE
         Threads::Threads
         $<$<PLATFORM_ID:Windows>:opengl32;comdlg32;ole32;shell32>
         ${CMAKE_DL_LIBS}

@@ -2,6 +2,8 @@
 
 #include "Mesh.h"
 
+#include <tiny_gltf.h>
+
 #include <cstring>
 #include <limits>
 #include <stdexcept>

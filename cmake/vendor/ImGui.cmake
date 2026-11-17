@@ -15,7 +15,6 @@ add_library(RodImGui STATIC ${ROD_IMGUI_SOURCES})
 add_library(Rod::ImGui ALIAS RodImGui)
 
 target_compile_features(RodImGui PUBLIC cxx_std_17)
-target_compile_definitions(RodImGui PRIVATE IMGUI_IMPL_OPENGL_LOADER_GLAD)
 target_include_directories(RodImGui SYSTEM PUBLIC
     "${ROD_VENDOR_DIR}/imgui"
     "${ROD_VENDOR_DIR}/imgui/backends"

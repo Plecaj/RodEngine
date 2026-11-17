@@ -154,12 +154,13 @@ CheckOptions:
   readability-identifier-naming.ProtectedMemberPrefix: 'm_'
   readability-identifier-naming.ClassMemberCase: CamelCase
   readability-identifier-naming.ClassMemberPrefix: 's_'
-  readability-identifier-naming.ClassConstantCase: UPPER_CASE
+  readability-identifier-naming.ClassConstantCase: CamelCase
+  readability-identifier-naming.ClassConstantPrefix: 's_'
   readability-identifier-naming.GlobalVariableCase: CamelCase
   readability-identifier-naming.GlobalVariablePrefix: 'g_'
   readability-identifier-naming.GlobalConstantCase: CamelCase
   readability-identifier-naming.GlobalConstantPrefix: 'g_'
   readability-identifier-naming.StaticVariableCase: CamelCase
   readability-identifier-naming.StaticVariablePrefix: 's_'
-  readability-identifier-naming.StaticConstantCase: UPPER_CASE
+  readability-identifier-naming.StaticConstantCase: camelBack
   readability-identifier-naming.MacroDefinitionCase: UPPER_CASE

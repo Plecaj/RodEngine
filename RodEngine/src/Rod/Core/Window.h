@@ -12,8 +12,8 @@ namespace Rod {
 
 	struct WindowProps
 	{
-		static constexpr uint32_t DEFAULT_WIDTH = 1600;
-		static constexpr uint32_t DEFAULT_HEIGHT = 900;
+		static constexpr uint32_t s_DefaultWidth = 1600;
+		static constexpr uint32_t s_DefaultHeight = 900;
 
 		std::string Title;
 		unsigned int Width;
@@ -27,8 +27,8 @@ namespace Rod {
 
 		explicit WindowProps(
 		    std::string title = "Rod Engine",
-		    uint32_t width = DEFAULT_WIDTH,
-		    uint32_t height = DEFAULT_HEIGHT,
+		    uint32_t width = s_DefaultWidth,
+		    uint32_t height = s_DefaultHeight,
 		    std::string taskbarIconFilepath = "",
 		    bool usesCustomUi = false) noexcept
 		    : Title(std::move(title)), Width(width), Height(height),

@@ -33,25 +33,25 @@ namespace Rod {
 		ImGuiID leftBottomDockID{}, centerBottomDockID{}, toolbarDockID{};
 		ImGuiID rightBottomDockID{}, rightBottomLowerDockID{};
 
-		leftDockID = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Left, LEFT_DOCK_RATIO, nullptr, &centerDockID);
+		leftDockID = ImGui::DockBuilderSplitNode(dockspaceID, ImGuiDir_Left, s_LeftDockRatio, nullptr, &centerDockID);
 		rightDockID =
-		    ImGui::DockBuilderSplitNode(centerDockID, ImGuiDir_Right, RIGHT_DOCK_RATIO, nullptr, &centerDockID);
+		    ImGui::DockBuilderSplitNode(centerDockID, ImGuiDir_Right, s_RightDockRatio, nullptr, &centerDockID);
 
 		leftBottomDockID =
-		    ImGui::DockBuilderSplitNode(leftDockID, ImGuiDir_Down, LEFT_BOTTOM_DOCK_RATIO, nullptr, &leftDockID);
+		    ImGui::DockBuilderSplitNode(leftDockID, ImGuiDir_Down, s_LeftBottomDockRatio, nullptr, &leftDockID);
 
 		centerBottomDockID =
-		    ImGui::DockBuilderSplitNode(centerDockID, ImGuiDir_Down, CENTER_BOTTOM_DOCK_RATIO, nullptr, &centerDockID);
+		    ImGui::DockBuilderSplitNode(centerDockID, ImGuiDir_Down, s_CenterBottomDockRatio, nullptr, &centerDockID);
 		toolbarDockID =
-		    ImGui::DockBuilderSplitNode(centerDockID, ImGuiDir_Up, TOOLBAR_DOCK_RATIO, nullptr, &centerDockID);
+		    ImGui::DockBuilderSplitNode(centerDockID, ImGuiDir_Up, s_ToolbarDockRatio, nullptr, &centerDockID);
 		m_ToolbarDockID = toolbarDockID;
 
 		rightBottomDockID =
-		    ImGui::DockBuilderSplitNode(rightDockID, ImGuiDir_Down, RIGHT_BOTTOM_DOCK_RATIO, nullptr, &rightDockID);
+		    ImGui::DockBuilderSplitNode(rightDockID, ImGuiDir_Down, s_RightBottomDockRatio, nullptr, &rightDockID);
 		rightBottomLowerDockID = ImGui::DockBuilderSplitNode(
 		    rightBottomDockID,
 		    ImGuiDir_Down,
-		    RIGHT_LOWER_DOCK_RATIO,
+		    s_RightLowerDockRatio,
 		    nullptr,
 		    &rightBottomDockID);
 
@@ -110,8 +110,8 @@ namespace Rod {
 		    FramebufferTextureSpecification{FramebufferTextureFormat::RGBA8},
 		    FramebufferTextureSpecification{FramebufferTextureFormat::RedInteger},
 		    FramebufferTextureSpecification{FramebufferTextureFormat::DEPTH24}};
-		fbSpec.Width = static_cast<uint32_t>(DEFAULT_VIEWPORT_SIZE.x);
-		fbSpec.Height = static_cast<uint32_t>(DEFAULT_VIEWPORT_SIZE.y);
+		fbSpec.Width = static_cast<uint32_t>(s_DefaultViewportSize.x);
+		fbSpec.Height = static_cast<uint32_t>(s_DefaultViewportSize.y);
 		m_Framebuffer = Framebuffer::Create(fbSpec);
 	}
 
@@ -126,7 +126,7 @@ namespace Rod {
 
 	void EditorLayer::LoadEditorResources()
 	{
-		m_EditorCamera = EditorCamera(EDITOR_FOV, EDITOR_ASPECT_RATIO, EDITOR_NEAR_CLIP, EDITOR_FAR_CLIP);
+		m_EditorCamera = EditorCamera(s_EditorFOV, s_EditorAspectRatio, s_EditorNearClip, s_EditorFarClip);
 
 		m_PlayButton = Texture2D::Create("RodAssets/Textures/PlayButton.png");
 		m_StopButton = Texture2D::Create("RodAssets/Textures/StopButton.png");
@@ -146,7 +146,7 @@ namespace Rod {
 
 		m_Framebuffer->Bind();
 		Renderer2D::ResetStats();
-		RenderCommand::SetClearColor(CLEAR_COLOR);
+		RenderCommand::SetClearColor(s_ClearColor);
 		RenderCommand::Clear();
 		m_Framebuffer->ClearColorAttachment(1, -1);
 
@@ -239,8 +239,8 @@ namespace Rod {
 		constexpr float dockMinimumWidth = 370.0f;
 		constexpr float panelMinimumWidth = 32.0f;
 		static bool s_DockspaceOpen = true;
-		static const bool FULLSCREEN = true;
-		static const bool PADDING = false;
+		static const bool fullscreen = true;
+		static const bool padding = false;
 		static ImGuiDockNodeFlags s_DockspaceFlags = ImGuiDockNodeFlags_None;
 
 		auto titlebarHeight = static_cast<float>(m_TitlebarPanel.GetHeight());
@@ -255,7 +255,7 @@ namespace Rod {
 		ImGui::SetNextWindowSize(dockSize);
 		ImGui::SetNextWindowViewport(viewport.ID);
 
-		if (FULLSCREEN)
+		if (fullscreen)
 		{
 			ImGui::SetNextWindowPos(dockPos);
 			ImGui::SetNextWindowSize(dockSize);
@@ -274,13 +274,13 @@ namespace Rod {
 		if (s_DockspaceFlags & ImGuiDockNodeFlags_PassthruCentralNode)
 			windowFlags |= ImGuiWindowFlags_NoBackground;
 
-		if (!PADDING)
+		if (!padding)
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 		ImGui::Begin("Dockspace", &s_DockspaceOpen, windowFlags);
-		if (!PADDING)
+		if (!padding)
 			ImGui::PopStyleVar();
 
-		if (FULLSCREEN)
+		if (fullscreen)
 			ImGui::PopStyleVar(fullscreenStyleCount);
 
 		const ImGuiIO& io = ImGui::GetIO();

@@ -22,24 +22,24 @@ namespace Rod {
 		constexpr void SetSelectedEntity(Entity entity) noexcept { m_SelectionContext = entity; }
 
 	private:
-		static constexpr uintptr_t ENTITY_CHILD_NODE_ID = 90714394;
-		static constexpr size_t TEXT_BUFFER_SIZE = 256;
-		static constexpr float DEFAULT_DRAG_SPEED = 0.1f;
-		static constexpr float FINE_DRAG_SPEED = 0.01f;
-		static constexpr float DEFAULT_COLUMN_WIDTH = 100.0f;
-		static constexpr float ADD_COMPONENT_WIDTH = 132.0f;
-		static constexpr float MIN_TAG_WIDTH = 100.0f;
-		static constexpr float ITEM_SPACING = 10.0f;
-		static constexpr float COMPONENT_BOTTOM_SPACING = 6.0f;
-		static constexpr float ASSET_BUTTON_WIDTH = 100.0f;
-		static constexpr float MAX_TILING_FACTOR = 100.0f;
+		static constexpr uintptr_t s_EntityChildNodeID = 90714394;
+		static constexpr size_t s_TextBufferSize = 256;
+		static constexpr float s_DefaultDragSpeed = 0.1f;
+		static constexpr float s_FineDragSpeed = 0.01f;
+		static constexpr float s_DefaultColumnWidth = 100.0f;
+		static constexpr float s_AddComponentWidth = 132.0f;
+		static constexpr float s_MinTagWidth = 100.0f;
+		static constexpr float s_ItemSpacing = 10.0f;
+		static constexpr float s_ComponentBottomSpacing = 6.0f;
+		static constexpr float s_AssetButtonWidth = 100.0f;
+		static constexpr float s_MaxTilingFactor = 100.0f;
 		struct Vec3ControlSettings
 		{
-			float Speed = DEFAULT_DRAG_SPEED;
+			float Speed = s_DefaultDragSpeed;
 			float MinBound = 0.0f;
 			float MaxBound = 0.0f;
 			float ResetValue = 0.0f;
-			float ColumnWidth = DEFAULT_COLUMN_WIDTH;
+			float ColumnWidth = s_DefaultColumnWidth;
 		};
 		struct AxisStyle
 		{

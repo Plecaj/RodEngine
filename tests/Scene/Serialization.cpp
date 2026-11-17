@@ -42,12 +42,12 @@ namespace {
 		}
 
 	protected:
-		static constexpr uint64_t BASE_ID = 1001;
-		static constexpr uint64_t PLAYER_ID = 1002;
-		static constexpr uint64_t CAMERA_ID = 1003;
-		static constexpr uint64_t EXISTING_ID = 42;
-		static constexpr glm::uvec2 VIEWPORT_SIZE{1920, 1080};
-		static constexpr double TOLERANCE = 0.00001;
+		static constexpr uint64_t s_BaseID = 1001;
+		static constexpr uint64_t s_PlayerID = 1002;
+		static constexpr uint64_t s_CameraID = 1003;
+		static constexpr uint64_t s_ExistingID = 42;
+		static constexpr glm::uvec2 s_ViewportSize{1920, 1080};
+		static constexpr double s_Tolerance = 0.00001;
 
 		[[nodiscard]] std::string Filepath() const { return (m_Directory.GetPath() / "scene.rod").string(); }
 		void WriteScene(const std::string& text) const
@@ -63,7 +63,7 @@ namespace {
 			for (glm::length_t index = 0; index < Size; ++index)
 			{
 				CAPTURE(index);
-				REQUIRE_THAT(actual[index], Catch::Matchers::WithinAbs(expected[index], TOLERANCE));
+				REQUIRE_THAT(actual[index], Catch::Matchers::WithinAbs(expected[index], s_Tolerance));
 			}
 		}
 
@@ -77,9 +77,9 @@ namespace {
 		RoundTripFixture()
 		{
 			Rod::SceneSerializer(m_Original).SerializeText(Filepath());
-			m_Restored.OnViewportResize(VIEWPORT_SIZE.x, VIEWPORT_SIZE.y);
+			m_Restored.OnViewportResize(s_ViewportSize.x, s_ViewportSize.y);
 			Rod::SceneSerializer(m_Restored).DeserializeText(Filepath());
-			m_Expected = m_Original.FindEntityByUUID(Rod::UUID{PLAYER_ID});
+			m_Expected = m_Original.FindEntityByUUID(Rod::UUID{s_PlayerID});
 			m_Actual = m_Restored.FindEntityByUUID(m_Expected.GetUUID());
 			REQUIRE(m_Actual);
 		}
@@ -102,58 +102,58 @@ namespace {
 		Rod::Entity m_Actual;
 
 	private:
-		static constexpr glm::vec3 TRANSLATION{1.25f, -2.5f, 3.75f};
-		static constexpr glm::vec3 ROTATION{-0.2f, 0.3f, 0.7f};
-		static constexpr glm::vec3 SCALE{2.0f, 0.5f, -1.0f};
-		static constexpr glm::vec4 SPRITE_COLOR{0.2f, 0.4f, 0.6f, 0.8f};
-		static constexpr float SPRITE_TILING = 2.75f;
-		static constexpr glm::vec3 LIGHT_DIRECTION{-0.25f, -0.5f, 0.75f};
-		static constexpr glm::vec3 LIGHT_COLOR{0.9f, 0.6f, 0.3f};
-		static constexpr float LIGHT_INTENSITY = 3.5f;
-		static constexpr float ORTHOGRAPHIC_SIZE = 15.5f;
-		static constexpr float ORTHOGRAPHIC_NEAR = -4.0f;
-		static constexpr float ORTHOGRAPHIC_FAR = 8.0f;
-		static constexpr float PERSPECTIVE_DEGREES = 65.0f;
-		static constexpr float PERSPECTIVE_NEAR = 0.25f;
-		static constexpr float PERSPECTIVE_FAR = 750.0f;
+		static constexpr glm::vec3 s_Translation{1.25f, -2.5f, 3.75f};
+		static constexpr glm::vec3 s_Rotation{-0.2f, 0.3f, 0.7f};
+		static constexpr glm::vec3 s_Scale{2.0f, 0.5f, -1.0f};
+		static constexpr glm::vec4 s_SpriteColor{0.2f, 0.4f, 0.6f, 0.8f};
+		static constexpr float s_SpriteTiling = 2.75f;
+		static constexpr glm::vec3 s_LightDirection{-0.25f, -0.5f, 0.75f};
+		static constexpr glm::vec3 s_LightColor{0.9f, 0.6f, 0.3f};
+		static constexpr float s_LightIntensity = 3.5f;
+		static constexpr float s_OrthographicSize = 15.5f;
+		static constexpr float s_OrthographicNear = -4.0f;
+		static constexpr float s_OrthographicFar = 8.0f;
+		static constexpr float s_PerspectiveDegrees = 65.0f;
+		static constexpr float s_PerspectiveNear = 0.25f;
+		static constexpr float s_PerspectiveFar = 750.0f;
 
 		static Rod::Scene GenerateTestScene()
 		{
 			Rod::Scene scene;
-			scene.OnViewportResize(VIEWPORT_SIZE.x, VIEWPORT_SIZE.y);
-			scene.CreateEntityWithUUID(Rod::UUID{BASE_ID}, "Entity");
-			auto player = scene.CreateEntityWithUUID(Rod::UUID{PLAYER_ID}, "Player: \"one\"\n# tag");
+			scene.OnViewportResize(s_ViewportSize.x, s_ViewportSize.y);
+			scene.CreateEntityWithUUID(Rod::UUID{s_BaseID}, "Entity");
+			auto player = scene.CreateEntityWithUUID(Rod::UUID{s_PlayerID}, "Player: \"one\"\n# tag");
 			auto& transform = player.GetComponent<Rod::TransformComponent>();
-			transform.Translation = TRANSLATION;
-			transform.Rotation = ROTATION;
-			transform.Scale = SCALE;
+			transform.Translation = s_Translation;
+			transform.Rotation = s_Rotation;
+			transform.Scale = s_Scale;
 			auto& sprite = player.AddComponent<Rod::SpriteRendererComponent>();
-			sprite.Color = SPRITE_COLOR;
-			sprite.TilingFactor = SPRITE_TILING;
+			sprite.Color = s_SpriteColor;
+			sprite.TilingFactor = s_SpriteTiling;
 			// An empty mesh keeps this test independent of a graphics context.
 			player.AddComponent<Rod::MeshComponent>();
 			auto& light = player.AddComponent<Rod::DirectionalLightComponent>();
-			light.Direction = LIGHT_DIRECTION;
-			light.Color = LIGHT_COLOR;
-			light.Intensity = LIGHT_INTENSITY;
+			light.Direction = s_LightDirection;
+			light.Color = s_LightColor;
+			light.Intensity = s_LightIntensity;
 			auto& script = player.AddComponent<Rod::ScriptComponent>("Game.Player");
 			script.Fields["Speed"] = {{"Speed", "System.Single", Rod::ScriptFieldType::Float}, "3.75"};
-			script.Fields["Target"] = {{"Target", "Rod.Entity", Rod::ScriptFieldType::Entity}, std::to_string(BASE_ID)};
+			script.Fields["Target"] = {{"Target", "Rod.Entity", Rod::ScriptFieldType::Entity}, std::to_string(s_BaseID)};
 			script.Fields["Message"] = {
 			    {"Message", "System.String", Rod::ScriptFieldType::String},
 			    "Hello: \"scene\"\n# text"};
 			script.Fields["Empty"] = {{"Empty", "System.String", Rod::ScriptFieldType::String}, ""};
-			auto cameraEntity = scene.CreateEntityWithUUID(Rod::UUID{CAMERA_ID}, "Camera");
+			auto cameraEntity = scene.CreateEntityWithUUID(Rod::UUID{s_CameraID}, "Camera");
 			auto& camera = cameraEntity.AddComponent<Rod::CameraComponent>();
-			camera.Camera.SetOrthographic(ORTHOGRAPHIC_SIZE, ORTHOGRAPHIC_NEAR, ORTHOGRAPHIC_FAR);
-			camera.Camera.SetPerspective(glm::radians(PERSPECTIVE_DEGREES), PERSPECTIVE_NEAR, PERSPECTIVE_FAR);
+			camera.Camera.SetOrthographic(s_OrthographicSize, s_OrthographicNear, s_OrthographicFar);
+			camera.Camera.SetPerspective(glm::radians(s_PerspectiveDegrees), s_PerspectiveNear, s_PerspectiveFar);
 			camera.Primary = false;
 			camera.FixedAspectRatio = true;
 			return scene;
 		}
 		static const Rod::CameraComponent& CameraFrom(Rod::Scene& scene)
 		{
-			const auto camera = scene.FindEntityByUUID(Rod::UUID{CAMERA_ID});
+			const auto camera = scene.FindEntityByUUID(Rod::UUID{s_CameraID});
 			REQUIRE(camera);
 			REQUIRE(camera.HasComponent<Rod::CameraComponent>());
 			return camera.GetComponent<Rod::CameraComponent>();
@@ -171,7 +171,7 @@ namespace {
 
 TEST_CASE_METHOD(RoundTripFixture, "Scene serialization preserves entity IDs and names", "[scene][serialization]")
 {
-	for (const uint64_t id : {BASE_ID, PLAYER_ID, CAMERA_ID})
+	for (const uint64_t id : {s_BaseID, s_PlayerID, s_CameraID})
 	{
 		CAPTURE(id);
 		const auto entity = m_Restored.FindEntityByUUID(Rod::UUID{id});
@@ -184,7 +184,7 @@ TEST_CASE_METHOD(RoundTripFixture, "Scene serialization preserves entity IDs and
 
 TEST_CASE_METHOD(RoundTripFixture, "Scene serialization preserves default components", "[scene][serialization]")
 {
-	const auto bare = m_Restored.FindEntityByUUID(Rod::UUID{BASE_ID});
+	const auto bare = m_Restored.FindEntityByUUID(Rod::UUID{s_BaseID});
 	const auto& transform = bare.GetComponent<Rod::TransformComponent>();
 	RequireVectorNear(transform.Translation, glm::vec3(0.0f));
 	RequireVectorNear(transform.Rotation, glm::vec3(0.0f));
@@ -211,7 +211,7 @@ TEST_CASE_METHOD(RoundTripFixture, "Scene serialization preserves sprites and nu
 	const auto& before = m_Expected.GetComponent<Rod::SpriteRendererComponent>();
 	const auto& after = m_Actual.GetComponent<Rod::SpriteRendererComponent>();
 	RequireVectorNear(after.Color, before.Color);
-	REQUIRE_THAT(after.TilingFactor, Catch::Matchers::WithinAbs(before.TilingFactor, TOLERANCE));
+	REQUIRE_THAT(after.TilingFactor, Catch::Matchers::WithinAbs(before.TilingFactor, s_Tolerance));
 	REQUIRE(!after.Texture);
 	REQUIRE(m_Actual.HasComponent<Rod::MeshComponent>());
 	REQUIRE(!m_Actual.GetComponent<Rod::MeshComponent>().Mesh);
@@ -224,7 +224,7 @@ TEST_CASE_METHOD(RoundTripFixture, "Scene serialization preserves directional li
 	const auto& after = m_Actual.GetComponent<Rod::DirectionalLightComponent>();
 	RequireVectorNear(after.Direction, before.Direction);
 	RequireVectorNear(after.Color, before.Color);
-	REQUIRE_THAT(after.Intensity, Catch::Matchers::WithinAbs(before.Intensity, TOLERANCE));
+	REQUIRE_THAT(after.Intensity, Catch::Matchers::WithinAbs(before.Intensity, s_Tolerance));
 }
 
 TEST_CASE_METHOD(
@@ -245,11 +245,11 @@ TEST_CASE_METHOD(RoundTripFixture, "Scene serialization preserves perspective se
 	const auto& after = RestoredCamera().Camera;
 	REQUIRE_THAT(
 	    after.GetPerspectiveVerticalFOV(),
-	    Catch::Matchers::WithinAbs(before.GetPerspectiveVerticalFOV(), TOLERANCE));
+	    Catch::Matchers::WithinAbs(before.GetPerspectiveVerticalFOV(), s_Tolerance));
 	REQUIRE_THAT(
 	    after.GetPerspectiveNearClip(),
-	    Catch::Matchers::WithinAbs(before.GetPerspectiveNearClip(), TOLERANCE));
-	REQUIRE_THAT(after.GetPerspectiveFarClip(), Catch::Matchers::WithinAbs(before.GetPerspectiveFarClip(), TOLERANCE));
+	    Catch::Matchers::WithinAbs(before.GetPerspectiveNearClip(), s_Tolerance));
+	REQUIRE_THAT(after.GetPerspectiveFarClip(), Catch::Matchers::WithinAbs(before.GetPerspectiveFarClip(), s_Tolerance));
 }
 
 TEST_CASE_METHOD(
@@ -259,13 +259,13 @@ TEST_CASE_METHOD(
 {
 	const auto& before = OriginalCamera().Camera;
 	const auto& after = RestoredCamera().Camera;
-	REQUIRE_THAT(after.GetOrthographicSize(), Catch::Matchers::WithinAbs(before.GetOrthographicSize(), TOLERANCE));
+	REQUIRE_THAT(after.GetOrthographicSize(), Catch::Matchers::WithinAbs(before.GetOrthographicSize(), s_Tolerance));
 	REQUIRE_THAT(
 	    after.GetOrthographicNearClip(),
-	    Catch::Matchers::WithinAbs(before.GetOrthographicNearClip(), TOLERANCE));
+	    Catch::Matchers::WithinAbs(before.GetOrthographicNearClip(), s_Tolerance));
 	REQUIRE_THAT(
 	    after.GetOrthographicFarClip(),
-	    Catch::Matchers::WithinAbs(before.GetOrthographicFarClip(), TOLERANCE));
+	    Catch::Matchers::WithinAbs(before.GetOrthographicFarClip(), s_Tolerance));
 }
 
 TEST_CASE_METHOD(
@@ -313,7 +313,7 @@ TEST_CASE_METHOD(SerializationFixture, "Invalid scene files preserve the scene",
 	}
 
 	Rod::Scene scene;
-	scene.CreateEntityWithUUID(Rod::UUID{EXISTING_ID}, "Existing");
+	scene.CreateEntityWithUUID(Rod::UUID{s_ExistingID}, "Existing");
 	const Rod::Scene original = scene;
 	REQUIRE_THROWS_AS(Rod::SceneSerializer(scene).DeserializeText(Filepath()), std::runtime_error);
 	REQUIRE(scene == original);
@@ -331,7 +331,7 @@ Entities:
       Scale: [1, 1, 1]
 )");
 	Rod::Scene scene;
-	scene.CreateEntityWithUUID(Rod::UUID{EXISTING_ID}, "Existing");
+	scene.CreateEntityWithUUID(Rod::UUID{s_ExistingID}, "Existing");
 	const Rod::Scene original = scene;
 	REQUIRE_THROWS_AS(Rod::SceneSerializer(scene).DeserializeText(Filepath()), std::runtime_error);
 	REQUIRE(scene == original);
@@ -341,7 +341,7 @@ TEST_CASE_METHOD(SerializationFixture, "Duplicate entity IDs roll back scene loa
 {
 	WriteScene("Scene: Invalid\nEntities:\n  - Entity: 1001\n  - Entity: 1001\n");
 	Rod::Scene scene;
-	scene.CreateEntityWithUUID(Rod::UUID{EXISTING_ID}, "Existing");
+	scene.CreateEntityWithUUID(Rod::UUID{s_ExistingID}, "Existing");
 	const Rod::Scene original = scene;
 	REQUIRE_THROWS_AS(Rod::SceneSerializer(scene).DeserializeText(Filepath()), std::runtime_error);
 	REQUIRE(scene == original);
@@ -351,7 +351,7 @@ TEST_CASE_METHOD(SerializationFixture, "Scene saves replace existing files", "[s
 {
 	WriteScene("Previous scene contents\n");
 	Rod::Scene scene;
-	scene.CreateEntityWithUUID(Rod::UUID{PLAYER_ID}, "Player");
+	scene.CreateEntityWithUUID(Rod::UUID{s_PlayerID}, "Player");
 	Rod::SceneSerializer(scene).SerializeText(Filepath());
 	Rod::Scene restored;
 	Rod::SceneSerializer(restored).DeserializeText(Filepath());
@@ -366,7 +366,7 @@ TEST_CASE_METHOD(SerializationFixture, "Missing textures roll back scene loading
 	    "      Texture: " +
 	    Filepath() + ".missing.png\n");
 	Rod::Scene scene;
-	scene.CreateEntityWithUUID(Rod::UUID{EXISTING_ID}, "Existing");
+	scene.CreateEntityWithUUID(Rod::UUID{s_ExistingID}, "Existing");
 	const Rod::Scene original = scene;
 	REQUIRE_THROWS_AS(Rod::SceneSerializer(scene).DeserializeText(Filepath()), std::runtime_error);
 	REQUIRE(scene == original);
@@ -379,7 +379,7 @@ TEST_CASE_METHOD(SerializationFixture, "Missing meshes roll back scene loading",
 	    "    MeshComponent:\n      Path: " +
 	    Filepath() + ".missing.glb\n");
 	Rod::Scene scene;
-	scene.CreateEntityWithUUID(Rod::UUID{EXISTING_ID}, "Existing");
+	scene.CreateEntityWithUUID(Rod::UUID{s_ExistingID}, "Existing");
 	const Rod::Scene original = scene;
 	REQUIRE_THROWS_AS(Rod::SceneSerializer(scene).DeserializeText(Filepath()), std::runtime_error);
 	REQUIRE(scene == original);
@@ -425,5 +425,5 @@ TEST_CASE_METHOD(
 	REQUIRE_THROWS_WITH(
 	    Rod::SceneSerializer(scene, projectDirectory).DeserializeText(Filepath()),
 	    Catch::Matchers::ContainsSubstring(expectedPath.string()));
-	REQUIRE_FALSE(scene.FindEntityByUUID(Rod::UUID{BASE_ID}));
+	REQUIRE_FALSE(scene.FindEntityByUUID(Rod::UUID{s_BaseID}));
 }

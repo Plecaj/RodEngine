@@ -61,7 +61,7 @@ namespace Rod {
 			    }))
 				continue;
 			entries.push_back(std::move(project));
-			if (entries.size() == MAX_PROJECTS)
+			if (entries.size() == s_MaxProjects)
 				break;
 		}
 		m_Entries = std::move(entries);
@@ -93,8 +93,8 @@ namespace Rod {
 		    std::format("{:%F}", std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now()))};
 		std::erase_if(m_Entries, [&](const auto& existing) { return SameProject(existing.Path, entry.Path); });
 		m_Entries.insert(m_Entries.begin(), std::move(entry));
-		if (m_Entries.size() > MAX_PROJECTS)
-			m_Entries.resize(MAX_PROJECTS);
+		if (m_Entries.size() > s_MaxProjects)
+			m_Entries.resize(s_MaxProjects);
 	}
 
 }

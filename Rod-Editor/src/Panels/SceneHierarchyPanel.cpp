@@ -136,7 +136,7 @@ namespace Rod {
 		if (opened)
 		{
 			const ImGuiTreeNodeFlags childFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
-			if (ImGui::TreeNodeEx(NodeID(ENTITY_CHILD_NODE_ID), childFlags, "%s", tag.c_str()))
+			if (ImGui::TreeNodeEx(NodeID(s_EntityChildNodeID), childFlags, "%s", tag.c_str()))
 				ImGui::TreePop();
 			ImGui::TreePop();
 		}
@@ -300,12 +300,12 @@ namespace Rod {
 
 		auto& tag = entity.GetComponent<TagComponent>().Tag;
 
-		std::array<char, TEXT_BUFFER_SIZE> buffer{};
+		std::array<char, s_TextBufferSize> buffer{};
 		tag.copy(buffer.data(), buffer.size() - 1);
 
-		constexpr float addComponentWidth = ADD_COMPONENT_WIDTH;
+		constexpr float addComponentWidth = s_AddComponentWidth;
 		const float availableWidth = ImGui::GetContentRegionAvail().x;
-		ImGui::PushItemWidth(ImMax(MIN_TAG_WIDTH, availableWidth - addComponentWidth - ITEM_SPACING));
+		ImGui::PushItemWidth(ImMax(s_MinTagWidth, availableWidth - addComponentWidth - s_ItemSpacing));
 		if (ImGui::InputText("##", buffer.data(), buffer.size()))
 			tag = std::string(buffer.data());
 		ImGui::PopItemWidth();
@@ -313,8 +313,8 @@ namespace Rod {
 
 	void SceneHierarchyPanel::DrawAddComponentButton(Entity entity)
 	{
-		ImGui::SameLine(0.0f, ITEM_SPACING);
-		if (ImGui::Button("Add Component", ImVec2(ADD_COMPONENT_WIDTH, 0.0f)))
+		ImGui::SameLine(0.0f, s_ItemSpacing);
+		if (ImGui::Button("Add Component", ImVec2(s_AddComponentWidth, 0.0f)))
 			ImGui::OpenPopup("AddComponent");
 
 		if (ImGui::BeginPopup("AddComponent"))
@@ -351,7 +351,7 @@ namespace Rod {
 
 			ImGui::EndPopup();
 		}
-		ImGui::Dummy(ImVec2(0.0f, COMPONENT_BOTTOM_SPACING));
+		ImGui::Dummy(ImVec2(0.0f, s_ComponentBottomSpacing));
 	}
 
 	void SceneHierarchyPanel::DrawTransformComponent(Entity entity)
@@ -434,7 +434,7 @@ namespace Rod {
 		DrawComponent<SpriteRendererComponent>("Sprite Renderer", entity, [this](auto& component) {
 			ImGui::ColorEdit4("Color", glm::value_ptr(component.Color));
 
-			if (ImGui::Button("Texture", ImVec2(ASSET_BUTTON_WIDTH, 0.0f)))
+			if (ImGui::Button("Texture", ImVec2(s_AssetButtonWidth, 0.0f)))
 			{
 				component.Texture = nullptr;
 			}
@@ -450,7 +450,7 @@ namespace Rod {
 				ImGui::EndDragDropTarget();
 			}
 
-			ImGui::DragFloat("Tiling Factor", &component.TilingFactor, DEFAULT_DRAG_SPEED, 0.0f, MAX_TILING_FACTOR);
+			ImGui::DragFloat("Tiling Factor", &component.TilingFactor, s_DefaultDragSpeed, 0.0f, s_MaxTilingFactor);
 		});
 	}
 
@@ -460,7 +460,7 @@ namespace Rod {
 			const std::string meshPath = component.Mesh ? component.Mesh->GetPath() : "None";
 			ImGui::Text("Asset: %s", meshPath.c_str());
 
-			if (ImGui::Button("Mesh", ImVec2(ASSET_BUTTON_WIDTH, 0.0f)))
+			if (ImGui::Button("Mesh", ImVec2(s_AssetButtonWidth, 0.0f)))
 			{
 				component.SetMesh(nullptr);
 				return;
@@ -478,8 +478,8 @@ namespace Rod {
 
 			ImGui::ColorEdit4("Albedo", glm::value_ptr(albedo));
 			ImGui::ColorEdit3("Emissive", glm::value_ptr(emissive));
-			ImGui::DragFloat("Roughness", &roughness, FINE_DRAG_SPEED, 0.0f, 1.0f);
-			ImGui::DragFloat("Metallic", &metallic, FINE_DRAG_SPEED, 0.0f, 1.0f);
+			ImGui::DragFloat("Roughness", &roughness, s_FineDragSpeed, 0.0f, 1.0f);
+			ImGui::DragFloat("Metallic", &metallic, s_FineDragSpeed, 0.0f, 1.0f);
 
 			material.SetAlbedo(albedo);
 			material.SetEmissive(emissive);
@@ -494,10 +494,10 @@ namespace Rod {
 			DrawVec3Control(
 			    "Direction",
 			    component.Direction,
-			    Vec3ControlSettings{.Speed = FINE_DRAG_SPEED, .MinBound = -1.0f, .MaxBound = 1.0f});
+			    Vec3ControlSettings{.Speed = s_FineDragSpeed, .MinBound = -1.0f, .MaxBound = 1.0f});
 			component.Direction = glm::normalize(component.Direction);
 			ImGui::ColorEdit3("Color", glm::value_ptr(component.Color));
-			ImGui::DragFloat("Intensity", &component.Intensity, FINE_DRAG_SPEED, 0.0f, 1.0f);
+			ImGui::DragFloat("Intensity", &component.Intensity, s_FineDragSpeed, 0.0f, 1.0f);
 		});
 	}
 
@@ -579,7 +579,7 @@ namespace Rod {
 		if (!field.Value.empty())
 			value = field.Field.Type == ScriptFieldType::Double ? static_cast<float>(std::stod(field.Value))
 			                                                    : std::stof(field.Value);
-		if (!ImGui::DragFloat(name.c_str(), &value, DEFAULT_DRAG_SPEED))
+		if (!ImGui::DragFloat(name.c_str(), &value, s_DefaultDragSpeed))
 			return false;
 		field.Value = std::to_string(value);
 		return true;
@@ -605,7 +605,7 @@ namespace Rod {
 
 	bool SceneHierarchyPanel::DrawStringScriptField(const std::string& name, ScriptFieldInstance& field)
 	{
-		std::array<char, TEXT_BUFFER_SIZE> buffer{};
+		std::array<char, s_TextBufferSize> buffer{};
 		field.Value.copy(buffer.data(), buffer.size() - 1);
 		if (!ImGui::InputText(name.c_str(), buffer.data(), buffer.size()))
 			return false;
@@ -622,7 +622,7 @@ namespace Rod {
 		        ImGuiDataType_Float,
 		        glm::value_ptr(value),
 		        static_cast<int>(value.length()),
-		        DEFAULT_DRAG_SPEED))
+		        s_DefaultDragSpeed))
 			return false;
 		field.Value = VecToFieldValue(value);
 		return true;

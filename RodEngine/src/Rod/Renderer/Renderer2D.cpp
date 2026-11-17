@@ -24,10 +24,10 @@ namespace Rod {
 
 	struct Renderer2DData
 	{
-		static constexpr uint32_t MAX_QUAD_COUNT = 10000;
-		static constexpr uint32_t MAX_VERTICES_COUNT = MAX_QUAD_COUNT * Renderer2D::QUAD_VERTEX_COUNT;
-		static constexpr uint32_t MAX_INDICES_COUNT = MAX_QUAD_COUNT * Renderer2D::QUAD_INDEX_COUNT;
-		static constexpr uint32_t MAX_TEXTURE_SLOTS = 32;
+		static constexpr uint32_t s_MaxQuadCount = 10000;
+		static constexpr uint32_t s_MaxVerticesCount = s_MaxQuadCount * Renderer2D::s_QuadVertexCount;
+		static constexpr uint32_t s_MaxIndicesCount = s_MaxQuadCount * Renderer2D::s_QuadIndexCount;
+		static constexpr uint32_t s_MaxTextureSlots = 32;
 
 		Scope<VertexArray> QuadVertexArray;
 		ObserverPtr<VertexBuffer> QuadVertexBuffer = nullptr;
@@ -42,7 +42,7 @@ namespace Rod {
 		std::vector<Ref<Texture2D>> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // 0 = white texture
 
-		std::array<glm::vec4, Renderer2D::QUAD_VERTEX_COUNT> QuadVertexPositions;
+		std::array<glm::vec4, Renderer2D::s_QuadVertexCount> QuadVertexPositions;
 		Renderer2D::Statistics Stats;
 	};
 
@@ -52,7 +52,7 @@ namespace Rod {
 	{
 		RD_PROFILE_FUNCTION();
 		g_Data = CreateScope<Renderer2DData>();
-		g_Data->TextureSlots.resize(g_Data->MAX_TEXTURE_SLOTS);
+		g_Data->TextureSlots.resize(g_Data->s_MaxTextureSlots);
 
 		InitShader();
 		InitSamplers();
@@ -74,8 +74,8 @@ namespace Rod {
 
 	void Renderer2D::InitSamplers()
 	{
-		std::array<int, Renderer2DData::MAX_TEXTURE_SLOTS> samplers;
-		for (uint32_t i = 0; i < Renderer2DData::MAX_TEXTURE_SLOTS; i++)
+		std::array<int, Renderer2DData::s_MaxTextureSlots> samplers;
+		for (uint32_t i = 0; i < Renderer2DData::s_MaxTextureSlots; i++)
 			samplers[i] = static_cast<int>(i);
 
 		g_Data->TextureShader->Bind();
@@ -86,7 +86,7 @@ namespace Rod {
 	{
 		g_Data->QuadVertexArray = VertexArray::Create();
 
-		auto vertexBuffer = VertexBuffer::Create(sizeof(QuadVertex) * g_Data->MAX_VERTICES_COUNT);
+		auto vertexBuffer = VertexBuffer::Create(sizeof(QuadVertex) * g_Data->s_MaxVerticesCount);
 		vertexBuffer->SetBufferLayout(
 		    {{ShaderDataType::Float3, "a_Position"},
 		     {ShaderDataType::Float4, "a_Color"},
@@ -97,16 +97,16 @@ namespace Rod {
 
 		g_Data->QuadVertexBuffer = vertexBuffer.get();
 		g_Data->QuadVertexArray->AddVertexBuffer(std::move(vertexBuffer));
-		g_Data->QuadVertexBufferBase.resize(Renderer2DData::MAX_VERTICES_COUNT);
+		g_Data->QuadVertexBufferBase.resize(Renderer2DData::s_MaxVerticesCount);
 
-		std::vector<uint32_t> quadIndices(Renderer2DData::MAX_INDICES_COUNT);
-		constexpr std::array<uint32_t, QUAD_INDEX_COUNT> quadPattern = {0, 1, 2, 2, 3, 0};
+		std::vector<uint32_t> quadIndices(Renderer2DData::s_MaxIndicesCount);
+		constexpr std::array<uint32_t, s_QuadIndexCount> quadPattern = {0, 1, 2, 2, 3, 0};
 		uint32_t offset = 0;
-		for (uint32_t i = 0; i < Renderer2DData::MAX_INDICES_COUNT; i += QUAD_INDEX_COUNT)
+		for (uint32_t i = 0; i < Renderer2DData::s_MaxIndicesCount; i += s_QuadIndexCount)
 		{
-			for (uint32_t corner = 0; corner < QUAD_INDEX_COUNT; ++corner)
+			for (uint32_t corner = 0; corner < s_QuadIndexCount; ++corner)
 				quadIndices[i + corner] = offset + quadPattern[corner];
-			offset += QUAD_VERTEX_COUNT;
+			offset += s_QuadVertexCount;
 		}
 
 		auto quadIB = IndexBuffer::Create(quadIndices);
@@ -124,7 +124,7 @@ namespace Rod {
 
 	void Renderer2D::InitQuadVertexPositions()
 	{
-		constexpr std::array<glm::vec4, QUAD_VERTEX_COUNT> positions = {
+		constexpr std::array<glm::vec4, s_QuadVertexCount> positions = {
 		    {{-0.5f, -0.5f, 0.0f, 1.0f},
 		     {0.5f, -0.5f, 0.0f, 1.0f},
 		     {0.5f, 0.5f, 0.0f, 1.0f},
@@ -181,7 +181,7 @@ namespace Rod {
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color, int entityID)
 	{
 		RD_PROFILE_FUNCTION();
-		if (g_Data->QuadIndexCount + QUAD_INDEX_COUNT > g_Data->MAX_INDICES_COUNT)
+		if (g_Data->QuadIndexCount + s_QuadIndexCount > g_Data->s_MaxIndicesCount)
 		{
 			EndBatch();
 			Flush();
@@ -192,7 +192,7 @@ namespace Rod {
 		constexpr float whiteTextureIndex = 0.0f;
 		constexpr float tilingFactor = 1.0f;
 
-		for (uint32_t i = 0; i < QUAD_VERTEX_COUNT; i++)
+		for (uint32_t i = 0; i < s_QuadVertexCount; i++)
 		{
 			g_Data->QuadVertexBufferPtr->Position = transform * g_Data->QuadVertexPositions[i];
 			g_Data->QuadVertexBufferPtr->Color = color;
@@ -203,7 +203,7 @@ namespace Rod {
 			g_Data->QuadVertexBufferPtr++;
 		}
 
-		g_Data->QuadIndexCount += QUAD_INDEX_COUNT;
+		g_Data->QuadIndexCount += s_QuadIndexCount;
 
 		g_Data->Stats.QuadCount++;
 	}
@@ -216,7 +216,7 @@ namespace Rod {
 	    int entityID)
 	{
 		RD_PROFILE_FUNCTION();
-		if ((g_Data->QuadIndexCount + QUAD_INDEX_COUNT > g_Data->MAX_INDICES_COUNT))
+		if ((g_Data->QuadIndexCount + s_QuadIndexCount > g_Data->s_MaxIndicesCount))
 		{
 			EndBatch();
 			Flush();
@@ -235,7 +235,7 @@ namespace Rod {
 			}
 		}
 
-		if (textureIndex == 0 && g_Data->TextureSlotIndex < g_Data->MAX_TEXTURE_SLOTS - 1)
+		if (textureIndex == 0 && g_Data->TextureSlotIndex < g_Data->s_MaxTextureSlots - 1)
 		{
 			textureIndex = static_cast<float>(g_Data->TextureSlotIndex);
 			g_Data->TextureSlots[g_Data->TextureSlotIndex] = texture;
@@ -248,7 +248,7 @@ namespace Rod {
 			BeginBatch();
 		}
 
-		for (uint32_t i = 0; i < QUAD_VERTEX_COUNT; i++)
+		for (uint32_t i = 0; i < s_QuadVertexCount; i++)
 		{
 			g_Data->QuadVertexBufferPtr->Position = transform * g_Data->QuadVertexPositions[i];
 			g_Data->QuadVertexBufferPtr->Color = tintColor;
@@ -259,7 +259,7 @@ namespace Rod {
 			g_Data->QuadVertexBufferPtr++;
 		}
 
-		g_Data->QuadIndexCount += QUAD_INDEX_COUNT;
+		g_Data->QuadIndexCount += s_QuadIndexCount;
 
 		g_Data->Stats.QuadCount++;
 	}

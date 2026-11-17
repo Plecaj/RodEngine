@@ -37,8 +37,8 @@ namespace Rod {
 		[[nodiscard]] bool CanContinue() const noexcept;
 		[[nodiscard]] std::string ProjectName() const;
 
-		static constexpr size_t FIELD_CAPACITY = 1024;
-		std::array<char, FIELD_CAPACITY> m_Name{};
+		static constexpr size_t s_FieldCapacity = 1024;
+		std::array<char, s_FieldCapacity> m_Name{};
 		std::filesystem::path m_Directory;
 		std::filesystem::path m_AssetDirectory;
 		std::filesystem::path m_StartScene;

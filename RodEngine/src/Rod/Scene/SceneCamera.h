@@ -82,18 +82,18 @@ namespace Rod {
 	private:
 		ProjectionType m_ProjectionType = ProjectionType::Orthographic;
 
-		static constexpr float DEFAULT_ORTHOGRAPHIC_SIZE = 10.0f;
-		static constexpr float DEFAULT_PERSPECTIVE_NEAR = 0.01f;
-		static constexpr float DEFAULT_PERSPECTIVE_FAR = 1000.0f;
-		static constexpr float DEFAULT_ASPECT_RATIO = 16.0f / 9.0f;
+		static constexpr float s_DefaultOrthographicSize = 10.0f;
+		static constexpr float s_DefaultPerspectiveNear = 0.01f;
+		static constexpr float s_DefaultPerspectiveFar = 1000.0f;
+		static constexpr float s_DefaultAspectRatio = 16.0f / 9.0f;
 
-		float m_OrthographicSize = DEFAULT_ORTHOGRAPHIC_SIZE;
+		float m_OrthographicSize = s_DefaultOrthographicSize;
 		float m_OrthographicNear = -1.0f, m_OrthographicFar = 1.0f;
 
 		float m_PerspectiveFOV = glm::quarter_pi<float>();
-		float m_PerspectiveNear = DEFAULT_PERSPECTIVE_NEAR, m_PerspectiveFar = DEFAULT_PERSPECTIVE_FAR;
+		float m_PerspectiveNear = s_DefaultPerspectiveNear, m_PerspectiveFar = s_DefaultPerspectiveFar;
 
-		float m_AspectRatio = DEFAULT_ASPECT_RATIO;
+		float m_AspectRatio = s_DefaultAspectRatio;
 	};
 
 }

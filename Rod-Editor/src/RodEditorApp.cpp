@@ -14,8 +14,8 @@ namespace Rod {
 		    : Application(
 		          WindowProps{
 		              "Rod Editor",
-		              WindowProps::DEFAULT_WIDTH,
-		              WindowProps::DEFAULT_HEIGHT,
+		              WindowProps::s_DefaultWidth,
+		              WindowProps::s_DefaultHeight,
 		              "RodAssets/Textures/logo.png",
 		              true},
 		          std::move(project))

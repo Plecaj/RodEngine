@@ -148,10 +148,10 @@ namespace {
 		SceneCopyFixture(SceneCopyFixture&&) = delete;
 		SceneCopyFixture& operator=(SceneCopyFixture&&) = delete;
 
-		static constexpr glm::vec3 TRANSLATION{1.0f, 2.0f, 3.0f};
-		static constexpr float INITIAL_TILING = 2.0f;
-		static constexpr float MODIFIED_TILING = 5.0f;
-		static constexpr float MODIFIED_X = 10.0f;
+		static constexpr glm::vec3 s_Translation{1.0f, 2.0f, 3.0f};
+		static constexpr float s_InitialTiling = 2.0f;
+		static constexpr float s_ModifiedTiling = 5.0f;
+		static constexpr float s_ModifiedX = 10.0f;
 		Rod::Scene Source = CreateSource();
 		Rod::Scene Copy{Source};
 		Rod::Entity Player = Source.FindEntityByUUID(Rod::UUID{g_PlayerID});
@@ -162,8 +162,8 @@ namespace {
 		{
 			Rod::Scene scene;
 			auto player = scene.CreateEntityWithUUID(Rod::UUID{g_PlayerID}, "Player");
-			player.GetComponent<Rod::TransformComponent>().Translation = TRANSLATION;
-			player.AddComponent<Rod::SpriteRendererComponent>().TilingFactor = INITIAL_TILING;
+			player.GetComponent<Rod::TransformComponent>().Translation = s_Translation;
+			player.AddComponent<Rod::SpriteRendererComponent>().TilingFactor = s_InitialTiling;
 			return scene;
 		}
 	};
@@ -176,20 +176,20 @@ TEST_CASE("Scene copy preserves entity identity and components", "[scene]")
 	REQUIRE(fixture.CopiedPlayer.GetName() == "Player");
 	REQUIRE(fixture.CopiedPlayer.HasComponent<Rod::TransformComponent>());
 	REQUIRE(fixture.CopiedPlayer.HasComponent<Rod::SpriteRendererComponent>());
-	REQUIRE(fixture.CopiedPlayer.GetComponent<Rod::TransformComponent>().Translation == SceneCopyFixture::TRANSLATION);
+	REQUIRE(fixture.CopiedPlayer.GetComponent<Rod::TransformComponent>().Translation == SceneCopyFixture::s_Translation);
 	REQUIRE(
 	    fixture.CopiedPlayer.GetComponent<Rod::SpriteRendererComponent>().TilingFactor ==
-	    SceneCopyFixture::INITIAL_TILING);
+	    SceneCopyFixture::s_InitialTiling);
 }
 
 TEST_CASE("Scene copies own independent component data", "[scene]")
 {
 	SceneCopyFixture fixture;
-	fixture.CopiedPlayer.GetComponent<Rod::TransformComponent>().Translation.x = SceneCopyFixture::MODIFIED_X;
-	fixture.CopiedPlayer.GetComponent<Rod::SpriteRendererComponent>().TilingFactor = SceneCopyFixture::MODIFIED_TILING;
-	REQUIRE(fixture.Player.GetComponent<Rod::TransformComponent>().Translation.x == SceneCopyFixture::TRANSLATION.x);
+	fixture.CopiedPlayer.GetComponent<Rod::TransformComponent>().Translation.x = SceneCopyFixture::s_ModifiedX;
+	fixture.CopiedPlayer.GetComponent<Rod::SpriteRendererComponent>().TilingFactor = SceneCopyFixture::s_ModifiedTiling;
+	REQUIRE(fixture.Player.GetComponent<Rod::TransformComponent>().Translation.x == SceneCopyFixture::s_Translation.x);
 	REQUIRE(
-	    fixture.Player.GetComponent<Rod::SpriteRendererComponent>().TilingFactor == SceneCopyFixture::INITIAL_TILING);
+	    fixture.Player.GetComponent<Rod::SpriteRendererComponent>().TilingFactor == SceneCopyFixture::s_InitialTiling);
 }
 
 TEST_CASE("Destroying a copied entity preserves the original", "[scene]")
@@ -211,7 +211,7 @@ TEST_CASE("Scene assignment replaces entities with independent copies", "[scene]
 	REQUIRE(!destination.FindEntityByName("Old"));
 	auto copy = destination.FindEntityByUUID(player.GetUUID());
 	REQUIRE(copy);
-	copy.GetComponent<Rod::SpriteRendererComponent>().TilingFactor = SceneCopyFixture::INITIAL_TILING;
+	copy.GetComponent<Rod::SpriteRendererComponent>().TilingFactor = SceneCopyFixture::s_InitialTiling;
 	REQUIRE(player.GetComponent<Rod::SpriteRendererComponent>().TilingFactor == 1.0f);
 
 	const Rod::Scene& alias = destination;

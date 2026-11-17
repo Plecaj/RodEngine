@@ -28,8 +28,8 @@ namespace Rod {
 	struct Renderer3D::LightsData
 	{
 		uint32_t Count;
-		uint32_t Padding[STD140_PADDING_WORD_COUNT];
-		DirectionalLight Lights[MAX_LIGHT_COUNT];
+		uint32_t Padding[s_Std140PaddingWordCount];
+		DirectionalLight Lights[s_MaxLightCount];
 	};
 
 	struct Renderer3D::MaterialData
@@ -41,13 +41,13 @@ namespace Rod {
 
 	struct Renderer3D::ShadowData
 	{
-		glm::mat4 LightSpaceMatrices[MAX_LIGHT_COUNT];
+		glm::mat4 LightSpaceMatrices[s_MaxLightCount];
 	};
 
 	struct Renderer3D::DrawData
 	{
 		int EntityID;
-		int Padding[STD140_PADDING_WORD_COUNT];
+		int Padding[s_Std140PaddingWordCount];
 	};
 
 	Renderer3D::FrustumCorners Renderer3D::GetFrustumCornersWorldSpace(const glm::mat4& viewProjection)
@@ -56,16 +56,16 @@ namespace Rod {
 		FrustumCorners corners;
 		size_t index = 0;
 
-		for (int x = 0; x < AXIS_ENDPOINT_COUNT; x++)
+		for (int x = 0; x < s_AxisEndpointCount; x++)
 		{
-			for (int y = 0; y < AXIS_ENDPOINT_COUNT; y++)
+			for (int y = 0; y < s_AxisEndpointCount; y++)
 			{
-				for (int z = 0; z < AXIS_ENDPOINT_COUNT; z++)
+				for (int z = 0; z < s_AxisEndpointCount; z++)
 				{
 					const glm::vec4 pt = inv * glm::vec4(
-					                               CLIP_COORDINATE_SPAN * static_cast<float>(x) - 1.0f,
-					                               CLIP_COORDINATE_SPAN * static_cast<float>(y) - 1.0f,
-					                               CLIP_COORDINATE_SPAN * static_cast<float>(z) - 1.0f,
+					                               s_ClipCoordinateSpan * static_cast<float>(x) - 1.0f,
+					                               s_ClipCoordinateSpan * static_cast<float>(y) - 1.0f,
+					                               s_ClipCoordinateSpan * static_cast<float>(z) - 1.0f,
 					                               1.0f);
 
 					corners[index++] = glm::vec3(pt) / pt.w;
@@ -83,29 +83,29 @@ namespace Rod {
 
 		for (size_t i = 0; i < corners.size(); i++)
 		{
-			if (i % AXIS_ENDPOINT_COUNT == 0)
+			if (i % s_AxisEndpointCount == 0)
 				nearCenter += corners[i];
 			else
 				farCenter += corners[i];
 		}
 
-		nearCenter *= PLANE_CENTER_WEIGHT;
-		farCenter *= PLANE_CENTER_WEIGHT;
+		nearCenter *= s_PlaneCenterWeight;
+		farCenter *= s_PlaneCenterWeight;
 
 		const glm::vec3 viewVector = farCenter - nearCenter;
-		if (glm::dot(viewVector, viewVector) <= DIRECTION_TOLERANCE)
+		if (glm::dot(viewVector, viewVector) <= s_DirectionTolerance)
 			return;
 
 		const glm::vec3 viewDirection = glm::normalize(viewVector);
 
 		// Corners are emitted as near/far pairs because z is the innermost loop.
-		for (size_t i = 0; i < corners.size(); i += AXIS_ENDPOINT_COUNT)
+		for (size_t i = 0; i < corners.size(); i += s_AxisEndpointCount)
 		{
 			const glm::vec3 nearCorner = corners[i];
 			const glm::vec3 farOffset = corners[i + 1] - nearCorner;
 			const float farDepth = glm::dot(farOffset, viewDirection);
 
-			if (farDepth <= maxDistance || farDepth <= DIRECTION_TOLERANCE)
+			if (farDepth <= maxDistance || farDepth <= s_DirectionTolerance)
 				continue;
 
 			corners[i + 1] = nearCorner + farOffset * (maxDistance / farDepth);
@@ -117,20 +117,20 @@ namespace Rod {
 	    const glm::mat4& cameraViewProjection)
 	{
 		auto corners = GetFrustumCornersWorldSpace(cameraViewProjection);
-		LimitFrustumDepth(corners, MAX_SHADOW_DISTANCE);
+		LimitFrustumDepth(corners, s_MaxShadowDistance);
 
 		glm::vec3 center(0.0f);
 		for (const auto& c : corners)
 			center += c;
 		center /= static_cast<float>(corners.size());
 
-		const glm::vec3 normalizedLightDirection = glm::dot(lightDirection, lightDirection) > DIRECTION_TOLERANCE
+		const glm::vec3 normalizedLightDirection = glm::dot(lightDirection, lightDirection) > s_DirectionTolerance
 		                                               ? glm::normalize(lightDirection)
 		                                               : glm::vec3(0.0f, -1.0f, 0.0f);
 
-		const glm::vec3 lightPos = center - normalizedLightDirection * LIGHT_VIEW_DISTANCE;
+		const glm::vec3 lightPos = center - normalizedLightDirection * s_LightViewDistance;
 		const glm::vec3 up =
-		    glm::abs(glm::dot(normalizedLightDirection, glm::vec3(0.0f, 1.0f, 0.0f))) > LIGHT_UP_PARALLEL_THRESHOLD
+		    glm::abs(glm::dot(normalizedLightDirection, glm::vec3(0.0f, 1.0f, 0.0f))) > s_LightUpParallelThreshold
 		        ? glm::vec3(0.0f, 0.0f, 1.0f)
 		        : glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -145,10 +145,10 @@ namespace Rod {
 			maxBounds = glm::max(maxBounds, glm::vec3(trf));
 		}
 
-		const float nearPlane = -maxBounds.z - SHADOW_DEPTH_MARGIN;
-		float farPlane = -minBounds.z + SHADOW_DEPTH_MARGIN;
+		const float nearPlane = -maxBounds.z - s_ShadowDepthMargin;
+		float farPlane = -minBounds.z + s_ShadowDepthMargin;
 		if (farPlane <= nearPlane)
-			farPlane = nearPlane + SHADOW_DEPTH_MARGIN;
+			farPlane = nearPlane + s_ShadowDepthMargin;
 
 		const glm::mat4 lightProj = glm::ortho(minBounds.x, maxBounds.x, minBounds.y, maxBounds.y, nearPlane, farPlane);
 
@@ -163,8 +163,8 @@ namespace Rod {
 		s_SceneData->Shader = Shader::Create((Renderer::GetShaderDirectory() / "3D.glsl").string());
 		s_SceneData->ShadowShader = Shader::Create((Renderer::GetShaderDirectory() / "Shadow.glsl").string());
 
-		std::array<int, MAX_LIGHT_COUNT> shadowMapSamplers{};
-		for (uint32_t i = 0; i < MAX_LIGHT_COUNT; i++)
+		std::array<int, s_MaxLightCount> shadowMapSamplers{};
+		for (uint32_t i = 0; i < s_MaxLightCount; i++)
 			shadowMapSamplers[i] = static_cast<int>(i);
 
 		s_SceneData->Shader->Bind();
@@ -225,7 +225,7 @@ namespace Rod {
 	{
 		s_SceneData->Shader->Bind();
 
-		for (uint32_t i = 0; i < s_SceneData->LightSpaceMatrices.size() && i < MAX_LIGHT_COUNT; i++)
+		for (uint32_t i = 0; i < s_SceneData->LightSpaceMatrices.size() && i < s_MaxLightCount; i++)
 			s_SceneData->DepthMaps[i]->BindDepthAttachment(i);
 
 		for (const auto& command : s_SceneData->DrawCommands)
@@ -234,18 +234,18 @@ namespace Rod {
 			matrices.ViewProjection = s_SceneData->ViewProjection;
 			matrices.Transform = command.Transform;
 
-			s_SceneData->SceneUBO->BindBase(SCENE_BINDING);
+			s_SceneData->SceneUBO->BindBase(s_SceneBinding);
 			s_SceneData->SceneUBO->SetData(std::as_bytes(std::span{&matrices, 1}));
 
 			MaterialData materialData{};
 			materialData.Albedo = command.Material.GetAlbedo();
 			materialData.Emissive = command.Material.GetEmissive();
-			s_SceneData->MaterialUBO->BindBase(MATERIAL_BINDING);
+			s_SceneData->MaterialUBO->BindBase(s_MaterialBinding);
 			s_SceneData->MaterialUBO->SetData(std::as_bytes(std::span{&materialData, 1}));
 
 			DrawData drawData{};
 			drawData.EntityID = command.EntityID;
-			s_SceneData->DrawUBO->BindBase(DRAW_BINDING);
+			s_SceneData->DrawUBO->BindBase(s_DrawBinding);
 			s_SceneData->DrawUBO->SetData(std::as_bytes(std::span{&drawData, 1}));
 
 			command.Mesh->GetVAO()->Bind();
@@ -256,7 +256,7 @@ namespace Rod {
 
 	void Renderer3D::SetupScene(std::span<const DirectionalLightComponent> lights)
 	{
-		const auto lightCount = static_cast<uint32_t>(std::min(lights.size(), MAX_LIGHT_COUNT));
+		const auto lightCount = static_cast<uint32_t>(std::min(lights.size(), s_MaxLightCount));
 
 		if (s_SceneData->DepthMaps.size() < lightCount)
 		{
@@ -266,8 +266,8 @@ namespace Rod {
 			{
 				FramebufferSpecification fbspec;
 				fbspec.Attachments = {FramebufferTextureSpecification{FramebufferTextureFormat::DEPTH24}};
-				fbspec.Height = SHADOW_MAP_SIZE;
-				fbspec.Width = SHADOW_MAP_SIZE;
+				fbspec.Height = s_ShadowMapSize;
+				fbspec.Width = s_ShadowMapSize;
 				s_SceneData->DepthMaps.push_back(Framebuffer::Create(fbspec));
 			}
 
@@ -294,10 +294,10 @@ namespace Rod {
 		}
 		lightData.Count = lightCount;
 
-		s_SceneData->LightsUBO->BindBase(LIGHTS_BINDING);
+		s_SceneData->LightsUBO->BindBase(s_LightsBinding);
 		s_SceneData->LightsUBO->SetData(std::as_bytes(std::span{&lightData, 1}));
 
-		s_SceneData->ShadowUBO->BindBase(SHADOW_BINDING);
+		s_SceneData->ShadowUBO->BindBase(s_ShadowBinding);
 		s_SceneData->ShadowUBO->SetData(std::as_bytes(std::span{&shadowData, 1}));
 	}
 
@@ -322,7 +322,7 @@ namespace Rod {
 				matrices.ViewProjection = s_SceneData->LightSpaceMatrices[i];
 				matrices.Transform = command.Transform;
 
-				s_SceneData->SceneUBO->BindBase(SCENE_BINDING);
+				s_SceneData->SceneUBO->BindBase(s_SceneBinding);
 				s_SceneData->SceneUBO->SetData(std::as_bytes(std::span{&matrices, 1}));
 
 				command.Mesh->GetVAO()->Bind();

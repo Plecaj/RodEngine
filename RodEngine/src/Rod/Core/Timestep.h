@@ -11,10 +11,10 @@ namespace Rod {
 		[[nodiscard]] constexpr explicit operator float() const noexcept { return m_Time; };
 
 		[[nodiscard]] constexpr float GetSeconds() const noexcept { return m_Time; };
-		[[nodiscard]] constexpr float GetMilliseconds() const noexcept { return m_Time * MILLISECONDS_PER_SECOND; };
+		[[nodiscard]] constexpr float GetMilliseconds() const noexcept { return m_Time * s_MillisecondsPerSecond; };
 
 	private:
-		static constexpr float MILLISECONDS_PER_SECOND = 1000.0f;
+		static constexpr float s_MillisecondsPerSecond = 1000.0f;
 		float m_Time = 0.0f;
 	};
 

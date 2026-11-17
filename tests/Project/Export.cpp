@@ -76,7 +76,7 @@ TEST_CASE_METHOD(ExportFixture, "Game package paths remain valid after relocatio
 	Rod::ProjectExporter::Export(Source, Runtime, output);
 	const auto relocated = Root / "Moved Game";
 	std::filesystem::rename(output, relocated);
-	Rod::Project packaged{relocated / Rod::ProjectExporter::MANIFEST_FILENAME, {}};
+	Rod::Project packaged{relocated / Rod::ProjectExporter::s_ManifestFilename, {}};
 	Rod::ProjectSerializer::Deserialize(packaged);
 	REQUIRE(packaged.GetProperties().AssetsPath == "Content");
 	REQUIRE(packaged.GetProperties().ShadersPath == "RodAssets/Shaders");

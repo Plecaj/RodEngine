@@ -19,7 +19,7 @@ namespace Rod {
 	public:
 		ViewportPanel() = default;
 
-		static constexpr size_t BOUNDS_COUNT = 2;
+		static constexpr size_t s_BoundsCount = 2;
 		struct RenderContext
 		{
 			const Rod::Framebuffer& Framebuffer;
@@ -30,7 +30,7 @@ namespace Rod {
 			int& GizmoType;
 			glm::vec2& Size;
 			glm::vec2& PendingSize;
-			std::array<glm::vec2, BOUNDS_COUNT>& Bounds;
+			std::array<glm::vec2, s_BoundsCount>& Bounds;
 			bool& Focused;
 			bool& Hovered;
 			const std::filesystem::path& AssetsPath;
@@ -39,9 +39,9 @@ namespace Rod {
 		static void OnImGuiRender(const RenderContext& context);
 
 	private:
-		static constexpr size_t VECTOR_COMPONENT_COUNT = 3;
-		static constexpr float ROTATION_SNAP = 45.0f;
-		static constexpr float TRANSLATION_SNAP = 0.5f;
+		static constexpr size_t s_VectorComponentCount = 3;
+		static constexpr float s_RotationSnap = 45.0f;
+		static constexpr float s_TranslationSnap = 0.5f;
 		[[nodiscard]] static std::filesystem::path AcceptSceneDrop(const std::filesystem::path& assetsPath);
 		[[nodiscard]] static bool
 		GetCameraMatrices(const RenderContext& context, glm::mat4& view, glm::mat4& projection);

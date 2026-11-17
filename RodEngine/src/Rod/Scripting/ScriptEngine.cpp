@@ -55,7 +55,7 @@ namespace Rod {
 	{
 		struct HostFunctions
 		{
-			static constexpr auto TYPE_NAME = "Rod.Internal.ScriptHost, Rod.ScriptCore";
+			static constexpr auto s_TypeName = "Rod.Internal.ScriptHost, Rod.ScriptCore";
 			using InitializeFn = int32_t(RD_CDECL*)(NativeCall*, int32_t);
 			using ShutdownFn = void(RD_CDECL*)();
 			using LoadAssemblyFn = void*(RD_CDECL*)(const char*);
@@ -68,7 +68,7 @@ namespace Rod {
 			template <typename Function>
 			static Function Require(const ScriptRuntime& runtime, const char* name)
 			{
-				auto function = std::bit_cast<Function>(runtime.GetFunction(TYPE_NAME, name));
+				auto function = std::bit_cast<Function>(runtime.GetFunction(s_TypeName, name));
 				if (!function)
 					throw std::runtime_error("Script host function missing '" + std::string(name) + "'");
 				return function;
@@ -418,8 +418,8 @@ namespace Rod {
 
 	const std::unordered_map<std::string, ScriptClass>& ScriptEngine::GetScriptClasses()
 	{
-		static const std::unordered_map<std::string, ScriptClass> EMPTY_CLASSES;
-		return s_Data && s_Data->AppAssembly ? s_Data->AppAssembly->GetClasses() : EMPTY_CLASSES;
+		static const std::unordered_map<std::string, ScriptClass> emptyClasses;
+		return s_Data && s_Data->AppAssembly ? s_Data->AppAssembly->GetClasses() : emptyClasses;
 	}
 
 	ObserverPtr<ScriptClass> ScriptEngine::GetScriptClass(const std::string& className)

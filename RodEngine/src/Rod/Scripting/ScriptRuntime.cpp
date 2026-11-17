@@ -35,8 +35,8 @@ namespace Rod {
 
 		[[nodiscard]] std::shared_ptr<const SharedLibrary> GetHostFxrLibrary()
 		{
-			static const auto LIBRARY = std::make_shared<const SharedLibrary>(GetHostFxrPath());
-			return LIBRARY;
+			static const auto library = std::make_shared<const SharedLibrary>(GetHostFxrPath());
+			return library;
 		}
 	}
 

@@ -26,7 +26,7 @@ namespace Rod {
 		[[nodiscard]] std::span<const RecentProject> GetEntries() const noexcept { return m_Entries; }
 
 	private:
-		static constexpr std::size_t MAX_PROJECTS = 10;
+		static constexpr std::size_t s_MaxProjects = 10;
 		std::vector<RecentProject> m_Entries;
 	};
 

@@ -22,7 +22,7 @@ namespace Rod {
 	Scope<Application> CreateApplication(const std::optional<Project>& project)
 	{
 		const auto directory = Platform::GetExecutablePath().parent_path();
-		Project runtimeProject = project ? *project : Project{directory / ProjectExporter::MANIFEST_FILENAME, {}};
+		Project runtimeProject = project ? *project : Project{directory / ProjectExporter::s_ManifestFilename, {}};
 		if (!project)
 			ProjectSerializer::Deserialize(runtimeProject);
 		std::filesystem::current_path(directory);

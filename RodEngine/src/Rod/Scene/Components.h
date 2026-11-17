@@ -78,8 +78,8 @@ namespace Rod {
 
 	struct DirectionalLightComponent
 	{
-		static constexpr glm::vec3 DEFAULT_DIRECTION{0.667f, -0.667f, -0.333f};
-		glm::vec3 Direction = DEFAULT_DIRECTION;
+		static constexpr glm::vec3 s_DefaultDirection{0.667f, -0.667f, -0.333f};
+		glm::vec3 Direction = s_DefaultDirection;
 		glm::vec3 Color = glm::vec3(1.0f);
 		float Intensity = 1.0f;
 

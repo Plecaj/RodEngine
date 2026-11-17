@@ -12,13 +12,13 @@ namespace Rod {
 
 	class SubTexture2D
 	{
-		static constexpr size_t TEX_COORD_COUNT = 4;
+		static constexpr size_t s_TexCoordCount = 4;
 
 	public:
 		SubTexture2D(const Ref<Texture2D>& texture, const glm::vec2& min, const glm::vec2& max) noexcept;
 
 		[[nodiscard]] const Ref<Texture2D>& GetTexture() const noexcept { return m_Texture; }
-		[[nodiscard]] std::span<const glm::vec2, TEX_COORD_COUNT> GetTexCoords() const noexcept { return m_TexCoords; }
+		[[nodiscard]] std::span<const glm::vec2, s_TexCoordCount> GetTexCoords() const noexcept { return m_TexCoords; }
 
 		[[nodiscard]] static SubTexture2D CreateFromCoords(
 		    const Ref<Texture2D>& texture,
@@ -29,7 +29,7 @@ namespace Rod {
 	private:
 		Ref<Texture2D> m_Texture;
 
-		std::array<glm::vec2, TEX_COORD_COUNT> m_TexCoords;
+		std::array<glm::vec2, s_TexCoordCount> m_TexCoords;
 	};
 
 }

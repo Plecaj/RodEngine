@@ -45,11 +45,11 @@ namespace Rod {
 		void SetControlsEnabled(bool controlsEnabled) noexcept { m_ControlsEnabled = controlsEnabled; };
 
 	private:
-		static constexpr float ROTATION_SPEED = 0.8f;
-		static constexpr float ZOOM_DISTANCE_SCALE = 0.2f;
-		static constexpr float MAX_ZOOM_SPEED = 100.0f;
-		static constexpr float MOUSE_DELTA_SCALE = 0.003f;
-		static constexpr float SCROLL_DELTA_SCALE = 0.1f;
+		static constexpr float s_RotationSpeed = 0.8f;
+		static constexpr float s_ZoomDistanceScale = 0.2f;
+		static constexpr float s_MaxZoomSpeed = 100.0f;
+		static constexpr float s_MouseDeltaScale = 0.003f;
+		static constexpr float s_ScrollDeltaScale = 0.1f;
 
 		void UpdateProjection() noexcept;
 		void UpdateView() noexcept;
@@ -66,16 +66,16 @@ namespace Rod {
 		[[nodiscard]] float ZoomSpeed() const noexcept;
 
 	private:
-		static constexpr float DEFAULT_FOV = 45.0f;
-		static constexpr float DEFAULT_ASPECT_RATIO = 1.778f;
-		static constexpr float DEFAULT_NEAR_CLIP = 0.1f;
-		static constexpr float DEFAULT_FAR_CLIP = 1000.0f;
-		static constexpr float DEFAULT_DISTANCE = 10.0f;
-		static constexpr float DEFAULT_VIEWPORT_WIDTH = 1280.0f;
-		static constexpr float DEFAULT_VIEWPORT_HEIGHT = 720.0f;
+		static constexpr float s_DefaultFOV = 45.0f;
+		static constexpr float s_DefaultAspectRatio = 1.778f;
+		static constexpr float s_DefaultNearClip = 0.1f;
+		static constexpr float s_DefaultFarClip = 1000.0f;
+		static constexpr float s_DefaultDistance = 10.0f;
+		static constexpr float s_DefaultViewportWidth = 1280.0f;
+		static constexpr float s_DefaultViewportHeight = 720.0f;
 
-		float m_FOV = DEFAULT_FOV, m_AspectRatio = DEFAULT_ASPECT_RATIO;
-		float m_NearClip = DEFAULT_NEAR_CLIP, m_FarClip = DEFAULT_FAR_CLIP;
+		float m_FOV = s_DefaultFOV, m_AspectRatio = s_DefaultAspectRatio;
+		float m_NearClip = s_DefaultNearClip, m_FarClip = s_DefaultFarClip;
 
 		glm::mat4 m_ViewMatrix = glm::mat4(1.0f);
 		glm::vec3 m_Position = {0.0f, 0.0f, 0.0f};
@@ -83,10 +83,10 @@ namespace Rod {
 
 		glm::vec2 m_InitialMousePosition = {0.0f, 0.0f};
 
-		float m_Distance = DEFAULT_DISTANCE;
+		float m_Distance = s_DefaultDistance;
 		float m_Pitch = 0.0f, m_Yaw = 0.0f;
 
-		float m_ViewportWidth = DEFAULT_VIEWPORT_WIDTH, m_ViewportHeight = DEFAULT_VIEWPORT_HEIGHT;
+		float m_ViewportWidth = s_DefaultViewportWidth, m_ViewportHeight = s_DefaultViewportHeight;
 
 		bool m_ControlsEnabled = true;
 	};

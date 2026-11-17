@@ -55,10 +55,10 @@ namespace Rod {
 
 	float EditorCamera::ZoomSpeed() const noexcept
 	{
-		float distance = m_Distance * ZOOM_DISTANCE_SCALE;
+		float distance = m_Distance * s_ZoomDistanceScale;
 		distance = std::max(distance, 0.0f);
 		float speed = distance * distance;
-		speed = std::min(speed, MAX_ZOOM_SPEED);
+		speed = std::min(speed, s_MaxZoomSpeed);
 		return speed;
 	}
 
@@ -69,7 +69,7 @@ namespace Rod {
 		if (Input::IsKeyPressed(Key::LeftAlt) && m_ControlsEnabled)
 		{
 			const glm::vec2& mouse{Input::GetMouseX(), Input::GetMouseY()};
-			const glm::vec2 delta = (mouse - m_InitialMousePosition) * MOUSE_DELTA_SCALE;
+			const glm::vec2 delta = (mouse - m_InitialMousePosition) * s_MouseDeltaScale;
 			m_InitialMousePosition = mouse;
 
 			if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
@@ -90,7 +90,7 @@ namespace Rod {
 
 	bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e) noexcept
 	{
-		const float delta = e.GetYOffset() * SCROLL_DELTA_SCALE;
+		const float delta = e.GetYOffset() * s_ScrollDeltaScale;
 		MouseZoom(delta);
 		UpdateView();
 		return false;
@@ -106,8 +106,8 @@ namespace Rod {
 	void EditorCamera::MouseRotate(const glm::vec2& delta) noexcept
 	{
 		const float yawSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
-		m_Yaw += yawSign * delta.x * ROTATION_SPEED;
-		m_Pitch += delta.y * ROTATION_SPEED;
+		m_Yaw += yawSign * delta.x * s_RotationSpeed;
+		m_Pitch += delta.y * s_RotationSpeed;
 	}
 
 	void EditorCamera::MouseZoom(float delta) noexcept

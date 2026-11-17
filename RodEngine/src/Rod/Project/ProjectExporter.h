@@ -12,7 +12,7 @@ namespace Rod {
 	class ProjectExporter
 	{
 	public:
-		static constexpr auto MANIFEST_FILENAME = "Game.rodproj";
+		static constexpr auto s_ManifestFilename = "Game.rodproj";
 
 		static void Export(
 		    const Project& project,

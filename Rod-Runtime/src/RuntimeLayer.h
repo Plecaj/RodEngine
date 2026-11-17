@@ -26,7 +26,7 @@ namespace Rod {
 
 	private:
 		const Project& m_Project;
-		static constexpr glm::vec4 CLEAR_COLOR{0.15f, 0.15f, 0.15f, 1.0f};
+		static constexpr glm::vec4 s_ClearColor{0.15f, 0.15f, 0.15f, 1.0f};
 		Scope<Scene> m_Scene;
 		bool m_RunningScene = false;
 	};

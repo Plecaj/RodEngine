@@ -102,16 +102,16 @@ namespace Rod {
 	{
 		switch (level)
 		{
-			case LOG_LEVEL_TRACE:
+			case s_LogLevelTrace:
 				RD_TRACE("{}", message);
 				break;
-			case LOG_LEVEL_INFO:
+			case s_LogLevelInfo:
 				RD_INFO("{}", message);
 				break;
-			case LOG_LEVEL_WARNING:
+			case s_LogLevelWarning:
 				RD_WARN("{}", message);
 				break;
-			case LOG_LEVEL_ERROR:
+			case s_LogLevelError:
 				RD_ERROR("{}", message);
 				break;
 			default:

@@ -168,7 +168,7 @@ namespace Rod {
 		}
 		if (IsWithin(root, output) || IsWithin(runtime, output))
 			throw std::runtime_error("Export destination contains the project directory: " + output.string());
-		if (std::filesystem::exists(output) && !std::filesystem::is_regular_file(output / MANIFEST_FILENAME))
+		if (std::filesystem::exists(output) && !std::filesystem::is_regular_file(output / s_ManifestFilename))
 			throw std::runtime_error("Export destination already exists and is not a game package: " + output.string());
 
 		auto staging = output;
@@ -178,7 +178,7 @@ namespace Rod {
 		properties.ScriptsProjectPath = scripts;
 		properties.StartupScenePath = assets / "Scenes/Startup.rod";
 		properties.ShadersPath = "RodAssets/Shaders";
-		const Project packaged{staging / MANIFEST_FILENAME, std::move(properties)};
+		const Project packaged{staging / s_ManifestFilename, std::move(properties)};
 
 		try
 		{

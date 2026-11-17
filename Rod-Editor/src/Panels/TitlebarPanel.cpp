@@ -124,7 +124,7 @@ namespace Rod {
 	TitlebarPanel::TitlebarPanel()
 	{
 		m_Logo = Texture2D::Create("RodAssets/Textures/titlebarLogo.png");
-		m_ButtonSize = ImVec2(BUTTON_WIDTH, static_cast<float>(HEIGHT));
+		m_ButtonSize = ImVec2(s_ButtonWidth, static_cast<float>(s_Height));
 	}
 
 	void TitlebarPanel::OnImGuiRender() const
@@ -140,7 +140,7 @@ namespace Rod {
 		ImDrawList& drawList = *ImGui::GetWindowDrawList();
 		const ImVec2 windowMin = ImGui::GetWindowPos();
 		const ImVec2 windowMax =
-		    ImVec2(windowMin.x + ImGui::GetWindowWidth(), windowMin.y + static_cast<float>(HEIGHT));
+		    ImVec2(windowMin.x + ImGui::GetWindowWidth(), windowMin.y + static_cast<float>(s_Height));
 		drawList.AddRectFilled(windowMin, windowMax, backgroundColor);
 		drawList.AddLine(ImVec2(windowMin.x, windowMax.y - 1.0f), ImVec2(windowMax.x, windowMax.y - 1.0f), borderColor);
 

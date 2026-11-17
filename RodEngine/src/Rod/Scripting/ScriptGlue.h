@@ -30,10 +30,10 @@ namespace Rod {
 		struct ScriptVec3;
 		struct ScriptVec4;
 		enum class ScriptComponentType : int32_t;
-		static constexpr int32_t LOG_LEVEL_TRACE = 0;
-		static constexpr int32_t LOG_LEVEL_INFO = 1;
-		static constexpr int32_t LOG_LEVEL_WARNING = 2;
-		static constexpr int32_t LOG_LEVEL_ERROR = 3;
+		static constexpr int32_t s_LogLevelTrace = 0;
+		static constexpr int32_t s_LogLevelInfo = 1;
+		static constexpr int32_t s_LogLevelWarning = 2;
+		static constexpr int32_t s_LogLevelError = 3;
 
 		[[nodiscard]] static glm::vec3 ToGLM(ScriptVec3 value);
 		[[nodiscard]] static glm::vec4 ToGLM(ScriptVec4 value);

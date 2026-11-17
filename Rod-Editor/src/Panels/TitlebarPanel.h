@@ -23,11 +23,11 @@ namespace Rod {
 		void SetSaveSceneAsCallback(std::function<void()> callback) noexcept { m_SaveSceneAs = std::move(callback); }
 		void SetExportGameCallback(std::function<void()> callback) noexcept { m_ExportGame = std::move(callback); }
 
-		[[nodiscard]] static constexpr uint32_t GetHeight() noexcept { return HEIGHT; }
+		[[nodiscard]] static constexpr uint32_t GetHeight() noexcept { return s_Height; }
 
 	private:
-		static constexpr uint32_t HEIGHT = 36;
-		static constexpr float BUTTON_WIDTH = 46.0f;
+		static constexpr uint32_t s_Height = 36;
+		static constexpr float s_ButtonWidth = 46.0f;
 		void DrawFileMenu() const;
 		void DrawButtons() const;
 

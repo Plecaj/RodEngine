@@ -61,7 +61,7 @@ namespace Rod {
 
 	void RuntimeLayer::OnUpdate(Timestep ts)
 	{
-		RenderCommand::SetClearColor(CLEAR_COLOR);
+		RenderCommand::SetClearColor(s_ClearColor);
 		RenderCommand::Clear();
 		Renderer2D::ResetStats();
 

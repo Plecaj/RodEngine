@@ -31,19 +31,19 @@ namespace Rod {
 		virtual void OnEvent(Event& event) override;
 
 	private:
-		static constexpr float LEFT_DOCK_RATIO = 0.230f;
-		static constexpr float RIGHT_DOCK_RATIO = 0.299f;
-		static constexpr float LEFT_BOTTOM_DOCK_RATIO = 0.498f;
-		static constexpr float CENTER_BOTTOM_DOCK_RATIO = 0.245f;
-		static constexpr float TOOLBAR_DOCK_RATIO = 0.066f;
-		static constexpr float RIGHT_BOTTOM_DOCK_RATIO = 0.724f;
-		static constexpr float RIGHT_LOWER_DOCK_RATIO = 0.408f;
-		static constexpr float EDITOR_FOV = 30.0f;
-		static constexpr float EDITOR_ASPECT_RATIO = 1.778f;
-		static constexpr float EDITOR_NEAR_CLIP = 1.0f;
-		static constexpr float EDITOR_FAR_CLIP = 1000.0f;
-		static constexpr glm::vec2 DEFAULT_VIEWPORT_SIZE{1280.0f, 720.0f};
-		static constexpr glm::vec4 CLEAR_COLOR{0.15f, 0.15f, 0.15f, 1.0f};
+		static constexpr float s_LeftDockRatio = 0.230f;
+		static constexpr float s_RightDockRatio = 0.299f;
+		static constexpr float s_LeftBottomDockRatio = 0.498f;
+		static constexpr float s_CenterBottomDockRatio = 0.245f;
+		static constexpr float s_ToolbarDockRatio = 0.066f;
+		static constexpr float s_RightBottomDockRatio = 0.724f;
+		static constexpr float s_RightLowerDockRatio = 0.408f;
+		static constexpr float s_EditorFOV = 30.0f;
+		static constexpr float s_EditorAspectRatio = 1.778f;
+		static constexpr float s_EditorNearClip = 1.0f;
+		static constexpr float s_EditorFarClip = 1000.0f;
+		static constexpr glm::vec2 s_DefaultViewportSize{1280.0f, 720.0f};
+		static constexpr glm::vec4 s_ClearColor{0.15f, 0.15f, 0.15f, 1.0f};
 
 		void SetupDefaultDockLayout(ImGuiID dockspaceID);
 
@@ -87,9 +87,9 @@ namespace Rod {
 
 		bool m_ViewportFocused = false;
 		bool m_ViewportHovered = false;
-		glm::vec2 m_ViewportSize = DEFAULT_VIEWPORT_SIZE;
-		glm::vec2 m_PendingViewportSize = DEFAULT_VIEWPORT_SIZE;
-		std::array<glm::vec2, ViewportPanel::BOUNDS_COUNT> m_ViewportBounds{};
+		glm::vec2 m_ViewportSize = s_DefaultViewportSize;
+		glm::vec2 m_PendingViewportSize = s_DefaultViewportSize;
+		std::array<glm::vec2, ViewportPanel::s_BoundsCount> m_ViewportBounds{};
 
 		bool m_Profiling = false;
 

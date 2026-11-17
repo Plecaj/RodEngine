@@ -14,7 +14,7 @@ namespace Rod {
 
 		[[nodiscard]] ScriptFieldType ScriptFieldTypeFromString(const std::string& type)
 		{
-			static const std::unordered_map<std::string, ScriptFieldType> FIELD_TYPES = {
+			static const std::unordered_map<std::string, ScriptFieldType> fieldTypes = {
 			    {"Single", ScriptFieldType::Float},
 			    {"Double", ScriptFieldType::Double},
 			    {"Boolean", ScriptFieldType::Bool},
@@ -33,8 +33,8 @@ namespace Rod {
 			    {"Entity", ScriptFieldType::Entity},
 			    {"String", ScriptFieldType::String}};
 
-			auto it = FIELD_TYPES.find(type);
-			return it != FIELD_TYPES.end() ? it->second : ScriptFieldType::None;
+			auto it = fieldTypes.find(type);
+			return it != fieldTypes.end() ? it->second : ScriptFieldType::None;
 		}
 	}
 

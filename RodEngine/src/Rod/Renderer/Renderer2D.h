@@ -12,8 +12,8 @@ namespace Rod {
 	class Renderer2D
 	{
 	public:
-		static constexpr uint32_t QUAD_VERTEX_COUNT = 4;
-		static constexpr uint32_t QUAD_INDEX_COUNT = 6;
+		static constexpr uint32_t s_QuadVertexCount = 4;
+		static constexpr uint32_t s_QuadIndexCount = 6;
 
 		static void Init();
 		static void Shutdown();
@@ -39,11 +39,11 @@ namespace Rod {
 
 			[[nodiscard]] constexpr uint32_t GetTotalVertexCount() const noexcept
 			{
-				return QuadCount * QUAD_VERTEX_COUNT;
+				return QuadCount * s_QuadVertexCount;
 			};
 			[[nodiscard]] constexpr uint32_t GetTotalIndexCount() const noexcept
 			{
-				return QuadCount * QUAD_INDEX_COUNT;
+				return QuadCount * s_QuadIndexCount;
 			};
 		};
 		static void ResetStats() noexcept;

@@ -92,8 +92,8 @@ jobs:
         if: runner.os == 'Linux'
         env:
           LIBGL_ALWAYS_SOFTWARE: 'true'
-          GALLIUM_DRIVER: zink
-          VK_DRIVER_FILES: /usr/share/vulkan/icd.d/lvp_icd.x86_64.json
+          MESA_LOADER_DRIVER_OVERRIDE: zink
+          VK_LOADER_DRIVERS_SELECT: 'lvp_icd*'
         run: |
           xvfb-run -a bash -e -c '
             glxinfo -B

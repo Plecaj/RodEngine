@@ -1,0 +1,294 @@
+Scene: Orbital Relay
+Entities:
+  - Entity: 16170209813130000
+    TagComponent:
+      Tag: Showcase Camera
+    TransformComponent:
+      Translation: [5.8, 3.95, 4.9]
+      Rotation: [-0.339, 0.471, 0]
+      Scale: [1, 1, 1]
+    CameraComponent:
+      Camera:
+        ProjectionType: 0
+        PerspectiveFOV: 0.57
+        PerspectiveNear: 0.1
+        PerspectiveFar: 42
+        OrthographicSize: 6
+        OrthographicNear: -1
+        OrthographicFar: 1
+      Primary: true
+      FixedAspectRatio: false
+  - Entity: 16170209813130001
+    TagComponent:
+      Tag: Warm Key Light
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    DirectionalLightComponent:
+      Direction: [0.55, -0.82, -0.44]
+      Color: [1, 0.86, 0.65]
+      Intensity: 1
+  - Entity: 16170209813130002
+    TagComponent:
+      Tag: Blue Fill Light
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    DirectionalLightComponent:
+      Direction: [-0.73, -0.33, -0.64]
+      Color: [0.36, 0.63, 1]
+      Intensity: 0.4
+  - Entity: 16170209813130003
+    TagComponent:
+      Tag: Cool Rim Light
+    TransformComponent:
+      Translation: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    DirectionalLightComponent:
+      Direction: [-0.23, -0.62, 0.75]
+      Color: [0.44, 0.76, 1]
+      Intensity: 0.68
+  - Entity: 16170209813130004
+    TagComponent:
+      Tag: Ground
+    TransformComponent:
+      Translation: [0, -2.4, -6.5]
+      Rotation: [0, 0, 0]
+      Scale: [40, 0.16, 40]
+    MeshComponent:
+      Path: Assets/Meshes/Cube.glb
+      Albedo: [0.073, 0.105, 0.143, 1]
+      Emissive: [0.013, 0.017, 0.024]
+      Roughness: 0.7
+      Metallic: 0
+  - Entity: 16170209813130005
+    TagComponent:
+      Tag: Relay Deck
+    TransformComponent:
+      Translation: [0, -1.75, -6.5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Path: Assets/Meshes/Relay/RelayDeck.glb
+      Albedo: [0.183, 0.263, 0.32, 1]
+      Emissive: [0, 0, 0]
+      Roughness: 0.7
+      Metallic: 0
+  - Entity: 16170209813130006
+    TagComponent:
+      Tag: Deck Stencils
+    TransformComponent:
+      Translation: [0, -1.75, -6.5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Path: Assets/Meshes/Relay/DeckMarkings.glb
+      Albedo: [0.66, 0.51, 0.27, 1]
+      Emissive: [0.028, 0.02, 0.006]
+      Roughness: 0.7
+      Metallic: 0
+  - Entity: 16170209813130007
+    TagComponent:
+      Tag: Guide Light Housings
+    TransformComponent:
+      Translation: [0, -1.75, -6.5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Path: Assets/Meshes/Relay/GuideHousings.glb
+      Albedo: [0.068, 0.09, 0.12, 1]
+      Emissive: [0, 0, 0]
+      Roughness: 0.7
+      Metallic: 0
+  - Entity: 16170209813130008
+    TagComponent:
+      Tag: Amber Guide Lights
+    TransformComponent:
+      Translation: [0, -1.75, -6.5]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Path: Assets/Meshes/Relay/GuideLights.glb
+      Albedo: [0.73, 0.28, 0.047, 1]
+      Emissive: [0.32, 0.11, 0.021]
+      Roughness: 0.7
+      Metallic: 0
+  - Entity: 16170209813130009
+    TagComponent:
+      Tag: Dish Pedestal
+    TransformComponent:
+      Translation: [-0.78, -1.75, -6.96]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Path: Assets/Meshes/Relay/DishPedestal.glb
+      Albedo: [0.116, 0.169, 0.209, 1]
+      Emissive: [0, 0, 0]
+      Roughness: 0.7
+      Metallic: 0
+  - Entity: 16170209813130010
+    TagComponent:
+      Tag: Reflector
+    TransformComponent:
+      Translation: [-0.78, -1.38, -6.96]
+      Rotation: [0, -2.61, 0]
+      Scale: [5.25, 5.25, 5.25]
+    MeshComponent:
+      Path: Assets/Meshes/Relay/DishReflector.glb
+      Albedo: [0.79, 0.81, 0.78, 1]
+      Emissive: [0, 0, 0]
+      Roughness: 0.7
+      Metallic: 0
+  - Entity: 16170209813130011
+    TagComponent:
+      Tag: Reflector Frame
+    TransformComponent:
+      Translation: [-0.78, -1.38, -6.96]
+      Rotation: [0, -2.61, 0]
+      Scale: [5.25, 5.25, 5.25]
+    MeshComponent:
+      Path: Assets/Meshes/Relay/DishFrame.glb
+      Albedo: [0.28, 0.39, 0.46, 1]
+      Emissive: [0, 0, 0]
+      Roughness: 0.7
+      Metallic: 0
+  - Entity: 16170209813130012
+    TagComponent:
+      Tag: Reflector Fasteners
+    TransformComponent:
+      Translation: [-0.78, -1.38, -6.96]
+      Rotation: [0, -2.61, 0]
+      Scale: [5.25, 5.25, 5.25]
+    MeshComponent:
+      Path: Assets/Meshes/Relay/DishFasteners.glb
+      Albedo: [0.56, 0.67, 0.73, 1]
+      Emissive: [0, 0, 0]
+      Roughness: 0.7
+      Metallic: 0
+  - Entity: 16170209813130013
+    TagComponent:
+      Tag: Reflector Trim
+    TransformComponent:
+      Translation: [-0.78, -1.38, -6.96]
+      Rotation: [0, -2.61, 0]
+      Scale: [5.25, 5.25, 5.25]
+    MeshComponent:
+      Path: Assets/Meshes/Relay/DishTrim.glb
+      Albedo: [0.79, 0.4, 0.12, 1]
+      Emissive: [0, 0, 0]
+      Roughness: 0.7
+      Metallic: 0
+  - Entity: 16170209813130014
+    TagComponent:
+      Tag: Receiver Mount
+    TransformComponent:
+      Translation: [-0.78, -1.38, -6.96]
+      Rotation: [0, -2.61, 0]
+      Scale: [5.25, 5.25, 5.25]
+    MeshComponent:
+      Path: Assets/Meshes/Relay/DishMount.glb
+      Albedo: [0.115, 0.17, 0.21, 1]
+      Emissive: [0, 0, 0]
+      Roughness: 0.7
+      Metallic: 0
+  - Entity: 16170209813130015
+    TagComponent:
+      Tag: Telemetry Rack
+    TransformComponent:
+      Translation: [2.38, -1.75, -6.32]
+      Rotation: [0, -0.16, 0]
+      Scale: [1.06, 1.25, 1.1]
+    MeshComponent:
+      Path: Assets/Meshes/Relay/EquipmentHousing.glb
+      Albedo: [0.104, 0.163, 0.213, 1]
+      Emissive: [0, 0, 0]
+      Roughness: 0.7
+      Metallic: 0
+  - Entity: 16170209813130016
+    TagComponent:
+      Tag: Telemetry Rack Panels
+    TransformComponent:
+      Translation: [2.38, -1.75, -6.32]
+      Rotation: [0, -0.16, 0]
+      Scale: [1.06, 1.25, 1.1]
+    MeshComponent:
+      Path: Assets/Meshes/Relay/EquipmentPanels.glb
+      Albedo: [0.134, 0.36, 0.39, 1]
+      Emissive: [0, 0, 0]
+      Roughness: 0.7
+      Metallic: 0
+  - Entity: 16170209813130017
+    TagComponent:
+      Tag: Telemetry Rack Indicators
+    TransformComponent:
+      Translation: [2.38, -1.75, -6.32]
+      Rotation: [0, -0.16, 0]
+      Scale: [1.06, 1.25, 1.1]
+    MeshComponent:
+      Path: Assets/Meshes/Relay/EquipmentIndicators.glb
+      Albedo: [0.15, 0.55, 0.58, 1]
+      Emissive: [0.04, 0.32, 0.36]
+      Roughness: 0.7
+      Metallic: 0
+  - Entity: 16170209813130018
+    TagComponent:
+      Tag: Power Module
+    TransformComponent:
+      Translation: [2.47, -1.75, -8.08]
+      Rotation: [0, 0.09, 0]
+      Scale: [0.9, 0.95, 0.93]
+    MeshComponent:
+      Path: Assets/Meshes/Relay/EquipmentHousing.glb
+      Albedo: [0.104, 0.163, 0.213, 1]
+      Emissive: [0, 0, 0]
+      Roughness: 0.7
+      Metallic: 0
+  - Entity: 16170209813130019
+    TagComponent:
+      Tag: Power Module Panels
+    TransformComponent:
+      Translation: [2.47, -1.75, -8.08]
+      Rotation: [0, 0.09, 0]
+      Scale: [0.9, 0.95, 0.93]
+    MeshComponent:
+      Path: Assets/Meshes/Relay/EquipmentPanels.glb
+      Albedo: [0.57, 0.28, 0.108, 1]
+      Emissive: [0, 0, 0]
+      Roughness: 0.7
+      Metallic: 0
+  - Entity: 16170209813130020
+    TagComponent:
+      Tag: Power Module Indicators
+    TransformComponent:
+      Translation: [2.47, -1.75, -8.08]
+      Rotation: [0, 0.09, 0]
+      Scale: [0.9, 0.95, 0.93]
+    MeshComponent:
+      Path: Assets/Meshes/Relay/EquipmentIndicators.glb
+      Albedo: [0.69, 0.41, 0.11, 1]
+      Emissive: [0.2, 0.08, 0.015]
+      Roughness: 0.7
+      Metallic: 0
+  - Entity: 16170209813130021
+    TagComponent:
+      Tag: Rotating Signal Beacon
+    TransformComponent:
+      Translation: [2.4, -0.21, -6.34]
+      Rotation: [0, 0.36, 0]
+      Scale: [1, 1, 1]
+    MeshComponent:
+      Path: Assets/Meshes/Relay/SignalBeacon.glb
+      Albedo: [0.093, 0.52, 0.53, 1]
+      Emissive: [0.045, 0.49, 0.52]
+      Roughness: 0.7
+      Metallic: 0
+    ScriptComponent:
+      ClassName: Game.Rotator
+      Fields:
+        - Name: Speed
+          Type: 1
+          TypeName: Single
+          Value: 0.85

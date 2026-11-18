@@ -2,7 +2,7 @@
 
 #include "PerformancePanel.h"
 
-#include "Rod/Renderer/Renderer2D.h"
+// #include "Rod/Renderer/Renderer2D.h"
 
 #include "imgui.h"
 
@@ -18,12 +18,11 @@ namespace Rod {
 		ImGui::Text("FPS: %.1f", fps);
 		ImGui::Text("Frame Time: %.3f ms", deltaTime * millisecondsPerSecond);
 
-		ImGui::Separator();
-
-		auto stats = Renderer2D::GetStats();
-		ImGui::TextDisabled("Renderer 2D");
-		ImGui::Text("Draw Calls: %u", stats.DrawCalls);
-		ImGui::Text("Quad Count: %u", stats.QuadCount);
+		// ImGui::Separator();
+		// auto stats = Renderer2D::GetStats();
+		// ImGui::TextDisabled("Renderer 2D");
+		// ImGui::Text("Draw Calls: %u", stats.DrawCalls);
+		// ImGui::Text("Quad Count: %u", stats.QuadCount);
 
 		ImGui::End();
 	}

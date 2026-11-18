@@ -8,7 +8,11 @@
 
 namespace Rod {
 
-	ShaderCacheDatabase::ShaderCacheDatabase() : m_CacheDirectory(Renderer::GetShaderDirectory() / "Cached")
+	ShaderCacheDatabase::ShaderCacheDatabase() : ShaderCacheDatabase(Renderer::GetShaderDirectory() / "Cached")
+	{}
+
+	ShaderCacheDatabase::ShaderCacheDatabase(std::filesystem::path cacheDirectory)
+	    : m_CacheDirectory(std::move(cacheDirectory))
 	{
 		if (!std::filesystem::exists(m_CacheDirectory))
 		{

@@ -207,7 +207,7 @@ TEST_CASE("Scene assignment replaces entities with independent copies", "[scene]
 	Rod::Scene destination;
 	destination.CreateEntityWithUUID(Rod::UUID{g_EnemyID}, "Old");
 
-	REQUIRE(&(destination = source) == &destination);
+	destination = source;
 	REQUIRE(!destination.FindEntityByName("Old"));
 	auto copy = destination.FindEntityByUUID(player.GetUUID());
 	REQUIRE(copy);

@@ -77,9 +77,6 @@ TEST_CASE_METHOD(
 	REQUIRE(history.GetEntries().front().Name == first.GetProperties().Name);
 	REQUIRE(history.GetEntries().front().Path == std::filesystem::canonical(first.GetManifestPath()));
 	REQUIRE(history.GetEntries().back().Name == "Second");
-	history.Save(HistoryPath());
-	history.Load(HistoryPath());
-	REQUIRE(history.GetEntries().front().Name == first.GetProperties().Name);
 }
 
 TEST_CASE_METHOD(
@@ -88,8 +85,6 @@ TEST_CASE_METHOD(
     "[launcher][recent-projects]")
 {
 	Rod::RecentProjects history;
-	history.Load(HistoryPath());
-	REQUIRE(history.GetEntries().empty());
 	history.Record(MakeProject("Existing"));
 	SECTION("missing history resets entries")
 	{

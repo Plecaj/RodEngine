@@ -79,16 +79,9 @@ namespace Rod {
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		glTextureSubImage2D(
-		    m_RendererID,
-		    0,
-		    0,
-		    0,
-		    static_cast<GLsizei>(m_Width),
-		    static_cast<GLsizei>(m_Height),
-		    dataFormat,
-		    GL_UNSIGNED_BYTE,
-		    data.get());
+		OpenGLTexture2D::SetData(
+		    std::as_bytes(
+		        std::span{data.get(), static_cast<size_t>(m_Width) * m_Height * static_cast<size_t>(channels)}));
 	}
 
 	OpenGLTexture2D::~OpenGLTexture2D()
@@ -106,6 +99,9 @@ namespace Rod {
 		                             (m_DataFormat == GL_RGBA ? g_RgbaChannelCount : g_RgbChannelCount),
 		    "Data must be entire texture");
 
+		GLint unpackAlignment = 0;
+		glGetIntegerv(GL_UNPACK_ALIGNMENT, &unpackAlignment);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glTextureSubImage2D(
 		    m_RendererID,
 		    0,
@@ -116,6 +112,7 @@ namespace Rod {
 		    m_DataFormat,
 		    GL_UNSIGNED_BYTE,
 		    data.data());
+		glPixelStorei(GL_UNPACK_ALIGNMENT, unpackAlignment);
 	}
 
 	void OpenGLTexture2D::Bind(uint32_t slot) const

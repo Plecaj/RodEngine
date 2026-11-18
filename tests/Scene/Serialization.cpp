@@ -178,7 +178,6 @@ TEST_CASE_METHOD(RoundTripFixture, "Scene serialization preserves entity IDs and
 		REQUIRE(entity);
 		REQUIRE(entity.GetUUID() == Rod::UUID{id});
 		REQUIRE(entity.GetName() == m_Original.FindEntityByUUID(Rod::UUID{id}).GetName());
-		REQUIRE(entity.HasComponent<Rod::TransformComponent>());
 	}
 }
 

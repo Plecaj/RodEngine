@@ -2,6 +2,7 @@ include(vendor/Catch2)
 
 add_executable(RodEngineTests
     Core/LayerStack.cpp
+    Core/Events.cpp
     Math/Math.cpp
     Project/Serialization.cpp
     Project/Export.cpp
@@ -13,13 +14,20 @@ add_executable(RodEngineTests
     ../Rod-Editor/src/EditorCommands.cpp
     Platform/SharedLibrary.cpp
     Renderer/Mesh.cpp
+    Renderer/BufferLayout.cpp
     Renderer/Texture.cpp
+    Renderer/OpenGLTexture.cpp
+    Renderer/Framebuffer.cpp
+    Renderer/OpenGLMesh.cpp
+    Renderer/Shader.cpp
+    Renderer/ShaderCacheDatabase.cpp
     Scripting/ScriptAssembly.cpp
     Scripting/ScriptGlue.cpp
     Scripting/ScriptRuntime.cpp
     Scene/Scene.cpp
     Scene/SceneCamera.cpp
     Scene/Serialization.cpp
+    Scene/Resources.cpp
 )
 
 add_library(RodTestLibrary SHARED Platform/TestLibrary.cpp)
@@ -48,10 +56,15 @@ endif()
 
 rod_configure_cpp_target(RodEngineTests)
 
-target_compile_definitions(RodEngineTests PRIVATE CATCH_CONFIG_NO_COUNTER)
+target_compile_definitions(RodEngineTests PRIVATE
+    CATCH_CONFIG_NO_COUNTER
+    ROD_TEST_ASSET_DIRECTORY="${CMAKE_CURRENT_SOURCE_DIR}/Assets"
+    ROD_TEST_SHADER_DIRECTORY="${PROJECT_SOURCE_DIR}/RodAssets/Shaders"
+)
 target_link_libraries(RodEngineTests PRIVATE
     Rod::Engine
     Rod::Glad
+    Rod::GLFW
     Rod::YamlCpp
     Catch2::Catch2WithMain
 )
@@ -60,4 +73,4 @@ if(TARGET RodDotnetHost-Copy)
     add_dependencies(RodEngineTests RodDotnetHost-Copy)
 endif()
 
-catch_discover_tests(RodEngineTests)
+catch_discover_tests(RodEngineTests ADD_TAGS_AS_LABELS)

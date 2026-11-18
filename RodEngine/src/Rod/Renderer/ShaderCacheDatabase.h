@@ -14,6 +14,8 @@ namespace Rod {
 	class ShaderCacheDatabase
 	{
 	public:
+		explicit ShaderCacheDatabase(std::filesystem::path cacheDirectory);
+
 		[[nodiscard]] bool CacheShader(const std::string& key, std::span<const uint32_t> data);
 		void AddValidKey(const std::string& key) { m_ValidKeys.insert(key); }
 		[[nodiscard]] bool Contains(const std::string& key) const;

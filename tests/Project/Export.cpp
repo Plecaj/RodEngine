@@ -1,6 +1,6 @@
 #include "rdpch.h"
 
-#include "Rod/Core/UUID.h"
+#include "../TemporaryDirectory.h"
 #include "Rod/Project/Project.h"
 #include "Rod/Project/ProjectExporter.h"
 #include "Rod/Project/ProjectSerializer.h"
@@ -14,23 +14,23 @@
 #include <yaml-cpp/yaml.h> // IWYU pragma: keep
 
 #include <stdexcept>
-#include <system_error>
 
 namespace {
 	class ExportFixture
 	{
+	private:
+		Rod::Tests::TemporaryDirectory m_Directory;
+
 	public:
 		ExportFixture()
-		    : Root(
-		          std::filesystem::temp_directory_path() /
-		          ("rod-export-" + std::to_string(static_cast<uint64_t>(Rod::UUID{})))),
-		      Runtime(Root / "Engine/Rod-Runtime"), Source(
-		                                                Root / "Source/Project.rodproj",
-		                                                {.Name = "Test Game",
-		                                                 .AssetsPath = "Content",
-		                                                 .StartupScenePath = "Content/Scenes/Main.rod",
-		                                                 .ScriptsProjectPath = "Content/Scripts/Game.csproj",
-		                                                 .ShadersPath = Root / "Shaders"})
+		    : Root(m_Directory.GetPath()), Runtime(Root / "Engine/Rod-Runtime"),
+		      Source(
+		          Root / "Source/Project.rodproj",
+		          {.Name = "Test Game",
+		           .AssetsPath = "Content",
+		           .StartupScenePath = "Content/Scenes/Main.rod",
+		           .ScriptsProjectPath = "Content/Scripts/Game.csproj",
+		           .ShadersPath = Root / "Shaders"})
 		{
 			Rod::WriteTextFile(Runtime, "runtime");
 			Rod::WriteTextFile(Runtime.parent_path() / "nethost.dll", "native dependency");
@@ -54,16 +54,6 @@ namespace {
 			    Rod::ScriptBuilder::GetAssemblyPath(Source.GetScriptProjectPath()).parent_path() / "Dependency.dll",
 			    "dependency");
 		}
-		ExportFixture(const ExportFixture&) = delete;
-		ExportFixture& operator=(const ExportFixture&) = delete;
-		ExportFixture(ExportFixture&&) = delete;
-		ExportFixture& operator=(ExportFixture&&) = delete;
-		~ExportFixture()
-		{
-			std::error_code error;
-			std::filesystem::remove_all(Root, error);
-		}
-
 		const std::filesystem::path Root;
 		const std::filesystem::path Runtime;
 		const Rod::Project Source;

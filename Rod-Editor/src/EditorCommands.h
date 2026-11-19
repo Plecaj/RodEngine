@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Rod/Utils/PlatformUtils.h"
+
 #include <filesystem>
 
 namespace Rod {
@@ -14,7 +16,8 @@ namespace Rod {
 		EditorCommands(
 		    const Project& project,
 		    EditorSceneManager& scenes,
-		    EditorInteractionState& interaction) noexcept;
+		    EditorInteractionState& interaction,
+		    FileDialogs fileDialogs) noexcept;
 
 		void NewScene() const;
 		void OpenScene() const;
@@ -31,6 +34,7 @@ namespace Rod {
 		const Project& m_Project;
 		EditorSceneManager& m_Scenes;
 		EditorInteractionState& m_Interaction;
+		FileDialogs m_FileDialogs;
 	};
 
 }

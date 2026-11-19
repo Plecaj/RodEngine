@@ -6,6 +6,7 @@
 namespace Rod {
 
 	class EditorSceneManager;
+	class Input;
 	struct EditorInteractionState;
 
 	class EditorViewport
@@ -14,7 +15,7 @@ namespace Rod {
 		static constexpr uint32_t s_DefaultWidth = 1280;
 		static constexpr uint32_t s_DefaultHeight = 720;
 
-		explicit EditorViewport(EditorInteractionState& interaction);
+		EditorViewport(EditorInteractionState& interaction, const Input& input);
 
 		void OnUpdate(Timestep ts, EditorSceneManager& scenes);
 		void OnEvent(Event& event, SceneState state);
@@ -22,6 +23,7 @@ namespace Rod {
 		    EditorSceneManager& scenes,
 		    const std::filesystem::path& assetsPath,
 		    const std::function<void(const std::filesystem::path&)>& openScene);
+		[[nodiscard]] bool ShouldBlockEvents() const noexcept;
 
 	private:
 		static constexpr float s_EditorFOV = 30.0f;
@@ -37,6 +39,7 @@ namespace Rod {
 		void UpdateHoveredEntity(EditorSceneManager& scenes) const;
 
 		EditorInteractionState& m_Interaction;
+		const Input& m_Input;
 		EditorCamera m_EditorCamera;
 		Scope<Framebuffer> m_Framebuffer;
 		bool m_ViewportFocused = false;

@@ -16,7 +16,7 @@ TEST_CASE("Scene commands clear stale entity references", "[editor][commands]")
 	Rod::EditorSceneManager scenes{project, 1, 1};
 	const auto entity = scenes.GetActiveScene().CreateEntity("Selected");
 	Rod::EditorInteractionState interaction{.SelectedEntity = entity, .HoveredEntity = entity};
-	const Rod::EditorCommands commands{project, scenes, interaction};
+	const Rod::EditorCommands commands{project, scenes, interaction, {}};
 
 	SECTION("new scene")
 	{
@@ -43,7 +43,7 @@ TEST_CASE("Failed open commands preserve the scene and selection", "[editor][com
 	Rod::EditorSceneManager scenes{project, 1, 1};
 	const auto entity = scenes.GetActiveScene().CreateEntity("Selected");
 	Rod::EditorInteractionState interaction{.SelectedEntity = entity, .HoveredEntity = entity};
-	const Rod::EditorCommands commands{project, scenes, interaction};
+	const Rod::EditorCommands commands{project, scenes, interaction, {}};
 
 	commands.OpenScene(directory.GetPath() / "missing.rod");
 

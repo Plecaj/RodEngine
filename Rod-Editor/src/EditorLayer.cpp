@@ -2,14 +2,26 @@
 
 #include "EditorLayer.h"
 
+#include "Rod/ImGui/ImGuiLayer.h"
+#include "Rod/Project/Project.h"
 #include "Rod/Scripting/ScriptEngine.h"
+#include "Rod/Utils/PlatformUtils.h"
+
+#include <utility>
 
 namespace Rod {
 
-	EditorLayer::EditorLayer(const Project& project)
-	    : Layer("Editor Layer"), m_Scenes(project, EditorViewport::s_DefaultWidth, EditorViewport::s_DefaultHeight),
-	      m_Viewport(m_Interaction), m_Commands(project, m_Scenes, m_Interaction),
-	      m_Layout(project, m_Scenes, m_Viewport, m_Commands, m_Interaction), m_Input(m_Commands, m_Interaction)
+	EditorLayer::EditorLayer(
+	    const Project& project,
+	    const Window& window,
+	    const Input& input,
+	    ImGuiLayer& imGuiLayer,
+	    std::function<void()> requestClose)
+	    : Layer("Editor Layer"), m_ImGuiLayer(imGuiLayer),
+	      m_Scenes(project, EditorViewport::s_DefaultWidth, EditorViewport::s_DefaultHeight),
+	      m_Viewport(m_Interaction, input), m_Commands(project, m_Scenes, m_Interaction, FileDialogs{window}),
+	      m_Layout(project, m_Scenes, m_Viewport, m_Commands, m_Interaction, window, std::move(requestClose)),
+	      m_Input(m_Commands, m_Interaction, input)
 	{
 		RD_PROFILE_FUNCTION();
 
@@ -18,7 +30,7 @@ namespace Rod {
 
 		try
 		{
-			ScriptEngine::Init();
+			ScriptEngine::Init(project, input, ScriptEngine::Mode::Editor);
 		}
 		catch (...)
 		{
@@ -44,6 +56,7 @@ namespace Rod {
 	void EditorLayer::OnImGuiRender()
 	{
 		m_Layout.OnImGuiRender(m_LastDeltaTime);
+		m_ImGuiLayer.SetBlockEvents(m_Viewport.ShouldBlockEvents());
 	}
 
 	void EditorLayer::OnEvent(Event& event)

@@ -5,6 +5,8 @@
 
 namespace Rod {
 
+	class Window;
+
 	class Platform
 	{
 	public:
@@ -15,9 +17,15 @@ namespace Rod {
 	class FileDialogs
 	{
 	public:
-		[[nodiscard]] static std::string OpenFile(const char* filter, const std::string& initialDirectory = {});
-		[[nodiscard]] static std::string SelectFolder(const std::string& initialDirectory = {});
-		[[nodiscard]] static std::string SaveFile(const char* filter);
+		FileDialogs() noexcept = default;
+		explicit FileDialogs(const Window& owner) noexcept : m_Owner(&owner) {}
+
+		[[nodiscard]] std::string OpenFile(const char* filter, const std::string& initialDirectory = {}) const;
+		[[nodiscard]] std::string SelectFolder(const std::string& initialDirectory = {}) const;
+		[[nodiscard]] std::string SaveFile(const char* filter) const;
+
+	private:
+		[[maybe_unused]] const Window* m_Owner = nullptr;
 	};
 
 }

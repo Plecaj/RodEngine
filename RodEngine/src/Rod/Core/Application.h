@@ -1,17 +1,19 @@
 #pragma once
 
 #include "Rod/Core/Core.h"
+#include "Rod/Core/Input.h"
 #include "Rod/Core/LayerStack.h"
 #include "Rod/Core/Timestep.h"
 #include "Rod/Core/Window.h"
 #include "Rod/Events/ApplicationEvent.h"
 #include "Rod/Events/Event.h"
-#include "Rod/ImGui/ImGuiLayer.h"
 #include "Rod/Project/Project.h"
 
 #include <optional>
 
 namespace Rod {
+
+	class ImGuiLayer;
 
 	class Application
 	{
@@ -30,7 +32,8 @@ namespace Rod {
 		void PushLayer(Scope<Layer> layer);
 		void PushOverlay(Scope<Layer> overlay);
 
-		[[nodiscard]] Window& GetWindow() noexcept { return *m_Window; };
+		[[nodiscard]] Window& GetWindow() noexcept { return *m_Window; }
+		[[nodiscard]] const Input& GetInput() const noexcept { return m_Input; }
 		[[nodiscard]] ObserverPtr<Project> GetProject() noexcept { return m_Project ? &*m_Project : nullptr; }
 		[[nodiscard]] ObserverPtr<const Project> GetProject() const noexcept
 		{
@@ -39,20 +42,7 @@ namespace Rod {
 
 		void Close() noexcept;
 
-		void Minimize();
-		[[nodiscard]] bool IsMinimized() const noexcept { return m_Minimized; }
-
-		void Maximize();
-		[[nodiscard]] bool IsMaximized() const noexcept { return m_Maximized; }
-
-		void RestoreWindow();
-		void BeginWindowDrag();
-
-		[[nodiscard]] ObserverPtr<ImGuiLayer> GetImGuiLayer() noexcept { return m_ImGuiLayer; };
-
-		[[nodiscard]] virtual bool IsEditor() const noexcept { return false; }
-
-		[[nodiscard]] static Application& Get() noexcept { return *s_Instance; };
+		[[nodiscard]] ObserverPtr<ImGuiLayer> GetImGuiLayer() noexcept { return m_ImGuiLayer; }
 
 	private:
 		[[nodiscard]] Timestep CalculateTimestep();
@@ -65,13 +55,11 @@ namespace Rod {
 	private:
 		std::optional<Project> m_Project;
 		Scope<Window> m_Window;
+		Input m_Input;
 		ObserverPtr<ImGuiLayer> m_ImGuiLayer = nullptr;
-		bool m_Running = true, m_Minimized = false, m_Maximized = false;
+		bool m_Running = true;
 		LayerStack m_LayerStack;
 		float m_LastFrameTime = 0.0f;
-
-	private:
-		static ObserverPtr<Application> s_Instance;
 	};
 
 	// To be defined in CLIENT

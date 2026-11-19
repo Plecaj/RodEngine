@@ -10,6 +10,8 @@
 
 #include "imgui_internal.h"
 
+#include <utility>
+
 namespace Rod {
 
 	EditorLayout::EditorLayout(
@@ -17,10 +19,12 @@ namespace Rod {
 	    EditorSceneManager& scenes,
 	    EditorViewport& viewport,
 	    EditorCommands& commands,
-	    EditorInteractionState& interaction)
+	    EditorInteractionState& interaction,
+	    const Window& window,
+	    std::function<void()> requestClose)
 	    : m_Project(project), m_Scenes(scenes), m_Viewport(viewport), m_Commands(commands), m_Interaction(interaction),
-	      m_TitlebarPanel(commands), m_SceneHierarchyPanel(project.GetAssetsPath(), interaction),
-	      m_ContentBrowserPanel(project.GetAssetsPath())
+	      m_TitlebarPanel(commands, window, std::move(requestClose)),
+	      m_SceneHierarchyPanel(project.GetAssetsPath(), interaction), m_ContentBrowserPanel(project.GetAssetsPath())
 	{}
 
 	void EditorLayout::OnImGuiRender(float deltaTime)

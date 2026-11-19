@@ -263,6 +263,16 @@ namespace Rod {
 		glfwMaximizeWindow(m_Window.get());
 	}
 
+	bool GLFWWindow::IsMinimized() const noexcept
+	{
+		return glfwGetWindowAttrib(m_Window.get(), GLFW_ICONIFIED) == GLFW_TRUE;
+	}
+
+	bool GLFWWindow::IsMaximized() const noexcept
+	{
+		return glfwGetWindowAttrib(m_Window.get(), GLFW_MAXIMIZED) == GLFW_TRUE;
+	}
+
 	void GLFWWindow::Restore() const
 	{
 		ResetWindowDrag();
@@ -277,8 +287,8 @@ namespace Rod {
 			return;
 		}
 
-		if (glfwGetWindowAttrib(m_Window.get(), GLFW_MAXIMIZED) != GLFW_FALSE)
-			glfwRestoreWindow(m_Window.get());
+		if (IsMaximized())
+			Restore();
 
 		int windowX{}, windowY{};
 		glfwGetWindowPos(m_Window.get(), &windowX, &windowY);

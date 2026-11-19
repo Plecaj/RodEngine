@@ -13,15 +13,11 @@
 
 namespace Rod {
 
-	ObserverPtr<Application> Application::s_Instance = nullptr;
-
-	Application::Application(const WindowProps& props, std::optional<Project> project) : m_Project(std::move(project))
+	Application::Application(const WindowProps& props, std::optional<Project> project)
+	    : m_Project(std::move(project)), m_Window(Window::Create(props)), m_Input(*m_Window)
 	{
 		RD_PROFILE_FUNCTION();
-		RD_CORE_ASSERT(!s_Instance, "Application already exists!")
-		s_Instance = this;
 
-		m_Window = Window::Create(props);
 		m_Window->SetEventCallback([this](Event& event) { OnEvent(event); });
 		m_Window->SetVSync(false);
 
@@ -29,7 +25,7 @@ namespace Rod {
 
 		if (props.UsesCustomUi)
 		{
-			auto imGuiLayer = CreateScope<ImGuiLayer>();
+			auto imGuiLayer = CreateScope<ImGuiLayer>(*m_Window);
 			m_ImGuiLayer = imGuiLayer.get();
 			PushOverlay(std::move(imGuiLayer));
 		}
@@ -65,33 +61,6 @@ namespace Rod {
 	void Application::Close() noexcept
 	{
 		m_Running = false;
-	}
-
-	void Application::Minimize()
-	{
-		m_Minimized = true;
-		m_Window->Minimize();
-	}
-
-	void Application::Maximize()
-	{
-		m_Maximized = true;
-		m_Window->Maximize();
-	}
-
-	void Application::RestoreWindow()
-	{
-		m_Maximized = false;
-
-		m_Window->Restore();
-	}
-
-	void Application::BeginWindowDrag()
-	{
-		if (m_Maximized)
-			RestoreWindow();
-
-		m_Window->BeginWindowDrag();
 	}
 
 	void Application::OnEvent(Event& e)
@@ -135,7 +104,7 @@ namespace Rod {
 
 	void Application::UpdateLayers(Timestep timestep)
 	{
-		if (m_Minimized)
+		if (m_Window->IsMinimized() || m_Window->GetWidth() == 0 || m_Window->GetHeight() == 0)
 			return;
 
 		RD_PROFILE_SCOPE("Layers OnUpdate");
@@ -174,12 +143,8 @@ namespace Rod {
 		RD_PROFILE_FUNCTION();
 
 		if (e.GetWidth() == 0 || e.GetHeight() == 0)
-		{
-			m_Minimized = true;
 			return false;
-		}
 
-		m_Minimized = false;
 		SceneRenderer::OnViewportResize(e.GetWidth(), e.GetHeight());
 
 		return false;

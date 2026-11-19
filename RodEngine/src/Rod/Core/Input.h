@@ -4,15 +4,19 @@
 
 namespace Rod {
 
+	class Window;
+
 	class Input
 	{
 	public:
-		[[nodiscard]] static bool IsKeyPressed(int keycode);
+		explicit Input(const Window& window) noexcept : m_Window(window) {}
 
-		[[nodiscard]] static bool IsMouseButtonPressed(int button);
-		[[nodiscard]] static std::pair<float, float> GetMousePosition();
-		[[nodiscard]] static float GetMouseX();
-		[[nodiscard]] static float GetMouseY();
+		[[nodiscard]] bool IsKeyPressed(int keycode) const;
+		[[nodiscard]] bool IsMouseButtonPressed(int button) const;
+		[[nodiscard]] std::pair<float, float> GetMousePosition() const;
+
+	private:
+		const Window& m_Window;
 	};
 
 }

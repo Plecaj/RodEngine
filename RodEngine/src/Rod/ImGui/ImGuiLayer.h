@@ -4,10 +4,12 @@
 
 namespace Rod {
 
+	class Window;
+
 	class ImGuiLayer : public Layer
 	{
 	public:
-		ImGuiLayer();
+		explicit ImGuiLayer(const Window& window);
 		virtual ~ImGuiLayer() override;
 		ImGuiLayer(const ImGuiLayer&) = delete;
 		ImGuiLayer& operator=(const ImGuiLayer&) = delete;
@@ -18,13 +20,14 @@ namespace Rod {
 		virtual void OnEvent(Event& e) override;
 
 		static void Begin();
-		static void End();
+		void End() const;
 
 		static void SetDarkThemeColors();
 
 		void SetBlockEvents(bool block) noexcept { m_BlockEvents = block; }
 
 	private:
+		const Window& m_Window;
 		bool m_BlockEvents = true;
 	};
 

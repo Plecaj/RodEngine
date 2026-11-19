@@ -4,14 +4,17 @@
 
 #include <imgui.h>
 
+#include <functional>
+
 namespace Rod {
 
 	class EditorCommands;
+	class Window;
 
 	class TitlebarPanel
 	{
 	public:
-		explicit TitlebarPanel(EditorCommands& commands);
+		TitlebarPanel(EditorCommands& commands, const Window& window, std::function<void()> requestClose);
 
 		void OnImGuiRender() const;
 
@@ -25,6 +28,8 @@ namespace Rod {
 
 	private:
 		EditorCommands& m_Commands;
+		const Window& m_Window;
+		std::function<void()> m_RequestClose;
 		ImVec2 m_ButtonSize;
 
 		Scope<Texture2D> m_Logo;

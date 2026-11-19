@@ -77,6 +77,7 @@ namespace Rod {
 	};
 
 	ObserverPtr<Scene> ScriptGlue::s_SceneContext = nullptr;
+	ObserverPtr<const Input> ScriptGlue::s_InputContext = nullptr;
 
 	glm::vec3 ScriptGlue::ToGLM(ScriptVec3 value)
 	{
@@ -122,17 +123,20 @@ namespace Rod {
 
 	bool RD_CDECL ScriptGlue::InputIsKeyPressed(int32_t keycode)
 	{
-		return Input::IsKeyPressed(keycode);
+		return s_InputContext && s_InputContext->IsKeyPressed(keycode);
 	}
 
 	bool RD_CDECL ScriptGlue::InputIsMouseButtonPressed(int32_t button)
 	{
-		return Input::IsMouseButtonPressed(button);
+		return s_InputContext && s_InputContext->IsMouseButtonPressed(button);
 	}
 
 	ScriptGlue::ScriptVec2 RD_CDECL ScriptGlue::InputGetMousePosition()
 	{
-		auto [x, y] = Input::GetMousePosition();
+		if (!s_InputContext)
+			return {};
+
+		auto [x, y] = s_InputContext->GetMousePosition();
 		return {x, y};
 	}
 
@@ -654,6 +658,11 @@ namespace Rod {
 	void ScriptGlue::SetSceneContext(ObserverPtr<Scene> scene) noexcept
 	{
 		s_SceneContext = scene;
+	}
+
+	void ScriptGlue::SetInputContext(ObserverPtr<const Input> input) noexcept
+	{
+		s_InputContext = input;
 	}
 
 	std::vector<NativeCall> ScriptGlue::GetNativeCalls()

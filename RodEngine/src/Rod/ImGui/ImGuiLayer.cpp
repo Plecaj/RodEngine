@@ -2,7 +2,7 @@
 
 #include "ImGuiLayer.h"
 
-#include "Rod/Core/Application.h"
+#include "Rod/Core/Window.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 
@@ -71,7 +71,7 @@ namespace Rod {
 		});
 	}
 
-	ImGuiLayer::ImGuiLayer() : Layer("ImGuiLayer")
+	ImGuiLayer::ImGuiLayer(const Window& window) : Layer("ImGuiLayer"), m_Window(window)
 	{
 		RD_PROFILE_FUNCTION();
 
@@ -99,10 +99,9 @@ namespace Rod {
 
 			SetDarkThemeColors();
 
-			Application& app = Application::Get();
-			auto* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
+			auto* nativeWindow = static_cast<GLFWwindow*>(m_Window.GetNativeWindow());
 
-			if (!ImGui_ImplGlfw_InitForOpenGL(window, true))
+			if (!ImGui_ImplGlfw_InitForOpenGL(nativeWindow, true))
 				throw std::runtime_error("Failed to initialize the ImGui GLFW backend");
 			if (!ImGui_ImplOpenGL3_Init("#version 410"))
 				throw std::runtime_error("Failed to initialize the ImGui OpenGL backend");
@@ -151,14 +150,12 @@ namespace Rod {
 		ImGuizmo::BeginFrame();
 	}
 
-	void ImGuiLayer::End()
+	void ImGuiLayer::End() const
 	{
 		RD_PROFILE_FUNCTION();
 
 		ImGuiIO& io = ImGui::GetIO();
-		Application& app = Application::Get();
-		io.DisplaySize =
-		    ImVec2(static_cast<float>(app.GetWindow().GetWidth()), static_cast<float>(app.GetWindow().GetHeight()));
+		io.DisplaySize = ImVec2(static_cast<float>(m_Window.GetWidth()), static_cast<float>(m_Window.GetHeight()));
 
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

@@ -16,9 +16,11 @@
 #include "imgui.h"
 
 #include <exception>
+#include <functional>
 #include <optional>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 namespace Rod {
 
@@ -44,7 +46,9 @@ namespace Rod {
 	class LauncherLayer final : public Layer
 	{
 	public:
-		LauncherLayer() : Layer("LauncherLayer")
+		LauncherLayer(const Window& window, std::function<void()> requestClose)
+		    : Layer("LauncherLayer"), m_RequestClose(std::move(requestClose)), m_FileDialogs(window),
+		      m_ProjectSetup(m_FileDialogs)
 		{
 			m_FolderIcon = Texture2D::Create("RodAssets/Textures/DirectoryIcon.png");
 			try
@@ -195,7 +199,7 @@ namespace Rod {
 			try
 			{
 				if (manifestPath.empty())
-					manifestPath = FileDialogs::OpenFile("Rod Project (*.rodproj)\0*.rodproj\0");
+					manifestPath = m_FileDialogs.OpenFile("Rod Project (*.rodproj)\0*.rodproj\0");
 				if (manifestPath.empty())
 					return;
 				Project project{std::filesystem::absolute(manifestPath).lexically_normal(), {}};
@@ -227,7 +231,7 @@ namespace Rod {
 					RD_CORE_WARN("Could not save recent projects: {}", exception.what());
 				}
 				m_Error.clear();
-				Application::Get().Close();
+				m_RequestClose();
 			}
 			catch (const std::exception& exception)
 			{
@@ -304,6 +308,8 @@ namespace Rod {
 		}
 
 	private:
+		std::function<void()> m_RequestClose;
+		FileDialogs m_FileDialogs;
 		Scope<Texture2D> m_FolderIcon;
 		RecentProjects m_RecentProjects;
 		std::filesystem::path m_RecentProjectsPath;
@@ -311,15 +317,14 @@ namespace Rod {
 		std::string m_Error;
 	};
 
-	class RodLauncher final : public Application
-	{
-	public:
-		RodLauncher() : Application(LauncherWindowProps(), std::nullopt) { PushLayer(CreateScope<LauncherLayer>()); }
-	};
-
 	Scope<Application> CreateApplication(const std::optional<Project>& project)
 	{
 		RD_CORE_ASSERT(!project, "Launcher does not accept a project argument");
-		return CreateScope<RodLauncher>();
+		auto app = CreateScope<Application>(LauncherWindowProps(), std::nullopt);
+		const auto requestClose = [application = app.get()] {
+			application->Close();
+		};
+		app->PushLayer(CreateScope<LauncherLayer>(app->GetWindow(), requestClose));
+		return app;
 	}
 }

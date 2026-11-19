@@ -2,18 +2,31 @@
 
 #include "RuntimeLayer.h"
 
+#include "Rod/Core/KeyCodes.h"
+#include "Rod/Core/Window.h"
+#include "Rod/Project/Project.h"
 #include "Rod/Renderer/RenderCommand.h"
+#include "Rod/Renderer/Renderer2D.h"
+#include "Rod/Scene/Scene.h"
+#include "Rod/Scene/SceneSerializer.h"
+#include "Rod/Scripting/ScriptEngine.h"
 
 #include <exception>
+#include <utility>
 
 namespace Rod {
 
-	RuntimeLayer::RuntimeLayer(const Project& project) : m_Project(project)
+	RuntimeLayer::RuntimeLayer(
+	    const Project& project,
+	    const Window& window,
+	    const Input& input,
+	    std::function<void()> requestClose)
+	    : m_RequestClose(std::move(requestClose))
 	{
 		try
 		{
-			ScriptEngine::Init();
-			LoadScene();
+			ScriptEngine::Init(project, input, ScriptEngine::Mode::Runtime);
+			LoadScene(project, window);
 		}
 		catch (...)
 		{
@@ -22,18 +35,18 @@ namespace Rod {
 		}
 	}
 
-	void RuntimeLayer::LoadScene()
+	void RuntimeLayer::LoadScene(const Project& project, const Window& window)
 	{
 		m_Scene = CreateScope<Scene>();
-		const std::filesystem::path scenePath = m_Project.GetStartupScenePath();
+		const std::filesystem::path scenePath = project.GetStartupScenePath();
 		if (!std::filesystem::exists(scenePath))
 		{
 			RD_CORE_ERROR("Runtime startup scene was not found: {}", scenePath.string());
-			Application::Get().Close();
+			m_RequestClose();
 			return;
 		}
 
-		const SceneSerializer serializer(*m_Scene, m_Project.GetDirectory());
+		const SceneSerializer serializer(*m_Scene, project.GetDirectory());
 		try
 		{
 			serializer.DeserializeText(scenePath.string());
@@ -41,11 +54,10 @@ namespace Rod {
 		catch (const std::exception& exception)
 		{
 			RD_CORE_ERROR("{}", exception.what());
-			Application::Get().Close();
+			m_RequestClose();
 			return;
 		}
 
-		auto& window = Application::Get().GetWindow();
 		m_Scene->OnViewportResize(window.GetWidth(), window.GetHeight());
 		m_Scene->OnRuntimeStart();
 		m_RunningScene = true;
@@ -74,7 +86,7 @@ namespace Rod {
 		HandleEvent<WindowResizeEvent>(event, [this](WindowResizeEvent& resizeEvent) {
 			return OnWindowResize(resizeEvent);
 		});
-		HandleEvent<KeyPressedEvent>(event, OnKeyPressed);
+		HandleEvent<KeyPressedEvent>(event, [this](KeyPressedEvent& keyEvent) { return OnKeyPressed(keyEvent); });
 	}
 
 	bool RuntimeLayer::OnWindowResize(WindowResizeEvent& event)
@@ -85,11 +97,11 @@ namespace Rod {
 		return false;
 	}
 
-	bool RuntimeLayer::OnKeyPressed(KeyPressedEvent& event) noexcept
+	bool RuntimeLayer::OnKeyPressed(KeyPressedEvent& event)
 	{
 		if (event.GetKeyCode() == Key::Escape)
 		{
-			Application::Get().Close();
+			m_RequestClose();
 			return true;
 		}
 

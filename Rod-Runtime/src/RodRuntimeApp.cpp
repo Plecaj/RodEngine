@@ -1,5 +1,6 @@
 #include "rdpch.h"
 
+#include "Rod/Core/Application.h"
 #include "Rod/Core/EntryPoint.h" // IWYU pragma: keep
 #include "Rod/Project/ProjectExporter.h"
 #include "Rod/Project/ProjectSerializer.h"
@@ -10,15 +11,6 @@
 
 namespace Rod {
 
-	class RodRuntime : public Application
-	{
-	public:
-		explicit RodRuntime(Project project) : Application(WindowProps{"Rod Game"}, std::move(project))
-		{
-			PushLayer(CreateScope<RuntimeLayer>(*GetProject()));
-		}
-	};
-
 	Scope<Application> CreateApplication(const std::optional<Project>& project)
 	{
 		const auto directory = Platform::GetExecutablePath().parent_path();
@@ -26,7 +18,13 @@ namespace Rod {
 		if (!project)
 			ProjectSerializer::Deserialize(runtimeProject);
 		std::filesystem::current_path(directory);
-		return CreateScope<RodRuntime>(std::move(runtimeProject));
+
+		auto app = CreateScope<Application>(WindowProps{"Rod Game"}, std::move(runtimeProject));
+		const auto requestClose = [application = app.get()] {
+			application->Close();
+		};
+		app->PushLayer(CreateScope<RuntimeLayer>(*app->GetProject(), app->GetWindow(), app->GetInput(), requestClose));
+		return app;
 	}
 
 }

@@ -10,9 +10,13 @@
 
 namespace Rod {
 
+	class FileDialogs;
+
 	class ProjectSetupPanel
 	{
 	public:
+		explicit ProjectSetupPanel(const FileDialogs& fileDialogs) noexcept : m_FileDialogs(fileDialogs) {}
+
 		void Open();
 		[[nodiscard]] bool IsOpen() const noexcept { return m_Open; }
 		[[nodiscard]] std::optional<Project> OnImGuiRender();
@@ -38,6 +42,7 @@ namespace Rod {
 		[[nodiscard]] std::string ProjectName() const;
 
 		static constexpr size_t s_FieldCapacity = 1024;
+		const FileDialogs& m_FileDialogs;
 		std::array<char, s_FieldCapacity> m_Name{};
 		std::filesystem::path m_Directory;
 		std::filesystem::path m_AssetDirectory;

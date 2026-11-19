@@ -56,6 +56,8 @@ namespace Rod {
 
 		virtual void Minimize() const = 0;
 		virtual void Maximize() const = 0;
+		[[nodiscard]] virtual bool IsMinimized() const noexcept = 0;
+		[[nodiscard]] virtual bool IsMaximized() const noexcept = 0;
 		virtual void Restore() const = 0;
 		virtual void BeginWindowDrag() const = 0;
 

@@ -14,8 +14,8 @@
 
 namespace Rod {
 
-	EditorInput::EditorInput(EditorCommands& commands, EditorInteractionState& interaction) noexcept
-	    : m_Commands(commands), m_Interaction(interaction)
+	EditorInput::EditorInput(EditorCommands& commands, EditorInteractionState& interaction, const Input& input) noexcept
+	    : m_Commands(commands), m_Interaction(interaction), m_Input(input)
 	{}
 
 	void EditorInput::OnEvent(Event& event) const
@@ -32,8 +32,8 @@ namespace Rod {
 		if (e.IsRepeat())
 			return false;
 
-		const bool controlPressed = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
-		const bool shiftPressed = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
+		const bool controlPressed = m_Input.IsKeyPressed(Key::LeftControl) || m_Input.IsKeyPressed(Key::RightControl);
+		const bool shiftPressed = m_Input.IsKeyPressed(Key::LeftShift) || m_Input.IsKeyPressed(Key::RightShift);
 
 		switch (e.GetKeyCode())
 		{
@@ -85,7 +85,7 @@ namespace Rod {
 	bool EditorInput::OnMouseButtonPressed(const MouseButtonPressedEvent& e) const
 	{
 		if (e.GetMouseButton() == Mouse::Button0 && m_Interaction.ViewportHovered && !ImGuizmo::IsOver() &&
-		    !Input::IsKeyPressed(Key::LeftAlt))
+		    !m_Input.IsKeyPressed(Key::LeftAlt))
 		{
 			m_Interaction.SelectedEntity = m_Interaction.HoveredEntity;
 		}

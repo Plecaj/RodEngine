@@ -2,8 +2,8 @@
 
 #include "ScriptEngine.h"
 
-#include "Rod/Core/Application.h"
 #include "Rod/Core/UUID.h"
+#include "Rod/Project/Project.h"
 #include "Rod/Scene/Components.h"
 #include "Rod/Scene/Entity.h"
 #include "ScriptBuilder.h"
@@ -146,6 +146,7 @@ namespace Rod {
 		std::filesystem::file_time_type LastSourceWriteTime = std::filesystem::file_time_type::min();
 	};
 
+	std::optional<ScriptEngine::Configuration> ScriptEngine::s_Configuration;
 	std::unique_ptr<ScriptEngine::ScriptEngineData> ScriptEngine::s_Data;
 
 	std::filesystem::path ScriptEngine::CreateAssemblyCachePath(const std::filesystem::path& assemblyPath)
@@ -177,15 +178,12 @@ namespace Rod {
 		return cachedAssembly;
 	}
 
-	ScriptEngine::ScriptPaths ScriptEngine::ResolveScriptPaths()
+	ScriptEngine::ScriptPaths ScriptEngine::ResolveScriptPaths(const Project& project)
 	{
-		ObserverPtr<const Project> project = Application::Get().GetProject();
-		if (!project)
-			throw std::runtime_error("Scripting requires an application project");
-		const auto assetsPath = project->GetAssetsPath();
+		const auto assetsPath = project.GetAssetsPath();
 
 		const auto coreAssembly = std::filesystem::absolute("RodAssets/Scripts/Core/Rod.ScriptCore.dll");
-		const auto scriptProject = project->GetScriptProjectPath();
+		const auto scriptProject = project.GetScriptProjectPath();
 		if (scriptProject.empty())
 			throw std::runtime_error("Script project path is empty");
 		return {
@@ -197,42 +195,49 @@ namespace Rod {
 		    assetsPath / "Scripts" / "Cache"};
 	}
 
-	void ScriptEngine::Init()
+	void ScriptEngine::Init(const Project& project, const Input& input, Mode mode)
+	{
+		if (!s_Configuration)
+			s_Configuration.emplace(Configuration{project, input, mode});
+		EnsureInitialized();
+	}
+
+	bool ScriptEngine::EnsureInitialized()
 	{
 		if (s_Data)
-			return;
+			return true;
+		if (!s_Configuration)
+			return false;
 
 		try
 		{
-			auto data = std::make_unique<ScriptEngineData>(ResolveScriptPaths());
-			s_Data = std::move(data);
+			s_Data = std::make_unique<ScriptEngineData>(ResolveScriptPaths(s_Configuration->ProjectData));
 		}
 		catch (const std::runtime_error& exception)
 		{
 			RD_CORE_ERROR("Script startup failed: {}", exception.what());
-			return;
+			return false;
 		}
 
-		if (!Application::Get().IsEditor() || BuildScripts())
+		// Managed input callbacks have no user-data parameter.
+		ScriptGlue::SetInputContext(&s_Configuration->InputDevice);
+		if (s_Configuration->StartupMode != Mode::Editor || BuildScripts())
 			ReloadAssembly();
 		RefreshSourceWriteTime();
+		return true;
 	}
 
 	void ScriptEngine::Shutdown()
 	{
-		if (!s_Data)
-			return;
-
 		OnRuntimeStop();
-
 		s_Data.reset();
+		ScriptGlue::SetInputContext(nullptr);
+		s_Configuration.reset();
 	}
 
 	void ScriptEngine::SetScriptProject(const std::filesystem::path& projectPath)
 	{
-		if (!s_Data)
-			Init();
-		if (!s_Data)
+		if (!EnsureInitialized())
 			return;
 
 		s_Data->Paths.ScriptProjectPath = projectPath;
@@ -242,8 +247,6 @@ namespace Rod {
 
 	bool ScriptEngine::BuildScripts()
 	{
-		if (!s_Data)
-			Init();
 		if (!s_Data)
 			return false;
 
@@ -270,7 +273,7 @@ namespace Rod {
 				RD_CORE_ERROR("Assembly missing '{}'", s_Data->Paths.ScriptAssemblyPath.string());
 				return false;
 			}
-			const auto cachedAssembly = Application::Get().IsEditor()
+			const auto cachedAssembly = s_Configuration->StartupMode == Mode::Editor
 			                                ? CreateAssemblyCachePath(s_Data->Paths.ScriptAssemblyPath)
 			                                : s_Data->Paths.ScriptAssemblyPath;
 			const auto metadataJson =
@@ -316,9 +319,7 @@ namespace Rod {
 
 	void ScriptEngine::OnRuntimeStart(Scene& scene)
 	{
-		if (!s_Data)
-			Init();
-		if (!s_Data)
+		if (!EnsureInitialized())
 			return;
 
 		s_Data->SceneContext = &scene;

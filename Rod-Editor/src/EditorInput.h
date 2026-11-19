@@ -7,12 +7,13 @@
 namespace Rod {
 
 	class EditorCommands;
+	class Input;
 	struct EditorInteractionState;
 
 	class EditorInput
 	{
 	public:
-		EditorInput(EditorCommands& commands, EditorInteractionState& interaction) noexcept;
+		EditorInput(EditorCommands& commands, EditorInteractionState& interaction, const Input& input) noexcept;
 		void OnEvent(Event& event) const;
 
 	private:
@@ -21,6 +22,7 @@ namespace Rod {
 
 		EditorCommands& m_Commands;
 		EditorInteractionState& m_Interaction;
+		const Input& m_Input;
 	};
 
 }

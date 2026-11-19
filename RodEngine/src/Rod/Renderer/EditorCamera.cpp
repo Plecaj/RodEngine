@@ -62,21 +62,22 @@ namespace Rod {
 		return speed;
 	}
 
-	void EditorCamera::OnUpdate(Timestep ts)
+	void EditorCamera::OnUpdate(Timestep ts, const Input& input)
 	{
 		(void)ts;
 
-		if (Input::IsKeyPressed(Key::LeftAlt) && m_ControlsEnabled)
+		if (m_ControlsEnabled && input.IsKeyPressed(Key::LeftAlt))
 		{
-			const glm::vec2& mouse{Input::GetMouseX(), Input::GetMouseY()};
+			const auto [mouseX, mouseY] = input.GetMousePosition();
+			const glm::vec2 mouse{mouseX, mouseY};
 			const glm::vec2 delta = (mouse - m_InitialMousePosition) * s_MouseDeltaScale;
 			m_InitialMousePosition = mouse;
 
-			if (Input::IsMouseButtonPressed(Mouse::ButtonMiddle))
+			if (input.IsMouseButtonPressed(Mouse::ButtonMiddle))
 				MousePan(delta);
-			else if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
+			else if (input.IsMouseButtonPressed(Mouse::ButtonLeft))
 				MouseRotate(delta);
-			else if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
+			else if (input.IsMouseButtonPressed(Mouse::ButtonRight))
 				MouseZoom(delta.y);
 		}
 

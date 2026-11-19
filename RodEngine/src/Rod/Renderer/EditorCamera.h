@@ -11,13 +11,15 @@
 
 namespace Rod {
 
+	class Input;
+
 	class EditorCamera : public Camera
 	{
 	public:
 		EditorCamera() noexcept = default;
 		EditorCamera(float fov, float aspectRatio, float nearClip, float farClip) noexcept;
 
-		void OnUpdate(Timestep ts);
+		void OnUpdate(Timestep ts, const Input& input);
 		void OnEvent(Event& e);
 
 		[[nodiscard]] float GetDistance() const noexcept { return m_Distance; }

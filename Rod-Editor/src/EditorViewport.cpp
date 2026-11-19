@@ -4,13 +4,15 @@
 
 #include "EditorInteractionState.h"
 #include "EditorSceneManager.h"
+#include "Rod/Renderer/RenderCommand.h"
+#include "Rod/Renderer/Renderer2D.h"
 
 #include "imgui.h"
 
 namespace Rod {
 
-	EditorViewport::EditorViewport(EditorInteractionState& interaction)
-	    : m_Interaction(interaction),
+	EditorViewport::EditorViewport(EditorInteractionState& interaction, const Input& input)
+	    : m_Interaction(interaction), m_Input(input),
 	      m_EditorCamera(s_EditorFOV, s_EditorAspectRatio, s_EditorNearClip, s_EditorFarClip)
 	{
 		CreateFramebuffer();
@@ -40,7 +42,13 @@ namespace Rod {
 		     m_ViewportFocused,
 		     m_Interaction.ViewportHovered,
 		     assetsPath,
-		     openScene});
+		     openScene,
+		     m_Input});
+	}
+
+	bool EditorViewport::ShouldBlockEvents() const noexcept
+	{
+		return !m_ViewportFocused && !m_Interaction.ViewportHovered;
 	}
 
 	void EditorViewport::CreateFramebuffer()
@@ -88,7 +96,7 @@ namespace Rod {
 		switch (scenes.GetState())
 		{
 			case SceneState::Edit: {
-				m_EditorCamera.OnUpdate(ts);
+				m_EditorCamera.OnUpdate(ts, m_Input);
 
 				scenes.GetActiveScene().OnUpdateEditor(ts, m_EditorCamera);
 				break;

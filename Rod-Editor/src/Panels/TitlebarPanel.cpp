@@ -3,7 +3,9 @@
 #include "TitlebarPanel.h"
 
 #include "../EditorCommands.h"
-#include "Rod/Core/Application.h"
+#include "Rod/Core/Window.h"
+
+#include <utility>
 
 namespace Rod {
 
@@ -116,7 +118,8 @@ namespace Rod {
 		}
 	}
 
-	TitlebarPanel::TitlebarPanel(EditorCommands& commands) : m_Commands(commands)
+	TitlebarPanel::TitlebarPanel(EditorCommands& commands, const Window& window, std::function<void()> requestClose)
+	    : m_Commands(commands), m_Window(window), m_RequestClose(std::move(requestClose))
 	{
 		m_Logo = Texture2D::Create("RodAssets/Textures/titlebarLogo.png");
 		m_ButtonSize = ImVec2(s_ButtonWidth, static_cast<float>(s_Height));
@@ -165,7 +168,7 @@ namespace Rod {
 		ImGui::SetCursorPos(ImVec2(dragZoneStartX, rowY));
 		ImGui::InvisibleButton("TitlebarDragZone", ImVec2(dragZoneWidth, m_ButtonSize.y));
 		if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
-			Application::Get().BeginWindowDrag();
+			m_Window.BeginWindowDrag();
 	}
 
 	void TitlebarPanel::DrawFileMenu() const
@@ -198,7 +201,7 @@ namespace Rod {
 				m_Commands.ExportGame();
 			ImGui::Separator();
 			if (ImGui::MenuItem("Exit"))
-				Application::Get().Close();
+				m_RequestClose();
 			ImGui::EndPopup();
 		}
 		ImGui::PopStyleVar(styleVariableCount);
@@ -207,21 +210,22 @@ namespace Rod {
 	void TitlebarPanel::DrawButtons() const
 	{
 		if (DrawTitlebarButton("##Minimize", ButtonIcon::Minimize, m_ButtonSize))
-			Application::Get().Minimize();
+			m_Window.Minimize();
 
 		ImGui::SameLine(0.0f, 0.0f);
-		const ButtonIcon maximizeIcon = Application::Get().IsMaximized() ? ButtonIcon::Restore : ButtonIcon::Maximize;
+		const bool maximized = m_Window.IsMaximized();
+		const ButtonIcon maximizeIcon = maximized ? ButtonIcon::Restore : ButtonIcon::Maximize;
 		if (DrawTitlebarButton("##MaximizeRestore", maximizeIcon, m_ButtonSize))
 		{
-			if (Application::Get().IsMaximized())
-				Application::Get().RestoreWindow();
+			if (maximized)
+				m_Window.Restore();
 			else
-				Application::Get().Maximize();
+				m_Window.Maximize();
 		}
 
 		ImGui::SameLine(0.0f, 0.0f);
 		if (DrawTitlebarButton("##Close", ButtonIcon::Close, m_ButtonSize))
-			Application::Get().Close();
+			m_RequestClose();
 	}
 
 }

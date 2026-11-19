@@ -5,6 +5,7 @@
 
 #include <filesystem>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -12,12 +13,20 @@
 namespace Rod {
 
 	class Entity;
+	class Input;
+	class Project;
 	class Scene;
 
 	class ScriptEngine
 	{
 	public:
-		static void Init();
+		enum class Mode
+		{
+			Editor,
+			Runtime
+		};
+
+		static void Init(const Project& project, const Input& input, Mode mode);
 		static void Shutdown();
 
 		static void SetScriptProject(const std::filesystem::path& projectPath);
@@ -40,12 +49,20 @@ namespace Rod {
 		[[nodiscard]] static ObserverPtr<ScriptClass> GetScriptClass(const std::string& className);
 
 	private:
+		struct Configuration
+		{
+			const Project& ProjectData;
+			const Input& InputDevice;
+			Mode StartupMode;
+		};
 		struct ScriptPaths;
 		struct ScriptEngineData;
+		static std::optional<Configuration> s_Configuration;
 		static std::unique_ptr<ScriptEngineData> s_Data;
 
 		[[nodiscard]] static std::filesystem::path CreateAssemblyCachePath(const std::filesystem::path& assemblyPath);
-		[[nodiscard]] static ScriptPaths ResolveScriptPaths();
+		[[nodiscard]] static ScriptPaths ResolveScriptPaths(const Project& project);
+		static bool EnsureInitialized();
 
 		static void RefreshSourceWriteTime();
 		[[nodiscard]] static std::filesystem::file_time_type GetLatestSourceWriteTime();

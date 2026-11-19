@@ -51,17 +51,17 @@ namespace Rod {
 		return result.Output;
 	}
 
-	std::string FileDialogs::OpenFile(const char* filter, const std::string& initialDirectory)
+	std::string FileDialogs::OpenFile(const char* filter, const std::string& initialDirectory) const
 	{
 		return ShowFileDialog(filter, false, initialDirectory);
 	}
 
-	std::string FileDialogs::SelectFolder(const std::string& initialDirectory)
+	std::string FileDialogs::SelectFolder(const std::string& initialDirectory) const
 	{
 		return ShowFileDialog(nullptr, false, initialDirectory, true);
 	}
 
-	std::string FileDialogs::SaveFile(const char* filter)
+	std::string FileDialogs::SaveFile(const char* filter) const
 	{
 		return ShowFileDialog(filter, true);
 	}

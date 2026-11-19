@@ -11,6 +11,7 @@
 namespace Rod {
 	class Scene;
 	class Entity;
+	class Input;
 
 	struct NativeCall
 	{
@@ -22,6 +23,7 @@ namespace Rod {
 	{
 	public:
 		static void SetSceneContext(ObserverPtr<Scene> scene) noexcept;
+		static void SetInputContext(ObserverPtr<const Input> input) noexcept;
 		[[nodiscard]] static ObserverPtr<Scene> GetSceneContext() noexcept { return s_SceneContext; }
 		[[nodiscard]] static std::vector<NativeCall> GetNativeCalls();
 
@@ -101,5 +103,6 @@ namespace Rod {
 		static void RD_CDECL ScriptSetClassName(uint64_t entityID, const char* className);
 
 		static ObserverPtr<Scene> s_SceneContext;
+		static ObserverPtr<const Input> s_InputContext;
 	};
 }

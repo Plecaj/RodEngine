@@ -2,8 +2,8 @@
 
 #include "ViewportPanel.h"
 
-#include "Rod/Core/Application.h"
 #include "Rod/Core/Input.h"
+#include "Rod/Core/KeyCodes.h"
 #include "Rod/Math/Math.h"
 #include "Rod/Scene/Components.h"
 
@@ -21,7 +21,6 @@ namespace Rod {
 		const auto viewportOffset = ImGui::GetCursorPos();
 		context.Focused = ImGui::IsWindowFocused();
 		context.Hovered = ImGui::IsWindowHovered();
-		Application::Get().GetImGuiLayer()->SetBlockEvents(!context.Focused && !context.Hovered);
 
 		const auto panelSize = ImGui::GetContentRegionAvail();
 		context.PendingSize = {panelSize.x, panelSize.y};
@@ -88,7 +87,7 @@ namespace Rod {
 		    context.Bounds[1].y - context.Bounds[0].y);
 		auto& component = selectedEntity.GetComponent<TransformComponent>();
 		glm::mat4 transform = component.GetTransform();
-		const bool snap = Input::IsKeyPressed(Key::LeftControl);
+		const bool snap = context.WindowInput.IsKeyPressed(Key::LeftControl);
 		const float snapValue = context.GizmoType == ImGuizmo::OPERATION::ROTATE ? s_RotationSnap : s_TranslationSnap;
 		const std::array<float, s_VectorComponentCount> snapValues{snapValue, snapValue, snapValue};
 		ImGuizmo::Manipulate(

@@ -1,5 +1,6 @@
 #include "rdpch.h"
 
+#include "Rod/Core/Window.h"
 #include "Rod/Utils/PlatformUtils.h"
 
 // NOLINTBEGIN(misc-include-cleaner)
@@ -14,7 +15,6 @@
 #include <system_error>
 #include <wrl/client.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
-#include "Rod/Core/Application.h"
 
 #include <GLFW/glfw3native.h>
 
@@ -38,17 +38,17 @@ namespace Rod {
 		}
 	}
 
-	static HWND GetOwnerWindow()
+	static HWND GetOwnerWindow(const Window* owner)
 	{
-		auto* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
-		return glfwGetWin32Window(window);
+		return owner ? glfwGetWin32Window(static_cast<GLFWwindow*>(owner->GetNativeWindow())) : nullptr;
 	}
 
-	static OPENFILENAMEA CreateOpenFileName(std::span<char, MAX_PATH> fileBuffer, const char* filter, DWORD flags)
+	static OPENFILENAMEA
+	CreateOpenFileName(HWND owner, std::span<char, MAX_PATH> fileBuffer, const char* filter, DWORD flags)
 	{
 		OPENFILENAMEA ofn = {};
 		ofn.lStructSize = sizeof(OPENFILENAMEA);
-		ofn.hwndOwner = GetOwnerWindow();
+		ofn.hwndOwner = owner;
 		ofn.lpstrFile = fileBuffer.data();
 		ofn.nMaxFile = static_cast<DWORD>(fileBuffer.size());
 		ofn.lpstrFilter = filter;
@@ -58,10 +58,10 @@ namespace Rod {
 		return ofn;
 	}
 
-	std::string FileDialogs::OpenFile(const char* filter, const std::string& initialDirectory)
+	std::string FileDialogs::OpenFile(const char* filter, const std::string& initialDirectory) const
 	{
 		CHAR szFile[MAX_PATH] = {0};
-		auto ofn = CreateOpenFileName(szFile, filter, OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST);
+		auto ofn = CreateOpenFileName(GetOwnerWindow(m_Owner), szFile, filter, OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST);
 		ofn.lpstrInitialDir = initialDirectory.empty() ? nullptr : initialDirectory.c_str();
 
 		if (GetOpenFileNameA(&ofn))
@@ -70,7 +70,7 @@ namespace Rod {
 		return {};
 	}
 
-	std::string FileDialogs::SelectFolder(const std::string& initialDirectory)
+	std::string FileDialogs::SelectFolder(const std::string& initialDirectory) const
 	{
 		struct ComApartment
 		{
@@ -110,7 +110,7 @@ namespace Rod {
 			if (SUCCEEDED(SHCreateItemFromParsingName(path.c_str(), nullptr, IID_PPV_ARGS(folder.GetAddressOf()))))
 				dialog->SetFolder(folder.Get());
 		}
-		if (FAILED(dialog->Show(GetOwnerWindow())))
+		if (FAILED(dialog->Show(GetOwnerWindow(m_Owner))))
 			return {};
 
 		Microsoft::WRL::ComPtr<IShellItem> item;
@@ -123,10 +123,10 @@ namespace Rod {
 		return std::filesystem::path(selected.get()).string();
 	}
 
-	std::string FileDialogs::SaveFile(const char* filter)
+	std::string FileDialogs::SaveFile(const char* filter) const
 	{
 		CHAR szFile[MAX_PATH] = {0};
-		auto ofn = CreateOpenFileName(szFile, filter, OFN_PATHMUSTEXIST);
+		auto ofn = CreateOpenFileName(GetOwnerWindow(m_Owner), szFile, filter, OFN_PATHMUSTEXIST);
 
 		if (GetSaveFileNameA(&ofn))
 			return ofn.lpstrFile;

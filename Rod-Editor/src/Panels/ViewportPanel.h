@@ -1,8 +1,9 @@
 #pragma once
 
 #include "../SceneState.h"
-#include "Rod.h"
 #include "Rod/Renderer/EditorCamera.h"
+#include "Rod/Renderer/FrameBuffer.h"
+#include "Rod/Scene/Entity.h"
 
 #include <array>
 #include <cstddef>
@@ -11,6 +12,7 @@
 
 namespace Rod {
 
+	class Input;
 	class Scene;
 	class SceneHierarchyPanel;
 
@@ -35,6 +37,7 @@ namespace Rod {
 			bool& Hovered;
 			const std::filesystem::path& AssetsPath;
 			const std::function<void(const std::filesystem::path&)>& OpenScene;
+			const Input& WindowInput;
 		};
 		static void OnImGuiRender(const RenderContext& context);
 

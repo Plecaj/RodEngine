@@ -10,12 +10,15 @@
 
 #include "imgui.h"
 
+#include <functional>
+
 namespace Rod {
 
 	class Project;
 	class EditorCommands;
 	class EditorSceneManager;
 	class EditorViewport;
+	class Window;
 	struct EditorInteractionState;
 
 	class EditorLayout
@@ -26,7 +29,9 @@ namespace Rod {
 		    EditorSceneManager& scenes,
 		    EditorViewport& viewport,
 		    EditorCommands& commands,
-		    EditorInteractionState& interaction);
+		    EditorInteractionState& interaction,
+		    const Window& window,
+		    std::function<void()> requestClose);
 		~EditorLayout() = default;
 		EditorLayout(const EditorLayout&) = delete;
 		EditorLayout& operator=(const EditorLayout&) = delete;

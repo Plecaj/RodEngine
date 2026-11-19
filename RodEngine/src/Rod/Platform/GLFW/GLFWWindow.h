@@ -25,6 +25,8 @@ namespace Rod {
 
 		virtual void Minimize() const override;
 		virtual void Maximize() const override;
+		[[nodiscard]] bool IsMinimized() const noexcept override;
+		[[nodiscard]] bool IsMaximized() const noexcept override;
 		virtual void Restore() const override;
 		virtual void BeginWindowDrag() const override;
 

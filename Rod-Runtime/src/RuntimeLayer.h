@@ -1,15 +1,29 @@
 #pragma once
 
-#include "Rod.h"
+#include "Rod/Core/Core.h"
+#include "Rod/Core/Layer.h"
 #include "Rod/Events/ApplicationEvent.h"
 #include "Rod/Events/KeyEvent.h"
 
+#include <glm/vec4.hpp>
+
+#include <functional>
+
 namespace Rod {
+
+	class Input;
+	class Project;
+	class Scene;
+	class Window;
 
 	class RuntimeLayer : public Layer
 	{
 	public:
-		explicit RuntimeLayer(const Project& project);
+		RuntimeLayer(
+		    const Project& project,
+		    const Window& window,
+		    const Input& input,
+		    std::function<void()> requestClose);
 		~RuntimeLayer() override;
 		RuntimeLayer(const RuntimeLayer&) = delete;
 		RuntimeLayer& operator=(const RuntimeLayer&) = delete;
@@ -20,13 +34,13 @@ namespace Rod {
 		virtual void OnEvent(Event& event) override;
 
 	private:
-		void LoadScene();
+		void LoadScene(const Project& project, const Window& window);
 		bool OnWindowResize(WindowResizeEvent& event);
-		static bool OnKeyPressed(KeyPressedEvent& event) noexcept;
+		bool OnKeyPressed(KeyPressedEvent& event);
 
 	private:
-		const Project& m_Project;
 		static constexpr glm::vec4 s_ClearColor{0.15f, 0.15f, 0.15f, 1.0f};
+		std::function<void()> m_RequestClose;
 		Scope<Scene> m_Scene;
 		bool m_RunningScene = false;
 	};

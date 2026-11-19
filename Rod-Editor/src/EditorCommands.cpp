@@ -7,7 +7,6 @@
 #include "Rod/Project/Project.h"
 #include "Rod/Project/ProjectExporter.h"
 #include "Rod/Scripting/ScriptBuilder.h"
-#include "Rod/Utils/PlatformUtils.h"
 
 #include <exception>
 #include <stdexcept>
@@ -17,8 +16,9 @@ namespace Rod {
 	EditorCommands::EditorCommands(
 	    const Project& project,
 	    EditorSceneManager& scenes,
-	    EditorInteractionState& interaction) noexcept
-	    : m_Project(project), m_Scenes(scenes), m_Interaction(interaction)
+	    EditorInteractionState& interaction,
+	    FileDialogs fileDialogs) noexcept
+	    : m_Project(project), m_Scenes(scenes), m_Interaction(interaction), m_FileDialogs(fileDialogs)
 	{}
 
 	void EditorCommands::NewScene() const
@@ -36,7 +36,7 @@ namespace Rod {
 
 	void EditorCommands::OpenScene() const
 	{
-		const std::string filepath = FileDialogs::OpenFile("Rod Scene (*.rod)\0*.rod\0");
+		const std::string filepath = m_FileDialogs.OpenFile("Rod Scene (*.rod)\0*.rod\0");
 		if (!filepath.empty())
 			OpenScene(filepath);
 	}
@@ -77,7 +77,7 @@ namespace Rod {
 
 	void EditorCommands::SaveSceneAs() const
 	{
-		const std::string filepath = FileDialogs::SaveFile("Rod Scene (*.rod)\0*.rod\0");
+		const std::string filepath = m_FileDialogs.SaveFile("Rod Scene (*.rod)\0*.rod\0");
 		if (!filepath.empty())
 		{
 			try

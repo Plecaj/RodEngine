@@ -96,8 +96,8 @@ namespace Rod {
 
 	void ProjectSetupPanel::PickProjectPath(std::filesystem::path& value, const char* filter, const char* extension)
 	{
-		const auto selected = filter ? FileDialogs::OpenFile(filter, m_Directory.string())
-		                             : FileDialogs::SelectFolder(m_Directory.string());
+		const auto selected = filter ? m_FileDialogs.OpenFile(filter, m_Directory.string())
+		                             : m_FileDialogs.SelectFolder(m_Directory.string());
 		if (selected.empty())
 			return;
 		if (filter ? !std::filesystem::is_regular_file(selected) : !std::filesystem::is_directory(selected))
@@ -115,7 +115,7 @@ namespace Rod {
 	{
 		if (DrawPathPicker("Project folder", m_Directory))
 		{
-			const auto selected = FileDialogs::SelectFolder(m_Directory.string());
+			const auto selected = m_FileDialogs.SelectFolder(m_Directory.string());
 			if (!selected.empty())
 			{
 				if (!std::filesystem::is_directory(selected))
@@ -154,7 +154,7 @@ namespace Rod {
 		}
 		if (DrawPathPicker("Engine shader directory", m_ShaderDirectory))
 		{
-			const auto selected = FileDialogs::SelectFolder(m_ShaderDirectory.string());
+			const auto selected = m_FileDialogs.SelectFolder(m_ShaderDirectory.string());
 			if (!selected.empty())
 			{
 				if (!std::filesystem::is_directory(selected))

@@ -26,7 +26,7 @@ namespace Rod {
 		if (props.UsesCustomUi)
 		{
 			auto imGuiLayer = CreateScope<ImGuiLayer>(*m_Window);
-			m_ImGuiLayer = imGuiLayer.get();
+			m_ImGuiLayer = *imGuiLayer;
 			PushOverlay(std::move(imGuiLayer));
 		}
 	}
@@ -36,7 +36,7 @@ namespace Rod {
 		RD_PROFILE_FUNCTION();
 
 		m_LayerStack.Clear();
-		m_ImGuiLayer = nullptr;
+		m_ImGuiLayer.reset();
 		SceneRenderer::Shutdown();
 	}
 

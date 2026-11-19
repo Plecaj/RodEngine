@@ -2,6 +2,7 @@
 
 #include "Buffer.h"
 
+#include <optional>
 #include <span>
 
 namespace Rod {
@@ -23,7 +24,7 @@ namespace Rod {
 		virtual void SetIndexBuffer(Scope<IndexBuffer> indexBuffer) = 0;
 
 		[[nodiscard]] virtual std::span<const Scope<VertexBuffer>> GetVertexBuffers() const noexcept = 0;
-		[[nodiscard]] virtual ObserverPtr<const IndexBuffer> GetIndexBuffer() const noexcept = 0;
+		[[nodiscard]] virtual std::optional<const IndexBuffer&> GetIndexBuffer() const noexcept = 0;
 
 		[[nodiscard]] static Scope<VertexArray> Create();
 	};

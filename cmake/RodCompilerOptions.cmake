@@ -16,7 +16,6 @@ add_library(RodProjectWarnings INTERFACE)
 add_library(Rod::ProjectWarnings ALIAS RodProjectWarnings)
 
 function(rod_configure_cpp_target target)
-    target_compile_features(${target} PRIVATE cxx_std_26)
     set_target_properties(${target} PROPERTIES CXX_EXTENSIONS OFF)
     target_precompile_headers(${target} PRIVATE "${PROJECT_SOURCE_DIR}/RodEngine/src/rdpch.h")
     target_link_libraries(${target} PRIVATE Rod::ProjectWarnings)

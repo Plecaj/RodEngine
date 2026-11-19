@@ -24,9 +24,9 @@ namespace {
 	Function
 	RequireFunction(const Rod::ScriptRuntime& runtime, const std::string& hostType, const std::string& methodName)
 	{
-		const auto function = std::bit_cast<Function>(runtime.GetFunction(hostType, methodName));
-		REQUIRE(function != nullptr);
-		return function;
+		const auto address = runtime.GetFunction(hostType, methodName);
+		REQUIRE(address != nullptr);
+		return std::bit_cast<Function>(address);
 	}
 
 	Rod::ScriptAssembly LoadAssembly(LoadFn load, const std::string& path)

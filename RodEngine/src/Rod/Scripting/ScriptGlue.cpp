@@ -30,7 +30,7 @@ namespace Rod {
 
 		[[nodiscard]] Entity GetEntity(uint64_t entityID)
 		{
-			ObserverPtr<Scene> scene = ScriptGlue::GetSceneContext();
+			const auto scene = ScriptGlue::GetSceneContext();
 			if (!scene)
 				return {};
 			return scene->FindEntityByUUID(UUID{entityID});
@@ -76,8 +76,8 @@ namespace Rod {
 		Script
 	};
 
-	ObserverPtr<Scene> ScriptGlue::s_SceneContext = nullptr;
-	ObserverPtr<const Input> ScriptGlue::s_InputContext = nullptr;
+	std::optional<Scene&> ScriptGlue::s_SceneContext;
+	std::optional<const Input&> ScriptGlue::s_InputContext;
 
 	glm::vec3 ScriptGlue::ToGLM(ScriptVec3 value)
 	{
@@ -142,10 +142,9 @@ namespace Rod {
 
 	uint64_t RD_CDECL ScriptGlue::EntityCreate(const char* name)
 	{
-		ObserverPtr<Scene> scene = ScriptGlue::GetSceneContext();
-		if (!scene)
+		if (!s_SceneContext)
 			return 0;
-		const Entity entity = scene->CreateEntity(name ? name : "");
+		const Entity entity = s_SceneContext->CreateEntity(name ? name : "");
 		return static_cast<uint64_t>(entity.GetUUID());
 	}
 
@@ -153,15 +152,14 @@ namespace Rod {
 	{
 		const Entity entity = GetEntity(entityID);
 		if (entity)
-			ScriptGlue::GetSceneContext()->DestroyEntity(entity);
+			s_SceneContext->DestroyEntity(entity);
 	}
 
 	uint64_t RD_CDECL ScriptGlue::EntityFindByName(const char* name)
 	{
-		ObserverPtr<Scene> scene = ScriptGlue::GetSceneContext();
-		if (!scene || !name)
+		if (!s_SceneContext || !name)
 			return 0;
-		const Entity entity = scene->FindEntityByName(name);
+		const Entity entity = s_SceneContext->FindEntityByName(name);
 		return entity ? static_cast<uint64_t>(entity.GetUUID()) : 0;
 	}
 
@@ -655,12 +653,12 @@ namespace Rod {
 			entity.GetComponent<ScriptComponent>().ClassName = className ? className : "";
 	}
 
-	void ScriptGlue::SetSceneContext(ObserverPtr<Scene> scene) noexcept
+	void ScriptGlue::SetSceneContext(std::optional<Scene&> scene) noexcept
 	{
 		s_SceneContext = scene;
 	}
 
-	void ScriptGlue::SetInputContext(ObserverPtr<const Input> input) noexcept
+	void ScriptGlue::SetInputContext(std::optional<const Input&> input) noexcept
 	{
 		s_InputContext = input;
 	}

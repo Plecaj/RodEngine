@@ -46,7 +46,7 @@ namespace Rod {
 		[[nodiscard]] static bool IsInitialized() noexcept;
 		[[nodiscard]] static bool IsRuntimeRunning() noexcept;
 		[[nodiscard]] static const std::unordered_map<std::string, ScriptClass>& GetScriptClasses();
-		[[nodiscard]] static ObserverPtr<ScriptClass> GetScriptClass(const std::string& className);
+		[[nodiscard]] static std::optional<ScriptClass&> GetScriptClass(const std::string& className);
 
 	private:
 		struct Configuration

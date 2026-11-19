@@ -18,8 +18,9 @@ TEST_CASE("Shared libraries load functions and transfer ownership", "[platform][
 	replacement = std::move(moved);
 	// NOLINTNEXTLINE(bugprone-use-after-move,clang-analyzer-cplusplus.Move)
 	REQUIRE_FALSE(moved.IsLoaded());
-	const auto function = std::bit_cast<int (*)()>(replacement.GetFunction("RodTestValue"));
-	REQUIRE(function != nullptr);
+	const auto address = replacement.GetFunction("RodTestValue");
+	REQUIRE(address != nullptr);
+	const auto function = std::bit_cast<int (*)()>(address);
 	REQUIRE(function() == 42);
 	REQUIRE(replacement.GetFunction("MissingFunction") == nullptr);
 }

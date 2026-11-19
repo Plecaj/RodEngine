@@ -34,15 +34,12 @@ namespace Rod {
 
 		[[nodiscard]] Window& GetWindow() noexcept { return *m_Window; }
 		[[nodiscard]] const Input& GetInput() const noexcept { return m_Input; }
-		[[nodiscard]] ObserverPtr<Project> GetProject() noexcept { return m_Project ? &*m_Project : nullptr; }
-		[[nodiscard]] ObserverPtr<const Project> GetProject() const noexcept
-		{
-			return m_Project ? &*m_Project : nullptr;
-		}
+		[[nodiscard]] std::optional<Project&> GetProject() noexcept { return m_Project; }
+		[[nodiscard]] std::optional<const Project&> GetProject() const noexcept { return m_Project; }
 
 		void Close() noexcept;
 
-		[[nodiscard]] ObserverPtr<ImGuiLayer> GetImGuiLayer() noexcept { return m_ImGuiLayer; }
+		[[nodiscard]] std::optional<ImGuiLayer&> GetImGuiLayer() noexcept { return m_ImGuiLayer; }
 
 	private:
 		[[nodiscard]] Timestep CalculateTimestep();
@@ -56,7 +53,7 @@ namespace Rod {
 		std::optional<Project> m_Project;
 		Scope<Window> m_Window;
 		Input m_Input;
-		ObserverPtr<ImGuiLayer> m_ImGuiLayer = nullptr;
+		std::optional<ImGuiLayer&> m_ImGuiLayer;
 		bool m_Running = true;
 		LayerStack m_LayerStack;
 		float m_LastFrameTime = 0.0f;

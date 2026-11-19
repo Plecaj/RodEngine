@@ -2,6 +2,7 @@ add_library(RodEngine STATIC)
 add_library(Rod::Engine ALIAS RodEngine)
 
 rod_configure_cpp_target(RodEngine)
+target_compile_features(RodEngine PUBLIC cxx_std_26)
 
 add_subdirectory(src)
 

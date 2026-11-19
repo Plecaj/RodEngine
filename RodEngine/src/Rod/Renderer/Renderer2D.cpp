@@ -308,7 +308,7 @@ namespace Rod {
 			g_Data->TextureSlots[i]->Bind(i);
 
 		g_Data->QuadVertexArray->Bind();
-		g_Data->QuadVertexArray->GetIndexBuffer()->Bind();
+		g_Data->QuadVertexArray->GetIndexBuffer().value().Bind();
 
 		RenderCommand::DrawIndexed(*g_Data->QuadVertexArray, g_Data->QuadIndexCount);
 		g_Data->Stats.DrawCalls++;

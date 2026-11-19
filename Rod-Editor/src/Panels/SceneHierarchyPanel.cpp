@@ -518,7 +518,7 @@ namespace Rod {
 
 	void SceneHierarchyPanel::SyncScriptFields(ScriptComponent& component)
 	{
-		const auto* scriptClass = ScriptEngine::GetScriptClass(component.ClassName);
+		const auto scriptClass = ScriptEngine::GetScriptClass(component.ClassName);
 		if (!scriptClass)
 			return;
 

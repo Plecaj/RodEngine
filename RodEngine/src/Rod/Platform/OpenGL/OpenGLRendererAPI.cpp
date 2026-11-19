@@ -60,7 +60,7 @@ namespace Rod {
 
 	void OpenGLRendererAPI::DrawIndexed(const VertexArray& vertexArray, uint32_t indexCount)
 	{
-		const uint32_t count = indexCount ? indexCount : vertexArray.GetIndexBuffer()->GetCount();
+		const uint32_t count = indexCount ? indexCount : vertexArray.GetIndexBuffer().value().GetCount();
 		glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(count), GL_UNSIGNED_INT, nullptr);
 	}
 

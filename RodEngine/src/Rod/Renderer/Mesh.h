@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <optional>
 #include <span>
 #include <string>
 
@@ -20,7 +21,12 @@ namespace Rod {
 	public:
 		explicit Mesh(const std::string& glbPath);
 
-		[[nodiscard]] ObserverPtr<const VertexArray> GetVAO() const noexcept { return m_VAO.get(); }
+		[[nodiscard]] std::optional<const VertexArray&> GetVAO() const noexcept
+		{
+			if (m_VAO)
+				return *m_VAO;
+			return std::nullopt;
+		}
 		[[nodiscard]] const Material& GetMaterial() const noexcept { return m_Material; }
 		[[nodiscard]] const std::string& GetPath() const noexcept { return m_SourcePath; }
 

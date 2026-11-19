@@ -85,11 +85,11 @@ namespace Rod {
 		return m_Classes.contains(className);
 	}
 
-	ObserverPtr<ScriptClass> ScriptAssembly::GetClass(const std::string& className)
+	std::optional<ScriptClass&> ScriptAssembly::GetClass(const std::string& className)
 	{
 		auto it = m_Classes.find(className);
 		if (it == m_Classes.end())
-			return nullptr;
-		return &it->second;
+			return std::nullopt;
+		return it->second;
 	}
 }

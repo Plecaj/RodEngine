@@ -8,6 +8,7 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include <bit>
+#include <optional>
 #include <stdexcept>
 #include <string_view>
 
@@ -15,7 +16,7 @@ namespace {
 	class NativeSceneContext
 	{
 	public:
-		explicit NativeSceneContext(Rod::Scene& scene) { Rod::ScriptGlue::SetSceneContext(&scene); }
+		explicit NativeSceneContext(Rod::Scene& scene) { Rod::ScriptGlue::SetSceneContext(scene); }
 		~NativeSceneContext() { Rod::ScriptGlue::SetSceneContext(m_PreviousScene); }
 		NativeSceneContext(const NativeSceneContext&) = delete;
 		NativeSceneContext& operator=(const NativeSceneContext&) = delete;
@@ -33,7 +34,7 @@ namespace {
 		}
 
 	private:
-		Rod::ObserverPtr<Rod::Scene> m_PreviousScene = Rod::ScriptGlue::GetSceneContext();
+		std::optional<Rod::Scene&> m_PreviousScene = Rod::ScriptGlue::GetSceneContext();
 		const std::vector<Rod::NativeCall> m_Calls = Rod::ScriptGlue::GetNativeCalls();
 	};
 }

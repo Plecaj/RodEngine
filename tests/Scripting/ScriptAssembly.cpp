@@ -11,8 +11,9 @@ TEST_CASE("Script metadata loads classes and fields", "[scripting][loading]")
 	Rod::ScriptAssembly assembly("Game.dll", R"({"classes":[{
 "fullName":"Game.Player","namespace":"Game","name":"Player",
 "fields":[{"name":"Speed","type":"Single","defaultValue":"3.5"}]}]})");
-	const auto* scriptClass = assembly.GetClass("Game.Player");
-	REQUIRE(scriptClass != nullptr);
+	const auto scriptClass = assembly.GetClass("Game.Player");
+	REQUIRE(scriptClass.has_value());
+	REQUIRE_FALSE(assembly.GetClass("Game.Missing").has_value());
 	const auto& speed = scriptClass->GetFields().at("Speed");
 	REQUIRE(speed.Field.Type == Rod::ScriptFieldType::Float);
 	REQUIRE(speed.Value == "3.5");

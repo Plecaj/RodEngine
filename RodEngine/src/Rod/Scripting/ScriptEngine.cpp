@@ -220,7 +220,7 @@ namespace Rod {
 		}
 
 		// Managed input callbacks have no user-data parameter.
-		ScriptGlue::SetInputContext(&s_Configuration->InputDevice);
+		ScriptGlue::SetInputContext(s_Configuration->InputDevice);
 		if (s_Configuration->StartupMode != Mode::Editor || BuildScripts())
 			ReloadAssembly();
 		RefreshSourceWriteTime();
@@ -231,7 +231,7 @@ namespace Rod {
 	{
 		OnRuntimeStop();
 		s_Data.reset();
-		ScriptGlue::SetInputContext(nullptr);
+		ScriptGlue::SetInputContext(std::nullopt);
 		s_Configuration.reset();
 	}
 
@@ -324,7 +324,7 @@ namespace Rod {
 
 		s_Data->SceneContext = &scene;
 		s_Data->RuntimeRunning = true;
-		ScriptGlue::SetSceneContext(&scene);
+		ScriptGlue::SetSceneContext(scene);
 
 		auto view = scene.m_Registry.view<IDComponent, ScriptComponent>();
 		for (auto entityID : view)
@@ -345,7 +345,7 @@ namespace Rod {
 
 		s_Data->RuntimeRunning = false;
 		s_Data->SceneContext = nullptr;
-		ScriptGlue::SetSceneContext(nullptr);
+		ScriptGlue::SetSceneContext(std::nullopt);
 	}
 
 	void ScriptEngine::OnRuntimeUpdate(Timestep ts)
@@ -423,9 +423,9 @@ namespace Rod {
 		return s_Data && s_Data->AppAssembly ? s_Data->AppAssembly->GetClasses() : emptyClasses;
 	}
 
-	ObserverPtr<ScriptClass> ScriptEngine::GetScriptClass(const std::string& className)
+	std::optional<ScriptClass&> ScriptEngine::GetScriptClass(const std::string& className)
 	{
-		return s_Data && s_Data->AppAssembly ? s_Data->AppAssembly->GetClass(className) : nullptr;
+		return s_Data && s_Data->AppAssembly ? s_Data->AppAssembly->GetClass(className) : std::nullopt;
 	}
 
 	void ScriptEngine::RefreshSourceWriteTime()

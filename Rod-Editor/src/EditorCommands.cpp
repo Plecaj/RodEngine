@@ -104,7 +104,7 @@ namespace Rod {
 			    m_Project,
 			    directory / "Rod-Runtime" ROD_EXECUTABLE_SUFFIX,
 			    output,
-			    &m_Scenes.GetEditorScene());
+			    m_Scenes.GetEditorScene());
 			RD_CORE_INFO("Exported game to {}", output.string());
 		}
 		catch (const std::exception& exception)

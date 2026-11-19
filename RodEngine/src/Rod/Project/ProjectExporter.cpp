@@ -149,7 +149,7 @@ namespace Rod {
 	    const Project& project,
 	    const std::filesystem::path& runtimeExecutable,
 	    const std::filesystem::path& outputDirectory,
-	    ObserverPtr<Scene> startupScene)
+	    std::optional<Scene&> startupScene)
 	{
 		if (outputDirectory.empty())
 			throw std::invalid_argument("Export directory is required");

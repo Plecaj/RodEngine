@@ -122,7 +122,7 @@ TEST_CASE_METHOD(ExportFixture, "Successful re-export replaces the package with 
 	Rod::WriteTextFile(output / "old-package.txt", "replace on success");
 	Rod::Scene scene;
 	const auto entity = scene.CreateEntity("Unsaved entity");
-	Rod::ProjectExporter::Export(Source, Runtime, output, &scene);
+	Rod::ProjectExporter::Export(Source, Runtime, output, scene);
 	REQUIRE_FALSE(std::filesystem::exists(output / "old-package.txt"));
 	const auto saved = YAML::LoadFile((output / "Content/Scenes/Startup.rod").string());
 	REQUIRE(saved["Entities"][0]["TagComponent"]["Tag"].as<std::string>() == entity.GetName());

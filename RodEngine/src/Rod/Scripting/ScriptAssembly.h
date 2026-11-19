@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Rod/Core/Core.h"
 #include "ScriptClass.h"
 
 #include <filesystem>
+#include <optional>
 #include <string>
 #include <unordered_map>
 
@@ -20,7 +20,7 @@ namespace Rod {
 		ScriptAssembly& operator=(ScriptAssembly&&) noexcept = default;
 
 		[[nodiscard]] bool HasClass(const std::string& className) const;
-		[[nodiscard]] ObserverPtr<ScriptClass> GetClass(const std::string& className);
+		[[nodiscard]] std::optional<ScriptClass&> GetClass(const std::string& className);
 		[[nodiscard]] const std::unordered_map<std::string, ScriptClass>& GetClasses() const noexcept
 		{
 			return m_Classes;

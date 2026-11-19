@@ -2,6 +2,7 @@
 
 #include "../OpenGLFixture.h"
 #include "Rod/Renderer/Mesh.h"
+#include "Rod/Renderer/VertexArray.h"
 
 #include <catch2/catch_test_macros.hpp>
 #include <glad/glad.h>
@@ -31,8 +32,8 @@ TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Meshes load vertices, indices and m
 
 	const auto path = AssetPath(filename).string();
 	const Rod::Mesh mesh(path);
-	const auto* vao = mesh.GetVAO();
-	REQUIRE(vao);
+	const auto vao = mesh.GetVAO();
+	REQUIRE(vao.has_value());
 	REQUIRE(vao->GetVertexBuffers().size() == 1);
 	const auto expectedVertices =
 	    std::to_array<float>({0, 0, 0, 0, 0, normalZ, 1, 0, 0, 0, 0, normalZ, 0, 1, 0, 0, 0, normalZ});
@@ -44,8 +45,8 @@ TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Meshes load vertices, indices and m
 	constexpr auto expectedIndices = std::to_array<uint32_t>({0, 1, 2});
 	std::array<uint32_t, expectedIndices.size()> indices{};
 	vao->Bind();
-	const auto* indexBuffer = vao->GetIndexBuffer();
-	REQUIRE(indexBuffer);
+	const auto indexBuffer = vao->GetIndexBuffer();
+	REQUIRE(indexBuffer.has_value());
 	REQUIRE(indexBuffer->GetCount() == expectedIndices.size());
 	indexBuffer->Bind();
 	glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(indices), indices.data());
@@ -56,4 +57,10 @@ TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Meshes load vertices, indices and m
 	REQUIRE(mesh.GetMaterial().GetMetallic() == expectedMaterial.GetMetallic());
 	vao->Unbind();
 	REQUIRE(glGetError() == GL_NO_ERROR);
+}
+
+TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Vertex arrays can have no index buffer", "[renderer][opengl]")
+{
+	const auto vertexArray = Rod::VertexArray::Create();
+	REQUIRE_FALSE(vertexArray->GetIndexBuffer().has_value());
 }

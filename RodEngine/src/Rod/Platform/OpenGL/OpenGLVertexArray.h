@@ -2,6 +2,7 @@
 
 #include "Rod/Renderer/VertexArray.h"
 
+#include <optional>
 #include <span>
 #include <vector>
 
@@ -27,9 +28,11 @@ namespace Rod {
 		{
 			return m_VertexBuffers;
 		}
-		[[nodiscard]] virtual ObserverPtr<const IndexBuffer> GetIndexBuffer() const noexcept override
+		[[nodiscard]] std::optional<const IndexBuffer&> GetIndexBuffer() const noexcept override
 		{
-			return m_IndexBuffer.get();
+			if (m_IndexBuffer)
+				return *m_IndexBuffer;
+			return std::nullopt;
 		}
 
 	private:

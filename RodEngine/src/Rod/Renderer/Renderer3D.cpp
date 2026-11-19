@@ -248,9 +248,10 @@ namespace Rod {
 			s_SceneData->DrawUBO->BindBase(s_DrawBinding);
 			s_SceneData->DrawUBO->SetData(std::as_bytes(std::span{&drawData, 1}));
 
-			command.Mesh->GetVAO()->Bind();
-			command.Mesh->GetVAO()->GetIndexBuffer()->Bind();
-			RenderCommand::DrawIndexed(*command.Mesh->GetVAO());
+			const auto& vertexArray = command.Mesh->GetVAO().value();
+			vertexArray.Bind();
+			vertexArray.GetIndexBuffer().value().Bind();
+			RenderCommand::DrawIndexed(vertexArray);
 		}
 	}
 
@@ -325,9 +326,10 @@ namespace Rod {
 				s_SceneData->SceneUBO->BindBase(s_SceneBinding);
 				s_SceneData->SceneUBO->SetData(std::as_bytes(std::span{&matrices, 1}));
 
-				command.Mesh->GetVAO()->Bind();
-				command.Mesh->GetVAO()->GetIndexBuffer()->Bind();
-				RenderCommand::DrawIndexed(*command.Mesh->GetVAO());
+				const auto& vertexArray = command.Mesh->GetVAO().value();
+				vertexArray.Bind();
+				vertexArray.GetIndexBuffer().value().Bind();
+				RenderCommand::DrawIndexed(vertexArray);
 			}
 		}
 

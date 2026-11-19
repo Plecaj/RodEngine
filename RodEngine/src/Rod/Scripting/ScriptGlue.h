@@ -5,6 +5,7 @@
 #include <glm/glm.hpp>
 
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -22,9 +23,9 @@ namespace Rod {
 	class ScriptGlue
 	{
 	public:
-		static void SetSceneContext(ObserverPtr<Scene> scene) noexcept;
-		static void SetInputContext(ObserverPtr<const Input> input) noexcept;
-		[[nodiscard]] static ObserverPtr<Scene> GetSceneContext() noexcept { return s_SceneContext; }
+		static void SetSceneContext(std::optional<Scene&> scene) noexcept;
+		static void SetInputContext(std::optional<const Input&> input) noexcept;
+		[[nodiscard]] static std::optional<Scene&> GetSceneContext() noexcept { return s_SceneContext; }
 		[[nodiscard]] static std::vector<NativeCall> GetNativeCalls();
 
 	private:
@@ -102,7 +103,7 @@ namespace Rod {
 		static void* RD_CDECL ScriptGetClassName(uint64_t entityID);
 		static void RD_CDECL ScriptSetClassName(uint64_t entityID, const char* className);
 
-		static ObserverPtr<Scene> s_SceneContext;
-		static ObserverPtr<const Input> s_InputContext;
+		static std::optional<Scene&> s_SceneContext;
+		static std::optional<const Input&> s_InputContext;
 	};
 }

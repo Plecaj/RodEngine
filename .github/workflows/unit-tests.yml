@@ -25,10 +25,13 @@ jobs:
       - name: Check formatting
         shell: bash
         run: |
-          python -m venv "$RUNNER_TEMP/rod-format"
-          source "$RUNNER_TEMP/rod-format/bin/activate"
-          python -m pip install --disable-pip-version-check clang-format==21.1.0
-          python scripts/format.py --check
+          curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /usr/share/keyrings/apt.llvm.org.asc > /dev/null
+          echo 'deb [signed-by=/usr/share/keyrings/apt.llvm.org.asc] https://apt.llvm.org/noble/ llvm-toolchain-noble-23 main' | sudo tee /etc/apt/sources.list.d/llvm-23.list
+          sudo apt-get update
+          sudo apt-get install -y clang-format-23
+          llvm_bin=/usr/lib/llvm-23/bin
+          "$llvm_bin/clang-format" --version
+          PATH="$llvm_bin:$PATH" python scripts/format.py --check
 
   unit-tests:
     name: ${{ matrix.name }}

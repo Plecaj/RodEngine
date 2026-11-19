@@ -30,14 +30,14 @@ namespace Rod {
 			ShaderOptions();
 		};
 
-		[[nodiscard]] static Scope<Shader>
-		Create(const std::string& filepath, const ShaderOptions& options = ShaderOptions());
+		[[nodiscard]] static auto Create(const std::string& filepath, const ShaderOptions& options = ShaderOptions())
+		    -> Scope<Shader>;
 		Shader() = default;
 		virtual ~Shader() = default;
 		Shader(const Shader&) = delete;
-		Shader& operator=(const Shader&) = delete;
+		auto operator=(const Shader&) -> Shader& = delete;
 		Shader(Shader&&) = delete;
-		Shader& operator=(Shader&&) = delete;
+		auto operator=(Shader&&) -> Shader& = delete;
 
 		virtual void SetInt(const std::string& name, int value) = 0;
 		virtual void SetIntArray(const std::string& name, std::span<const int> values) = 0;
@@ -46,7 +46,7 @@ namespace Rod {
 		virtual void SetFloat4(const std::string& name, const glm::vec4& value) = 0;
 		virtual void SetMat4(const std::string& name, const glm::mat4& value) = 0;
 
-		[[nodiscard]] virtual const std::string& GetName() const noexcept = 0;
+		[[nodiscard]] virtual auto GetName() const noexcept -> const std::string& = 0;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
@@ -59,12 +59,12 @@ namespace Rod {
 	public:
 		void Add(const std::string& name, const Ref<Shader>& shader);
 		void Add(const Ref<Shader>& shader);
-		Ref<Shader> Load(const std::string& filepath);
-		Ref<Shader> Load(const std::string& name, const std::string& filepath);
+		auto Load(const std::string& filepath) -> Ref<Shader>;
+		auto Load(const std::string& name, const std::string& filepath) -> Ref<Shader>;
 
-		[[nodiscard]] Ref<Shader> Get(const std::string& name);
+		[[nodiscard]] auto Get(const std::string& name) -> Ref<Shader>;
 
-		[[nodiscard]] bool Exists(const std::string& name) const;
+		[[nodiscard]] auto Exists(const std::string& name) const -> bool;
 
 	private:
 		std::unordered_map<std::string, Ref<Shader>> m_Shaders;

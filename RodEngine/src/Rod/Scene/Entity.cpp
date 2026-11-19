@@ -8,12 +8,12 @@
 
 namespace Rod {
 
-	UUID Entity::GetUUID() const
+	auto Entity::GetUUID() const -> UUID
 	{
 		return GetComponent<IDComponent>().ID;
 	}
 
-	const std::string& Entity::GetName() const
+	auto Entity::GetName() const -> const std::string&
 	{
 		return GetComponent<TagComponent>().Tag;
 	}

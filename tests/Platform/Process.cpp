@@ -15,7 +15,7 @@ TEST_CASE("Windows process runner reports child output and exit status", "[proce
 {
 	const auto result = Rod::Process::Run({"where.exe", "cmd.exe"});
 	REQUIRE(result.ExitCode == 0);
-	REQUIRE(result.Output.find("cmd.exe") != std::string::npos);
+	REQUIRE(result.Output.contains("cmd.exe"));
 }
 
 TEST_CASE("Windows process runner reports launch failures", "[process]")

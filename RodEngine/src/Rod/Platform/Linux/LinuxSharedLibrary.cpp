@@ -23,7 +23,7 @@ namespace Rod {
 		}
 	}
 
-	void* SharedLibrary::GetFunction(const char* name) const noexcept
+	auto SharedLibrary::GetFunction(const char* name) const noexcept -> void*
 	{
 		return m_Handle ? dlsym(m_Handle, name) : nullptr;
 	}

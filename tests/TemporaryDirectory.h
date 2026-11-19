@@ -26,11 +26,11 @@ namespace Rod::Tests {
 			std::filesystem::remove_all(m_Path, error);
 		}
 		TemporaryDirectory(const TemporaryDirectory&) = delete;
-		TemporaryDirectory& operator=(const TemporaryDirectory&) = delete;
+		auto operator=(const TemporaryDirectory&) -> TemporaryDirectory& = delete;
 		TemporaryDirectory(TemporaryDirectory&&) = delete;
-		TemporaryDirectory& operator=(TemporaryDirectory&&) = delete;
+		auto operator=(TemporaryDirectory&&) -> TemporaryDirectory& = delete;
 
-		[[nodiscard]] const std::filesystem::path& GetPath() const noexcept { return m_Path; }
+		[[nodiscard]] auto GetPath() const noexcept -> const std::filesystem::path& { return m_Path; }
 
 	private:
 		std::filesystem::path m_Path;

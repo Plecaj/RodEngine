@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <filesystem>
 #include <functional>
+#include <optional>
 
 namespace Rod {
 
@@ -28,7 +29,7 @@ namespace Rod {
 			Scene& ActiveScene;
 			Entity SelectedEntity;
 			Rod::EditorCamera& EditorCamera;
-			SceneState State;
+			SceneState State = SceneState::Edit;
 			int& GizmoType;
 			glm::vec2& Size;
 			glm::vec2& PendingSize;
@@ -45,9 +46,13 @@ namespace Rod {
 		static constexpr size_t s_VectorComponentCount = 3;
 		static constexpr float s_RotationSnap = 45.0f;
 		static constexpr float s_TranslationSnap = 0.5f;
-		[[nodiscard]] static std::filesystem::path AcceptSceneDrop(const std::filesystem::path& assetsPath);
-		[[nodiscard]] static bool
-		GetCameraMatrices(const RenderContext& context, glm::mat4& view, glm::mat4& projection);
+		struct CameraMatrices
+		{
+			glm::mat4 View{};
+			glm::mat4 Projection{};
+		};
+		[[nodiscard]] static auto AcceptSceneDrop(const std::filesystem::path& assetsPath) -> std::filesystem::path;
+		[[nodiscard]] static auto GetCameraMatrices(const RenderContext& context) -> std::optional<CameraMatrices>;
 		static void DrawGizmo(const RenderContext& context);
 	};
 

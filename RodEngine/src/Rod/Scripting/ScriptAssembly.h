@@ -15,13 +15,13 @@ namespace Rod {
 		ScriptAssembly(const std::filesystem::path& assemblyPath, const std::string& metadataJson);
 		~ScriptAssembly() = default;
 		ScriptAssembly(const ScriptAssembly&) = default;
-		ScriptAssembly& operator=(const ScriptAssembly&) = default;
+		auto operator=(const ScriptAssembly&) -> ScriptAssembly& = default;
 		ScriptAssembly(ScriptAssembly&&) noexcept = default;
-		ScriptAssembly& operator=(ScriptAssembly&&) noexcept = default;
+		auto operator=(ScriptAssembly&&) noexcept -> ScriptAssembly& = default;
 
-		[[nodiscard]] bool HasClass(const std::string& className) const;
-		[[nodiscard]] std::optional<ScriptClass&> GetClass(const std::string& className);
-		[[nodiscard]] const std::unordered_map<std::string, ScriptClass>& GetClasses() const noexcept
+		[[nodiscard]] auto HasClass(const std::string& className) const -> bool;
+		[[nodiscard]] auto GetClass(const std::string& className) -> std::optional<ScriptClass&>;
+		[[nodiscard]] auto GetClasses() const noexcept -> const std::unordered_map<std::string, ScriptClass>&
 		{
 			return m_Classes;
 		}

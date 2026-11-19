@@ -16,7 +16,7 @@
 namespace Rod {
 
 	namespace {
-		bool SameProject(const std::filesystem::path& left, const std::filesystem::path& right)
+		auto SameProject(const std::filesystem::path& left, const std::filesystem::path& right) -> bool
 		{
 			if (left == right)
 				return true;
@@ -51,9 +51,9 @@ namespace Rod {
 			    !lastOpened.IsScalar())
 				continue;
 			RecentProject project{
-			    name.as<std::string>(),
-			    std::filesystem::path(manifestPath.as<std::string>()).lexically_normal(),
-			    lastOpened.as<std::string>()};
+			    .Name = name.as<std::string>(),
+			    .Path = std::filesystem::path(manifestPath.as<std::string>()).lexically_normal(),
+			    .LastOpened = lastOpened.as<std::string>()};
 			if (!project.Path.is_absolute() || project.Path.extension() != ".rodproj")
 				continue;
 			if (std::ranges::any_of(entries, [&](const auto& existing) {
@@ -88,9 +88,10 @@ namespace Rod {
 	void RecentProjects::Record(const Project& project)
 	{
 		RecentProject entry{
-		    project.GetProperties().Name,
-		    std::filesystem::canonical(project.GetManifestPath()),
-		    std::format("{:%F}", std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now()))};
+		    .Name = project.GetProperties().Name,
+		    .Path = std::filesystem::canonical(project.GetManifestPath()),
+		    .LastOpened =
+		        std::format("{:%F}", std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now()))};
 		std::erase_if(m_Entries, [&](const auto& existing) { return SameProject(existing.Path, entry.Path); });
 		m_Entries.insert(m_Entries.begin(), std::move(entry));
 		if (m_Entries.size() > s_MaxProjects)

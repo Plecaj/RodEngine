@@ -3,6 +3,7 @@
 #include "ImGuiLayer.h"
 
 #include "Rod/Core/Window.h"
+#include "Rod/ImGui/ImGuiFlags.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 
@@ -80,9 +81,11 @@ namespace Rod {
 		try
 		{
 			ImGuiIO& io = ImGui::GetIO();
-			io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-			io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-			io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+			io.ConfigFlags = CombineImGuiFlags(
+			    io.ConfigFlags,
+			    ImGuiConfigFlags_NavEnableKeyboard,
+			    ImGuiConfigFlags_DockingEnable,
+			    ImGuiConfigFlags_ViewportsEnable);
 
 			io.Fonts->AddFontFromFileTTF("RodAssets/Fonts/OpenSans/OpenSans-Bold.ttf", g_DefaultFontSize);
 			io.FontDefault =
@@ -91,7 +94,7 @@ namespace Rod {
 			ImGui::StyleColorsDark();
 
 			ImGuiStyle& style = ImGui::GetStyle();
-			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+			if (HasAnyImGuiFlag(io.ConfigFlags, ImGuiConfigFlags_ViewportsEnable))
 			{
 				style.WindowRounding = 0.0f;
 				style.Colors[ImGuiCol_WindowBg].w = 1.0f;
@@ -160,7 +163,7 @@ namespace Rod {
 		ImGui::Render();
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		if (HasAnyImGuiFlag(io.ConfigFlags, ImGuiConfigFlags_ViewportsEnable))
 		{
 			GLFWwindow* backupCurrentContext = glfwGetCurrentContext();
 			ImGui::UpdatePlatformWindows();

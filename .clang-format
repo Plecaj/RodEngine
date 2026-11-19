@@ -1,4 +1,4 @@
-# Tested with the LLVM 19 and 21 clang-format versions used by this project.
+# Uses clang-format 23 version
 BasedOnStyle: LLVM
 Language: Cpp
 Standard: Latest

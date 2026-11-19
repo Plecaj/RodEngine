@@ -18,23 +18,23 @@ namespace Rod {
 		    std::unordered_map<shaderc_shader_kind, std::string> shaders,
 		    std::string name,
 		    const ShaderOptions& options = ShaderOptions());
-		virtual ~OpenGLShader() override;
+		~OpenGLShader() override;
 		OpenGLShader(const OpenGLShader&) = delete;
-		OpenGLShader& operator=(const OpenGLShader&) = delete;
+		auto operator=(const OpenGLShader&) -> OpenGLShader& = delete;
 		OpenGLShader(OpenGLShader&&) = delete;
-		OpenGLShader& operator=(OpenGLShader&&) = delete;
+		auto operator=(OpenGLShader&&) -> OpenGLShader& = delete;
 
-		virtual void Bind() const override;
-		virtual void Unbind() const override;
+		void Bind() const override;
+		void Unbind() const override;
 
-		virtual void SetInt(const std::string& name, int value) override;
-		virtual void SetIntArray(const std::string& name, std::span<const int> values) override;
-		virtual void SetFloat(const std::string& name, float value) override;
-		virtual void SetFloat3(const std::string& name, const glm::vec3& value) override;
-		virtual void SetFloat4(const std::string& name, const glm::vec4& value) override;
-		virtual void SetMat4(const std::string& name, const glm::mat4& value) override;
+		void SetInt(const std::string& name, int value) override;
+		void SetIntArray(const std::string& name, std::span<const int> values) override;
+		void SetFloat(const std::string& name, float value) override;
+		void SetFloat3(const std::string& name, const glm::vec3& value) override;
+		void SetFloat4(const std::string& name, const glm::vec4& value) override;
+		void SetMat4(const std::string& name, const glm::mat4& value) override;
 
-		[[nodiscard]] virtual const std::string& GetName() const noexcept override { return m_Name; };
+		[[nodiscard]] auto GetName() const noexcept -> const std::string& override { return m_Name; };
 
 		void UploadUniformInt(const std::string& name, int value);
 		void UploadUniformIntArray(const std::string& name, std::span<const int> values);
@@ -48,14 +48,14 @@ namespace Rod {
 		void UploadUniformMat4(const std::string& name, const glm::mat4& matrix);
 
 	private:
-		[[nodiscard]] int GetUniformLocation(const std::string& name) const;
+		[[nodiscard]] auto GetUniformLocation(const std::string& name) const -> int;
 
-		[[nodiscard]] bool OpenSpirv(const shaderc_shader_kind& kind, const std::string& cacheKey);
-		[[nodiscard]] std::vector<uint32_t> CompileSpirv(
+		[[nodiscard]] auto OpenSpirv(const shaderc_shader_kind& kind, const std::string& cacheKey) -> bool;
+		[[nodiscard]] auto CompileSpirv(
 		    const shaderc_shader_kind& kind,
 		    const std::string& source,
 		    shaderc::Compiler& compiler,
-		    const shaderc::CompileOptions& options);
+		    const shaderc::CompileOptions& options) -> std::vector<uint32_t>;
 		void LoadSpirv();
 
 	private:

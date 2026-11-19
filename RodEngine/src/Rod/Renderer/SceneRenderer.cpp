@@ -15,15 +15,15 @@ namespace Rod {
 		ObserverPtr<Camera> MainCamera = nullptr;
 		glm::mat4 Transform = glm::mat4(1.0f);
 
-		[[nodiscard]] bool IsValid() const { return MainCamera != nullptr; }
+		[[nodiscard]] auto IsValid() const -> bool { return MainCamera != nullptr; }
 	};
 
-	SceneRenderer::RuntimeCameraData SceneRenderer::FindRuntimeCamera(Scene& scene)
+	auto SceneRenderer::FindRuntimeCamera(Scene& scene) -> SceneRenderer::RuntimeCameraData
 	{
 		auto& registry = scene.m_Registry;
 		RuntimeCameraData cameraData;
 
-		auto view = registry.view<CameraComponent, TransformComponent>();
+		const auto view = registry.view<CameraComponent, TransformComponent>();
 		view.each([&](CameraComponent& camera, TransformComponent& transform) {
 			if (camera.Primary)
 			{
@@ -35,12 +35,12 @@ namespace Rod {
 		return cameraData;
 	}
 
-	std::vector<DirectionalLightComponent> SceneRenderer::CollectLights(Scene& scene)
+	auto SceneRenderer::CollectLights(Scene& scene) -> std::vector<DirectionalLightComponent>
 	{
 		auto& registry = scene.m_Registry;
 		std::vector<DirectionalLightComponent> lightSources;
 
-		auto view = registry.view<DirectionalLightComponent>();
+		const auto view = registry.view<DirectionalLightComponent>();
 		view.each([&](DirectionalLightComponent& light) { lightSources.push_back(light); });
 
 		return lightSources;
@@ -49,7 +49,7 @@ namespace Rod {
 	void SceneRenderer::SubmitMeshes(Scene& scene)
 	{
 		auto& registry = scene.m_Registry;
-		auto view = registry.view<TransformComponent, MeshComponent>();
+		const auto view = registry.view<TransformComponent, MeshComponent>();
 		view.each([&](auto entity, TransformComponent& transform, MeshComponent& mesh) {
 			if (!mesh.Mesh)
 				return;
@@ -61,7 +61,7 @@ namespace Rod {
 	void SceneRenderer::SubmitSprites(Scene& scene)
 	{
 		auto& registry = scene.m_Registry;
-		auto view = registry.view<TransformComponent, SpriteRendererComponent>();
+		const auto view = registry.view<TransformComponent, SpriteRendererComponent>();
 		view.each([&](auto entity, TransformComponent& transform, SpriteRendererComponent& sprite) {
 			Renderer2D::DrawSprite(transform.GetTransform(), sprite, static_cast<int>(entity));
 		});
@@ -92,7 +92,7 @@ namespace Rod {
 
 	void SceneRenderer::RenderRuntime(Scene& scene)
 	{
-		auto cameraData = FindRuntimeCamera(scene);
+		const auto cameraData = FindRuntimeCamera(scene);
 		if (!cameraData.IsValid())
 			return;
 

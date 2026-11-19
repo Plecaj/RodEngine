@@ -12,7 +12,7 @@ namespace Rod {
 
 	namespace {
 
-		[[nodiscard]] ScriptFieldType ScriptFieldTypeFromString(const std::string& type)
+		[[nodiscard]] auto ScriptFieldTypeFromString(const std::string& type) -> ScriptFieldType
 		{
 			static const std::unordered_map<std::string, ScriptFieldType> fieldTypes = {
 			    {"Single", ScriptFieldType::Float},
@@ -33,7 +33,7 @@ namespace Rod {
 			    {"Entity", ScriptFieldType::Entity},
 			    {"String", ScriptFieldType::String}};
 
-			auto it = fieldTypes.find(type);
+			const auto it = fieldTypes.find(type);
 			return it != fieldTypes.end() ? it->second : ScriptFieldType::None;
 		}
 	}
@@ -68,7 +68,9 @@ namespace Rod {
 					field.Type = ScriptFieldTypeFromString(field.TypeName);
 
 					if (field.Type != ScriptFieldType::None)
-						scriptClass.GetFields()[field.Name] = {field, fieldJson.at("defaultValue").get<std::string>()};
+						scriptClass.GetFields()[field.Name] = {
+						    .Field = field,
+						    .Value = fieldJson.at("defaultValue").get<std::string>()};
 				}
 
 				m_Classes[fullName] = std::move(scriptClass);
@@ -80,14 +82,14 @@ namespace Rod {
 		}
 	}
 
-	bool ScriptAssembly::HasClass(const std::string& className) const
+	auto ScriptAssembly::HasClass(const std::string& className) const -> bool
 	{
 		return m_Classes.contains(className);
 	}
 
-	std::optional<ScriptClass&> ScriptAssembly::GetClass(const std::string& className)
+	auto ScriptAssembly::GetClass(const std::string& className) -> std::optional<ScriptClass&>
 	{
-		auto it = m_Classes.find(className);
+		const auto it = m_Classes.find(className);
 		if (it == m_Classes.end())
 			return std::nullopt;
 		return it->second;

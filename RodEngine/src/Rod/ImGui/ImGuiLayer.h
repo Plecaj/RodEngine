@@ -10,14 +10,14 @@ namespace Rod {
 	{
 	public:
 		explicit ImGuiLayer(const Window& window);
-		virtual ~ImGuiLayer() override;
+		~ImGuiLayer() override;
 		ImGuiLayer(const ImGuiLayer&) = delete;
-		ImGuiLayer& operator=(const ImGuiLayer&) = delete;
+		auto operator=(const ImGuiLayer&) -> ImGuiLayer& = delete;
 		ImGuiLayer(ImGuiLayer&&) = delete;
-		ImGuiLayer& operator=(ImGuiLayer&&) = delete;
+		auto operator=(ImGuiLayer&&) -> ImGuiLayer& = delete;
 
-		virtual void OnImGuiRender() override;
-		virtual void OnEvent(Event& e) override;
+		void OnImGuiRender() override;
+		void OnEvent(Event& e) override;
 
 		static void Begin();
 		void End() const;

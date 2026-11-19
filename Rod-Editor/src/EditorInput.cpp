@@ -26,7 +26,7 @@ namespace Rod {
 		});
 	}
 
-	bool EditorInput::OnKeyPressed(const KeyPressedEvent& e) const
+	auto EditorInput::OnKeyPressed(const KeyPressedEvent& e) const -> bool
 	{
 		// Shortcuts
 		if (e.IsRepeat())
@@ -77,12 +77,14 @@ namespace Rod {
 				if (!ImGuizmo::IsUsing())
 					m_Interaction.GizmoType = ImGuizmo::OPERATION::SCALE;
 				break;
+			default:
+				break;
 		}
 
 		return false;
 	}
 
-	bool EditorInput::OnMouseButtonPressed(const MouseButtonPressedEvent& e) const
+	auto EditorInput::OnMouseButtonPressed(const MouseButtonPressedEvent& e) const -> bool
 	{
 		if (e.GetMouseButton() == Mouse::Button0 && m_Interaction.ViewportHovered && !ImGuizmo::IsOver() &&
 		    !m_Input.IsKeyPressed(Key::LeftAlt))

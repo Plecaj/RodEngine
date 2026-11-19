@@ -14,11 +14,12 @@ namespace Rod {
 	public:
 		ToolbarPanel();
 
-		void OnImGuiRender(
-		    SceneState sceneState,
-		    ImGuiID dockID,
-		    const std::function<void()>& onPlay,
-		    const std::function<void()>& onStop) const;
+		struct Actions
+		{
+			std::function<void()> Play;
+			std::function<void()> Stop;
+		};
+		void OnImGuiRender(SceneState sceneState, ImGuiID dockID, const Actions& actions) const;
 
 	private:
 		Scope<Texture2D> m_PlayButton, m_StopButton;

@@ -17,7 +17,10 @@ namespace {
 	class ProjectSerializationFixture
 	{
 	protected:
-		[[nodiscard]] std::filesystem::path ManifestPath() const { return m_Directory.GetPath() / "project.rodproj"; }
+		[[nodiscard]] auto ManifestPath() const -> std::filesystem::path
+		{
+			return m_Directory.GetPath() / "project.rodproj";
+		}
 		void WriteManifest(const std::string& text) const
 		{
 			std::ofstream file(ManifestPath());

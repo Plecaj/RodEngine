@@ -18,8 +18,8 @@ namespace Rod {
 		explicit ProjectSetupPanel(const FileDialogs& fileDialogs) noexcept : m_FileDialogs(fileDialogs) {}
 
 		void Open();
-		[[nodiscard]] bool IsOpen() const noexcept { return m_Open; }
-		[[nodiscard]] std::optional<Project> OnImGuiRender();
+		[[nodiscard]] auto IsOpen() const noexcept -> bool { return m_Open; }
+		[[nodiscard]] auto OnImGuiRender() -> std::optional<Project>;
 
 	private:
 		enum class Step : uint8_t
@@ -29,17 +29,19 @@ namespace Rod {
 			Files
 		};
 
-		[[nodiscard]] static bool DrawPathPicker(const char* label, const std::filesystem::path& value);
-		void
-		PickProjectPath(std::filesystem::path& value, const char* filter = nullptr, const char* extension = nullptr);
+		[[nodiscard]] static auto DrawPathPicker(const char* label, const std::filesystem::path& value) -> bool;
+		void PickProjectPath(
+		    std::filesystem::path& value,
+		    const char* filter = nullptr,
+		    const std::filesystem::path& extension = {});
 		void ResetDefaultPaths();
 		void DrawDirectory();
 		void DrawDetails();
 		void DrawFiles();
-		[[nodiscard]] std::optional<Project> DrawNavigation();
-		[[nodiscard]] Project CreateProject() const;
-		[[nodiscard]] bool CanContinue() const noexcept;
-		[[nodiscard]] std::string ProjectName() const;
+		[[nodiscard]] auto DrawNavigation() -> std::optional<Project>;
+		[[nodiscard]] auto CreateProject() const -> Project;
+		[[nodiscard]] auto CanContinue() const noexcept -> bool;
+		[[nodiscard]] auto ProjectName() const -> std::string;
 
 		static constexpr size_t s_FieldCapacity = 1024;
 		const FileDialogs& m_FileDialogs;

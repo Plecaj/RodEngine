@@ -93,7 +93,7 @@ namespace Rod {
 		}
 	}
 
-	Timestep Application::CalculateTimestep()
+	auto Application::CalculateTimestep() -> Timestep
 	{
 		const float time = Platform::GetTime();
 		Timestep timestep{time - m_LastFrameTime};
@@ -130,7 +130,7 @@ namespace Rod {
 		m_ImGuiLayer->End();
 	}
 
-	bool Application::OnWindowClose(WindowCloseEvent& e) noexcept
+	auto Application::OnWindowClose(WindowCloseEvent& e) noexcept -> bool
 	{
 		(void)e;
 
@@ -138,7 +138,7 @@ namespace Rod {
 		return true;
 	}
 
-	bool Application::OnWindowResize(WindowResizeEvent& e)
+	auto Application::OnWindowResize(WindowResizeEvent& e) -> bool
 	{
 		RD_PROFILE_FUNCTION();
 

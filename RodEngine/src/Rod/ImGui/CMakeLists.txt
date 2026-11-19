@@ -4,5 +4,7 @@ target_sources(RodEngine PRIVATE
 
 target_sources(RodEngine PUBLIC
     FILE_SET HEADERS
-    FILES ImGuiLayer.h
+    FILES
+        ImGuiFlags.h
+        ImGuiLayer.h
 )

@@ -16,18 +16,21 @@ namespace Rod {
 	public:
 		explicit ShaderCacheDatabase(std::filesystem::path cacheDirectory);
 
-		[[nodiscard]] bool CacheShader(const std::string& key, std::span<const uint32_t> data);
+		[[nodiscard]] auto CacheShader(const std::string& key, std::span<const uint32_t> data) -> bool;
 		void AddValidKey(const std::string& key) { m_ValidKeys.insert(key); }
-		[[nodiscard]] bool Contains(const std::string& key) const;
+		[[nodiscard]] auto Contains(const std::string& key) const -> bool;
 
-		[[nodiscard]] static ShaderCacheDatabase& Get()
+		[[nodiscard]] static auto Get() -> ShaderCacheDatabase&
 		{
 			static ShaderCacheDatabase s_Instance;
 			return s_Instance;
 		};
 
 		void Flush();
-		[[nodiscard]] const std::filesystem::path& GetCacheDirectory() const noexcept { return m_CacheDirectory; }
+		[[nodiscard]] auto GetCacheDirectory() const noexcept -> const std::filesystem::path&
+		{
+			return m_CacheDirectory;
+		}
 
 	private:
 		ShaderCacheDatabase();

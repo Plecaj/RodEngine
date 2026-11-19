@@ -6,18 +6,18 @@
 
 namespace Rod {
 
-	std::filesystem::path ScriptBuilder::GetAssemblyPath(const std::filesystem::path& projectPath)
+	auto ScriptBuilder::GetAssemblyPath(const std::filesystem::path& projectPath) -> std::filesystem::path
 	{
 		return projectPath.parent_path() / "bin/Debug/net9.0" / (projectPath.stem().string() + ".dll");
 	}
 
-	ScriptBuildResult ScriptBuilder::BuildProject(const std::filesystem::path& projectPath)
+	auto ScriptBuilder::BuildProject(const std::filesystem::path& projectPath) -> ScriptBuildResult
 	{
 		if (!std::filesystem::exists(projectPath))
-			return {false, "Script project does not exist: " + projectPath.string()};
+			return {.Success = false, .Output = "Script project does not exist: " + projectPath.string()};
 
 		auto result = Process::Run({"dotnet", "build", projectPath.string(), "--nologo"});
-		return {result.ExitCode == 0, std::move(result.Output)};
+		return {.Success = result.ExitCode == 0, .Output = std::move(result.Output)};
 	}
 
 }

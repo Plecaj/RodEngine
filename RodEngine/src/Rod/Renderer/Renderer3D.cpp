@@ -6,8 +6,25 @@
 #include "Rod/Renderer/Renderer.h"
 
 #include <limits>
+#include <optional>
 
 namespace Rod {
+	namespace {
+
+		void DrawMesh(const Mesh& mesh)
+		{
+			const auto vertexArray = mesh.GetVAO();
+			if (!vertexArray)
+				throw std::bad_optional_access{};
+			const auto indexBuffer = vertexArray->GetIndexBuffer();
+			if (!indexBuffer)
+				throw std::bad_optional_access{};
+			vertexArray->Bind();
+			indexBuffer->Bind();
+			RenderCommand::DrawIndexed(*vertexArray);
+		}
+
+	}
 
 	Scope<Renderer3D::SceneData> Renderer3D::s_SceneData;
 
@@ -50,7 +67,7 @@ namespace Rod {
 		int Padding[s_Std140PaddingWordCount];
 	};
 
-	Renderer3D::FrustumCorners Renderer3D::GetFrustumCornersWorldSpace(const glm::mat4& viewProjection)
+	auto Renderer3D::GetFrustumCornersWorldSpace(const glm::mat4& viewProjection) -> Renderer3D::FrustumCorners
 	{
 		const glm::mat4 inv = glm::inverse(viewProjection);
 		FrustumCorners corners;
@@ -112,9 +129,9 @@ namespace Rod {
 		}
 	}
 
-	glm::mat4 Renderer3D::CreateDirectionalLightViewProjection(
+	auto Renderer3D::CreateDirectionalLightViewProjection(
 	    const glm::vec3& lightDirection,
-	    const glm::mat4& cameraViewProjection)
+	    const glm::mat4& cameraViewProjection) -> glm::mat4
 	{
 		auto corners = GetFrustumCornersWorldSpace(cameraViewProjection);
 		LimitFrustumDepth(corners, s_MaxShadowDistance);
@@ -218,7 +235,8 @@ namespace Rod {
 
 		// Commands retain the shared mesh, which owns its GPU buffers.
 		if (mesh && mesh->GetVAO())
-			s_SceneData->DrawCommands.push_back({mesh, transform, material, entityID});
+			s_SceneData->DrawCommands.push_back(
+			    {.Mesh = mesh, .Transform = transform, .Material = material, .EntityID = entityID});
 	}
 
 	void Renderer3D::GeometryPass()
@@ -230,28 +248,23 @@ namespace Rod {
 
 		for (const auto& command : s_SceneData->DrawCommands)
 		{
-			SceneMatrices matrices;
-			matrices.ViewProjection = s_SceneData->ViewProjection;
-			matrices.Transform = command.Transform;
+			const SceneMatrices matrices{.ViewProjection = s_SceneData->ViewProjection, .Transform = command.Transform};
 
 			s_SceneData->SceneUBO->BindBase(s_SceneBinding);
 			s_SceneData->SceneUBO->SetData(std::as_bytes(std::span{&matrices, 1}));
 
-			MaterialData materialData{};
-			materialData.Albedo = command.Material.GetAlbedo();
-			materialData.Emissive = command.Material.GetEmissive();
+			const MaterialData materialData{
+			    .Albedo = command.Material.GetAlbedo(),
+			    .Emissive = command.Material.GetEmissive(),
+			    .Padding0 = 0.0f};
 			s_SceneData->MaterialUBO->BindBase(s_MaterialBinding);
 			s_SceneData->MaterialUBO->SetData(std::as_bytes(std::span{&materialData, 1}));
 
-			DrawData drawData{};
-			drawData.EntityID = command.EntityID;
+			const DrawData drawData{.EntityID = command.EntityID, .Padding = {}};
 			s_SceneData->DrawUBO->BindBase(s_DrawBinding);
 			s_SceneData->DrawUBO->SetData(std::as_bytes(std::span{&drawData, 1}));
 
-			const auto& vertexArray = command.Mesh->GetVAO().value();
-			vertexArray.Bind();
-			vertexArray.GetIndexBuffer().value().Bind();
-			RenderCommand::DrawIndexed(vertexArray);
+			DrawMesh(*command.Mesh);
 		}
 	}
 
@@ -261,7 +274,7 @@ namespace Rod {
 
 		if (s_SceneData->DepthMaps.size() < lightCount)
 		{
-			auto previousState = RenderCommand::GetState();
+			const auto previousState = RenderCommand::GetState();
 
 			for (auto i = static_cast<uint32_t>(s_SceneData->DepthMaps.size()); i < lightCount; i++)
 			{
@@ -307,7 +320,7 @@ namespace Rod {
 		if (s_SceneData->DepthMaps.empty() || s_SceneData->DrawCommands.empty())
 			return;
 
-		auto previousState = RenderCommand::GetState();
+		const auto previousState = RenderCommand::GetState();
 
 		s_SceneData->ShadowShader->Bind();
 
@@ -319,17 +332,14 @@ namespace Rod {
 
 			for (const auto& command : s_SceneData->DrawCommands)
 			{
-				SceneMatrices matrices;
-				matrices.ViewProjection = s_SceneData->LightSpaceMatrices[i];
-				matrices.Transform = command.Transform;
+				const SceneMatrices matrices{
+				    .ViewProjection = s_SceneData->LightSpaceMatrices[i],
+				    .Transform = command.Transform};
 
 				s_SceneData->SceneUBO->BindBase(s_SceneBinding);
 				s_SceneData->SceneUBO->SetData(std::as_bytes(std::span{&matrices, 1}));
 
-				const auto& vertexArray = command.Mesh->GetVAO().value();
-				vertexArray.Bind();
-				vertexArray.GetIndexBuffer().value().Bind();
-				RenderCommand::DrawIndexed(vertexArray);
+				DrawMesh(*command.Mesh);
 			}
 		}
 

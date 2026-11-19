@@ -11,8 +11,8 @@ namespace Rod {
 	public:
 		static void Init();
 
-		[[nodiscard]] static Ref<spdlog::logger>& GetCoreLogger() noexcept { return s_CoreLogger; }
-		[[nodiscard]] static Ref<spdlog::logger>& GetClientLogger() noexcept { return s_ClientLogger; }
+		[[nodiscard]] static auto GetCoreLogger() noexcept -> Ref<spdlog::logger>& { return s_CoreLogger; }
+		[[nodiscard]] static auto GetClientLogger() noexcept -> Ref<spdlog::logger>& { return s_ClientLogger; }
 
 	private:
 		static Ref<spdlog::logger> s_CoreLogger;

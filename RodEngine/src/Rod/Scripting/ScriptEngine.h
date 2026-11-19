@@ -30,8 +30,8 @@ namespace Rod {
 		static void Shutdown();
 
 		static void SetScriptProject(const std::filesystem::path& projectPath);
-		static bool BuildScripts();
-		static bool ReloadAssembly();
+		static auto BuildScripts() -> bool;
+		static auto ReloadAssembly() -> bool;
 		static void OnUpdate();
 
 		static void OnRuntimeStart(Scene& scene);
@@ -43,10 +43,10 @@ namespace Rod {
 		static void OnUpdateEntity(Entity entity, Timestep ts);
 		static void SetRuntimeFieldValue(Entity entity, const std::string& fieldName);
 
-		[[nodiscard]] static bool IsInitialized() noexcept;
-		[[nodiscard]] static bool IsRuntimeRunning() noexcept;
-		[[nodiscard]] static const std::unordered_map<std::string, ScriptClass>& GetScriptClasses();
-		[[nodiscard]] static std::optional<ScriptClass&> GetScriptClass(const std::string& className);
+		[[nodiscard]] static auto IsInitialized() noexcept -> bool;
+		[[nodiscard]] static auto IsRuntimeRunning() noexcept -> bool;
+		[[nodiscard]] static auto GetScriptClasses() -> const std::unordered_map<std::string, ScriptClass>&;
+		[[nodiscard]] static auto GetScriptClass(const std::string& className) -> std::optional<ScriptClass&>;
 
 	private:
 		struct Configuration
@@ -60,12 +60,13 @@ namespace Rod {
 		static std::optional<Configuration> s_Configuration;
 		static std::unique_ptr<ScriptEngineData> s_Data;
 
-		[[nodiscard]] static std::filesystem::path CreateAssemblyCachePath(const std::filesystem::path& assemblyPath);
-		[[nodiscard]] static ScriptPaths ResolveScriptPaths(const Project& project);
-		static bool EnsureInitialized();
+		[[nodiscard]] static auto CreateAssemblyCachePath(const std::filesystem::path& assemblyPath)
+		    -> std::filesystem::path;
+		[[nodiscard]] static auto ResolveScriptPaths(const Project& project) -> ScriptPaths;
+		static auto EnsureInitialized() -> bool;
 
 		static void RefreshSourceWriteTime();
-		[[nodiscard]] static std::filesystem::file_time_type GetLatestSourceWriteTime();
+		[[nodiscard]] static auto GetLatestSourceWriteTime() -> std::filesystem::file_time_type;
 		static void ApplyScriptFields(Entity entity);
 	};
 }

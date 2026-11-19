@@ -32,17 +32,17 @@ TEST_CASE("Buffer elements describe shader types", "[renderer][buffer]")
 		uint32_t Components;
 	};
 	constexpr auto cases = std::to_array<TypeCase>({
-	    {Rod::ShaderDataType::Float, 4, 1},
-	    {Rod::ShaderDataType::Float2, 8, 2},
-	    {Rod::ShaderDataType::Float3, 12, 3},
-	    {Rod::ShaderDataType::Float4, 16, 4},
-	    {Rod::ShaderDataType::Mat3, 36, 9},
-	    {Rod::ShaderDataType::Mat4, 64, 16},
-	    {Rod::ShaderDataType::Int, 4, 1},
-	    {Rod::ShaderDataType::Int2, 8, 2},
-	    {Rod::ShaderDataType::Int3, 12, 3},
-	    {Rod::ShaderDataType::Int4, 16, 4},
-	    {Rod::ShaderDataType::Bool, 1, 1},
+	    {.Type = Rod::ShaderDataType::Float, .Size = 4, .Components = 1},
+	    {.Type = Rod::ShaderDataType::Float2, .Size = 8, .Components = 2},
+	    {.Type = Rod::ShaderDataType::Float3, .Size = 12, .Components = 3},
+	    {.Type = Rod::ShaderDataType::Float4, .Size = 16, .Components = 4},
+	    {.Type = Rod::ShaderDataType::Mat3, .Size = 36, .Components = 9},
+	    {.Type = Rod::ShaderDataType::Mat4, .Size = 64, .Components = 16},
+	    {.Type = Rod::ShaderDataType::Int, .Size = 4, .Components = 1},
+	    {.Type = Rod::ShaderDataType::Int2, .Size = 8, .Components = 2},
+	    {.Type = Rod::ShaderDataType::Int3, .Size = 12, .Components = 3},
+	    {.Type = Rod::ShaderDataType::Int4, .Size = 16, .Components = 4},
+	    {.Type = Rod::ShaderDataType::Bool, .Size = 1, .Components = 1},
 	});
 
 	for (const auto& type : cases)

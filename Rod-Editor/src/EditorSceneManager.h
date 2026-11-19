@@ -16,9 +16,9 @@ namespace Rod {
 		EditorSceneManager(const Project& project, uint32_t viewportWidth, uint32_t viewportHeight);
 		~EditorSceneManager();
 		EditorSceneManager(const EditorSceneManager&) = delete;
-		EditorSceneManager& operator=(const EditorSceneManager&) = delete;
+		auto operator=(const EditorSceneManager&) -> EditorSceneManager& = delete;
 		EditorSceneManager(EditorSceneManager&&) = delete;
-		EditorSceneManager& operator=(EditorSceneManager&&) = delete;
+		auto operator=(EditorSceneManager&&) -> EditorSceneManager& = delete;
 
 		void NewScene();
 		void OpenScene(const std::filesystem::path& path);
@@ -27,13 +27,16 @@ namespace Rod {
 		void Stop();
 		void ResizeViewport(uint32_t width, uint32_t height);
 
-		[[nodiscard]] constexpr Scene& GetActiveScene() noexcept
+		[[nodiscard]] constexpr auto GetActiveScene() noexcept -> Scene&
 		{
 			return m_State == SceneState::Play ? m_RuntimeScene : m_EditorScene;
 		}
-		[[nodiscard]] constexpr Scene& GetEditorScene() noexcept { return m_EditorScene; }
-		[[nodiscard]] constexpr SceneState GetState() const noexcept { return m_State; }
-		[[nodiscard]] constexpr const std::filesystem::path& GetScenePath() const noexcept { return m_ScenePath; }
+		[[nodiscard]] constexpr auto GetEditorScene() noexcept -> Scene& { return m_EditorScene; }
+		[[nodiscard]] constexpr auto GetState() const noexcept -> SceneState { return m_State; }
+		[[nodiscard]] constexpr auto GetScenePath() const noexcept -> const std::filesystem::path&
+		{
+			return m_ScenePath;
+		}
 
 	private:
 		const Project& m_Project;

@@ -7,7 +7,7 @@
 
 namespace Rod {
 
-	Scope<VertexBuffer> VertexBuffer::Create(uint32_t size)
+	auto VertexBuffer::Create(uint32_t size) -> Scope<VertexBuffer>
 	{
 		switch (RendererAPI::GetAPI())
 		{
@@ -22,7 +22,7 @@ namespace Rod {
 		return nullptr;
 	}
 
-	Scope<VertexBuffer> VertexBuffer::Create(std::span<const std::byte> vertices)
+	auto VertexBuffer::Create(std::span<const std::byte> vertices) -> Scope<VertexBuffer>
 	{
 		switch (RendererAPI::GetAPI())
 		{
@@ -37,7 +37,7 @@ namespace Rod {
 		return nullptr;
 	};
 
-	Scope<IndexBuffer> IndexBuffer::Create(std::span<const uint32_t> indices)
+	auto IndexBuffer::Create(std::span<const uint32_t> indices) -> Scope<IndexBuffer>
 	{
 		switch (RendererAPI::GetAPI())
 		{
@@ -52,7 +52,7 @@ namespace Rod {
 		return nullptr;
 	}
 
-	Scope<UniformBuffer> UniformBuffer::Create(uint32_t size)
+	auto UniformBuffer::Create(uint32_t size) -> Scope<UniformBuffer>
 	{
 		switch (RendererAPI::GetAPI())
 		{

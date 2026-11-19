@@ -20,6 +20,7 @@ namespace Rod {
 		RecalculateProjection();
 	}
 
+	// NOLINTBEGIN(bugprone-easily-swappable-parameters): Both methods follow GLM's projection argument order.
 	void SceneCamera::SetPerspective(float verticalFOV, float nearClip, float farClip) noexcept
 	{
 		m_ProjectionType = ProjectionType::Perspective;
@@ -37,6 +38,7 @@ namespace Rod {
 		m_OrthographicFar = farClip;
 		RecalculateProjection();
 	}
+	// NOLINTEND(bugprone-easily-swappable-parameters)
 
 	void SceneCamera::RecalculateProjection() noexcept
 	{
@@ -46,14 +48,11 @@ namespace Rod {
 		}
 		else
 		{
-			constexpr float halfExtent = 0.5f;
-			const float orthoLeft = -m_OrthographicSize * m_AspectRatio * halfExtent;
-			const float orthoRight = m_OrthographicSize * m_AspectRatio * halfExtent;
-			const float orthoBottom = -m_OrthographicSize * halfExtent;
-			const float orthoTop = m_OrthographicSize * halfExtent;
+			const float halfWidth = m_OrthographicSize * m_AspectRatio * 0.5f;
+			const float halfHeight = m_OrthographicSize * 0.5f;
 
 			m_Projection =
-			    glm::ortho(orthoLeft, orthoRight, orthoBottom, orthoTop, m_OrthographicNear, m_OrthographicFar);
+			    glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, m_OrthographicNear, m_OrthographicFar);
 		}
 	}
 

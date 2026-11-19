@@ -30,23 +30,23 @@ namespace Rod {
 	    const std::function<void(const std::filesystem::path&)>& openScene)
 	{
 		ViewportPanel::OnImGuiRender(
-		    {*m_Framebuffer,
-			 scenes.GetActiveScene(),
-			 m_Interaction.SelectedEntity,
-			 m_EditorCamera,
-			 scenes.GetState(),
-			 m_Interaction.GizmoType,
-			 m_ViewportSize,
-			 m_PendingViewportSize,
-			 m_ViewportBounds,
-			 m_ViewportFocused,
-			 m_Interaction.ViewportHovered,
-			 assetsPath,
-			 openScene,
-			 m_Input});
+		    {.Framebuffer = *m_Framebuffer,
+			 .ActiveScene = scenes.GetActiveScene(),
+			 .SelectedEntity = m_Interaction.SelectedEntity,
+			 .EditorCamera = m_EditorCamera,
+			 .State = scenes.GetState(),
+			 .GizmoType = m_Interaction.GizmoType,
+			 .Size = m_ViewportSize,
+			 .PendingSize = m_PendingViewportSize,
+			 .Bounds = m_ViewportBounds,
+			 .Focused = m_ViewportFocused,
+			 .Hovered = m_Interaction.ViewportHovered,
+			 .AssetsPath = assetsPath,
+			 .OpenScene = openScene,
+			 .WindowInput = m_Input});
 	}
 
-	bool EditorViewport::ShouldBlockEvents() const noexcept
+	auto EditorViewport::ShouldBlockEvents() const noexcept -> bool
 	{
 		return !m_ViewportFocused && !m_Interaction.ViewportHovered;
 	}

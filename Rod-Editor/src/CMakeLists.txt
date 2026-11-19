@@ -1,4 +1,5 @@
 target_sources(Rod-Editor PRIVATE
+    "${PROJECT_SOURCE_DIR}/RodEngine/src/Rod/Core/EntryPoint.cpp"
     EditorCommands.cpp
     EditorCommands.h
     EditorInput.cpp

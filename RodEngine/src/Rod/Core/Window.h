@@ -45,29 +45,29 @@ namespace Rod {
 		Window() = default;
 		virtual ~Window() = default;
 		Window(const Window&) = delete;
-		Window& operator=(const Window&) = delete;
+		auto operator=(const Window&) -> Window& = delete;
 		Window(Window&&) = delete;
-		Window& operator=(Window&&) = delete;
+		auto operator=(Window&&) -> Window& = delete;
 
 		virtual void OnUpdate() = 0;
 
-		[[nodiscard]] virtual unsigned int GetWidth() const noexcept = 0;
-		[[nodiscard]] virtual unsigned int GetHeight() const noexcept = 0;
+		[[nodiscard]] virtual auto GetWidth() const noexcept -> unsigned int = 0;
+		[[nodiscard]] virtual auto GetHeight() const noexcept -> unsigned int = 0;
 
 		virtual void Minimize() const = 0;
 		virtual void Maximize() const = 0;
-		[[nodiscard]] virtual bool IsMinimized() const noexcept = 0;
-		[[nodiscard]] virtual bool IsMaximized() const noexcept = 0;
+		[[nodiscard]] virtual auto IsMinimized() const noexcept -> bool = 0;
+		[[nodiscard]] virtual auto IsMaximized() const noexcept -> bool = 0;
 		virtual void Restore() const = 0;
 		virtual void BeginWindowDrag() const = 0;
 
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
 		virtual void SetVSync(bool enabled) = 0;
-		[[nodiscard]] virtual bool IsVSync() const noexcept = 0;
+		[[nodiscard]] virtual auto IsVSync() const noexcept -> bool = 0;
 
-		[[nodiscard]] virtual void* GetNativeWindow() const noexcept = 0;
+		[[nodiscard]] virtual auto GetNativeWindow() const noexcept -> void* = 0;
 
-		[[nodiscard]] static Scope<Window> Create(const WindowProps& props = WindowProps());
+		[[nodiscard]] static auto Create(const WindowProps& props = WindowProps()) -> Scope<Window>;
 	};
 
 }

@@ -37,17 +37,17 @@ namespace Rod {
 			uint32_t DrawCalls = 0;
 			uint32_t QuadCount = 0;
 
-			[[nodiscard]] constexpr uint32_t GetTotalVertexCount() const noexcept
+			[[nodiscard]] constexpr auto GetTotalVertexCount() const noexcept -> uint32_t
 			{
 				return QuadCount * s_QuadVertexCount;
 			};
-			[[nodiscard]] constexpr uint32_t GetTotalIndexCount() const noexcept
+			[[nodiscard]] constexpr auto GetTotalIndexCount() const noexcept -> uint32_t
 			{
 				return QuadCount * s_QuadIndexCount;
 			};
 		};
 		static void ResetStats() noexcept;
-		[[nodiscard]] static Statistics GetStats() noexcept;
+		[[nodiscard]] static auto GetStats() noexcept -> Statistics;
 
 	private:
 		// Initialize

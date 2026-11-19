@@ -8,34 +8,34 @@ namespace Rod {
 	{
 	public:
 		explicit OpenGLFramebuffer(FramebufferSpecification spec);
-		virtual ~OpenGLFramebuffer() override;
+		~OpenGLFramebuffer() override;
 		OpenGLFramebuffer(const OpenGLFramebuffer&) = delete;
-		OpenGLFramebuffer& operator=(const OpenGLFramebuffer&) = delete;
+		auto operator=(const OpenGLFramebuffer&) -> OpenGLFramebuffer& = delete;
 		OpenGLFramebuffer(OpenGLFramebuffer&&) = delete;
-		OpenGLFramebuffer& operator=(OpenGLFramebuffer&&) = delete;
+		auto operator=(OpenGLFramebuffer&&) -> OpenGLFramebuffer& = delete;
 
 		void Invalidate();
 
-		virtual void Bind() override;
-		virtual void Unbind() override;
+		void Bind() override;
+		void Unbind() override;
 
-		virtual void Resize(uint32_t width, uint32_t height) override;
-		[[nodiscard]] virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) override;
+		void Resize(uint32_t width, uint32_t height) override;
+		[[nodiscard]] auto ReadPixel(uint32_t attachmentIndex, int x, int y) -> int override;
 
-		virtual void ClearColorAttachment(uint32_t attachmentIndex, int value) override;
+		void ClearColorAttachment(uint32_t attachmentIndex, int value) override;
 
-		[[nodiscard]] virtual uint32_t GetColorAttachmentRendererID(uint32_t index = 0) const override
+		[[nodiscard]] auto GetColorAttachmentRendererID(uint32_t index = 0) const -> uint32_t override
 		{
 			RD_CORE_ASSERT(index < m_ColorAttachments.size(), "Index < ColorAttachments.size()");
 			return m_ColorAttachments[index];
 		}
-		[[nodiscard]] virtual uint32_t GetDepthAttachmentRendererID() const noexcept override
+		[[nodiscard]] auto GetDepthAttachmentRendererID() const noexcept -> uint32_t override
 		{
 			return m_DepthAttachment;
 		}
-		virtual void BindDepthAttachment(uint32_t slot = 0) const override;
+		void BindDepthAttachment(uint32_t slot = 0) const override;
 
-		[[nodiscard]] virtual const FramebufferSpecification& GetSpecification() const noexcept override
+		[[nodiscard]] auto GetSpecification() const noexcept -> const FramebufferSpecification& override
 		{
 			return m_Specification;
 		};

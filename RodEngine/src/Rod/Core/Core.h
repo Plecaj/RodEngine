@@ -60,7 +60,7 @@ namespace Rod {
 	using Scope = std::unique_ptr<T, Deleter>;
 
 	template <typename T, typename... Args>
-	[[nodiscard]] constexpr Scope<T> CreateScope(Args&&... args)
+	[[nodiscard]] constexpr auto CreateScope(Args&&... args) -> Scope<T>
 	{
 		return std::make_unique<T>(std::forward<Args>(args)...);
 	}
@@ -69,7 +69,7 @@ namespace Rod {
 	using Ref = std::shared_ptr<T>;
 
 	template <typename T, typename... Args>
-	[[nodiscard]] Ref<T> CreateRef(Args&&... args)
+	[[nodiscard]] auto CreateRef(Args&&... args) -> Ref<T>
 	{
 		return std::make_shared<T>(std::forward<Args>(args)...);
 	}

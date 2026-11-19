@@ -14,7 +14,7 @@ namespace Rod {
 	SharedLibrary::SharedLibrary(SharedLibrary&& other) noexcept : m_Handle(std::exchange(other.m_Handle, nullptr))
 	{}
 
-	SharedLibrary& SharedLibrary::operator=(SharedLibrary&& other) noexcept
+	auto SharedLibrary::operator=(SharedLibrary&& other) noexcept -> SharedLibrary&
 	{
 		if (this != &other)
 		{

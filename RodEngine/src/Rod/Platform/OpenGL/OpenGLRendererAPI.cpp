@@ -6,6 +6,8 @@
 #include "Rod/Renderer/VertexArray.h"
 #include "glad/glad.h"
 
+#include <optional>
+
 namespace Rod {
 	void OpenGLRendererAPI::Init()
 	{
@@ -20,7 +22,7 @@ namespace Rod {
 		glDepthMask(GL_TRUE);
 	}
 
-	int OpenGLRendererAPI::GetMaxTextureSlots() const
+	auto OpenGLRendererAPI::GetMaxTextureSlots() const -> int
 	{
 		int textureSlots{};
 		glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &textureSlots);
@@ -60,11 +62,17 @@ namespace Rod {
 
 	void OpenGLRendererAPI::DrawIndexed(const VertexArray& vertexArray, uint32_t indexCount)
 	{
-		const uint32_t count = indexCount ? indexCount : vertexArray.GetIndexBuffer().value().GetCount();
-		glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(count), GL_UNSIGNED_INT, nullptr);
+		if (indexCount == 0)
+		{
+			const auto indexBuffer = vertexArray.GetIndexBuffer();
+			if (!indexBuffer)
+				throw std::bad_optional_access{};
+			indexCount = indexBuffer->GetCount();
+		}
+		glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indexCount), GL_UNSIGNED_INT, nullptr);
 	}
 
-	RendererAPI::RendererState OpenGLRendererAPI::GetState() const
+	auto OpenGLRendererAPI::GetState() const -> RendererAPI::RendererState
 	{
 		GLint framebuffer = 0;
 		// NOLINTBEGIN(readability-magic-numbers)

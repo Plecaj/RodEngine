@@ -91,7 +91,7 @@ TEST_CASE("Scene resize preserves fixed-aspect camera projection", "[scene][came
 	const glm::mat4 fixedProjection = fixed.Camera.GetProjection();
 
 	auto resizableEntity = scene.CreateEntity("Resizable");
-	auto& resizable = resizableEntity.AddComponent<Rod::CameraComponent>();
+	const auto& resizable = resizableEntity.AddComponent<Rod::CameraComponent>();
 	scene.OnViewportResize(squareSize, squareSize);
 
 	RequireProjectionNear(fixed.Camera.GetProjection(), fixedProjection);

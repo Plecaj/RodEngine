@@ -9,9 +9,10 @@ namespace Rod {
 	class KeyEvent : public Event
 	{
 	public:
-		[[nodiscard]] constexpr int GetKeyCode() const noexcept { return m_KeyCode; }
+		[[nodiscard]] constexpr auto GetKeyCode() const noexcept -> int { return m_KeyCode; }
 
-		EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
+		EVENT_CLASS_CATEGORY(
+		    static_cast<unsigned int>(EventCategoryKeyboard) | static_cast<unsigned int>(EventCategoryInput))
 	protected:
 		constexpr explicit KeyEvent(const int keycode) noexcept : m_KeyCode(keycode) {}
 
@@ -25,9 +26,9 @@ namespace Rod {
 		    : KeyEvent(keycode), m_IsRepeat(isRepeat)
 		{}
 
-		[[nodiscard]] constexpr bool IsRepeat() const noexcept { return m_IsRepeat; }
+		[[nodiscard]] constexpr auto IsRepeat() const noexcept -> bool { return m_IsRepeat; }
 
-		[[nodiscard]] virtual std::string ToString() const override
+		[[nodiscard]] auto ToString() const -> std::string override
 		{
 			std::stringstream ss;
 			ss << "KeyPressedEvent: " << m_KeyCode << " (repeat = " << m_IsRepeat << ")";
@@ -44,7 +45,7 @@ namespace Rod {
 	public:
 		constexpr explicit KeyReleasedEvent(const int keycode) noexcept : KeyEvent(keycode) {}
 
-		[[nodiscard]] virtual std::string ToString() const override
+		[[nodiscard]] auto ToString() const -> std::string override
 		{
 			std::stringstream ss;
 			ss << "KeyReleasedEvent: " << m_KeyCode;
@@ -59,7 +60,7 @@ namespace Rod {
 	public:
 		constexpr explicit KeyTypedEvent(const int keycode) noexcept : KeyEvent(keycode) {}
 
-		[[nodiscard]] virtual std::string ToString() const override
+		[[nodiscard]] auto ToString() const -> std::string override
 		{
 			std::stringstream ss;
 			ss << "KeyTypedEvent: " << m_KeyCode;

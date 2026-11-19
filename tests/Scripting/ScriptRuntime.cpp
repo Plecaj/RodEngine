@@ -3,10 +3,10 @@
 #include "Rod/Scripting/ScriptRuntime.h"
 
 #include "Rod/Scripting/ScriptAssembly.h"
+#include "Rod/Utils/FunctionPointerCast.h"
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <bit>
 #include <memory>
 #include <stdexcept>
 
@@ -21,17 +21,17 @@ namespace {
 	using LoadFn = void*(RD_CDECL*)(const char*);
 
 	template <typename Function>
-	Function
-	RequireFunction(const Rod::ScriptRuntime& runtime, const std::string& hostType, const std::string& methodName)
+	auto RequireFunction(const Rod::ScriptRuntime& runtime, const std::string& hostType, const std::string& methodName)
+	    -> Function
 	{
-		const auto address = runtime.GetFunction(hostType, methodName);
+		auto* const address = runtime.GetFunction(hostType, methodName);
 		REQUIRE(address != nullptr);
-		return std::bit_cast<Function>(address);
+		return Rod::FunctionPointerCast<Function>(address);
 	}
 
-	Rod::ScriptAssembly LoadAssembly(LoadFn load, const std::string& path)
+	auto LoadAssembly(LoadFn load, const std::string& path) -> Rod::ScriptAssembly
 	{
-		auto release = [](void* text) {
+		const auto release = [](void* text) {
 	#ifdef RD_PLATFORM_WINDOWS
 			CoTaskMemFree(text);
 	#else
@@ -59,7 +59,7 @@ TEST_CASE("Failed managed assembly loads preserve the active assembly", "[script
 	const auto load = RequireFunction<LoadFn>(runtime, hostType, "LoadAssembly");
 	const auto create = RequireFunction<CreateFn>(runtime, hostType, "CreateScript");
 	const auto shutdown = RequireFunction<ShutdownFn>(runtime, hostType, "Shutdown");
-	auto stop = [shutdown](void*) {
+	const auto stop = [shutdown](void*) {
 		shutdown();
 	};
 	const std::unique_ptr<void, decltype(stop)> hostGuard(&runtime, stop);

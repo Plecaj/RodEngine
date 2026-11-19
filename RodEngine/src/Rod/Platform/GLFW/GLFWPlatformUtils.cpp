@@ -6,7 +6,7 @@
 
 namespace Rod {
 
-	float Platform::GetTime()
+	auto Platform::GetTime() -> float
 	{
 		return static_cast<float>(glfwGetTime());
 	}

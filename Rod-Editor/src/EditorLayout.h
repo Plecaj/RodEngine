@@ -34,9 +34,9 @@ namespace Rod {
 		    std::function<void()> requestClose);
 		~EditorLayout() = default;
 		EditorLayout(const EditorLayout&) = delete;
-		EditorLayout& operator=(const EditorLayout&) = delete;
+		auto operator=(const EditorLayout&) -> EditorLayout& = delete;
 		EditorLayout(EditorLayout&&) = delete;
-		EditorLayout& operator=(EditorLayout&&) = delete;
+		auto operator=(EditorLayout&&) -> EditorLayout& = delete;
 
 		void OnImGuiRender(float deltaTime);
 

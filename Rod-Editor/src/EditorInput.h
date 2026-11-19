@@ -17,8 +17,8 @@ namespace Rod {
 		void OnEvent(Event& event) const;
 
 	private:
-		[[nodiscard]] bool OnKeyPressed(const KeyPressedEvent& event) const;
-		[[nodiscard]] bool OnMouseButtonPressed(const MouseButtonPressedEvent& event) const;
+		[[nodiscard]] auto OnKeyPressed(const KeyPressedEvent& event) const -> bool;
+		[[nodiscard]] auto OnMouseButtonPressed(const MouseButtonPressedEvent& event) const -> bool;
 
 		EditorCommands& m_Commands;
 		EditorInteractionState& m_Interaction;

@@ -8,28 +8,28 @@ namespace Rod {
 	    : m_ManifestPath(std::move(manifestPath)), m_Properties(std::move(properties))
 	{}
 
-	std::filesystem::path Project::GetAssetsPath() const
+	auto Project::GetAssetsPath() const -> std::filesystem::path
 	{
 		if (m_Properties.AssetsPath.empty())
 			return {};
 		return (GetDirectory() / m_Properties.AssetsPath).lexically_normal();
 	}
 
-	std::filesystem::path Project::GetStartupScenePath() const
+	auto Project::GetStartupScenePath() const -> std::filesystem::path
 	{
 		if (m_Properties.StartupScenePath.empty())
 			return {};
 		return (GetDirectory() / m_Properties.StartupScenePath).lexically_normal();
 	}
 
-	std::filesystem::path Project::GetScriptProjectPath() const
+	auto Project::GetScriptProjectPath() const -> std::filesystem::path
 	{
 		if (m_Properties.ScriptsProjectPath.empty())
 			return {};
 		return (GetDirectory() / m_Properties.ScriptsProjectPath).lexically_normal();
 	}
 
-	std::filesystem::path Project::GetShadersPath() const
+	auto Project::GetShadersPath() const -> std::filesystem::path
 	{
 		if (m_Properties.ShadersPath.empty())
 			return {};

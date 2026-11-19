@@ -13,9 +13,9 @@ namespace Rod {
 		VertexArray() = default;
 		virtual ~VertexArray() = default;
 		VertexArray(const VertexArray&) = delete;
-		VertexArray& operator=(const VertexArray&) = delete;
+		auto operator=(const VertexArray&) -> VertexArray& = delete;
 		VertexArray(VertexArray&&) = delete;
-		VertexArray& operator=(VertexArray&&) = delete;
+		auto operator=(VertexArray&&) -> VertexArray& = delete;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
@@ -23,10 +23,10 @@ namespace Rod {
 		virtual void AddVertexBuffer(Scope<VertexBuffer> vertexBuffer) = 0;
 		virtual void SetIndexBuffer(Scope<IndexBuffer> indexBuffer) = 0;
 
-		[[nodiscard]] virtual std::span<const Scope<VertexBuffer>> GetVertexBuffers() const noexcept = 0;
-		[[nodiscard]] virtual std::optional<const IndexBuffer&> GetIndexBuffer() const noexcept = 0;
+		[[nodiscard]] virtual auto GetVertexBuffers() const noexcept -> std::span<const Scope<VertexBuffer>> = 0;
+		[[nodiscard]] virtual auto GetIndexBuffer() const noexcept -> std::optional<const IndexBuffer&> = 0;
 
-		[[nodiscard]] static Scope<VertexArray> Create();
+		[[nodiscard]] static auto Create() -> Scope<VertexArray>;
 	};
 
 }

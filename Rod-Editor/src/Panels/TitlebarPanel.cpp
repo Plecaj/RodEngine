@@ -20,7 +20,6 @@ namespace Rod {
 
 		void DrawButtonIcon(ImDrawList& drawList, ButtonIcon icon, const ImVec2& center)
 		{
-			constexpr float half = 0.5f;
 			constexpr float restoreOffset = 2.0f;
 			constexpr float minimizeOffset = 4.0f;
 			constexpr ImU32 iconColor = IM_COL32(230, 233, 238, 255);
@@ -31,8 +30,8 @@ namespace Rod {
 				case ButtonIcon::Minimize: {
 					constexpr float width = 10.0f;
 					drawList.AddLine(
-					    ImVec2(center.x - width * half, center.y + minimizeOffset),
-					    ImVec2(center.x + width * half, center.y + minimizeOffset),
+					    ImVec2(center.x - width * 0.5f, center.y + minimizeOffset),
+					    ImVec2(center.x + width * 0.5f, center.y + minimizeOffset),
 					    iconColor,
 					    stroke);
 					break;
@@ -40,8 +39,8 @@ namespace Rod {
 				case ButtonIcon::Maximize: {
 					constexpr float side = 10.0f;
 					drawList.AddRect(
-					    ImVec2(center.x - side * half, center.y - side * half),
-					    ImVec2(center.x + side * half, center.y + side * half),
+					    ImVec2(center.x - side * 0.5f, center.y - side * 0.5f),
+					    ImVec2(center.x + side * 0.5f, center.y + side * 0.5f),
 					    iconColor,
 					    0.0f,
 					    0,
@@ -51,15 +50,15 @@ namespace Rod {
 				case ButtonIcon::Restore: {
 					constexpr float side = 9.0f;
 					drawList.AddRect(
-					    ImVec2(center.x - side * half - restoreOffset, center.y - side * half + restoreOffset),
-					    ImVec2(center.x + side * half - restoreOffset, center.y + side * half + restoreOffset),
+					    ImVec2(center.x - side * 0.5f - restoreOffset, center.y - side * 0.5f + restoreOffset),
+					    ImVec2(center.x + side * 0.5f - restoreOffset, center.y + side * 0.5f + restoreOffset),
 					    iconColor,
 					    0.0f,
 					    0,
 					    stroke);
 					drawList.AddRect(
-					    ImVec2(center.x - side * half + restoreOffset, center.y - side * half - restoreOffset),
-					    ImVec2(center.x + side * half + restoreOffset, center.y + side * half - restoreOffset),
+					    ImVec2(center.x - side * 0.5f + restoreOffset, center.y - side * 0.5f - restoreOffset),
+					    ImVec2(center.x + side * 0.5f + restoreOffset, center.y + side * 0.5f - restoreOffset),
 					    iconColor,
 					    0.0f,
 					    0,
@@ -83,9 +82,8 @@ namespace Rod {
 			}
 		}
 
-		[[nodiscard]] bool DrawTitlebarButton(const char* id, ButtonIcon icon, const ImVec2& size)
+		[[nodiscard]] auto DrawTitlebarButton(const char* id, ButtonIcon icon, const ImVec2& size) -> bool
 		{
-			constexpr float half = 0.5f;
 			constexpr ImU32 closeActive = IM_COL32(150, 36, 44, 255);
 			constexpr ImU32 closeHovered = IM_COL32(196, 43, 54, 255);
 			constexpr ImU32 buttonActive = IM_COL32(66, 72, 80, 255);
@@ -111,7 +109,7 @@ namespace Rod {
 
 			drawList.AddRectFilled(min, max, background, 0.0f);
 
-			const ImVec2 center{(min.x + max.x) * half, (min.y + max.y) * half};
+			const ImVec2 center{(min.x + max.x) * 0.5f, (min.y + max.y) * 0.5f};
 			DrawButtonIcon(drawList, icon, center);
 
 			return ImGui::IsItemClicked(ImGuiMouseButton_Left);

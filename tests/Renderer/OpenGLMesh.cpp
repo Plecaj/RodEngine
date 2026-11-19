@@ -33,7 +33,11 @@ TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Meshes load vertices, indices and m
 	const auto path = AssetPath(filename).string();
 	const Rod::Mesh mesh(path);
 	const auto vao = mesh.GetVAO();
-	REQUIRE(vao.has_value());
+	if (!vao)
+	{
+		FAIL("Mesh has no vertex array");
+		return;
+	}
 	REQUIRE(vao->GetVertexBuffers().size() == 1);
 	const auto expectedVertices =
 	    std::to_array<float>({0, 0, 0, 0, 0, normalZ, 1, 0, 0, 0, 0, normalZ, 0, 1, 0, 0, 0, normalZ});
@@ -46,7 +50,11 @@ TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Meshes load vertices, indices and m
 	std::array<uint32_t, expectedIndices.size()> indices{};
 	vao->Bind();
 	const auto indexBuffer = vao->GetIndexBuffer();
-	REQUIRE(indexBuffer.has_value());
+	if (!indexBuffer)
+	{
+		FAIL("Vertex array has no index buffer");
+		return;
+	}
 	REQUIRE(indexBuffer->GetCount() == expectedIndices.size());
 	indexBuffer->Bind();
 	glGetBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, sizeof(indices), indices.data());

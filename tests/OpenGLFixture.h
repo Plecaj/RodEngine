@@ -1,12 +1,12 @@
 #pragma once
 
 #include "Rod/Core/Log.h"
+#include "Rod/Utils/FunctionPointerCast.h"
 
 #include <GLFW/glfw3.h>
 #include <catch2/catch_test_macros.hpp>
 #include <glad/glad.h>
 
-#include <bit>
 #include <filesystem>
 #include <memory>
 #include <string_view>
@@ -36,12 +36,12 @@ namespace Rod::Tests {
 			}
 			glfwMakeContextCurrent(m_Window.get());
 			const int loaded =
-			    gladLoadGLLoader([](const char* name) { return std::bit_cast<void*>(glfwGetProcAddress(name)); });
+			    gladLoadGLLoader([](const char* name) { return FunctionPointerCast<void*>(glfwGetProcAddress(name)); });
 			REQUIRE(loaded != 0);
 			REQUIRE(GLAD_GL_VERSION_4_6 != 0);
 		}
 
-		[[nodiscard]] static std::filesystem::path AssetPath(std::string_view filename)
+		[[nodiscard]] static auto AssetPath(std::string_view filename) -> std::filesystem::path
 		{
 			return std::filesystem::path(ROD_TEST_ASSET_DIRECTORY) / filename;
 		}

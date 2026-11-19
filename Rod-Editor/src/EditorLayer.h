@@ -28,13 +28,13 @@ namespace Rod {
 		    std::function<void()> requestClose);
 		~EditorLayer() override;
 		EditorLayer(const EditorLayer&) = delete;
-		EditorLayer& operator=(const EditorLayer&) = delete;
+		auto operator=(const EditorLayer&) -> EditorLayer& = delete;
 		EditorLayer(EditorLayer&&) = delete;
-		EditorLayer& operator=(EditorLayer&&) = delete;
+		auto operator=(EditorLayer&&) -> EditorLayer& = delete;
 
-		virtual void OnUpdate(Timestep ts) override;
-		virtual void OnImGuiRender() override;
-		virtual void OnEvent(Event& event) override;
+		void OnUpdate(Timestep ts) override;
+		void OnImGuiRender() override;
+		void OnEvent(Event& event) override;
 
 	private:
 		ImGuiLayer& m_ImGuiLayer;

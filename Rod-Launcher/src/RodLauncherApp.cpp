@@ -4,9 +4,9 @@
 #include "RecentProjects.h"
 #include "Rod/Core/Application.h"
 #include "Rod/Core/Core.h"
-#include "Rod/Core/EntryPoint.h" // IWYU pragma: keep
 #include "Rod/Core/Layer.h"
 #include "Rod/Core/Log.h"
+#include "Rod/ImGui/ImGuiFlags.h"
 #include "Rod/Project/Project.h"
 #include "Rod/Project/ProjectSerializer.h"
 #include "Rod/Renderer/Texture.h"
@@ -33,7 +33,7 @@ namespace Rod {
 		constexpr float g_IconStroke = 2.0f;
 		constexpr float g_RecentRowHeight = 52.0f;
 
-		WindowProps LauncherWindowProps()
+		auto LauncherWindowProps() -> WindowProps
 		{
 			WindowProps props{g_WindowTitle, g_LauncherWidth, g_LauncherHeight, "RodAssets/Textures/logo.png", true};
 			props.NativeTitlebar = true;
@@ -70,8 +70,11 @@ namespace Rod {
 			ImGui::SetNextWindowViewport(viewport.ID);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-			constexpr ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoDocking |
-			                                   ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings;
+			constexpr ImGuiWindowFlags flags = CombineImGuiFlags(
+			    ImGuiWindowFlags_NoDecoration,
+			    ImGuiWindowFlags_NoDocking,
+			    ImGuiWindowFlags_NoMove,
+			    ImGuiWindowFlags_NoSavedSettings);
 			ImGui::Begin("Project Browser", nullptr, flags);
 
 			if (m_ProjectSetup.IsOpen())
@@ -125,7 +128,7 @@ namespace Rod {
 				OpenProject(*selected);
 		}
 
-		[[nodiscard]] bool DrawRecentProject(const RecentProject& project) const
+		[[nodiscard]] auto DrawRecentProject(const RecentProject& project) const -> bool
 		{
 			constexpr ImVec2 nameOffset{28.0f, 6.0f};
 			constexpr ImVec2 iconOffset{8.0f, 26.0f};
@@ -174,16 +177,15 @@ namespace Rod {
 
 		void DrawProjectActions()
 		{
-			constexpr float half = 0.5f;
 			constexpr float centerOffset = 0.185f;
 			constexpr float cardTop = 48.0f;
 			constexpr float dividerY = 196.0f;
 			const float width = ImGui::GetWindowWidth();
 
-			ImGui::SetCursorPos(ImVec2{width * (half - centerOffset) - g_ActionCardSize.x * half, cardTop});
+			ImGui::SetCursorPos(ImVec2{width * (0.5f - centerOffset) - g_ActionCardSize.x * 0.5f, cardTop});
 			if (DrawActionCard("New", ProjectAction::New))
 				m_ProjectSetup.Open();
-			ImGui::SetCursorPos(ImVec2{width * (half + centerOffset) - g_ActionCardSize.x * half, cardTop});
+			ImGui::SetCursorPos(ImVec2{width * (0.5f + centerOffset) - g_ActionCardSize.x * 0.5f, cardTop});
 			if (DrawActionCard("Open", ProjectAction::Open))
 				OpenProject();
 
@@ -253,9 +255,8 @@ namespace Rod {
 			}
 		}
 
-		bool DrawActionCard(const char* label, ProjectAction action) const
+		auto DrawActionCard(const char* label, ProjectAction action) const -> bool
 		{
-			constexpr float half = 0.5f;
 			constexpr float iconTop = 38.0f;
 			constexpr float labelTop = 66.0f;
 			ImGui::PushID(label);
@@ -264,12 +265,12 @@ namespace Rod {
 			ImGui::PopStyleVar();
 
 			const ImVec2 min = ImGui::GetItemRectMin();
-			const float centerX = min.x + g_ActionCardSize.x * half;
+			const float centerX = min.x + g_ActionCardSize.x * 0.5f;
 			const float labelWidth = ImGui::CalcTextSize(label).x;
 			ImDrawList& drawList = *ImGui::GetWindowDrawList();
 			const ImU32 color = ImGui::GetColorU32(ImGuiCol_Text);
 			DrawActionIcon(drawList, action, ImVec2{centerX, min.y + iconTop}, color);
-			drawList.AddText(ImVec2{centerX - labelWidth * half, min.y + labelTop}, color, label);
+			drawList.AddText(ImVec2{centerX - labelWidth * 0.5f, min.y + labelTop}, color, label);
 			ImGui::PopID();
 			return clicked;
 		}
@@ -317,7 +318,7 @@ namespace Rod {
 		std::string m_Error;
 	};
 
-	Scope<Application> CreateApplication(const std::optional<Project>& project)
+	auto CreateApplication(const std::optional<Project>& project) -> Scope<Application>
 	{
 		RD_CORE_ASSERT(!project, "Launcher does not accept a project argument");
 		auto app = CreateScope<Application>(LauncherWindowProps(), std::nullopt);

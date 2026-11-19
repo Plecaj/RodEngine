@@ -16,15 +16,16 @@ namespace Rod {
 		constexpr size_t g_VertexComponentCount = g_VectorComponentCount * 2;
 
 		template <typename T>
-		[[nodiscard]] T ReadScalar(std::span<const uint8_t> data, size_t offset) noexcept
+		[[nodiscard]] auto ReadScalar(std::span<const uint8_t> data, size_t offset) noexcept -> T
 		{
 			T value{};
 			std::memcpy(&value, data.subspan(offset, sizeof(value)).data(), sizeof(value));
 			return value;
 		}
 
-		[[nodiscard]] std::span<const uint8_t>
+		[[nodiscard]] auto
 		AccessorData(const tinygltf::Model& model, const tinygltf::Accessor& accessor, size_t elementSize)
+		    -> std::span<const uint8_t>
 		{
 			if (accessor.sparse.isSparse || accessor.bufferView < 0 ||
 			    !std::cmp_less(accessor.bufferView, model.bufferViews.size()))
@@ -44,8 +45,8 @@ namespace Rod {
 			return std::span{buffer.data}.subspan(view.byteOffset + accessor.byteOffset, available);
 		}
 
-		[[nodiscard]] std::vector<float>
-		ReadVertices(const tinygltf::Model& model, const tinygltf::Primitive& primitive)
+		[[nodiscard]] auto ReadVertices(const tinygltf::Model& model, const tinygltf::Primitive& primitive)
+		    -> std::vector<float>
 		{
 			const auto position = primitive.attributes.find("POSITION");
 			if (position == primitive.attributes.end() || position->second < 0 ||
@@ -57,7 +58,7 @@ namespace Rod {
 				throw std::runtime_error("Unsupported POSITION format");
 			if (accessor.count > std::numeric_limits<uint32_t>::max() / (g_VertexComponentCount * sizeof(float)))
 				throw std::runtime_error("Mesh vertex buffer too large");
-			auto positions = AccessorData(model, accessor, g_VectorComponentCount * sizeof(float));
+			const auto positions = AccessorData(model, accessor, g_VectorComponentCount * sizeof(float));
 			const size_t packedStride = g_VectorComponentCount * sizeof(float);
 			const auto positionByteStride = model.bufferViews[static_cast<size_t>(accessor.bufferView)].byteStride;
 			const size_t positionStride = positionByteStride ? positionByteStride : packedStride;
@@ -92,8 +93,8 @@ namespace Rod {
 			return vertices;
 		}
 
-		[[nodiscard]] std::vector<uint32_t>
-		ReadIndices(const tinygltf::Model& model, const tinygltf::Primitive& primitive)
+		[[nodiscard]] auto ReadIndices(const tinygltf::Model& model, const tinygltf::Primitive& primitive)
+		    -> std::vector<uint32_t>
 		{
 			if (primitive.indices < 0 || !std::cmp_less(primitive.indices, model.accessors.size()))
 				throw std::runtime_error("Mesh indices missing");
@@ -107,7 +108,7 @@ namespace Rod {
 				throw std::runtime_error("Mesh index buffer too large");
 			const size_t elementSize =
 			    accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT ? sizeof(uint16_t) : sizeof(uint32_t);
-			auto data = AccessorData(model, accessor, elementSize);
+			const auto data = AccessorData(model, accessor, elementSize);
 			const auto& view = model.bufferViews[static_cast<size_t>(accessor.bufferView)];
 			const size_t stride = view.byteStride ? view.byteStride : elementSize;
 
@@ -125,7 +126,7 @@ namespace Rod {
 		}
 
 		template <typename Vector>
-		[[nodiscard]] Vector ToFloatVector(std::span<const double> values)
+		[[nodiscard]] auto ToFloatVector(std::span<const double> values) -> Vector
 		{
 			Vector result(0.0f);
 			for (typename Vector::length_type component = 0; component < result.length(); ++component)

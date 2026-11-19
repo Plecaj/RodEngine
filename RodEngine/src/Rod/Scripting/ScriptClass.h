@@ -12,12 +12,12 @@ namespace Rod {
 		ScriptClass() = default;
 		ScriptClass(std::string fullName, std::string namespaceName, std::string className);
 
-		[[nodiscard]] const std::string& GetFullName() const noexcept { return m_FullName; }
-		[[nodiscard]] const std::string& GetNamespaceName() const noexcept { return m_NamespaceName; }
-		[[nodiscard]] const std::string& GetClassName() const noexcept { return m_ClassName; }
+		[[nodiscard]] auto GetFullName() const noexcept -> const std::string& { return m_FullName; }
+		[[nodiscard]] auto GetNamespaceName() const noexcept -> const std::string& { return m_NamespaceName; }
+		[[nodiscard]] auto GetClassName() const noexcept -> const std::string& { return m_ClassName; }
 
-		[[nodiscard]] const ScriptFieldMap& GetFields() const noexcept { return m_Fields; }
-		[[nodiscard]] ScriptFieldMap& GetFields() noexcept { return m_Fields; }
+		[[nodiscard]] auto GetFields() const noexcept -> const ScriptFieldMap& { return m_Fields; }
+		[[nodiscard]] auto GetFields() noexcept -> ScriptFieldMap& { return m_Fields; }
 
 	private:
 		std::string m_FullName;

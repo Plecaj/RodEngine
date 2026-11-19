@@ -29,7 +29,7 @@ namespace Rod {
 	};
 
 	// NOLINTBEGIN(readability-magic-numbers)
-	[[nodiscard]] constexpr uint32_t ShaderDataTypeSize(ShaderDataType type)
+	[[nodiscard]] constexpr auto ShaderDataTypeSize(ShaderDataType type) -> uint32_t
 	{
 		switch (type)
 		{
@@ -79,7 +79,7 @@ namespace Rod {
 		BufferElement() : Type(ShaderDataType::None), Name({}), Size(0), Offset(0), Normalized(false) {};
 
 		// NOLINTBEGIN(readability-magic-numbers)
-		[[nodiscard]] constexpr uint32_t GetComponentCount() const
+		[[nodiscard]] constexpr auto GetComponentCount() const -> uint32_t
 		{
 			switch (Type)
 			{
@@ -124,13 +124,19 @@ namespace Rod {
 		{
 			CalculateOffsetsAndStride();
 		}
-		[[nodiscard]] constexpr uint32_t GetStride() const noexcept { return m_Stride; };
-		[[nodiscard]] std::span<const BufferElement> GetElements() const noexcept { return m_Elements; }
+		[[nodiscard]] constexpr auto GetStride() const noexcept -> uint32_t { return m_Stride; };
+		[[nodiscard]] auto GetElements() const noexcept -> std::span<const BufferElement> { return m_Elements; }
 
-		[[nodiscard]] std::vector<BufferElement>::iterator begin() noexcept { return m_Elements.begin(); }
-		[[nodiscard]] std::vector<BufferElement>::iterator end() noexcept { return m_Elements.end(); }
-		[[nodiscard]] std::vector<BufferElement>::const_iterator begin() const noexcept { return m_Elements.begin(); }
-		[[nodiscard]] std::vector<BufferElement>::const_iterator end() const noexcept { return m_Elements.end(); }
+		[[nodiscard]] auto begin() noexcept -> std::vector<BufferElement>::iterator { return m_Elements.begin(); }
+		[[nodiscard]] auto end() noexcept -> std::vector<BufferElement>::iterator { return m_Elements.end(); }
+		[[nodiscard]] auto begin() const noexcept -> std::vector<BufferElement>::const_iterator
+		{
+			return m_Elements.begin();
+		}
+		[[nodiscard]] auto end() const noexcept -> std::vector<BufferElement>::const_iterator
+		{
+			return m_Elements.end();
+		}
 
 	private:
 		void CalculateOffsetsAndStride() noexcept
@@ -156,9 +162,9 @@ namespace Rod {
 		VertexBuffer() = default;
 		virtual ~VertexBuffer() = default;
 		VertexBuffer(const VertexBuffer&) = delete;
-		VertexBuffer& operator=(const VertexBuffer&) = delete;
+		auto operator=(const VertexBuffer&) -> VertexBuffer& = delete;
 		VertexBuffer(VertexBuffer&&) = delete;
-		VertexBuffer& operator=(VertexBuffer&&) = delete;
+		auto operator=(VertexBuffer&&) -> VertexBuffer& = delete;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
@@ -166,10 +172,10 @@ namespace Rod {
 		virtual void SetData(std::span<const std::byte> data) = 0;
 
 		virtual void SetBufferLayout(const BufferLayout& layout) = 0;
-		[[nodiscard]] virtual const BufferLayout& GetLayout() const noexcept = 0;
+		[[nodiscard]] virtual auto GetLayout() const noexcept -> const BufferLayout& = 0;
 
-		[[nodiscard]] static Scope<VertexBuffer> Create(uint32_t size);
-		[[nodiscard]] static Scope<VertexBuffer> Create(std::span<const std::byte> vertices);
+		[[nodiscard]] static auto Create(uint32_t size) -> Scope<VertexBuffer>;
+		[[nodiscard]] static auto Create(std::span<const std::byte> vertices) -> Scope<VertexBuffer>;
 	};
 
 	class IndexBuffer
@@ -178,16 +184,16 @@ namespace Rod {
 		IndexBuffer() = default;
 		virtual ~IndexBuffer() = default;
 		IndexBuffer(const IndexBuffer&) = delete;
-		IndexBuffer& operator=(const IndexBuffer&) = delete;
+		auto operator=(const IndexBuffer&) -> IndexBuffer& = delete;
 		IndexBuffer(IndexBuffer&&) = delete;
-		IndexBuffer& operator=(IndexBuffer&&) = delete;
+		auto operator=(IndexBuffer&&) -> IndexBuffer& = delete;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
 
-		[[nodiscard]] virtual uint32_t GetCount() const noexcept = 0;
+		[[nodiscard]] virtual auto GetCount() const noexcept -> uint32_t = 0;
 
-		[[nodiscard]] static Scope<IndexBuffer> Create(std::span<const uint32_t> indices);
+		[[nodiscard]] static auto Create(std::span<const uint32_t> indices) -> Scope<IndexBuffer>;
 	};
 
 	class UniformBuffer
@@ -196,9 +202,9 @@ namespace Rod {
 		UniformBuffer() = default;
 		virtual ~UniformBuffer() = default;
 		UniformBuffer(const UniformBuffer&) = delete;
-		UniformBuffer& operator=(const UniformBuffer&) = delete;
+		auto operator=(const UniformBuffer&) -> UniformBuffer& = delete;
 		UniformBuffer(UniformBuffer&&) = delete;
-		UniformBuffer& operator=(UniformBuffer&&) = delete;
+		auto operator=(UniformBuffer&&) -> UniformBuffer& = delete;
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
@@ -206,6 +212,6 @@ namespace Rod {
 
 		virtual void SetData(std::span<const std::byte> data) = 0;
 
-		[[nodiscard]] static Scope<UniformBuffer> Create(uint32_t size);
+		[[nodiscard]] static auto Create(uint32_t size) -> Scope<UniformBuffer>;
 	};
 }

@@ -41,7 +41,7 @@ namespace Rod {
 			context.OpenScene(sceneToOpen);
 	}
 
-	std::filesystem::path ViewportPanel::AcceptSceneDrop(const std::filesystem::path& assetsPath)
+	auto ViewportPanel::AcceptSceneDrop(const std::filesystem::path& assetsPath) -> std::filesystem::path
 	{
 		std::filesystem::path sceneToOpen;
 		if (ImGui::BeginDragDropTarget())
@@ -53,20 +53,18 @@ namespace Rod {
 		return sceneToOpen;
 	}
 
-	bool ViewportPanel::GetCameraMatrices(const RenderContext& context, glm::mat4& view, glm::mat4& projection)
+	auto ViewportPanel::GetCameraMatrices(const RenderContext& context) -> std::optional<CameraMatrices>
 	{
 		if (context.State == SceneState::Edit)
-		{
-			projection = context.EditorCamera.GetProjection();
-			view = context.EditorCamera.GetViewMatrix();
-			return true;
-		}
+			return CameraMatrices{
+			    .View = context.EditorCamera.GetViewMatrix(),
+			    .Projection = context.EditorCamera.GetProjection()};
 		const auto cameraEntity = context.ActiveScene.GetPrimaryCameraEntity();
 		if (!cameraEntity)
-			return false;
-		projection = cameraEntity.GetComponent<CameraComponent>().Camera.GetProjection();
-		view = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform());
-		return true;
+			return std::nullopt;
+		return CameraMatrices{
+		    .View = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform()),
+		    .Projection = cameraEntity.GetComponent<CameraComponent>().Camera.GetProjection()};
 	}
 
 	void ViewportPanel::DrawGizmo(const RenderContext& context)
@@ -74,8 +72,8 @@ namespace Rod {
 		Entity selectedEntity = context.SelectedEntity;
 		if (!selectedEntity || context.GizmoType == -1)
 			return;
-		glm::mat4 cameraView, cameraProjection;
-		if (!GetCameraMatrices(context, cameraView, cameraProjection))
+		const auto cameraMatrices = GetCameraMatrices(context);
+		if (!cameraMatrices)
 			return;
 
 		ImGuizmo::SetOrthographic(false);
@@ -91,8 +89,8 @@ namespace Rod {
 		const float snapValue = context.GizmoType == ImGuizmo::OPERATION::ROTATE ? s_RotationSnap : s_TranslationSnap;
 		const std::array<float, s_VectorComponentCount> snapValues{snapValue, snapValue, snapValue};
 		ImGuizmo::Manipulate(
-		    glm::value_ptr(cameraView),
-		    glm::value_ptr(cameraProjection),
+		    glm::value_ptr(cameraMatrices->View),
+		    glm::value_ptr(cameraMatrices->Projection),
 		    static_cast<ImGuizmo::OPERATION>(context.GizmoType),
 		    ImGuizmo::MODE::LOCAL,
 		    glm::value_ptr(transform),

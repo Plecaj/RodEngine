@@ -2,6 +2,8 @@
 
 #include "ToolbarPanel.h"
 
+#include "Rod/ImGui/ImGuiFlags.h"
+
 #include "imgui.h"
 
 namespace Rod {
@@ -11,22 +13,17 @@ namespace Rod {
 	      m_StopButton(Texture2D::Create("RodAssets/Textures/StopButton.png"))
 	{}
 
-	void ToolbarPanel::OnImGuiRender(
-	    SceneState sceneState,
-	    ImGuiID dockID,
-	    const std::function<void()>& onPlay,
-	    const std::function<void()>& onStop) const
+	void ToolbarPanel::OnImGuiRender(SceneState sceneState, ImGuiID dockID, const Actions& actions) const
 	{
 		constexpr ImVec2 windowPadding{0, 2};
 		constexpr float buttonAlpha = 0.5f;
 		constexpr float buttonInset = 4.0f;
-		constexpr float centerFactor = 0.5f;
 		constexpr int styleVariableCount = 2;
 		constexpr int styleColorCount = 3;
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, windowPadding);
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
 		ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-		auto& colors = ImGui::GetStyle().Colors;
+		const auto& colors = ImGui::GetStyle().Colors;
 		const auto& buttonHovered = colors[ImGuiCol_ButtonHovered];
 		ImGui::PushStyleColor(
 		    ImGuiCol_ButtonHovered,
@@ -36,8 +33,10 @@ namespace Rod {
 		    ImGuiCol_ButtonActive,
 		    ImVec4(buttonActive.x, buttonActive.y, buttonActive.z, buttonAlpha));
 
-		const ImGuiWindowFlags toolbarFlags =
-		    ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+		const ImGuiWindowFlags toolbarFlags = CombineImGuiFlags(
+		    ImGuiWindowFlags_NoDecoration,
+		    ImGuiWindowFlags_NoScrollbar,
+		    ImGuiWindowFlags_NoScrollWithMouse);
 
 		if (dockID != 0)
 			ImGui::SetNextWindowDockID(dockID, ImGuiCond_Always);
@@ -45,13 +44,13 @@ namespace Rod {
 
 		const float size = ImGui::GetWindowHeight() - buttonInset;
 		const Texture2D& icon = sceneState == SceneState::Edit ? *m_PlayButton : *m_StopButton;
-		ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x * centerFactor - (size * centerFactor));
+		ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x * 0.5f - (size * 0.5f));
 		if (ImGui::ImageButton("play/stop button", icon.GetRendererID(), {size, size}, {0.0f, 1.0f}, {1.0f, 0.0f}))
 		{
 			if (sceneState == SceneState::Edit)
-				onPlay();
+				actions.Play();
 			else if (sceneState == SceneState::Play)
-				onStop();
+				actions.Stop();
 		}
 
 		ImGui::PopStyleVar(styleVariableCount);

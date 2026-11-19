@@ -8,7 +8,7 @@
 
 namespace Rod {
 
-	static uint32_t ShaderDataTypeToOpenGLBaseType(ShaderDataType type)
+	static auto ShaderDataTypeToOpenGLBaseType(ShaderDataType type) -> uint32_t
 	{
 		switch (type)
 		{
@@ -75,10 +75,6 @@ namespace Rod {
 		// NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast,performance-no-int-to-ptr)
 		for (const auto& element : layout)
 		{
-			RD_CORE_ASSERT(
-			    element.Type != ShaderDataType::Mat3 && element.Type != ShaderDataType::Mat4 &&
-			        element.Type != ShaderDataType::None,
-			    "Unsupported vertex attribute type");
 			switch (element.Type)
 			{
 				case ShaderDataType::Float:
@@ -114,6 +110,7 @@ namespace Rod {
 				case ShaderDataType::Mat3:
 				case ShaderDataType::Mat4:
 				case ShaderDataType::None:
+					RD_CORE_ASSERT(false, "Unsupported vertex attribute type");
 					break;
 			}
 		}

@@ -18,7 +18,7 @@ namespace Rod {
 
 		void OnImGuiRender() const;
 
-		[[nodiscard]] static constexpr uint32_t GetHeight() noexcept { return s_Height; }
+		[[nodiscard]] static constexpr auto GetHeight() noexcept -> uint32_t { return s_Height; }
 
 	private:
 		static constexpr uint32_t s_Height = 36;

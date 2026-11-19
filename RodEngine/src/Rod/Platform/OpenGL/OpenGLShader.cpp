@@ -24,7 +24,7 @@ namespace Rod {
 
 	namespace Utils {
 
-		static std::string ShaderExtensionFromType(shaderc_shader_kind type)
+		static auto ShaderExtensionFromType(shaderc_shader_kind type) -> std::string
 		{
 			if (type == shaderc_vertex_shader)
 				return "vert";
@@ -43,7 +43,7 @@ namespace Rod {
 			return "unknown";
 		}
 
-		static std::string OptimizationName(Shader::OptimizationLevel level)
+		static auto OptimizationName(Shader::OptimizationLevel level) -> std::string
 		{
 			switch (level)
 			{
@@ -59,18 +59,18 @@ namespace Rod {
 			return "unknown";
 		}
 
-		static std::string HashToString(size_t hash)
+		static auto HashToString(size_t hash) -> std::string
 		{
 			std::stringstream stream;
 			stream << std::hex << hash;
 			return stream.str();
 		}
 
-		static std::string CreateShaderCacheKey(
+		static auto CreateShaderCacheKey(
 		    const std::string& shaderName,
 		    shaderc_shader_kind kind,
 		    const std::string& source,
-		    const Shader::ShaderOptions& options)
+		    const Shader::ShaderOptions& options) -> std::string
 		{
 			std::string hashInput;
 			hashInput += shaderName;
@@ -97,7 +97,7 @@ namespace Rod {
 			return shaderName + "." + Utils::ShaderExtensionFromType(kind) + "." + HashToString(hash);
 		}
 
-		static GLenum OpenGLShaderKind(shaderc_shader_kind kind)
+		static auto OpenGLShaderKind(shaderc_shader_kind kind) -> GLenum
 		{
 			if (kind == shaderc_vertex_shader)
 				return GL_VERTEX_SHADER;
@@ -164,14 +164,12 @@ namespace Rod {
 			RD_CORE_ASSERT(!m_SPIRV.contains(kind), "2 Shaders of same kind defined");
 
 			const std::string cacheKey = Utils::CreateShaderCacheKey(m_Name, kind, source, options);
-			if (ShaderCacheDatabase::Get().Contains(cacheKey))
+			if ((ShaderCacheDatabase::Get().Contains(cacheKey)) && (OpenSpirv(kind, cacheKey)))
+
 			{
-				if (OpenSpirv(kind, cacheKey))
-				{
-					RD_CORE_TRACE("Loaded shader {}.{} from cache!", m_Name, Utils::ShaderExtensionFromType(kind));
-					ShaderCacheDatabase::Get().AddValidKey(cacheKey);
-					continue;
-				}
+				RD_CORE_TRACE("Loaded shader {}.{} from cache!", m_Name, Utils::ShaderExtensionFromType(kind));
+				ShaderCacheDatabase::Get().AddValidKey(cacheKey);
+				continue;
 			}
 
 			const std::vector<uint32_t> res = CompileSpirv(kind, source, compiler, compileOptions);
@@ -188,7 +186,7 @@ namespace Rod {
 		glDeleteProgram(m_RendererID);
 	}
 
-	bool OpenGLShader::OpenSpirv(const shaderc_shader_kind& kind, const std::string& cacheKey)
+	auto OpenGLShader::OpenSpirv(const shaderc_shader_kind& kind, const std::string& cacheKey) -> bool
 	{
 		const std::filesystem::path filename = ShaderCacheDatabase::Get().GetCacheDirectory() / cacheKey;
 		std::ifstream in(filename, std::ios::binary | std::ios::ate);
@@ -222,11 +220,11 @@ namespace Rod {
 		return true;
 	}
 
-	std::vector<uint32_t> OpenGLShader::CompileSpirv(
+	auto OpenGLShader::CompileSpirv(
 	    const shaderc_shader_kind& kind,
 	    const std::string& source,
 	    shaderc::Compiler& compiler,
-	    const shaderc::CompileOptions& options)
+	    const shaderc::CompileOptions& options) -> std::vector<uint32_t>
 	{
 		const shaderc::SpvCompilationResult res = compiler.CompileGlslToSpv(source, kind, m_Name.c_str(), options);
 		std::string messages = res.GetErrorMessage();
@@ -414,7 +412,7 @@ namespace Rod {
 		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
 	}
 
-	int OpenGLShader::GetUniformLocation(const std::string& name) const
+	auto OpenGLShader::GetUniformLocation(const std::string& name) const -> int
 	{
 		if (m_UniformLocationCache.contains(name))
 			return m_UniformLocationCache[name];

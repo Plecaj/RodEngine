@@ -13,9 +13,9 @@ namespace Rod {
 		LayerStack() noexcept;
 		~LayerStack();
 		LayerStack(const LayerStack&) = delete;
-		LayerStack& operator=(const LayerStack&) = delete;
+		auto operator=(const LayerStack&) -> LayerStack& = delete;
 		LayerStack(LayerStack&&) = delete;
-		LayerStack& operator=(LayerStack&&) = delete;
+		auto operator=(LayerStack&&) -> LayerStack& = delete;
 
 		void PushLayer(Scope<Layer> layer);
 		void PushOverlay(Scope<Layer> overlay);
@@ -23,8 +23,11 @@ namespace Rod {
 		void PopOverlay(Layer& overlay);
 		void Clear() noexcept;
 
-		[[nodiscard]] std::vector<Scope<Layer>>::const_iterator begin() const noexcept { return m_Layers.begin(); }
-		[[nodiscard]] std::vector<Scope<Layer>>::const_iterator end() const noexcept { return m_Layers.end(); }
+		[[nodiscard]] auto begin() const noexcept -> std::vector<Scope<Layer>>::const_iterator
+		{
+			return m_Layers.begin();
+		}
+		[[nodiscard]] auto end() const noexcept -> std::vector<Scope<Layer>>::const_iterator { return m_Layers.end(); }
 
 	private:
 		std::vector<Scope<Layer>> m_Layers;

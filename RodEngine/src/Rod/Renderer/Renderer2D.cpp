@@ -7,17 +7,18 @@
 #include "Shader.h"
 #include "VertexArray.h"
 
+#include <optional>
 #include <span>
 
 namespace Rod {
 
 	struct QuadVertex
 	{
-		glm::vec3 Position;
-		glm::vec4 Color;
-		glm::vec2 TexCoord;
-		float TexIdx;
-		float TilingFactor;
+		glm::vec3 Position{};
+		glm::vec4 Color{};
+		glm::vec2 TexCoord{};
+		float TexIdx = 0.0f;
+		float TilingFactor = 0.0f;
 
 		int EntityID = 0;
 	};
@@ -42,7 +43,7 @@ namespace Rod {
 		std::vector<Ref<Texture2D>> TextureSlots;
 		uint32_t TextureSlotIndex = 1; // 0 = white texture
 
-		std::array<glm::vec4, Renderer2D::s_QuadVertexCount> QuadVertexPositions;
+		std::array<glm::vec4, Renderer2D::s_QuadVertexCount> QuadVertexPositions{};
 		Renderer2D::Statistics Stats;
 	};
 
@@ -74,7 +75,7 @@ namespace Rod {
 
 	void Renderer2D::InitSamplers()
 	{
-		std::array<int, Renderer2DData::s_MaxTextureSlots> samplers;
+		std::array<int, Renderer2DData::s_MaxTextureSlots> samplers{};
 		for (uint32_t i = 0; i < Renderer2DData::s_MaxTextureSlots; i++)
 			samplers[i] = static_cast<int>(i);
 
@@ -277,7 +278,7 @@ namespace Rod {
 		g_Data->Stats = {};
 	}
 
-	Renderer2D::Statistics Renderer2D::GetStats() noexcept
+	auto Renderer2D::GetStats() noexcept -> Renderer2D::Statistics
 	{
 		return g_Data->Stats;
 	}
@@ -307,8 +308,11 @@ namespace Rod {
 		for (uint32_t i = 0; i < g_Data->TextureSlotIndex; i++)
 			g_Data->TextureSlots[i]->Bind(i);
 
+		const auto indexBuffer = g_Data->QuadVertexArray->GetIndexBuffer();
+		if (!indexBuffer)
+			throw std::bad_optional_access{};
 		g_Data->QuadVertexArray->Bind();
-		g_Data->QuadVertexArray->GetIndexBuffer().value().Bind();
+		indexBuffer->Bind();
 
 		RenderCommand::DrawIndexed(*g_Data->QuadVertexArray, g_Data->QuadIndexCount);
 		g_Data->Stats.DrawCalls++;

@@ -2,6 +2,7 @@
 
 #include "SceneHierarchyPanel.h"
 
+#include "Rod/ImGui/ImGuiFlags.h"
 #include "Rod/Scene/Components.h"
 #include "Rod/Scripting/ScriptEngine.h"
 
@@ -16,16 +17,15 @@ namespace Rod {
 
 	namespace {
 
-		[[nodiscard]] const void* NodeID(uintptr_t value) noexcept
+		[[nodiscard]] auto NodeID(uintptr_t value) noexcept -> const void*
 		{
 			// ImGui hashes this opaque identifier without dereferencing it.
 			// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast,performance-no-int-to-ptr)
 			return reinterpret_cast<const void*>(value);
 		}
 
-		[[nodiscard]] bool DrawMoreOptionsButton(const char* id, const ImVec2& size)
+		[[nodiscard]] auto DrawMoreOptionsButton(const char* id, const ImVec2& size) -> bool
 		{
-			constexpr float half = 0.5f;
 			constexpr float rounding = 3.0f;
 			constexpr float spacing = 4.0f;
 			constexpr float radius = 1.6f;
@@ -40,7 +40,7 @@ namespace Rod {
 			                                   : IM_COL32(0, 0, 0, 0);
 			constexpr ImU32 dotColor = IM_COL32(220, 225, 232, 255);
 			drawList.AddRectFilled(min, max, background, rounding);
-			const ImVec2 center{(min.x + max.x) * half, (min.y + max.y) * half};
+			const ImVec2 center{(min.x + max.x) * 0.5f, (min.y + max.y) * 0.5f};
 			drawList.AddCircleFilled({center.x - spacing, center.y}, radius, dotColor);
 			drawList.AddCircleFilled(center, radius, dotColor);
 			drawList.AddCircleFilled({center.x + spacing, center.y}, radius, dotColor);
@@ -84,7 +84,7 @@ namespace Rod {
 	void SceneHierarchyPanel::DrawSceneHierarchy(Scene& scene) const
 	{
 		ImGui::Begin("Scene Hierarchy");
-		for (auto entityID : scene.m_Registry.storage<entt::entity>())
+		for (const auto entityID : scene.m_Registry.storage<entt::entity>())
 		{
 			const Entity entity{entityID, scene};
 			DrawEntityNode(scene, entity);
@@ -110,11 +110,12 @@ namespace Rod {
 		if (!entity)
 			return;
 
-		auto& tag = entity.GetComponent<TagComponent>().Tag;
+		const auto& tag = entity.GetComponent<TagComponent>().Tag;
 
-		ImGuiTreeNodeFlags flags = ((m_Interaction.SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0) |
-		                           ImGuiTreeNodeFlags_OpenOnArrow;
-		flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
+		const ImGuiTreeNodeFlags flags = CombineImGuiFlags(
+		    m_Interaction.SelectedEntity == entity ? ImGuiTreeNodeFlags_Selected : ImGuiTreeNodeFlags_None,
+		    ImGuiTreeNodeFlags_OpenOnArrow,
+		    ImGuiTreeNodeFlags_SpanAvailWidth);
 
 		const bool opened = ImGui::TreeNodeEx(NodeID(static_cast<uint32_t>(entity)), flags, "%s", tag.c_str());
 
@@ -125,7 +126,8 @@ namespace Rod {
 
 		if (opened)
 		{
-			const ImGuiTreeNodeFlags childFlags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth;
+			const ImGuiTreeNodeFlags childFlags =
+			    CombineImGuiFlags(ImGuiTreeNodeFlags_OpenOnArrow, ImGuiTreeNodeFlags_SpanAvailWidth);
 			if (ImGui::TreeNodeEx(NodeID(s_EntityChildNodeID), childFlags, "%s", tag.c_str()))
 				ImGui::TreePop();
 			ImGui::TreePop();
@@ -144,7 +146,9 @@ namespace Rod {
 		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered())
 			m_Interaction.SelectedEntity = {};
 
-		if (ImGui::BeginPopupContextWindow(nullptr, 1 | ImGuiPopupFlags_NoOpenOverItems))
+		if (ImGui::BeginPopupContextWindow(
+		        nullptr,
+		        CombineImGuiFlags(ImGuiPopupFlags_MouseButtonRight, ImGuiPopupFlags_NoOpenOverItems)))
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))
 				scene.CreateEntity("Empty Entity");
@@ -152,10 +156,12 @@ namespace Rod {
 		}
 	}
 
-	bool SceneHierarchyPanel::HandleEntityContextMenu()
+	auto SceneHierarchyPanel::HandleEntityContextMenu() -> bool
 	{
 		bool entityDeleted = false;
-		if (ImGui::BeginPopupContextItem(nullptr, 1 | ImGuiPopupFlags_NoOpenOverItems))
+		if (ImGui::BeginPopupContextItem(
+		        nullptr,
+		        CombineImGuiFlags(ImGuiPopupFlags_MouseButtonRight, ImGuiPopupFlags_NoOpenOverItems)))
 		{
 			if (ImGui::MenuItem("Delete Entity"))
 				entityDeleted = true;
@@ -199,9 +205,12 @@ namespace Rod {
 		constexpr float linePaddingFactor = 2.0f;
 		constexpr float buttonWidthOffset = 3.0f;
 		constexpr auto axes = std::to_array<AxisStyle>(
-		    {{"X", "##X", {0.8f, 0.1f, 0.15f, 1.0f}, {0.9f, 0.2f, 0.2f, 1.0f}},
-			 {"Y", "##Y", {0.2f, 0.7f, 0.2f, 1.0f}, {0.3f, 0.8f, 0.3f, 1.0f}},
-			 {"Z", "##Z", {0.1f, 0.25f, 0.8f, 1.0f}, {0.2f, 0.35f, 0.9f, 1.0f}}});
+		    {{.Label = "X", .InputID = "##X", .Normal = {0.8f, 0.1f, 0.15f, 1.0f}, .Hovered = {0.9f, 0.2f, 0.2f, 1.0f}},
+			 {.Label = "Y", .InputID = "##Y", .Normal = {0.2f, 0.7f, 0.2f, 1.0f}, .Hovered = {0.3f, 0.8f, 0.3f, 1.0f}},
+			 {.Label = "Z",
+			  .InputID = "##Z",
+			  .Normal = {0.1f, 0.25f, 0.8f, 1.0f},
+			  .Hovered = {0.2f, 0.35f, 0.9f, 1.0f}}});
 		auto* boldFont = ImGui::GetIO().Fonts->Fonts[0];
 		ImGui::PushID(label.c_str());
 		ImGui::Columns(columnCount);
@@ -237,9 +246,12 @@ namespace Rod {
 		constexpr float linePaddingFactor = 2.0f;
 		constexpr float settingsButtonOffset = 0.6f;
 		constexpr float verticalSpacing = 4.0f;
-		constexpr ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed |
-		                                     ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap |
-		                                     ImGuiTreeNodeFlags_FramePadding;
+		constexpr ImGuiTreeNodeFlags flags = CombineImGuiFlags(
+		    ImGuiTreeNodeFlags_DefaultOpen,
+		    ImGuiTreeNodeFlags_Framed,
+		    ImGuiTreeNodeFlags_SpanAvailWidth,
+		    ImGuiTreeNodeFlags_AllowItemOverlap,
+		    ImGuiTreeNodeFlags_FramePadding);
 		auto& component = entity.GetComponent<T>();
 		const ImVec2 contentRegion = ImGui::GetContentRegionAvail();
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, framePadding);
@@ -492,7 +504,7 @@ namespace Rod {
 	}
 
 	template <typename Vector>
-	std::string SceneHierarchyPanel::VecToFieldValue(const Vector& value)
+	auto SceneHierarchyPanel::VecToFieldValue(const Vector& value) -> std::string
 	{
 		std::string result = std::to_string(value[0]);
 		for (typename Vector::length_type index = 1; index < value.length(); ++index)
@@ -501,7 +513,7 @@ namespace Rod {
 	}
 
 	template <typename Vector>
-	Vector SceneHierarchyPanel::FieldValueToVector(const std::string& value)
+	auto SceneHierarchyPanel::FieldValueToVector(const std::string& value) -> Vector
 	{
 		Vector result(0.0f);
 		std::istringstream stream(value);
@@ -527,7 +539,7 @@ namespace Rod {
 
 		for (const auto& [name, field] : scriptClass->GetFields())
 		{
-			auto existingField = currentFields.find(name);
+			const auto existingField = currentFields.find(name);
 			component.Fields[name] = field;
 			if (existingField != currentFields.end() && !existingField->second.Value.empty())
 				component.Fields[name].Value = existingField->second.Value;
@@ -563,7 +575,7 @@ namespace Rod {
 			SyncScriptFields(component);
 	}
 
-	bool SceneHierarchyPanel::DrawFloatingScriptField(const std::string& name, ScriptFieldInstance& field)
+	auto SceneHierarchyPanel::DrawFloatingScriptField(const std::string& name, ScriptFieldInstance& field) -> bool
 	{
 		float value = 0.0f;
 		if (!field.Value.empty())
@@ -575,7 +587,7 @@ namespace Rod {
 		return true;
 	}
 
-	bool SceneHierarchyPanel::DrawBooleanScriptField(const std::string& name, ScriptFieldInstance& field)
+	auto SceneHierarchyPanel::DrawBooleanScriptField(const std::string& name, ScriptFieldInstance& field) -> bool
 	{
 		bool value = field.Value == "true" || field.Value == "1";
 		if (!ImGui::Checkbox(name.c_str(), &value))
@@ -584,7 +596,7 @@ namespace Rod {
 		return true;
 	}
 
-	bool SceneHierarchyPanel::DrawIntegerScriptField(const std::string& name, ScriptFieldInstance& field)
+	auto SceneHierarchyPanel::DrawIntegerScriptField(const std::string& name, ScriptFieldInstance& field) -> bool
 	{
 		int value = field.Value.empty() ? 0 : std::stoi(field.Value);
 		if (!ImGui::DragInt(name.c_str(), &value))
@@ -593,7 +605,7 @@ namespace Rod {
 		return true;
 	}
 
-	bool SceneHierarchyPanel::DrawStringScriptField(const std::string& name, ScriptFieldInstance& field)
+	auto SceneHierarchyPanel::DrawStringScriptField(const std::string& name, ScriptFieldInstance& field) -> bool
 	{
 		std::array<char, s_TextBufferSize> buffer{};
 		field.Value.copy(buffer.data(), buffer.size() - 1);
@@ -604,7 +616,7 @@ namespace Rod {
 	}
 
 	template <typename Vector>
-	bool SceneHierarchyPanel::DrawVectorScriptField(const std::string& name, ScriptFieldInstance& field)
+	auto SceneHierarchyPanel::DrawVectorScriptField(const std::string& name, ScriptFieldInstance& field) -> bool
 	{
 		auto value = FieldValueToVector<Vector>(field.Value);
 		if (!ImGui::DragScalarN(
@@ -618,7 +630,7 @@ namespace Rod {
 		return true;
 	}
 
-	bool SceneHierarchyPanel::DrawScriptField(const std::string& name, ScriptFieldInstance& field)
+	auto SceneHierarchyPanel::DrawScriptField(const std::string& name, ScriptFieldInstance& field) -> bool
 	{
 		const auto type = field.Field.Type;
 		switch (type)

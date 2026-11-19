@@ -7,7 +7,7 @@
 
 namespace Rod {
 
-	Scope<Framebuffer> Framebuffer::Create(const FramebufferSpecification& spec)
+	auto Framebuffer::Create(const FramebufferSpecification& spec) -> Scope<Framebuffer>
 	{
 		switch (RendererAPI::GetAPI())
 		{

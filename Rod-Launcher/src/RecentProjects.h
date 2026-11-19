@@ -23,7 +23,7 @@ namespace Rod {
 		void Load(const std::filesystem::path& path);
 		void Save(const std::filesystem::path& path) const;
 		void Record(const Project& project);
-		[[nodiscard]] std::span<const RecentProject> GetEntries() const noexcept { return m_Entries; }
+		[[nodiscard]] auto GetEntries() const noexcept -> std::span<const RecentProject> { return m_Entries; }
 
 	private:
 		static constexpr std::size_t s_MaxProjects = 10;

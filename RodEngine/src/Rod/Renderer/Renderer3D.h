@@ -55,10 +55,11 @@ namespace Rod {
 		struct ShadowData;
 		struct DrawData;
 
-		[[nodiscard]] static FrustumCorners GetFrustumCornersWorldSpace(const glm::mat4& viewProjection);
+		[[nodiscard]] static auto GetFrustumCornersWorldSpace(const glm::mat4& viewProjection) -> FrustumCorners;
 		static void LimitFrustumDepth(FrustumCorners& corners, float maxDistance);
-		[[nodiscard]] static glm::mat4
-		CreateDirectionalLightViewProjection(const glm::vec3& lightDirection, const glm::mat4& cameraViewProjection);
+		[[nodiscard]] static auto
+		CreateDirectionalLightViewProjection(const glm::vec3& lightDirection, const glm::mat4& cameraViewProjection)
+		    -> glm::mat4;
 
 		static void SetupScene(std::span<const DirectionalLightComponent> lights);
 		static void DepthPass();
@@ -75,7 +76,7 @@ namespace Rod {
 
 		struct SceneData
 		{
-			glm::mat4 ViewProjection;
+			glm::mat4 ViewProjection{};
 			Scope<UniformBuffer> SceneUBO, LightsUBO, DrawUBO, ShadowUBO, MaterialUBO;
 			std::vector<glm::vec3> LightsDirections;
 			std::vector<glm::mat4> LightSpaceMatrices;

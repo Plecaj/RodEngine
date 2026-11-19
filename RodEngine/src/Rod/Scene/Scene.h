@@ -21,13 +21,13 @@ namespace Rod {
 		Scene() = default;
 		~Scene() = default;
 		Scene(const Scene& other);
-		Scene& operator=(const Scene& other);
+		auto operator=(const Scene& other) -> Scene&;
 		Scene(Scene&& other) noexcept;
 		// Replacing a scene invokes user native-script destruction callbacks, which may throw.
-		Scene& operator=(Scene&& other) noexcept(false);
+		auto operator=(Scene&& other) noexcept(false) -> Scene&;
 
-		Entity CreateEntity(const std::string& name = "");
-		Entity CreateEntityWithUUID(UUID uuid, const std::string& name = "");
+		auto CreateEntity(const std::string& name = "") -> Entity;
+		auto CreateEntityWithUUID(UUID uuid, const std::string& name = "") -> Entity;
 		void DestroyEntity(Entity entity);
 
 		void OnRuntimeStart();
@@ -36,13 +36,16 @@ namespace Rod {
 		void OnUpdateEditor(Timestep& ts, EditorCamera& camera);
 		void OnViewportResize(uint32_t width, uint32_t height);
 
-		[[nodiscard]] Entity GetPrimaryCameraEntity();
-		[[nodiscard]] Entity FindEntityByUUID(UUID uuid);
-		[[nodiscard]] Entity FindEntityByName(const std::string& name);
+		[[nodiscard]] auto GetPrimaryCameraEntity() -> Entity;
+		[[nodiscard]] auto FindEntityByUUID(UUID uuid) -> Entity;
+		[[nodiscard]] auto FindEntityByName(const std::string& name) -> Entity;
 
-		[[nodiscard]] bool operator==(const Scene& other) const;
+		[[nodiscard]] auto operator==(const Scene& other) const -> bool;
 
-		[[nodiscard]] bool IsValidEntityHandle(entt::entity entity) const noexcept { return m_Registry.valid(entity); }
+		[[nodiscard]] auto IsValidEntityHandle(entt::entity entity) const noexcept -> bool
+		{
+			return m_Registry.valid(entity);
+		}
 
 	private:
 		template <typename... Components>

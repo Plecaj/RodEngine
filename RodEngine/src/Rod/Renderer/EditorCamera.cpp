@@ -18,7 +18,7 @@ namespace Rod {
 		constexpr float g_PanLinearCoefficient = 0.1778f;
 		constexpr float g_PanConstantCoefficient = 0.3021f;
 
-		[[nodiscard]] constexpr float PanFactor(float viewportSize) noexcept
+		[[nodiscard]] constexpr auto PanFactor(float viewportSize) noexcept -> float
 		{
 			const float factor = std::min(viewportSize / g_PanViewportScale, g_MaxPanViewportFactor);
 			return g_PanQuadraticCoefficient * (factor * factor) - g_PanLinearCoefficient * factor +
@@ -48,12 +48,12 @@ namespace Rod {
 		m_ViewMatrix = glm::inverse(m_ViewMatrix);
 	}
 
-	std::pair<float, float> EditorCamera::PanSpeed() const noexcept
+	auto EditorCamera::PanSpeed() const noexcept -> std::pair<float, float>
 	{
 		return {PanFactor(m_ViewportWidth), PanFactor(m_ViewportHeight)};
 	}
 
-	float EditorCamera::ZoomSpeed() const noexcept
+	auto EditorCamera::ZoomSpeed() const noexcept -> float
 	{
 		float distance = m_Distance * s_ZoomDistanceScale;
 		distance = std::max(distance, 0.0f);
@@ -89,7 +89,7 @@ namespace Rod {
 		HandleEvent<MouseScrolledEvent>(e, [this](MouseScrolledEvent& event) { return OnMouseScroll(event); });
 	}
 
-	bool EditorCamera::OnMouseScroll(MouseScrolledEvent& e) noexcept
+	auto EditorCamera::OnMouseScroll(MouseScrolledEvent& e) noexcept -> bool
 	{
 		const float delta = e.GetYOffset() * s_ScrollDeltaScale;
 		MouseZoom(delta);
@@ -121,27 +121,27 @@ namespace Rod {
 		}
 	}
 
-	glm::vec3 EditorCamera::GetUpDirection() const noexcept
+	auto EditorCamera::GetUpDirection() const noexcept -> glm::vec3
 	{
 		return glm::rotate(GetOrientation(), glm::vec3(0.0f, 1.0f, 0.0f));
 	}
 
-	glm::vec3 EditorCamera::GetRightDirection() const noexcept
+	auto EditorCamera::GetRightDirection() const noexcept -> glm::vec3
 	{
 		return glm::rotate(GetOrientation(), glm::vec3(1.0f, 0.0f, 0.0f));
 	}
 
-	glm::vec3 EditorCamera::GetForwardDirection() const noexcept
+	auto EditorCamera::GetForwardDirection() const noexcept -> glm::vec3
 	{
 		return glm::rotate(GetOrientation(), glm::vec3(0.0f, 0.0f, -1.0f));
 	}
 
-	glm::vec3 EditorCamera::CalculatePosition() const noexcept
+	auto EditorCamera::CalculatePosition() const noexcept -> glm::vec3
 	{
 		return m_FocalPoint - GetForwardDirection() * m_Distance;
 	}
 
-	glm::quat EditorCamera::GetOrientation() const noexcept
+	auto EditorCamera::GetOrientation() const noexcept -> glm::quat
 	{
 		return {glm::vec3(-m_Pitch, -m_Yaw, 0.0f)};
 	}

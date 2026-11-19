@@ -20,7 +20,7 @@
 
 namespace Rod {
 
-	std::filesystem::path Platform::GetExecutablePath()
+	auto Platform::GetExecutablePath() -> std::filesystem::path
 	{
 		constexpr auto growthFactor = 2U;
 		std::wstring path(MAX_PATH, L'\0');
@@ -38,13 +38,13 @@ namespace Rod {
 		}
 	}
 
-	static HWND GetOwnerWindow(const Window* owner)
+	static auto GetOwnerWindow(const Window* owner) -> HWND
 	{
 		return owner ? glfwGetWin32Window(static_cast<GLFWwindow*>(owner->GetNativeWindow())) : nullptr;
 	}
 
-	static OPENFILENAMEA
-	CreateOpenFileName(HWND owner, std::span<char, MAX_PATH> fileBuffer, const char* filter, DWORD flags)
+	static auto CreateOpenFileName(HWND owner, std::span<char, MAX_PATH> fileBuffer, const char* filter, DWORD flags)
+	    -> OPENFILENAMEA
 	{
 		OPENFILENAMEA ofn = {};
 		ofn.lStructSize = sizeof(OPENFILENAMEA);
@@ -58,7 +58,7 @@ namespace Rod {
 		return ofn;
 	}
 
-	std::string FileDialogs::OpenFile(const char* filter, const std::string& initialDirectory) const
+	auto FileDialogs::OpenFile(const char* filter, const std::string& initialDirectory) const -> std::string
 	{
 		CHAR szFile[MAX_PATH] = {0};
 		auto ofn = CreateOpenFileName(GetOwnerWindow(m_Owner), szFile, filter, OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST);
@@ -70,15 +70,15 @@ namespace Rod {
 		return {};
 	}
 
-	std::string FileDialogs::SelectFolder(const std::string& initialDirectory) const
+	auto FileDialogs::SelectFolder(const std::string& initialDirectory) const -> std::string
 	{
 		struct ComApartment
 		{
 			ComApartment() noexcept = default;
 			ComApartment(const ComApartment&) = delete;
-			ComApartment& operator=(const ComApartment&) = delete;
+			auto operator=(const ComApartment&) -> ComApartment& = delete;
 			ComApartment(ComApartment&&) = delete;
-			ComApartment& operator=(ComApartment&&) = delete;
+			auto operator=(ComApartment&&) -> ComApartment& = delete;
 
 			const HRESULT Result = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 			~ComApartment()
@@ -123,7 +123,7 @@ namespace Rod {
 		return std::filesystem::path(selected.get()).string();
 	}
 
-	std::string FileDialogs::SaveFile(const char* filter) const
+	auto FileDialogs::SaveFile(const char* filter) const -> std::string
 	{
 		CHAR szFile[MAX_PATH] = {0};
 		auto ofn = CreateOpenFileName(GetOwnerWindow(m_Owner), szFile, filter, OFN_PATHMUSTEXIST);

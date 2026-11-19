@@ -13,11 +13,11 @@ namespace {
 	class RecentProjectsFixture
 	{
 	protected:
-		[[nodiscard]] std::filesystem::path HistoryPath() const
+		[[nodiscard]] auto HistoryPath() const -> std::filesystem::path
 		{
 			return m_Directory.GetPath() / "RecentProjects.yaml";
 		}
-		[[nodiscard]] Rod::Project MakeProject(const std::string& name) const
+		[[nodiscard]] auto MakeProject(const std::string& name) const -> Rod::Project
 		{
 			const auto path = m_Directory.GetPath() / (name + ".rodproj");
 			const std::ofstream file(path);

@@ -6,11 +6,11 @@
 #include "Rod/Project/Project.h"
 #include "Rod/Scene/Components.h"
 #include "Rod/Scene/Entity.h"
+#include "Rod/Utils/FunctionPointerCast.h"
 #include "ScriptBuilder.h"
 #include "ScriptGlue.h"
 #include "ScriptRuntime.h"
 
-#include <bit>
 #include <cstdlib> // IWYU pragma: keep
 #include <optional>
 #include <stdexcept>
@@ -24,12 +24,12 @@ namespace Rod {
 
 	namespace {
 
-		[[nodiscard]] std::string CopyManagedString(void* value)
+		[[nodiscard]] auto CopyManagedString(void* value) -> std::string
 		{
 			if (!value)
 				return {};
 
-			auto release = [](void* text) {
+			const auto release = [](void* text) {
 #ifdef RD_PLATFORM_WINDOWS
 				CoTaskMemFree(text);
 #else
@@ -66,9 +66,9 @@ namespace Rod {
 			using SetFieldValueFn = void(RD_CDECL*)(uint64_t, const char*, int32_t, const char*);
 
 			template <typename Function>
-			static Function Require(const ScriptRuntime& runtime, const char* name)
+			static auto Require(const ScriptRuntime& runtime, const char* name) -> Function
 			{
-				auto function = std::bit_cast<Function>(runtime.GetFunction(s_TypeName, name));
+				const auto function = FunctionPointerCast<Function>(runtime.GetFunction(s_TypeName, name));
 				if (!function)
 					throw std::runtime_error("Script host function missing '" + std::string(name) + "'");
 				return function;
@@ -105,9 +105,9 @@ namespace Rod {
 					m_Shutdown();
 			}
 			HostLifetime(const HostLifetime&) = delete;
-			HostLifetime& operator=(const HostLifetime&) = delete;
+			auto operator=(const HostLifetime&) -> HostLifetime& = delete;
 			HostLifetime(HostLifetime&& other) noexcept : m_Shutdown(std::exchange(other.m_Shutdown, nullptr)) {}
-			HostLifetime& operator=(HostLifetime&& other) noexcept
+			auto operator=(HostLifetime&& other) noexcept -> HostLifetime&
 			{
 				if (this != &other)
 				{
@@ -132,9 +132,9 @@ namespace Rod {
 		}
 		~ScriptEngineData() = default;
 		ScriptEngineData(const ScriptEngineData&) = delete;
-		ScriptEngineData& operator=(const ScriptEngineData&) = delete;
+		auto operator=(const ScriptEngineData&) -> ScriptEngineData& = delete;
 		ScriptEngineData(ScriptEngineData&&) = delete;
-		ScriptEngineData& operator=(ScriptEngineData&&) = delete;
+		auto operator=(ScriptEngineData&&) -> ScriptEngineData& = delete;
 
 		ScriptPaths Paths;
 		ScriptRuntime Runtime;
@@ -149,7 +149,7 @@ namespace Rod {
 	std::optional<ScriptEngine::Configuration> ScriptEngine::s_Configuration;
 	std::unique_ptr<ScriptEngine::ScriptEngineData> ScriptEngine::s_Data;
 
-	std::filesystem::path ScriptEngine::CreateAssemblyCachePath(const std::filesystem::path& assemblyPath)
+	auto ScriptEngine::CreateAssemblyCachePath(const std::filesystem::path& assemblyPath) -> std::filesystem::path
 	{
 		std::filesystem::create_directories(s_Data->Paths.ScriptCacheDirectory);
 
@@ -178,7 +178,7 @@ namespace Rod {
 		return cachedAssembly;
 	}
 
-	ScriptEngine::ScriptPaths ScriptEngine::ResolveScriptPaths(const Project& project)
+	auto ScriptEngine::ResolveScriptPaths(const Project& project) -> ScriptEngine::ScriptPaths
 	{
 		const auto assetsPath = project.GetAssetsPath();
 
@@ -187,22 +187,22 @@ namespace Rod {
 		if (scriptProject.empty())
 			throw std::runtime_error("Script project path is empty");
 		return {
-		    coreAssembly,
-		    coreAssembly.parent_path() / "Rod.ScriptCore.runtimeconfig.json",
-		    scriptProject,
-		    ScriptBuilder::GetAssemblyPath(scriptProject),
-		    scriptProject.parent_path() / "Source",
-		    assetsPath / "Scripts" / "Cache"};
+		    .CoreAssemblyPath = coreAssembly,
+		    .RuntimeConfigPath = coreAssembly.parent_path() / "Rod.ScriptCore.runtimeconfig.json",
+		    .ScriptProjectPath = scriptProject,
+		    .ScriptAssemblyPath = ScriptBuilder::GetAssemblyPath(scriptProject),
+		    .ScriptSourceDirectory = scriptProject.parent_path() / "Source",
+		    .ScriptCacheDirectory = assetsPath / "Scripts" / "Cache"};
 	}
 
 	void ScriptEngine::Init(const Project& project, const Input& input, Mode mode)
 	{
 		if (!s_Configuration)
-			s_Configuration.emplace(Configuration{project, input, mode});
+			s_Configuration.emplace(Configuration{.ProjectData = project, .InputDevice = input, .StartupMode = mode});
 		EnsureInitialized();
 	}
 
-	bool ScriptEngine::EnsureInitialized()
+	auto ScriptEngine::EnsureInitialized() -> bool
 	{
 		if (s_Data)
 			return true;
@@ -245,7 +245,7 @@ namespace Rod {
 		s_Data->Paths.ScriptSourceDirectory = projectPath.parent_path() / "Source";
 	}
 
-	bool ScriptEngine::BuildScripts()
+	auto ScriptEngine::BuildScripts() -> bool
 	{
 		if (!s_Data)
 			return false;
@@ -262,10 +262,11 @@ namespace Rod {
 		return true;
 	}
 
-	bool ScriptEngine::ReloadAssembly()
+	auto ScriptEngine::ReloadAssembly() -> bool
 	{
-		if (!s_Data)
+		if (!s_Data || !s_Configuration)
 			return false;
+		const auto startupMode = s_Configuration->StartupMode;
 		try
 		{
 			if (!std::filesystem::exists(s_Data->Paths.ScriptAssemblyPath))
@@ -273,7 +274,7 @@ namespace Rod {
 				RD_CORE_ERROR("Assembly missing '{}'", s_Data->Paths.ScriptAssemblyPath.string());
 				return false;
 			}
-			const auto cachedAssembly = s_Configuration->StartupMode == Mode::Editor
+			const auto cachedAssembly = startupMode == Mode::Editor
 			                                ? CreateAssemblyCachePath(s_Data->Paths.ScriptAssemblyPath)
 			                                : s_Data->Paths.ScriptAssemblyPath;
 			const auto metadataJson =
@@ -326,8 +327,8 @@ namespace Rod {
 		s_Data->RuntimeRunning = true;
 		ScriptGlue::SetSceneContext(scene);
 
-		auto view = scene.m_Registry.view<IDComponent, ScriptComponent>();
-		for (auto entityID : view)
+		const auto view = scene.m_Registry.view<IDComponent, ScriptComponent>();
+		for (const auto entityID : view)
 			OnCreateEntity(Entity{entityID, scene});
 	}
 
@@ -338,8 +339,8 @@ namespace Rod {
 
 		if (s_Data->SceneContext)
 		{
-			auto view = s_Data->SceneContext->m_Registry.view<IDComponent, ScriptComponent>();
-			for (auto entityID : view)
+			const auto view = s_Data->SceneContext->m_Registry.view<IDComponent, ScriptComponent>();
+			for (const auto entityID : view)
 				OnDestroyEntity(Entity{entityID, *s_Data->SceneContext});
 		}
 
@@ -353,8 +354,8 @@ namespace Rod {
 		if (!s_Data || !s_Data->RuntimeRunning || !s_Data->SceneContext)
 			return;
 
-		auto view = s_Data->SceneContext->m_Registry.view<IDComponent, ScriptComponent>();
-		for (auto entityID : view)
+		const auto view = s_Data->SceneContext->m_Registry.view<IDComponent, ScriptComponent>();
+		for (const auto entityID : view)
 			OnUpdateEntity(Entity{entityID, *s_Data->SceneContext}, ts);
 	}
 
@@ -363,7 +364,7 @@ namespace Rod {
 		if (!s_Data || !s_Data->AppAssembly || !entity.HasComponent<ScriptComponent>())
 			return;
 
-		auto& script = entity.GetComponent<ScriptComponent>();
+		const auto& script = entity.GetComponent<ScriptComponent>();
 		if (script.ClassName.empty() || !s_Data->AppAssembly->HasClass(script.ClassName))
 			return;
 
@@ -395,7 +396,7 @@ namespace Rod {
 			return;
 
 		auto& script = entity.GetComponent<ScriptComponent>();
-		auto fieldIt = script.Fields.find(fieldName);
+		const auto fieldIt = script.Fields.find(fieldName);
 		if (fieldIt == script.Fields.end())
 			return;
 
@@ -407,23 +408,23 @@ namespace Rod {
 		    field.Value.c_str());
 	}
 
-	bool ScriptEngine::IsInitialized() noexcept
+	auto ScriptEngine::IsInitialized() noexcept -> bool
 	{
 		return s_Data != nullptr;
 	}
 
-	bool ScriptEngine::IsRuntimeRunning() noexcept
+	auto ScriptEngine::IsRuntimeRunning() noexcept -> bool
 	{
 		return s_Data && s_Data->RuntimeRunning;
 	}
 
-	const std::unordered_map<std::string, ScriptClass>& ScriptEngine::GetScriptClasses()
+	auto ScriptEngine::GetScriptClasses() -> const std::unordered_map<std::string, ScriptClass>&
 	{
 		static const std::unordered_map<std::string, ScriptClass> emptyClasses;
 		return s_Data && s_Data->AppAssembly ? s_Data->AppAssembly->GetClasses() : emptyClasses;
 	}
 
-	std::optional<ScriptClass&> ScriptEngine::GetScriptClass(const std::string& className)
+	auto ScriptEngine::GetScriptClass(const std::string& className) -> std::optional<ScriptClass&>
 	{
 		return s_Data && s_Data->AppAssembly ? s_Data->AppAssembly->GetClass(className) : std::nullopt;
 	}
@@ -434,7 +435,7 @@ namespace Rod {
 			s_Data->LastSourceWriteTime = GetLatestSourceWriteTime();
 	}
 
-	std::filesystem::file_time_type ScriptEngine::GetLatestSourceWriteTime()
+	auto ScriptEngine::GetLatestSourceWriteTime() -> std::filesystem::file_time_type
 	{
 		if (!s_Data || !std::filesystem::exists(s_Data->Paths.ScriptSourceDirectory))
 			return std::filesystem::file_time_type::min();
@@ -445,7 +446,7 @@ namespace Rod {
 			if (!entry.is_regular_file() || entry.path().extension() != ".cs")
 				continue;
 
-			auto writeTime = std::filesystem::last_write_time(entry.path());
+			const auto writeTime = std::filesystem::last_write_time(entry.path());
 			if (writeTime > latestWriteTime)
 				latestWriteTime = writeTime;
 		}
@@ -457,7 +458,7 @@ namespace Rod {
 		if (!s_Data || !entity.HasComponent<ScriptComponent>())
 			return;
 
-		auto& script = entity.GetComponent<ScriptComponent>();
+		const auto& script = entity.GetComponent<ScriptComponent>();
 		for (const auto& [name, field] : script.Fields)
 		{
 			if (!field.Value.empty())

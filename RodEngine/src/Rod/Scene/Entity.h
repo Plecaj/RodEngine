@@ -19,7 +19,7 @@ namespace Rod {
 		constexpr Entity(entt::entity handle, Scene& scene) noexcept : m_EntityHandle(handle), m_Scene(&scene) {}
 
 		template <typename T, typename... Args>
-		T& AddComponent(Args&&... args)
+		auto AddComponent(Args&&... args) -> T&
 		{
 			RD_CORE_ASSERT(!HasComponent<T>(), "Entity already has component");
 			T& component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
@@ -28,21 +28,21 @@ namespace Rod {
 		}
 
 		template <typename T>
-		[[nodiscard]] T& GetComponent()
+		[[nodiscard]] auto GetComponent() -> T&
 		{
 			RD_CORE_ASSERT(HasComponent<T>(), "Entity does not have component");
 			return m_Scene->m_Registry.get<T>(m_EntityHandle);
 		}
 
 		template <typename T>
-		[[nodiscard]] const T& GetComponent() const
+		[[nodiscard]] auto GetComponent() const -> const T&
 		{
 			RD_CORE_ASSERT(HasComponent<T>(), "Entity does not have component");
 			return m_Scene->m_Registry.get<T>(m_EntityHandle);
 		}
 
 		template <typename T>
-		[[nodiscard]] bool HasComponent() const
+		[[nodiscard]] auto HasComponent() const -> bool
 		{
 			return m_Scene->m_Registry.all_of<T>(m_EntityHandle);
 		}
@@ -64,15 +64,18 @@ namespace Rod {
 		}
 		[[nodiscard]] constexpr explicit operator entt::entity() const noexcept { return m_EntityHandle; }
 
-		[[nodiscard]] UUID GetUUID() const;
-		[[nodiscard]] const std::string& GetName() const;
+		[[nodiscard]] auto GetUUID() const -> UUID;
+		[[nodiscard]] auto GetName() const -> const std::string&;
 
-		[[nodiscard]] constexpr bool operator==(const Entity& other) const noexcept
+		[[nodiscard]] constexpr auto operator==(const Entity& other) const noexcept -> bool
 		{
 			return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene;
 		}
 
-		[[nodiscard]] constexpr bool operator!=(const Entity& other) const noexcept { return !(*this == other); }
+		[[nodiscard]] constexpr auto operator!=(const Entity& other) const noexcept -> bool
+		{
+			return !(*this == other);
+		}
 
 	private:
 		entt::entity m_EntityHandle = entt::null;

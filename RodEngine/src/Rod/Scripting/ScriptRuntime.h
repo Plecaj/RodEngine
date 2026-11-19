@@ -13,11 +13,11 @@ namespace Rod {
 		ScriptRuntime(const std::filesystem::path& runtimeConfigPath, const std::filesystem::path& coreAssemblyPath);
 		~ScriptRuntime() = default;
 		ScriptRuntime(const ScriptRuntime&) = delete;
-		ScriptRuntime& operator=(const ScriptRuntime&) = delete;
+		auto operator=(const ScriptRuntime&) -> ScriptRuntime& = delete;
 		ScriptRuntime(ScriptRuntime&& other) noexcept;
-		ScriptRuntime& operator=(ScriptRuntime&& other) noexcept;
+		auto operator=(ScriptRuntime&& other) noexcept -> ScriptRuntime&;
 
-		[[nodiscard]] void* GetFunction(const std::string& typeName, const std::string& methodName) const;
+		[[nodiscard]] auto GetFunction(const std::string& typeName, const std::string& methodName) const -> void*;
 
 	private:
 #ifdef RD_PLATFORM_WINDOWS
@@ -25,7 +25,7 @@ namespace Rod {
 #else
 		using HostString = std::string;
 #endif
-		[[nodiscard]] static HostString ToHostString(const std::string& value);
+		[[nodiscard]] static auto ToHostString(const std::string& value) -> HostString;
 
 		std::shared_ptr<const SharedLibrary> m_HostFxr;
 		void* m_LoadAssemblyAndGetFunctionPointer = nullptr;

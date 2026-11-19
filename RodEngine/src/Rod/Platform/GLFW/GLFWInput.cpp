@@ -7,21 +7,21 @@
 
 namespace Rod {
 
-	bool Input::IsKeyPressed(int keycode) const
+	auto Input::IsKeyPressed(int keycode) const -> bool
 	{
 		auto* window = static_cast<GLFWwindow*>(m_Window.GetNativeWindow());
-		auto state = glfwGetKey(window, keycode);
+		const auto state = glfwGetKey(window, keycode);
 		return state == GLFW_PRESS || state == GLFW_REPEAT;
 	}
 
-	bool Input::IsMouseButtonPressed(int button) const
+	auto Input::IsMouseButtonPressed(int button) const -> bool
 	{
 		auto* window = static_cast<GLFWwindow*>(m_Window.GetNativeWindow());
-		auto state = glfwGetMouseButton(window, button);
+		const auto state = glfwGetMouseButton(window, button);
 		return state == GLFW_PRESS;
 	}
 
-	std::pair<float, float> Input::GetMousePosition() const
+	auto Input::GetMousePosition() const -> std::pair<float, float>
 	{
 		auto* window = static_cast<GLFWwindow*>(m_Window.GetNativeWindow());
 		double xPos{}, yPos{};

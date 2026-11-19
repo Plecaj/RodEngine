@@ -6,18 +6,18 @@ namespace Rod {
 
 	class OpenGLRendererAPI : public RendererAPI
 	{
-		virtual void Init() override;
-		[[nodiscard]] virtual int GetMaxTextureSlots() const override;
-		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
-		virtual void SetClearColor(const glm::vec4& color) override;
-		virtual void Clear() override;
-		virtual void SetDepthBias(float slopeScaleBias, float constantBias) override;
-		virtual void ClearDepthBias() override;
+		void Init() override;
+		[[nodiscard]] auto GetMaxTextureSlots() const -> int override;
+		void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
+		void SetClearColor(const glm::vec4& color) override;
+		void Clear() override;
+		void SetDepthBias(float slopeScaleBias, float constantBias) override;
+		void ClearDepthBias() override;
 
-		virtual void DrawIndexed(const VertexArray& vertexArray, uint32_t indexCount = 0) override;
+		void DrawIndexed(const VertexArray& vertexArray, uint32_t indexCount = 0) override;
 
-		[[nodiscard]] virtual RendererState GetState() const override;
-		virtual void SetState(const RendererState& state) override;
+		[[nodiscard]] auto GetState() const -> RendererState override;
+		void SetState(const RendererState& state) override;
 	};
 
 }

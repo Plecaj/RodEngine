@@ -89,7 +89,7 @@ namespace Rod {
 		HandleEvent<KeyPressedEvent>(event, [this](KeyPressedEvent& keyEvent) { return OnKeyPressed(keyEvent); });
 	}
 
-	bool RuntimeLayer::OnWindowResize(WindowResizeEvent& event)
+	auto RuntimeLayer::OnWindowResize(WindowResizeEvent& event) -> bool
 	{
 		if (m_Scene)
 			m_Scene->OnViewportResize(event.GetWidth(), event.GetHeight());
@@ -97,7 +97,7 @@ namespace Rod {
 		return false;
 	}
 
-	bool RuntimeLayer::OnKeyPressed(KeyPressedEvent& event)
+	auto RuntimeLayer::OnKeyPressed(KeyPressedEvent& event) -> bool
 	{
 		if (event.GetKeyCode() == Key::Escape)
 		{

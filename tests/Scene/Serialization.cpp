@@ -20,13 +20,16 @@ namespace {
 	{
 	public:
 		explicit PathOnlyTexture(std::string path) : m_Path(std::move(path)) {}
-		[[nodiscard]] uint32_t GetWidth() const noexcept override { return 1; }
-		[[nodiscard]] uint32_t GetHeight() const noexcept override { return 1; }
-		[[nodiscard]] uint32_t GetRendererID() const noexcept override { return 0; }
+		[[nodiscard]] auto GetWidth() const noexcept -> uint32_t override { return 1; }
+		[[nodiscard]] auto GetHeight() const noexcept -> uint32_t override { return 1; }
+		[[nodiscard]] auto GetRendererID() const noexcept -> uint32_t override { return 0; }
 		void SetData(std::span<const std::byte>) override {}
-		[[nodiscard]] std::string GetPath() const override { return m_Path; }
+		[[nodiscard]] auto GetPath() const -> std::string override { return m_Path; }
 		void Bind(uint32_t) const override {}
-		[[nodiscard]] bool operator==(const Rod::Texture& other) const noexcept override { return this == &other; }
+		[[nodiscard]] auto operator==(const Rod::Texture& other) const noexcept -> bool override
+		{
+			return this == &other;
+		}
 
 	private:
 		std::string m_Path;
@@ -49,7 +52,7 @@ namespace {
 		static constexpr glm::uvec2 s_ViewportSize{1920, 1080};
 		static constexpr double s_Tolerance = 0.00001;
 
-		[[nodiscard]] std::string Filepath() const { return (m_Directory.GetPath() / "scene.rod").string(); }
+		[[nodiscard]] auto Filepath() const -> std::string { return (m_Directory.GetPath() / "scene.rod").string(); }
 		void WriteScene(const std::string& text) const
 		{
 			std::ofstream file(Filepath());
@@ -85,10 +88,12 @@ namespace {
 		}
 
 	protected:
-		[[nodiscard]] const Rod::CameraComponent& OriginalCamera() { return CameraFrom(m_Original); }
-		[[nodiscard]] const Rod::CameraComponent& RestoredCamera() { return CameraFrom(m_Restored); }
-		static void RequireScriptFieldsEqual(const Rod::ScriptFieldMap& actual, const Rod::ScriptFieldMap& expected)
+		[[nodiscard]] auto OriginalCamera() -> const Rod::CameraComponent& { return CameraFrom(m_Original); }
+		[[nodiscard]] auto RestoredCamera() -> const Rod::CameraComponent& { return CameraFrom(m_Restored); }
+		void RequireScriptFieldsEqual() const
 		{
+			const auto& actual = m_Actual.GetComponent<Rod::ScriptComponent>().Fields;
+			const auto& expected = m_Expected.GetComponent<Rod::ScriptComponent>().Fields;
 			for (const auto& [name, field] : expected)
 			{
 				CAPTURE(name);
@@ -117,7 +122,7 @@ namespace {
 		static constexpr float s_PerspectiveNear = 0.25f;
 		static constexpr float s_PerspectiveFar = 750.0f;
 
-		static Rod::Scene GenerateTestScene()
+		static auto GenerateTestScene() -> Rod::Scene
 		{
 			Rod::Scene scene;
 			scene.OnViewportResize(s_ViewportSize.x, s_ViewportSize.y);
@@ -137,14 +142,18 @@ namespace {
 			light.Color = s_LightColor;
 			light.Intensity = s_LightIntensity;
 			auto& script = player.AddComponent<Rod::ScriptComponent>("Game.Player");
-			script.Fields["Speed"] = {{"Speed", "System.Single", Rod::ScriptFieldType::Float}, "3.75"};
+			script.Fields["Speed"] = {
+			    .Field = {.Name = "Speed", .TypeName = "System.Single", .Type = Rod::ScriptFieldType::Float},
+			    .Value = "3.75"};
 			script.Fields["Target"] = {
-			    {"Target", "Rod.Entity", Rod::ScriptFieldType::Entity},
-			    std::to_string(s_BaseID)};
+			    .Field = {.Name = "Target", .TypeName = "Rod.Entity", .Type = Rod::ScriptFieldType::Entity},
+			    .Value = std::to_string(s_BaseID)};
 			script.Fields["Message"] = {
-			    {"Message", "System.String", Rod::ScriptFieldType::String},
-			    "Hello: \"scene\"\n# text"};
-			script.Fields["Empty"] = {{"Empty", "System.String", Rod::ScriptFieldType::String}, ""};
+			    .Field = {.Name = "Message", .TypeName = "System.String", .Type = Rod::ScriptFieldType::String},
+			    .Value = "Hello: \"scene\"\n# text"};
+			script.Fields["Empty"] = {
+			    .Field = {.Name = "Empty", .TypeName = "System.String", .Type = Rod::ScriptFieldType::String},
+			    .Value = ""};
 			auto cameraEntity = scene.CreateEntityWithUUID(Rod::UUID{s_CameraID}, "Camera");
 			auto& camera = cameraEntity.AddComponent<Rod::CameraComponent>();
 			camera.Camera.SetOrthographic(s_OrthographicSize, s_OrthographicNear, s_OrthographicFar);
@@ -153,7 +162,7 @@ namespace {
 			camera.FixedAspectRatio = true;
 			return scene;
 		}
-		static const Rod::CameraComponent& CameraFrom(Rod::Scene& scene)
+		static auto CameraFrom(Rod::Scene& scene) -> const Rod::CameraComponent&
 		{
 			const auto camera = scene.FindEntityByUUID(Rod::UUID{s_CameraID});
 			REQUIRE(camera);
@@ -289,9 +298,7 @@ TEST_CASE_METHOD(
     "[scene][serialization]")
 {
 	REQUIRE(m_Actual.HasComponent<Rod::ScriptComponent>());
-	const auto& before = m_Expected.GetComponent<Rod::ScriptComponent>();
-	const auto& after = m_Actual.GetComponent<Rod::ScriptComponent>();
-	RequireScriptFieldsEqual(after.Fields, before.Fields);
+	RequireScriptFieldsEqual();
 }
 
 TEST_CASE_METHOD(SerializationFixture, "Empty scenes load", "[scene][serialization]")

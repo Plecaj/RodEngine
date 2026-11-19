@@ -12,29 +12,29 @@ namespace Rod {
 	{
 	public:
 		explicit GLFWWindow(const WindowProps& props);
-		virtual ~GLFWWindow() override = default;
+		~GLFWWindow() override = default;
 		GLFWWindow(const GLFWWindow&) = delete;
-		GLFWWindow& operator=(const GLFWWindow&) = delete;
+		auto operator=(const GLFWWindow&) -> GLFWWindow& = delete;
 		GLFWWindow(GLFWWindow&&) = delete;
-		GLFWWindow& operator=(GLFWWindow&&) = delete;
+		auto operator=(GLFWWindow&&) -> GLFWWindow& = delete;
 
-		virtual void OnUpdate() override;
+		void OnUpdate() override;
 
-		[[nodiscard]] virtual unsigned int GetWidth() const noexcept override { return m_Data.Width; }
-		[[nodiscard]] virtual unsigned int GetHeight() const noexcept override { return m_Data.Height; }
+		[[nodiscard]] auto GetWidth() const noexcept -> unsigned int override { return m_Data.Width; }
+		[[nodiscard]] auto GetHeight() const noexcept -> unsigned int override { return m_Data.Height; }
 
-		virtual void Minimize() const override;
-		virtual void Maximize() const override;
-		[[nodiscard]] bool IsMinimized() const noexcept override;
-		[[nodiscard]] bool IsMaximized() const noexcept override;
-		virtual void Restore() const override;
-		virtual void BeginWindowDrag() const override;
+		void Minimize() const override;
+		void Maximize() const override;
+		[[nodiscard]] auto IsMinimized() const noexcept -> bool override;
+		[[nodiscard]] auto IsMaximized() const noexcept -> bool override;
+		void Restore() const override;
+		void BeginWindowDrag() const override;
 
-		virtual void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
-		virtual void SetVSync(bool enabled) override;
-		[[nodiscard]] virtual bool IsVSync() const noexcept override;
+		void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
+		void SetVSync(bool enabled) override;
+		[[nodiscard]] auto IsVSync() const noexcept -> bool override;
 
-		[[nodiscard]] virtual void* GetNativeWindow() const noexcept override { return m_Window.get(); };
+		[[nodiscard]] auto GetNativeWindow() const noexcept -> void* override { return m_Window.get(); };
 
 	private:
 		void Init(const WindowProps& props);
@@ -46,7 +46,7 @@ namespace Rod {
 		void SetTaskbarIcon(const std::string& iconFilepath) const;
 		void ResetWindowDrag() const;
 		void UpdateWindowDrag() const;
-		[[nodiscard]] glm::vec2 GetMouseScreenPosition() const;
+		[[nodiscard]] auto GetMouseScreenPosition() const -> glm::vec2;
 
 	private:
 		struct WindowData
@@ -69,7 +69,7 @@ namespace Rod {
 		mutable glm::vec2 m_WindowDragStartMouseScreen = {0.0f, 0.0f};
 		mutable glm::ivec2 m_WindowDragStartPosition = {0, 0};
 
-		[[nodiscard]] static WindowData& GetWindowData(GLFWwindow* window);
+		[[nodiscard]] static auto GetWindowData(GLFWwindow* window) -> WindowData&;
 	};
 
 }

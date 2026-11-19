@@ -92,7 +92,7 @@ namespace Rod {
 			           rightEntity,
 			           [](const auto& a, const auto& b) {
 				           return a.Color == b.Color && a.TilingFactor == b.TilingFactor &&
-				                  SameAsset(a.Texture, b.Texture);
+						          SameAsset(a.Texture, b.Texture);
 			           }) &&
 			       SameComponent<MeshComponent>(
 			           left,
@@ -101,9 +101,9 @@ namespace Rod {
 			           rightEntity,
 			           [](const auto& a, const auto& b) {
 				           return SameAsset(a.Mesh, b.Mesh) && a.Material.GetAlbedo() == b.Material.GetAlbedo() &&
-				                  a.Material.GetEmissive() == b.Material.GetEmissive() &&
-				                  a.Material.GetRoughness() == b.Material.GetRoughness() &&
-				                  a.Material.GetMetallic() == b.Material.GetMetallic();
+						          a.Material.GetEmissive() == b.Material.GetEmissive() &&
+						          a.Material.GetRoughness() == b.Material.GetRoughness() &&
+						          a.Material.GetMetallic() == b.Material.GetMetallic();
 			           }) &&
 			       SameComponent<DirectionalLightComponent>(
 			           left,
@@ -120,7 +120,7 @@ namespace Rod {
 			           rightEntity,
 			           [](const auto& a, const auto& b) {
 				           return a.Primary == b.Primary && a.FixedAspectRatio == b.FixedAspectRatio &&
-				                  SameCamera(a.Camera, b.Camera);
+						          SameCamera(a.Camera, b.Camera);
 			           }) &&
 			       SameComponent<ScriptComponent>(
 			           left,

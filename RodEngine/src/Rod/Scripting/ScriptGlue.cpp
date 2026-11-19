@@ -295,7 +295,7 @@ namespace Rod {
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>()
 		           ? entity.GetComponent<CameraComponent>().FixedAspectRatio
-		           : false;
+				   : false;
 	}
 
 	void RD_CDECL ScriptGlue::CameraSetFixedAspectRatio(uint64_t entityID, bool value)
@@ -310,7 +310,7 @@ namespace Rod {
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>()
 		           ? static_cast<int32_t>(entity.GetComponent<CameraComponent>().Camera.GetProjectionType())
-		           : 0;
+				   : 0;
 	}
 
 	void RD_CDECL ScriptGlue::CameraSetProjectionType(uint64_t entityID, int32_t value)
@@ -326,7 +326,7 @@ namespace Rod {
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>()
 		           ? entity.GetComponent<CameraComponent>().Camera.GetPerspectiveVerticalFOV()
-		           : 0.0f;
+				   : 0.0f;
 	}
 
 	void RD_CDECL ScriptGlue::CameraSetPerspectiveVerticalFOV(uint64_t entityID, float value)
@@ -341,7 +341,7 @@ namespace Rod {
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>()
 		           ? entity.GetComponent<CameraComponent>().Camera.GetPerspectiveNearClip()
-		           : 0.0f;
+				   : 0.0f;
 	}
 
 	void RD_CDECL ScriptGlue::CameraSetPerspectiveNearClip(uint64_t entityID, float value)
@@ -356,7 +356,7 @@ namespace Rod {
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>()
 		           ? entity.GetComponent<CameraComponent>().Camera.GetPerspectiveFarClip()
-		           : 0.0f;
+				   : 0.0f;
 	}
 
 	void RD_CDECL ScriptGlue::CameraSetPerspectiveFarClip(uint64_t entityID, float value)
@@ -371,7 +371,7 @@ namespace Rod {
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>()
 		           ? entity.GetComponent<CameraComponent>().Camera.GetOrthographicSize()
-		           : 0.0f;
+				   : 0.0f;
 	}
 
 	void RD_CDECL ScriptGlue::CameraSetOrthographicSize(uint64_t entityID, float value)
@@ -386,7 +386,7 @@ namespace Rod {
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>()
 		           ? entity.GetComponent<CameraComponent>().Camera.GetOrthographicNearClip()
-		           : 0.0f;
+				   : 0.0f;
 	}
 
 	void RD_CDECL ScriptGlue::CameraSetOrthographicNearClip(uint64_t entityID, float value)
@@ -401,7 +401,7 @@ namespace Rod {
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>()
 		           ? entity.GetComponent<CameraComponent>().Camera.GetOrthographicFarClip()
-		           : 0.0f;
+				   : 0.0f;
 	}
 
 	void RD_CDECL ScriptGlue::CameraSetOrthographicFarClip(uint64_t entityID, float value)
@@ -416,7 +416,7 @@ namespace Rod {
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<TransformComponent>()
 		           ? ToScript(entity.GetComponent<TransformComponent>().Translation)
-		           : ScriptVec3{};
+				   : ScriptVec3{};
 	}
 
 	void RD_CDECL ScriptGlue::TransformSetTranslation(uint64_t entityID, ScriptVec3 value)
@@ -431,7 +431,7 @@ namespace Rod {
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<TransformComponent>()
 		           ? ToScript(entity.GetComponent<TransformComponent>().Rotation)
-		           : ScriptVec3{};
+				   : ScriptVec3{};
 	}
 
 	void RD_CDECL ScriptGlue::TransformSetRotation(uint64_t entityID, ScriptVec3 value)
@@ -446,7 +446,7 @@ namespace Rod {
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<TransformComponent>()
 		           ? ToScript(entity.GetComponent<TransformComponent>().Scale)
-		           : ScriptVec3{1.0f, 1.0f, 1.0f};
+				   : ScriptVec3{1.0f, 1.0f, 1.0f};
 	}
 
 	void RD_CDECL ScriptGlue::TransformSetScale(uint64_t entityID, ScriptVec3 value)
@@ -461,7 +461,7 @@ namespace Rod {
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<SpriteRendererComponent>()
 		           ? ToScript(entity.GetComponent<SpriteRendererComponent>().Color)
-		           : ScriptVec4{1.0f, 1.0f, 1.0f, 1.0f};
+				   : ScriptVec4{1.0f, 1.0f, 1.0f, 1.0f};
 	}
 
 	void RD_CDECL ScriptGlue::SpriteRendererSetColor(uint64_t entityID, ScriptVec4 value)
@@ -476,7 +476,7 @@ namespace Rod {
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<SpriteRendererComponent>()
 		           ? entity.GetComponent<SpriteRendererComponent>().TilingFactor
-		           : 1.0f;
+				   : 1.0f;
 	}
 
 	void RD_CDECL ScriptGlue::SpriteRendererSetTilingFactor(uint64_t entityID, float value)
@@ -568,7 +568,7 @@ namespace Rod {
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<MeshComponent>() && entity.GetComponent<MeshComponent>().Mesh
 		           ? entity.GetComponent<MeshComponent>().Material.GetRoughness()
-		           : 1.0f;
+				   : 1.0f;
 	}
 
 	void RD_CDECL ScriptGlue::MeshSetRoughness(uint64_t entityID, float value)
@@ -583,7 +583,7 @@ namespace Rod {
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<MeshComponent>() && entity.GetComponent<MeshComponent>().Mesh
 		           ? entity.GetComponent<MeshComponent>().Material.GetMetallic()
-		           : 0.0f;
+				   : 0.0f;
 	}
 
 	void RD_CDECL ScriptGlue::MeshSetMetallic(uint64_t entityID, float value)
@@ -598,7 +598,7 @@ namespace Rod {
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<DirectionalLightComponent>()
 		           ? ToScript(entity.GetComponent<DirectionalLightComponent>().Direction)
-		           : ScriptVec3{};
+				   : ScriptVec3{};
 	}
 
 	void RD_CDECL ScriptGlue::DirectionalLightSetDirection(uint64_t entityID, ScriptVec3 value)
@@ -613,7 +613,7 @@ namespace Rod {
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<DirectionalLightComponent>()
 		           ? ToScript(entity.GetComponent<DirectionalLightComponent>().Color)
-		           : ScriptVec3{1.0f, 1.0f, 1.0f};
+				   : ScriptVec3{1.0f, 1.0f, 1.0f};
 	}
 
 	void RD_CDECL ScriptGlue::DirectionalLightSetColor(uint64_t entityID, ScriptVec3 value)
@@ -628,7 +628,7 @@ namespace Rod {
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<DirectionalLightComponent>()
 		           ? entity.GetComponent<DirectionalLightComponent>().Intensity
-		           : 1.0f;
+				   : 1.0f;
 	}
 
 	void RD_CDECL ScriptGlue::DirectionalLightSetIntensity(uint64_t entityID, float value)

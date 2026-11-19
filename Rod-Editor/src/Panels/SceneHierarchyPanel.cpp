@@ -200,8 +200,8 @@ namespace Rod {
 		constexpr float buttonWidthOffset = 3.0f;
 		constexpr auto axes = std::to_array<AxisStyle>(
 		    {{"X", "##X", {0.8f, 0.1f, 0.15f, 1.0f}, {0.9f, 0.2f, 0.2f, 1.0f}},
-		     {"Y", "##Y", {0.2f, 0.7f, 0.2f, 1.0f}, {0.3f, 0.8f, 0.3f, 1.0f}},
-		     {"Z", "##Z", {0.1f, 0.25f, 0.8f, 1.0f}, {0.2f, 0.35f, 0.9f, 1.0f}}});
+			 {"Y", "##Y", {0.2f, 0.7f, 0.2f, 1.0f}, {0.3f, 0.8f, 0.3f, 1.0f}},
+			 {"Z", "##Z", {0.1f, 0.25f, 0.8f, 1.0f}, {0.2f, 0.35f, 0.9f, 1.0f}}});
 		auto* boldFont = ImGui::GetIO().Fonts->Fonts[0];
 		ImGui::PushID(label.c_str());
 		ImGui::Columns(columnCount);

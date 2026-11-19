@@ -89,11 +89,11 @@ namespace Rod {
 		auto vertexBuffer = VertexBuffer::Create(sizeof(QuadVertex) * g_Data->s_MaxVerticesCount);
 		vertexBuffer->SetBufferLayout(
 		    {{ShaderDataType::Float3, "a_Position"},
-		     {ShaderDataType::Float4, "a_Color"},
-		     {ShaderDataType::Float2, "a_TexCoord"},
-		     {ShaderDataType::Float, "a_TexIdx"},
-		     {ShaderDataType::Float, "a_TilingFactor"},
-		     {ShaderDataType::Int, "a_EntityID"}});
+			 {ShaderDataType::Float4, "a_Color"},
+			 {ShaderDataType::Float2, "a_TexCoord"},
+			 {ShaderDataType::Float, "a_TexIdx"},
+			 {ShaderDataType::Float, "a_TilingFactor"},
+			 {ShaderDataType::Int, "a_EntityID"}});
 
 		g_Data->QuadVertexBuffer = vertexBuffer.get();
 		g_Data->QuadVertexArray->AddVertexBuffer(std::move(vertexBuffer));
@@ -126,9 +126,9 @@ namespace Rod {
 	{
 		constexpr std::array<glm::vec4, s_QuadVertexCount> positions = {
 		    {{-0.5f, -0.5f, 0.0f, 1.0f},
-		     {0.5f, -0.5f, 0.0f, 1.0f},
-		     {0.5f, 0.5f, 0.0f, 1.0f},
-		     {-0.5f, 0.5f, 0.0f, 1.0f}}};
+			 {0.5f, -0.5f, 0.0f, 1.0f},
+			 {0.5f, 0.5f, 0.0f, 1.0f},
+			 {-0.5f, 0.5f, 0.0f, 1.0f}}};
 		g_Data->QuadVertexPositions = positions;
 	}
 

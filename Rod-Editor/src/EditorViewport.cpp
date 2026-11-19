@@ -31,19 +31,19 @@ namespace Rod {
 	{
 		ViewportPanel::OnImGuiRender(
 		    {*m_Framebuffer,
-		     scenes.GetActiveScene(),
-		     m_Interaction.SelectedEntity,
-		     m_EditorCamera,
-		     scenes.GetState(),
-		     m_Interaction.GizmoType,
-		     m_ViewportSize,
-		     m_PendingViewportSize,
-		     m_ViewportBounds,
-		     m_ViewportFocused,
-		     m_Interaction.ViewportHovered,
-		     assetsPath,
-		     openScene,
-		     m_Input});
+			 scenes.GetActiveScene(),
+			 m_Interaction.SelectedEntity,
+			 m_EditorCamera,
+			 scenes.GetState(),
+			 m_Interaction.GizmoType,
+			 m_ViewportSize,
+			 m_PendingViewportSize,
+			 m_ViewportBounds,
+			 m_ViewportFocused,
+			 m_Interaction.ViewportHovered,
+			 assetsPath,
+			 openScene,
+			 m_Input});
 	}
 
 	bool EditorViewport::ShouldBlockEvents() const noexcept

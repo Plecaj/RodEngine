@@ -58,7 +58,7 @@ TEST_CASE_METHOD(
 	REQUIRE(
 	    std::ranges::equal(restored.GetEntries(), history.GetEntries(), [](const auto& loaded, const auto& original) {
 		    return loaded.Name == original.Name && loaded.Path == original.Path &&
-		           loaded.LastOpened == original.LastOpened && loaded.LastOpened.size() == dateLength;
+			       loaded.LastOpened == original.LastOpened && loaded.LastOpened.size() == dateLength;
 	    }));
 }
 

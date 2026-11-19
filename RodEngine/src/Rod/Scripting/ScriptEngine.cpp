@@ -156,7 +156,7 @@ namespace Rod {
 		std::filesystem::path cachedAssembly =
 		    s_Data->Paths.ScriptCacheDirectory /
 		    (assemblyPath.stem().string() + "-" + std::to_string(static_cast<uint64_t>(UUID{})) +
-		     assemblyPath.extension().string());
+			 assemblyPath.extension().string());
 		auto cachedPdb = cachedAssembly;
 		cachedPdb.replace_extension(".pdb");
 		try

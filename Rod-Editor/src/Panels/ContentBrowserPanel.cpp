@@ -65,8 +65,8 @@ namespace Rod {
 		{
 			constexpr auto buttonColors = std::to_array<std::pair<ImGuiCol, ImVec4>>(
 			    {{ImGuiCol_Button, {0.11f, 0.13f, 0.16f, 1.0f}},
-			     {ImGuiCol_ButtonHovered, {0.18f, 0.21f, 0.25f, 1.0f}},
-			     {ImGuiCol_ButtonActive, {0.14f, 0.16f, 0.20f, 1.0f}}});
+				 {ImGuiCol_ButtonHovered, {0.18f, 0.21f, 0.25f, 1.0f}},
+				 {ImGuiCol_ButtonActive, {0.14f, 0.16f, 0.20f, 1.0f}}});
 			constexpr ImVec2 framePadding{8.0f, 8.0f};
 			for (const auto& [slot, color] : buttonColors)
 				ImGui::PushStyleColor(slot, color);

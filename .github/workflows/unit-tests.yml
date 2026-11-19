@@ -14,8 +14,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  format-check:
+    name: Check C/C++ formatting
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Check formatting
+        shell: bash
+        run: |
+          python -m venv "$RUNNER_TEMP/rod-format"
+          source "$RUNNER_TEMP/rod-format/bin/activate"
+          python -m pip install --disable-pip-version-check clang-format==21.1.0
+          python scripts/format.py --check
+
   unit-tests:
     name: ${{ matrix.name }}
+    needs: format-check
     runs-on: ${{ matrix.os }}
     timeout-minutes: 45
     strategy:

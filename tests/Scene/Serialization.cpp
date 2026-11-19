@@ -138,7 +138,9 @@ namespace {
 			light.Intensity = s_LightIntensity;
 			auto& script = player.AddComponent<Rod::ScriptComponent>("Game.Player");
 			script.Fields["Speed"] = {{"Speed", "System.Single", Rod::ScriptFieldType::Float}, "3.75"};
-			script.Fields["Target"] = {{"Target", "Rod.Entity", Rod::ScriptFieldType::Entity}, std::to_string(s_BaseID)};
+			script.Fields["Target"] = {
+			    {"Target", "Rod.Entity", Rod::ScriptFieldType::Entity},
+			    std::to_string(s_BaseID)};
 			script.Fields["Message"] = {
 			    {"Message", "System.String", Rod::ScriptFieldType::String},
 			    "Hello: \"scene\"\n# text"};
@@ -248,7 +250,9 @@ TEST_CASE_METHOD(RoundTripFixture, "Scene serialization preserves perspective se
 	REQUIRE_THAT(
 	    after.GetPerspectiveNearClip(),
 	    Catch::Matchers::WithinAbs(before.GetPerspectiveNearClip(), s_Tolerance));
-	REQUIRE_THAT(after.GetPerspectiveFarClip(), Catch::Matchers::WithinAbs(before.GetPerspectiveFarClip(), s_Tolerance));
+	REQUIRE_THAT(
+	    after.GetPerspectiveFarClip(),
+	    Catch::Matchers::WithinAbs(before.GetPerspectiveFarClip(), s_Tolerance));
 }
 
 TEST_CASE_METHOD(

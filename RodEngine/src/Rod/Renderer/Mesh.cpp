@@ -2,11 +2,10 @@
 
 #include "Mesh.h"
 
-#include <tiny_gltf.h>
-
 #include <cstring>
 #include <limits>
 #include <stdexcept>
+#include <tiny_gltf.h>
 #include <vector>
 
 namespace Rod {
@@ -88,7 +87,7 @@ namespace Rod {
 				for (size_t component = 0; component < g_VectorComponentCount; ++component)
 					vertices.push_back(
 					    !normals.empty() ? ReadScalar<float>(normals, vertex * normalStride + component * sizeof(float))
-					                     : 0.0f);
+						                 : 0.0f);
 			}
 			return vertices;
 		}

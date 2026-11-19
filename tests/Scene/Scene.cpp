@@ -176,7 +176,8 @@ TEST_CASE("Scene copy preserves entity identity and components", "[scene]")
 	REQUIRE(fixture.CopiedPlayer.GetName() == "Player");
 	REQUIRE(fixture.CopiedPlayer.HasComponent<Rod::TransformComponent>());
 	REQUIRE(fixture.CopiedPlayer.HasComponent<Rod::SpriteRendererComponent>());
-	REQUIRE(fixture.CopiedPlayer.GetComponent<Rod::TransformComponent>().Translation == SceneCopyFixture::s_Translation);
+	REQUIRE(
+	    fixture.CopiedPlayer.GetComponent<Rod::TransformComponent>().Translation == SceneCopyFixture::s_Translation);
 	REQUIRE(
 	    fixture.CopiedPlayer.GetComponent<Rod::SpriteRendererComponent>().TilingFactor ==
 	    SceneCopyFixture::s_InitialTiling);

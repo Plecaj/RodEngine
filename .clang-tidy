@@ -1,5 +1,4 @@
 InheritParentConfig: false
-# MSVC's filesystem bitmasks lack Clang's flag_enum annotation and trigger false positives.
 Checks: >-
   -*,
   clang-diagnostic-*,
@@ -92,8 +91,7 @@ Checks: >-
   readability-simplify-subscript-expr,
   readability-string-compare,
   readability-uniqueptr-delete-release,
-  readability-use-std-min-max,
-  -clang-analyzer-optin.core.EnumCastOutOfRange
+  readability-use-std-min-max
 WarningsAsErrors: ''
 HeaderFilterRegex: '(^|.*[/\\])(RodEngine[/\\]src|Rod-Editor[/\\]src|Rod-Launcher[/\\]src|Rod-Runtime[/\\]src|tests)[/\\].*'
 SystemHeaders: false
@@ -107,8 +105,6 @@ CheckOptions:
   bugprone-narrowing-conversions.WarnOnIntegerToFloatingPointNarrowingConversion: true
   bugprone-narrowing-conversions.WarnOnFloatingPointNarrowingConversion: true
   bugprone-narrowing-conversions.WarnOnEquivalentBitWidth: true
-  # MSVC's unordered_map move path reports an infeasible allocation-size exception.
-  bugprone-exception-escape.IgnoredExceptions: 'bad_array_new_length'
   cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor: false
   cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions: false
   cppcoreguidelines-special-member-functions.AllowMissingMoveFunctionsWhenCopyIsDeleted: false

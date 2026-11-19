@@ -6,7 +6,7 @@ if(DOTNET_EXE)
 
   if(WIN32)
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(ARM64|arm64|aarch64)$" OR CMAKE_VS_PLATFORM_NAME MATCHES "ARM64")
+      if(CMAKE_SYSTEM_PROCESSOR MATCHES "^(ARM64|arm64|aarch64)$")
         set(ROD_DOTNET_RUNTIME_ID win-arm64)
       else()
         set(ROD_DOTNET_RUNTIME_ID win-x64)
@@ -66,10 +66,12 @@ endif()
 if(DOTNET_EXE AND ROD_DOTNET_HOST_INCLUDE_DIR AND ROD_DOTNET_HOST_LIBRARY)
   target_include_directories(RodEngine SYSTEM PRIVATE "${ROD_DOTNET_HOST_INCLUDE_DIR}")
   target_link_libraries(RodEngine PRIVATE "${ROD_DOTNET_HOST_LIBRARY}")
-  target_compile_definitions(RodEngine PRIVATE
-        ROD_HAS_DOTNET_HOST
-        $<$<NOT:$<PLATFORM_ID:Windows>>:NETHOST_USE_AS_STATIC>
-    )
+  target_compile_definitions(RodEngine PRIVATE ROD_HAS_DOTNET_HOST)
+  if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    # .NET SDK libnethost.a is built against libstdc++.
+    target_link_libraries(RodEngine PRIVATE stdc++)
+    target_compile_definitions(RodEngine PRIVATE NETHOST_USE_AS_STATIC)
+  endif()
 else()
   message(WARNING ".NET hosting files were not found. Install the .NET 9 SDK to enable C# scripting.")
 endif()

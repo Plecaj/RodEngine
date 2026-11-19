@@ -60,7 +60,8 @@ TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Engine shaders compile and reload f
 	for (const auto& [path, modified] : cachedFiles)
 	{
 		CAPTURE(path);
-		REQUIRE(std::filesystem::last_write_time(path) == modified);
+		// libc++ can store filesystem timestamps with a 128-bit tick count.
+		REQUIRE((std::filesystem::last_write_time(path) == modified));
 	}
 	Rod::Renderer::Shutdown();
 }

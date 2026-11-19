@@ -4,10 +4,8 @@ if(NOT ROD_ENABLE_SANITIZERS)
   return()
 endif()
 
-if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux" OR
-   NOT CMAKE_C_COMPILER_ID MATCHES "^(Clang|GNU)$" OR
-   NOT CMAKE_CXX_COMPILER_ID MATCHES "^(Clang|GNU)$")
-  message(FATAL_ERROR "ROD_ENABLE_SANITIZERS requires Linux with Clang or GCC. Use WSL2 on Windows.")
+if(NOT CMAKE_SYSTEM_NAME STREQUAL "Linux")
+  message(FATAL_ERROR "ROD_ENABLE_SANITIZERS requires Linux. Use WSL2 on Windows.")
 endif()
 
 include(CMakePushCheckState)

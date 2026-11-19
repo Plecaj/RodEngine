@@ -22,11 +22,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Windows MSVC
-            os: windows-2022
-            preset: vs-tests
-            configure_preset: vs
-          - name: Windows Clang
+          - name: Windows LLVM-MinGW
             os: windows-2022
             preset: windows-clang-tests
             configure_preset: windows-clang
@@ -57,29 +53,51 @@ jobs:
         with:
           dotnet-version: '9.0.x'
 
-      - name: Set up the Windows compiler environment
+      - name: Install CMake 4.1
+        shell: pwsh
+        run: |
+          $venv = Join-Path $env:RUNNER_TEMP 'rod-cmake'
+          python -m venv $venv
+          $bin = Join-Path $venv ($IsWindows ? 'Scripts' : 'bin')
+          & (Join-Path $bin 'python') -m pip install --disable-pip-version-check cmake==4.1.0
+          $bin >> $env:GITHUB_PATH
+
+      - name: Install LLVM-MinGW on Windows
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-          $vsPath = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-          Import-Module "$vsPath\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
-          Enter-VsDevShell -VsInstallPath $vsPath -SkipAutomaticLocation -DevCmdArguments '-arch=x64 -host_arch=x64'
-          foreach ($variable in @('PATH', 'INCLUDE', 'LIB', 'LIBPATH')) {
-            "$variable=$([Environment]::GetEnvironmentVariable($variable))" >> $env:GITHUB_ENV
+          $release = '20261117'
+          $package = "llvm-mingw-$release-ucrt-x86_64"
+          $archive = Join-Path $env:RUNNER_TEMP "$package.zip"
+          $sha256 = '4d002e330a0f703625aa5ccbc37e96f8f824413e163bfc7336774aabd2c3a412'
+          Invoke-WebRequest "https://github.com/mstorsjo/llvm-mingw/releases/download/$release/$package.zip" -OutFile $archive
+          if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash -ne $sha256) {
+            throw 'LLVM-MinGW archive checksum mismatch'
           }
+          Expand-Archive -LiteralPath $archive -DestinationPath $env:RUNNER_TEMP
+          $bin = (Join-Path $env:RUNNER_TEMP "$package/bin").Replace('\', '/')
+          $bin >> $env:GITHUB_PATH
+          "ROD_CI_CC=$bin/clang.exe" >> $env:GITHUB_ENV
+          "ROD_CI_CXX=$bin/clang++.exe" >> $env:GITHUB_ENV
 
       - name: Install Linux build dependencies
         if: runner.os == 'Linux'
         run: |
+          curl -fsSL https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /usr/share/keyrings/apt.llvm.org.asc > /dev/null
+          echo 'deb [signed-by=/usr/share/keyrings/apt.llvm.org.asc] https://apt.llvm.org/noble/ llvm-toolchain-noble-23 main' | sudo tee /etc/apt/sources.list.d/llvm-23.list
           sudo apt-get update
-          sudo apt-get install -y clang llvm libclang-rt-dev ninja-build libgl1-mesa-dev libgl1-mesa-dri mesa-vulkan-drivers mesa-utils xvfb xauth libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
+          sudo apt-get install -y clang-23 libclang-rt-23-dev libc++-23-dev libc++abi-23-dev ninja-build libgl1-mesa-dev libgl1-mesa-dri mesa-vulkan-drivers mesa-utils xvfb xauth libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
+          echo 'ROD_CI_CC=/usr/bin/clang-23' >> "$GITHUB_ENV"
+          echo 'ROD_CI_CXX=/usr/bin/clang++-23' >> "$GITHUB_ENV"
 
       - name: Sync shaderc dependencies
         run: python RodEngine/vendor/shaderc/utils/git-sync-deps
 
       - name: Configure
-        run: cmake --preset ${{ matrix.configure_preset }}
+        run: |
+          "$ROD_CI_CXX" --version | grep -E 'clang version 23[.]1[.]'
+          cmake --preset ${{ matrix.configure_preset }} \
+            "-DCMAKE_C_COMPILER=$ROD_CI_CC" "-DCMAKE_CXX_COMPILER=$ROD_CI_CXX"
 
       - name: Build unit tests
         run: cmake --build --preset ${{ matrix.build_preset || matrix.preset }}

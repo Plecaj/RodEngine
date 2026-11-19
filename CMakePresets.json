@@ -1,30 +1,20 @@
 {
   "version": 6,
   "cmakeMinimumRequired": {
-    "major": 3,
-    "minor": 25,
+    "major": 4,
+    "minor": 1,
     "patch": 0
   },
   "configurePresets": [
     {
-      "name": "base",
-      "hidden": true,
-      "cacheVariables": {
-        "ROD_CXX_STANDARD": "23",
-        "BUILD_TESTING": "ON",
-        "ROD_BUILD_EDITOR": "ON",
-        "ROD_BUILD_LAUNCHER": "ON",
-        "ROD_BUILD_RUNTIME": "ON"
-      }
-    },
-    {
       "name": "clang-base",
       "hidden": true,
-      "inherits": "base",
       "generator": "Ninja Multi-Config",
       "binaryDir": "${sourceDir}/build/clang",
       "cacheVariables": {
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+        "BUILD_TESTING": "ON",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
       }
     },
     {
@@ -37,41 +27,13 @@
       }
     },
     {
-      "name": "vs",
-      "displayName": "Windows / MSVC",
-      "inherits": "base",
-      "generator": "Visual Studio 17 2022",
-      "architecture": "x64",
-      "toolset": "host=x64",
-      "binaryDir": "${sourceDir}/build/vs",
-      "vendor": {
-        "microsoft.com/VisualStudioSettings/CMake/1.0": {
-          "hostOS": "Windows",
-          "intelliSenseMode": "windows-msvc-x64",
-          "enableMicrosoftCodeAnalysis": true,
-          "intelliSenseOptions": {
-            "useCompilerDefaults": true
-          }
-        }
-      },
-      "condition": {
-        "type": "equals",
-        "lhs": "${hostSystemName}",
-        "rhs": "Windows"
-      }
-    },
-    {
       "name": "windows-clang",
-      "displayName": "Windows / Clang",
+      "displayName": "Windows / LLVM-MinGW (UCRT)",
       "inherits": "clang-base",
       "condition": {
         "type": "equals",
         "lhs": "${hostSystemName}",
         "rhs": "Windows"
-      },
-      "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang-cl",
-        "CMAKE_CXX_COMPILER": "clang-cl"
       }
     },
     {
@@ -84,8 +46,7 @@
         "rhs": "Linux"
       },
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_CXX_FLAGS_INIT": "-stdlib=libc++",
         "GLFW_BUILD_X11": "ON",
         "GLFW_BUILD_WAYLAND": "OFF"
       }
@@ -122,23 +83,6 @@
     }
   ],
   "buildPresets": [
-    {
-      "name": "vs-debug",
-      "configurePreset": "vs",
-      "configuration": "Debug"
-    },
-    {
-      "name": "vs-release",
-      "configurePreset": "vs",
-      "configuration": "Release"
-    },
-    {
-      "name": "vs-tests",
-      "inherits": "vs-debug",
-      "targets": [
-        "RodEngineTests"
-      ]
-    },
     {
       "name": "windows-clang-debug",
       "configurePreset": "windows-clang",
@@ -199,22 +143,6 @@
       }
     },
     {
-      "name": "vs-debug",
-      "inherits": "test-base",
-      "configurePreset": "vs",
-      "configuration": "Debug"
-    },
-    {
-      "name": "vs-release",
-      "inherits": "test-base",
-      "configurePreset": "vs",
-      "configuration": "Release"
-    },
-    {
-      "name": "vs-tests",
-      "inherits": "vs-debug"
-    },
-    {
       "name": "windows-clang-debug",
       "inherits": "test-base",
       "configurePreset": "windows-clang",
@@ -254,33 +182,6 @@
     }
   ],
   "workflowPresets": [
-    {
-      "name": "vs-debug",
-      "displayName": "vs / Debug: build and test",
-      "steps": [
-        { "type": "configure", "name": "vs" },
-        { "type": "build", "name": "vs-debug" },
-        { "type": "test", "name": "vs-debug" }
-      ]
-    },
-    {
-      "name": "vs-release",
-      "displayName": "vs / Release: build and test",
-      "steps": [
-        { "type": "configure", "name": "vs" },
-        { "type": "build", "name": "vs-release" },
-        { "type": "test", "name": "vs-release" }
-      ]
-    },
-    {
-      "name": "vs-tests",
-      "displayName": "vs: Debug tests only",
-      "steps": [
-        { "type": "configure", "name": "vs" },
-        { "type": "build", "name": "vs-tests" },
-        { "type": "test", "name": "vs-tests" }
-      ]
-    },
     {
       "name": "windows-clang-debug",
       "displayName": "windows-clang / Debug: build and test",

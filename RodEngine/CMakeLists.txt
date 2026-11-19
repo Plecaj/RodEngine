@@ -28,8 +28,4 @@ target_link_libraries(RodEngine
         ${CMAKE_DL_LIBS}
 )
 
-target_compile_definitions(RodEngine PRIVATE
-    $<$<PLATFORM_ID:Windows>:_CRT_SECURE_NO_WARNINGS>
-)
-
 include(RodDotnet)

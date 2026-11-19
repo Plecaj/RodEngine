@@ -57,12 +57,12 @@ C++ game engine and editor for 2D/3D scenes. ECS architecture, OpenGL renderer, 
 
 ### Requirements
 
-- **Common:** CMake 3.25+, Git, Python 3, .NET 9 SDK
+- **Common:** CMake 4.1+, Ninja, Git, Python 3, .NET 9 SDK
 - **Graphics:** OpenGL 4.6-capable GPU and driver
-- **Windows:** Visual Studio 2022, Desktop development with C++
-- **Windows Clang:** LLVM, Ninja, x64 Visual Studio developer environment
-- **Linux:** Clang, Ninja, OpenGL/X11 development packages, Zenity for file dialogs
+- **Windows:** [LLVM-MinGW 23.1.6 or newer](https://github.com/mstorsjo/llvm-mingw/releases/tag/20261117). Extract the UCRT archive for your host and put its `bin` directory first on `PATH`.
+- **Linux:** Clang 23.1 or newer with libc++ and libc++abi, OpenGL/X11 development packages, and Zenity for file dialogs. Put the corresponding LLVM `bin` directory first on `PATH`.
 
+RodEngine targets C++26 and requires a libc++ implementation of `std::optional<T&>`.
 Linux: X11 or XWayland; no native Wayland backend.
 
 ### Clone
@@ -77,8 +77,7 @@ python RodEngine/vendor/shaderc/utils/git-sync-deps
 
 | Toolchain | Debug workflow |
 |---|---|
-| Windows / MSVC | `cmake --workflow --preset vs-debug` |
-| Windows / Clang | `cmake --workflow --preset windows-clang-debug` |
+| Windows / LLVM-MinGW | `cmake --workflow --preset windows-clang-debug` |
 | Linux / Clang | `cmake --workflow --preset linux-clang-debug` |
 
 Replace `-debug` with `-release` to build and test the Release configuration.
@@ -87,9 +86,7 @@ Replace `-debug` with `-release` to build and test the Release configuration.
 
 ### Run Editor
 
-Executable locations:
-- **MSVC:** `build/vs/bin/<configuration>/`
-- **Clang:** `build/clang/bin/<configuration>/`
+Executables are under `build/clang/bin/<configuration>/`.
 
 Linux / Clang example:
 
@@ -116,15 +113,13 @@ Exports target the current operating system and require an installed .NET 9 runt
 cmake --build build/clang --config Debug --target RodGame-Export
 ```
 
-Use `build/vs` for MSVC. Output goes to `<build-directory>/export/RodGame`; run `RodGame` (`RodGame.exe` on Windows) without arguments. The package can be moved and launched from another working directory.
+Output goes to `<build-directory>/export/RodGame`. Run `RodGame` (`RodGame.exe` on Windows) without arguments. The package can be moved and launched from another working directory.
 
 The same exporter is available from the command line:
 
 ```sh
 Rod-Package path/to/Game.rodproj path/to/output
 ```
-
-Replace `build/clang` with `build/vs` for MSVC.
 
 ## Tests
 
@@ -136,7 +131,7 @@ To build and run only the Debug tests and their dependencies, use:
 cmake --workflow --preset linux-clang-tests
 ```
 
-Equivalent workflows: `vs-tests`, `windows-clang-tests`. 
+On Windows, use `cmake --workflow --preset windows-clang-tests`.
 To rerun already-built tests, use `ctest --preset <name>`.
 
 For Linux ASan, LSan, and UBSan checks, use
@@ -144,8 +139,8 @@ For Linux ASan, LSan, and UBSan checks, use
 Debug build. To also build the instrumented applications, use
 `cmake --build --preset linux-clang-sanitizers` after configuring it.
 
-GitHub Actions runs the same test presets for Windows MSVC, Windows Clang,
-Linux Clang, and Linux sanitizers, with separate configure, build, and test steps.
+GitHub Actions runs the same test presets for Windows LLVM-MinGW, Linux Clang,
+and Linux Clang with sanitizers, with separate configure, build, and test steps.
 
 ## License
 

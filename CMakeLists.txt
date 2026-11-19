@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 4.1)
 
 project(RodEngineWorkspace
     VERSION 0.1.0
@@ -6,12 +6,6 @@ project(RodEngineWorkspace
 )
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-
-set(ROD_CXX_STANDARD 23 CACHE STRING "C++ standard used by RodEngine targets.")
-set_property(CACHE ROD_CXX_STANDARD PROPERTY STRINGS 20 23)
 
 option(ROD_IMGUI_DEMO "Compile Dear ImGui demo window support." OFF)
 option(ROD_BUILD_EDITOR "Build the Rod editor executable." ON)

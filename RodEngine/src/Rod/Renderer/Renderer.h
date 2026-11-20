@@ -10,12 +10,12 @@ namespace Rod {
 	{
 	public:
 		static void Init(const std::filesystem::path& shaderDirectory);
-		[[nodiscard]] static const std::filesystem::path& GetShaderDirectory() noexcept;
+		[[nodiscard]] static auto GetShaderDirectory() noexcept -> const std::filesystem::path&;
 		static void Shutdown();
 
 		static void OnWindowResize(uint32_t width, uint32_t height);
 
-		[[nodiscard]] static RendererAPI::API GetAPI() noexcept { return RendererAPI::GetAPI(); }
+		[[nodiscard]] static auto GetAPI() noexcept -> RendererAPI::API { return RendererAPI::GetAPI(); }
 	};
 
 }

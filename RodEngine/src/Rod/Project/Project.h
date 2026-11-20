@@ -12,13 +12,13 @@ namespace Rod {
 	public:
 		Project(std::filesystem::path manifestPath, ProjectProperties properties) noexcept;
 
-		[[nodiscard]] const ProjectProperties& GetProperties() const noexcept { return m_Properties; }
-		[[nodiscard]] const std::filesystem::path& GetManifestPath() const noexcept { return m_ManifestPath; }
-		[[nodiscard]] std::filesystem::path GetDirectory() const { return m_ManifestPath.parent_path(); }
-		[[nodiscard]] std::filesystem::path GetAssetsPath() const;
-		[[nodiscard]] std::filesystem::path GetStartupScenePath() const;
-		[[nodiscard]] std::filesystem::path GetScriptProjectPath() const;
-		[[nodiscard]] std::filesystem::path GetShadersPath() const;
+		[[nodiscard]] auto GetProperties() const noexcept -> const ProjectProperties& { return m_Properties; }
+		[[nodiscard]] auto GetManifestPath() const noexcept -> const std::filesystem::path& { return m_ManifestPath; }
+		[[nodiscard]] auto GetDirectory() const -> std::filesystem::path { return m_ManifestPath.parent_path(); }
+		[[nodiscard]] auto GetAssetsPath() const -> std::filesystem::path;
+		[[nodiscard]] auto GetStartupScenePath() const -> std::filesystem::path;
+		[[nodiscard]] auto GetScriptProjectPath() const -> std::filesystem::path;
+		[[nodiscard]] auto GetShadersPath() const -> std::filesystem::path;
 
 		void SetProperties(ProjectProperties properties) noexcept { m_Properties = std::move(properties); };
 

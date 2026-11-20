@@ -11,7 +11,7 @@
 #include <exception>
 #include <stdexcept>
 
-int main(int argc, char** argv)
+auto main(int argc, char* argv[]) -> int
 {
 	constexpr int argumentCount = 3;
 	if (argc != argumentCount)

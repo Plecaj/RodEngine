@@ -1,17 +1,17 @@
 #include "rdpch.h"
 
 #include "Rod/Core/Application.h"
-#include "Rod/Core/EntryPoint.h" // IWYU pragma: keep
 #include "Rod/Project/ProjectExporter.h"
 #include "Rod/Project/ProjectSerializer.h"
 #include "Rod/Utils/PlatformUtils.h"
 #include "RuntimeLayer.h"
 
 #include <optional>
+#include <stdexcept>
 
 namespace Rod {
 
-	Scope<Application> CreateApplication(const std::optional<Project>& project)
+	auto CreateApplication(const std::optional<Project>& project) -> Scope<Application>
 	{
 		const auto directory = Platform::GetExecutablePath().parent_path();
 		Project runtimeProject = project ? *project : Project{directory / ProjectExporter::s_ManifestFilename, {}};
@@ -23,7 +23,10 @@ namespace Rod {
 		const auto requestClose = [application = app.get()] {
 			application->Close();
 		};
-		app->PushLayer(CreateScope<RuntimeLayer>(*app->GetProject(), app->GetWindow(), app->GetInput(), requestClose));
+		const auto activeProject = app->GetProject();
+		if (!activeProject)
+			throw std::logic_error("Rod Runtime requires a project");
+		app->PushLayer(CreateScope<RuntimeLayer>(*activeProject, app->GetWindow(), app->GetInput(), requestClose));
 		return app;
 	}
 

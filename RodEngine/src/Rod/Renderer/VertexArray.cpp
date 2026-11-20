@@ -7,7 +7,7 @@
 
 namespace Rod {
 
-	Scope<VertexArray> VertexArray::Create()
+	auto VertexArray::Create() -> Scope<VertexArray>
 	{
 		switch (RendererAPI::GetAPI())
 		{

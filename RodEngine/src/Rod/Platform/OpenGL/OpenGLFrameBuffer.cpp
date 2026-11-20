@@ -10,7 +10,7 @@ namespace Rod {
 
 	namespace Utils {
 
-		static GLenum TextureTarget(bool multisampled)
+		static auto TextureTarget(bool multisampled) -> GLenum
 		{
 			return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
 		}
@@ -66,28 +66,31 @@ namespace Rod {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, TextureTarget(multisampled), id, 0);
 		}
 
-		static void AttachDepthTexture(
-		    uint32_t id,
-		    uint32_t samples,
-		    GLenum format,
-		    GLenum attachmentType,
-		    uint32_t width,
-		    uint32_t height)
+		static void
+		AttachDepthTexture(uint32_t id, const FramebufferSpecification& spec, FramebufferTextureFormat format)
 		{
-			const bool multisampled = samples > 1;
+			const bool hasStencil = format == FramebufferTextureFormat::DEPTH24STENCIL8;
+			const GLenum textureFormat = hasStencil ? GL_DEPTH24_STENCIL8 : GL_DEPTH_COMPONENT24;
+			const GLenum attachmentType = hasStencil ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;
+			const bool multisampled = spec.Samples > 1;
 			if (multisampled)
 			{
 				glTexImage2DMultisample(
 				    GL_TEXTURE_2D_MULTISAMPLE,
-				    static_cast<GLsizei>(samples),
-				    format,
-				    static_cast<GLsizei>(width),
-				    static_cast<GLsizei>(height),
+				    static_cast<GLsizei>(spec.Samples),
+				    textureFormat,
+				    static_cast<GLsizei>(spec.Width),
+				    static_cast<GLsizei>(spec.Height),
 				    GL_FALSE);
 			}
 			else
 			{
-				glTexStorage2D(GL_TEXTURE_2D, 1, format, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
+				glTexStorage2D(
+				    GL_TEXTURE_2D,
+				    1,
+				    textureFormat,
+				    static_cast<GLsizei>(spec.Width),
+				    static_cast<GLsizei>(spec.Height));
 
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -102,7 +105,7 @@ namespace Rod {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, TextureTarget(multisampled), id, 0);
 		}
 
-		static bool IsDepthFormat(FramebufferTextureFormat format)
+		static auto IsDepthFormat(FramebufferTextureFormat format) -> bool
 		{
 			switch (format)
 			{
@@ -118,7 +121,7 @@ namespace Rod {
 			return false;
 		}
 
-		static GLenum RodTextureFormatToGL(FramebufferTextureFormat format)
+		static auto RodTextureFormatToGL(FramebufferTextureFormat format) -> GLenum
 		{
 
 			switch (format)
@@ -218,22 +221,11 @@ namespace Rod {
 			switch (m_DepthAttachmentSpecification.TextureFormat)
 			{
 				case FramebufferTextureFormat::DEPTH24STENCIL8:
-					Utils::AttachDepthTexture(
-					    m_DepthAttachment,
-					    m_Specification.Samples,
-					    GL_DEPTH24_STENCIL8,
-					    GL_DEPTH_STENCIL_ATTACHMENT,
-					    m_Specification.Width,
-					    m_Specification.Height);
-					break;
 				case FramebufferTextureFormat::DEPTH24:
 					Utils::AttachDepthTexture(
 					    m_DepthAttachment,
-					    m_Specification.Samples,
-					    GL_DEPTH_COMPONENT24,
-					    GL_DEPTH_ATTACHMENT,
-					    m_Specification.Width,
-					    m_Specification.Height);
+					    m_Specification,
+					    m_DepthAttachmentSpecification.TextureFormat);
 					break;
 				case FramebufferTextureFormat::None:
 				case FramebufferTextureFormat::RGBA8:
@@ -287,7 +279,7 @@ namespace Rod {
 		Invalidate();
 	}
 
-	int OpenGLFramebuffer::ReadPixel(uint32_t attachmentIndex, int x, int y)
+	auto OpenGLFramebuffer::ReadPixel(uint32_t attachmentIndex, int x, int y) -> int
 	{
 		RD_CORE_ASSERT(
 		    attachmentIndex < m_ColorAttachments.size(),
@@ -305,7 +297,7 @@ namespace Rod {
 		    attachmentIndex < m_ColorAttachments.size(),
 		    "Attachment index cannot be greater than ColorAttachments.size()");
 
-		auto& spec = m_ColorAttachmentSpecifications[attachmentIndex];
+		const auto& spec = m_ColorAttachmentSpecifications[attachmentIndex];
 
 		glClearTexImage(
 		    m_ColorAttachments[attachmentIndex],

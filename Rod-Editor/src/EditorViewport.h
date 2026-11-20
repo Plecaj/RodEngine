@@ -23,7 +23,7 @@ namespace Rod {
 		    EditorSceneManager& scenes,
 		    const std::filesystem::path& assetsPath,
 		    const std::function<void(const std::filesystem::path&)>& openScene);
-		[[nodiscard]] bool ShouldBlockEvents() const noexcept;
+		[[nodiscard]] auto ShouldBlockEvents() const noexcept -> bool;
 
 	private:
 		static constexpr float s_EditorFOV = 30.0f;

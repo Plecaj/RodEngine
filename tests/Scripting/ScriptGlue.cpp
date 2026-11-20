@@ -4,10 +4,10 @@
 
 #include "Rod/Scene/Entity.h"
 #include "Rod/Scene/Scene.h"
+#include "Rod/Utils/FunctionPointerCast.h"
 
 #include <catch2/catch_test_macros.hpp>
 
-#include <bit>
 #include <optional>
 #include <stdexcept>
 #include <string_view>
@@ -19,18 +19,18 @@ namespace {
 		explicit NativeSceneContext(Rod::Scene& scene) { Rod::ScriptGlue::SetSceneContext(scene); }
 		~NativeSceneContext() { Rod::ScriptGlue::SetSceneContext(m_PreviousScene); }
 		NativeSceneContext(const NativeSceneContext&) = delete;
-		NativeSceneContext& operator=(const NativeSceneContext&) = delete;
+		auto operator=(const NativeSceneContext&) -> NativeSceneContext& = delete;
 		NativeSceneContext(NativeSceneContext&&) = delete;
-		NativeSceneContext& operator=(NativeSceneContext&&) = delete;
+		auto operator=(NativeSceneContext&&) -> NativeSceneContext& = delete;
 
 		template <typename Function>
-		[[nodiscard]] Function GetFunction(std::string_view name) const
+		[[nodiscard]] auto GetFunction(std::string_view name) const -> Function
 		{
 			const auto call =
 			    std::find_if(m_Calls.begin(), m_Calls.end(), [&](const auto& entry) { return name == entry.Name; });
 			if (call == m_Calls.end())
 				throw std::runtime_error("Missing native call: " + std::string(name));
-			return std::bit_cast<Function>(call->Function);
+			return Rod::FunctionPointerCast<Function>(call->Function);
 		}
 
 	private:

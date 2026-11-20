@@ -1,8 +1,9 @@
 #include "rdpch.h"
 
+#include "Rod/Utils/FunctionPointerCast.h"
 #include "Rod/Utils/SharedLibrary.h"
 
-// NOLINTBEGIN(misc-include-cleaner,cppcoreguidelines-pro-type-reinterpret-cast)
+// NOLINTBEGIN(misc-include-cleaner)
 #include <Windows.h>
 
 #include <system_error>
@@ -27,10 +28,10 @@ namespace Rod {
 		}
 	}
 
-	void* SharedLibrary::GetFunction(const char* name) const noexcept
+	auto SharedLibrary::GetFunction(const char* name) const noexcept -> void*
 	{
-		return m_Handle ? reinterpret_cast<void*>(GetProcAddress(static_cast<HMODULE>(m_Handle), name)) : nullptr;
+		return m_Handle ? FunctionPointerCast<void*>(GetProcAddress(static_cast<HMODULE>(m_Handle), name)) : nullptr;
 	}
 
 }
-// NOLINTEND(misc-include-cleaner,cppcoreguidelines-pro-type-reinterpret-cast)
+// NOLINTEND(misc-include-cleaner)

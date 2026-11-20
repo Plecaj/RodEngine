@@ -7,10 +7,10 @@ namespace Rod {
 	class Material
 	{
 	public:
-		[[nodiscard]] constexpr const glm::vec4& GetAlbedo() const noexcept { return m_Albedo; }
-		[[nodiscard]] constexpr float GetRoughness() const noexcept { return m_Roughness; }
-		[[nodiscard]] constexpr float GetMetallic() const noexcept { return m_Metallic; }
-		[[nodiscard]] constexpr const glm::vec3& GetEmissive() const noexcept { return m_Emissive; }
+		[[nodiscard]] constexpr auto GetAlbedo() const noexcept -> const glm::vec4& { return m_Albedo; }
+		[[nodiscard]] constexpr auto GetRoughness() const noexcept -> float { return m_Roughness; }
+		[[nodiscard]] constexpr auto GetMetallic() const noexcept -> float { return m_Metallic; }
+		[[nodiscard]] constexpr auto GetEmissive() const noexcept -> const glm::vec3& { return m_Emissive; }
 
 		constexpr void SetAlbedo(const glm::vec4& albedo) noexcept { m_Albedo = albedo; }
 		constexpr void SetRoughness(float roughness) noexcept { m_Roughness = roughness; }

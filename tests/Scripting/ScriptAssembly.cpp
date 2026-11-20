@@ -12,11 +12,15 @@ TEST_CASE("Script metadata loads classes and fields", "[scripting][loading]")
 "fullName":"Game.Player","namespace":"Game","name":"Player",
 "fields":[{"name":"Speed","type":"Single","defaultValue":"3.5"}]}]})");
 	const auto scriptClass = assembly.GetClass("Game.Player");
-	REQUIRE(scriptClass.has_value());
-	REQUIRE_FALSE(assembly.GetClass("Game.Missing").has_value());
-	const auto& speed = scriptClass->GetFields().at("Speed");
-	REQUIRE(speed.Field.Type == Rod::ScriptFieldType::Float);
-	REQUIRE(speed.Value == "3.5");
+	if (scriptClass)
+	{
+		REQUIRE(!assembly.GetClass("Game.Missing").has_value());
+		const auto& speed = scriptClass->GetFields().at("Speed");
+		REQUIRE(speed.Field.Type == Rod::ScriptFieldType::Float);
+		REQUIRE(speed.Value == "3.5");
+	}
+	else
+		FAIL("Expected script metadata for Game.Player");
 }
 
 TEST_CASE("Invalid script metadata is rejected", "[scripting][loading]")

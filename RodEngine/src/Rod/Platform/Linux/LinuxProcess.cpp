@@ -13,7 +13,7 @@
 
 namespace Rod {
 
-	static std::vector<char*> BuildArguments(const std::vector<std::string>& arguments)
+	static auto BuildArguments(const std::vector<std::string>& arguments) -> std::vector<char*>
 	{
 		std::vector<char*> argv;
 		argv.reserve(arguments.size() + 1);
@@ -27,10 +27,10 @@ namespace Rod {
 		return argv;
 	}
 
-	ProcessResult Process::Start(const std::vector<std::string>& arguments)
+	auto Process::Start(const std::vector<std::string>& arguments) -> ProcessResult
 	{
 		if (arguments.empty())
-			return {-1, "No executable specified."};
+			return {.ExitCode = -1, .Output = "No executable specified."};
 
 		auto argv = BuildArguments(arguments);
 		std::promise<pid_t> child;
@@ -46,21 +46,21 @@ namespace Rod {
 		const int error = posix_spawnp(&process, argv[0], nullptr, nullptr, argv.data(), environ);
 		child.set_value(error == 0 ? process : 0);
 		if (error != 0)
-			return {-1, std::strerror(error)};
-		return {0, {}};
+			return {.ExitCode = -1, .Output = std::strerror(error)};
+		return {.ExitCode = 0, .Output = {}};
 	}
 
-	ProcessResult Process::Run(const std::vector<std::string>& arguments, bool captureErrors)
+	auto Process::Run(const std::vector<std::string>& arguments, bool captureErrors) -> ProcessResult
 	{
 		if (arguments.empty())
-			return {-1, "No executable specified."};
+			return {.ExitCode = -1, .Output = "No executable specified."};
 
 		auto argv = BuildArguments(arguments);
 
 		constexpr size_t pipeEndCount = 2;
-		std::array<int, pipeEndCount> output;
+		std::array<int, pipeEndCount> output{};
 		if (pipe2(output.data(), O_CLOEXEC) != 0)
-			return {-1, std::strerror(errno)};
+			return {.ExitCode = -1, .Output = std::strerror(errno)};
 
 		posix_spawn_file_actions_t actions;
 		int error = posix_spawn_file_actions_init(&actions);
@@ -68,7 +68,7 @@ namespace Rod {
 		{
 			close(output[0]);
 			close(output[1]);
-			return {-1, std::strerror(error)};
+			return {.ExitCode = -1, .Output = std::strerror(error)};
 		}
 
 		error = posix_spawn_file_actions_adddup2(&actions, output[1], STDOUT_FILENO);
@@ -91,7 +91,7 @@ namespace Rod {
 		}
 
 		constexpr size_t outputBufferSize = 4096;
-		std::array<char, outputBufferSize> buffer;
+		std::array<char, outputBufferSize> buffer{};
 		ssize_t count{};
 		while ((count = read(output[0], buffer.data(), buffer.size())) != 0)
 		{

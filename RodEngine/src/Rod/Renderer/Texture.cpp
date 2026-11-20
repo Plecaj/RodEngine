@@ -6,7 +6,7 @@
 #include "Rod/Platform/OpenGL/OpenGLTexture.h"
 
 namespace Rod {
-	Scope<Texture2D> Texture2D::Create(uint32_t width, uint32_t height)
+	auto Texture2D::Create(uint32_t width, uint32_t height) -> Scope<Texture2D>
 	{
 		switch (RendererAPI::GetAPI())
 		{
@@ -21,7 +21,7 @@ namespace Rod {
 		return nullptr;
 	}
 
-	Scope<Texture2D> Texture2D::Create(const std::string& path)
+	auto Texture2D::Create(const std::string& path) -> Scope<Texture2D>
 	{
 		switch (RendererAPI::GetAPI())
 		{

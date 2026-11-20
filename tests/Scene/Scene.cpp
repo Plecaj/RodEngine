@@ -58,7 +58,9 @@ TEST_CASE("Scene equality compares component data", "[scene]")
 	entity.AddComponent<Rod::DirectionalLightComponent>();
 	entity.AddComponent<Rod::CameraComponent>();
 	auto& script = entity.AddComponent<Rod::ScriptComponent>("Game.Player");
-	script.Fields["Speed"] = {{"Speed", "System.Single", Rod::ScriptFieldType::Float}, "3.0"};
+	script.Fields["Speed"] = {
+	    .Field = {.Name = "Speed", .TypeName = "System.Single", .Type = Rod::ScriptFieldType::Float},
+	    .Value = "3.0"};
 	Rod::Scene copy(original);
 	REQUIRE(original == copy);
 	REQUIRE(copy == original);
@@ -107,7 +109,7 @@ TEST_CASE("Scene equality compares component data", "[scene]")
 TEST_CASE("Scene destroys only the requested entity", "[scene]")
 {
 	Rod::Scene scene;
-	auto player = scene.CreateEntityWithUUID(Rod::UUID{g_PlayerID}, "Player");
+	const auto player = scene.CreateEntityWithUUID(Rod::UUID{g_PlayerID}, "Player");
 	auto enemy = scene.CreateEntityWithUUID(Rod::UUID{g_EnemyID}, "Enemy");
 
 	scene.DestroyEntity(player);
@@ -144,9 +146,9 @@ namespace {
 		SceneCopyFixture() = default;
 		~SceneCopyFixture() = default;
 		SceneCopyFixture(const SceneCopyFixture&) = delete;
-		SceneCopyFixture& operator=(const SceneCopyFixture&) = delete;
+		auto operator=(const SceneCopyFixture&) -> SceneCopyFixture& = delete;
 		SceneCopyFixture(SceneCopyFixture&&) = delete;
-		SceneCopyFixture& operator=(SceneCopyFixture&&) = delete;
+		auto operator=(SceneCopyFixture&&) -> SceneCopyFixture& = delete;
 
 		static constexpr glm::vec3 s_Translation{1.0f, 2.0f, 3.0f};
 		static constexpr float s_InitialTiling = 2.0f;
@@ -158,7 +160,7 @@ namespace {
 		Rod::Entity CopiedPlayer = Copy.FindEntityByUUID(Rod::UUID{g_PlayerID});
 
 	private:
-		static Rod::Scene CreateSource()
+		static auto CreateSource() -> Rod::Scene
 		{
 			Rod::Scene scene;
 			auto player = scene.CreateEntityWithUUID(Rod::UUID{g_PlayerID}, "Player");
@@ -176,7 +178,8 @@ TEST_CASE("Scene copy preserves entity identity and components", "[scene]")
 	REQUIRE(fixture.CopiedPlayer.GetName() == "Player");
 	REQUIRE(fixture.CopiedPlayer.HasComponent<Rod::TransformComponent>());
 	REQUIRE(fixture.CopiedPlayer.HasComponent<Rod::SpriteRendererComponent>());
-	REQUIRE(fixture.CopiedPlayer.GetComponent<Rod::TransformComponent>().Translation == SceneCopyFixture::s_Translation);
+	REQUIRE(
+	    fixture.CopiedPlayer.GetComponent<Rod::TransformComponent>().Translation == SceneCopyFixture::s_Translation);
 	REQUIRE(
 	    fixture.CopiedPlayer.GetComponent<Rod::SpriteRendererComponent>().TilingFactor ==
 	    SceneCopyFixture::s_InitialTiling);
@@ -228,7 +231,7 @@ namespace {
 		static inline int s_Destroyed = 0;
 
 	protected:
-		virtual void OnDestroy() override { ++s_Destroyed; }
+		void OnDestroy() override { ++s_Destroyed; }
 	};
 }
 

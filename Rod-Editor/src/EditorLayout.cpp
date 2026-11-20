@@ -6,6 +6,7 @@
 #include "EditorInteractionState.h"
 #include "EditorSceneManager.h"
 #include "EditorViewport.h"
+#include "Rod/ImGui/ImGuiFlags.h"
 #include "Rod/Project/Project.h"
 
 #include "imgui_internal.h"
@@ -47,8 +48,7 @@ namespace Rod {
 		m_ToolbarPanel.OnImGuiRender(
 		    m_Scenes.GetState(),
 		    m_ToolbarDockID,
-		    [this]() { m_Commands.Play(); },
-		    [this]() { m_Commands.Stop(); });
+		    {.Play = [this]() { m_Commands.Play(); }, .Stop = [this]() { m_Commands.Stop(); }});
 	}
 
 	void EditorLayout::SetupDefaultDockLayout(ImGuiID dockspaceID)
@@ -103,22 +103,24 @@ namespace Rod {
 
 		if (ImGuiDockNode* toolbarNode = ImGui::DockBuilderGetNode(toolbarDockID))
 		{
-			toolbarNode->LocalFlags |= ImGuiDockNodeFlags_NoTabBar;
-			toolbarNode->LocalFlags |= ImGuiDockNodeFlags_NoWindowMenuButton;
-			toolbarNode->LocalFlags |= ImGuiDockNodeFlags_NoCloseButton;
-			toolbarNode->LocalFlags |= ImGuiDockNodeFlags_NoResize;
-			toolbarNode->LocalFlags |= ImGuiDockNodeFlags_NoResizeY;
+			toolbarNode->LocalFlags = CombineImGuiFlags(
+			    toolbarNode->LocalFlags,
+			    ImGuiDockNodeFlags_NoTabBar,
+			    ImGuiDockNodeFlags_NoWindowMenuButton,
+			    ImGuiDockNodeFlags_NoCloseButton,
+			    ImGuiDockNodeFlags_NoResize,
+			    ImGuiDockNodeFlags_NoResizeY);
 		}
 
 		if (ImGuiDockNode* viewportNode = ImGui::DockBuilderGetNode(centerDockID))
-			viewportNode->LocalFlags |= ImGuiDockNodeFlags_HiddenTabBar;
+			viewportNode->LocalFlags = CombineImGuiFlags(viewportNode->LocalFlags, ImGuiDockNodeFlags_HiddenTabBar);
 
 		ImGui::DockBuilderFinish(dockspaceID);
 	}
 
 	void EditorLayout::RenderTitlebar() const
 	{
-		auto titlebarHeight = static_cast<float>(m_TitlebarPanel.GetHeight());
+		const auto titlebarHeight = static_cast<float>(m_TitlebarPanel.GetHeight());
 		const ImGuiViewport& viewport = *ImGui::GetMainViewport();
 
 		ImGui::SetNextWindowPos(viewport.WorkPos);
@@ -126,10 +128,15 @@ namespace Rod {
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-		const ImGuiWindowFlags titlebarFlags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoCollapse |
-		                                       ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-		                                       ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse |
-		                                       ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar;
+		const ImGuiWindowFlags titlebarFlags = CombineImGuiFlags(
+		    ImGuiWindowFlags_NoDocking,
+		    ImGuiWindowFlags_NoCollapse,
+		    ImGuiWindowFlags_NoResize,
+		    ImGuiWindowFlags_NoMove,
+		    ImGuiWindowFlags_NoScrollbar,
+		    ImGuiWindowFlags_NoScrollWithMouse,
+		    ImGuiWindowFlags_NoSavedSettings,
+		    ImGuiWindowFlags_NoTitleBar);
 		ImGui::Begin("Titlebar", nullptr, titlebarFlags);
 
 		m_TitlebarPanel.OnImGuiRender();
@@ -149,10 +156,10 @@ namespace Rod {
 		static const bool padding = false;
 		static ImGuiDockNodeFlags s_DockspaceFlags = ImGuiDockNodeFlags_None;
 
-		auto titlebarHeight = static_cast<float>(m_TitlebarPanel.GetHeight());
+		const auto titlebarHeight = static_cast<float>(m_TitlebarPanel.GetHeight());
 		const ImGuiViewport& viewport = *ImGui::GetMainViewport();
 
-		ImGuiWindowFlags windowFlags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoSavedSettings;
+		ImGuiWindowFlags windowFlags = CombineImGuiFlags(ImGuiWindowFlags_NoDocking, ImGuiWindowFlags_NoSavedSettings);
 
 		const ImVec2 dockPos = ImVec2(viewport.WorkPos.x, viewport.WorkPos.y + titlebarHeight);
 		const ImVec2 dockSize = ImVec2(viewport.WorkSize.x, viewport.WorkSize.y - titlebarHeight);
@@ -168,17 +175,22 @@ namespace Rod {
 			ImGui::SetNextWindowViewport(viewport.ID);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-			windowFlags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
-			               ImGuiWindowFlags_NoMove;
-			windowFlags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+			windowFlags = CombineImGuiFlags(
+			    windowFlags,
+			    ImGuiWindowFlags_NoTitleBar,
+			    ImGuiWindowFlags_NoCollapse,
+			    ImGuiWindowFlags_NoResize,
+			    ImGuiWindowFlags_NoMove,
+			    ImGuiWindowFlags_NoBringToFrontOnFocus,
+			    ImGuiWindowFlags_NoNavFocus);
 		}
 		else
 		{
-			s_DockspaceFlags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
+			s_DockspaceFlags = WithoutImGuiFlags(s_DockspaceFlags, ImGuiDockNodeFlags_PassthruCentralNode);
 		}
 
-		if (s_DockspaceFlags & ImGuiDockNodeFlags_PassthruCentralNode)
-			windowFlags |= ImGuiWindowFlags_NoBackground;
+		if (HasAnyImGuiFlag(s_DockspaceFlags, ImGuiDockNodeFlags_PassthruCentralNode))
+			windowFlags = CombineImGuiFlags(windowFlags, ImGuiWindowFlags_NoBackground);
 
 		if (!padding)
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -192,7 +204,7 @@ namespace Rod {
 		const ImGuiIO& io = ImGui::GetIO();
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.WindowMinSize.x = dockMinimumWidth;
-		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+		if (HasAnyImGuiFlag(io.ConfigFlags, ImGuiConfigFlags_DockingEnable))
 		{
 			const ImGuiID dockspaceId = ImGui::GetID("MyDockSpace");
 

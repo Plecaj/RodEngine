@@ -22,7 +22,7 @@ namespace Rod {
 		void OnUpdate(Timestep ts, const Input& input);
 		void OnEvent(Event& e);
 
-		[[nodiscard]] float GetDistance() const noexcept { return m_Distance; }
+		[[nodiscard]] auto GetDistance() const noexcept -> float { return m_Distance; }
 		void SetDistance(float distance) noexcept { m_Distance = distance; }
 
 		void SetViewportSize(float width, float height) noexcept
@@ -32,17 +32,17 @@ namespace Rod {
 			UpdateProjection();
 		}
 
-		[[nodiscard]] const glm::mat4& GetViewMatrix() const noexcept { return m_ViewMatrix; }
-		[[nodiscard]] glm::mat4 GetViewProjection() const noexcept { return m_Projection * m_ViewMatrix; }
+		[[nodiscard]] auto GetViewMatrix() const noexcept -> const glm::mat4& { return m_ViewMatrix; }
+		[[nodiscard]] auto GetViewProjection() const noexcept -> glm::mat4 { return m_Projection * m_ViewMatrix; }
 
-		[[nodiscard]] glm::vec3 GetUpDirection() const noexcept;
-		[[nodiscard]] glm::vec3 GetRightDirection() const noexcept;
-		[[nodiscard]] glm::vec3 GetForwardDirection() const noexcept;
-		[[nodiscard]] const glm::vec3& GetPosition() const noexcept { return m_Position; }
-		[[nodiscard]] glm::quat GetOrientation() const noexcept;
+		[[nodiscard]] auto GetUpDirection() const noexcept -> glm::vec3;
+		[[nodiscard]] auto GetRightDirection() const noexcept -> glm::vec3;
+		[[nodiscard]] auto GetForwardDirection() const noexcept -> glm::vec3;
+		[[nodiscard]] auto GetPosition() const noexcept -> const glm::vec3& { return m_Position; }
+		[[nodiscard]] auto GetOrientation() const noexcept -> glm::quat;
 
-		[[nodiscard]] float GetPitch() const noexcept { return m_Pitch; }
-		[[nodiscard]] float GetYaw() const noexcept { return m_Yaw; }
+		[[nodiscard]] auto GetPitch() const noexcept -> float { return m_Pitch; }
+		[[nodiscard]] auto GetYaw() const noexcept -> float { return m_Yaw; }
 
 		void SetControlsEnabled(bool controlsEnabled) noexcept { m_ControlsEnabled = controlsEnabled; };
 
@@ -56,16 +56,16 @@ namespace Rod {
 		void UpdateProjection() noexcept;
 		void UpdateView() noexcept;
 
-		bool OnMouseScroll(MouseScrolledEvent& e) noexcept;
+		auto OnMouseScroll(MouseScrolledEvent& e) noexcept -> bool;
 
 		void MousePan(const glm::vec2& delta) noexcept;
 		void MouseRotate(const glm::vec2& delta) noexcept;
 		void MouseZoom(float delta) noexcept;
 
-		[[nodiscard]] glm::vec3 CalculatePosition() const noexcept;
+		[[nodiscard]] auto CalculatePosition() const noexcept -> glm::vec3;
 
-		[[nodiscard]] std::pair<float, float> PanSpeed() const noexcept;
-		[[nodiscard]] float ZoomSpeed() const noexcept;
+		[[nodiscard]] auto PanSpeed() const noexcept -> std::pair<float, float>;
+		[[nodiscard]] auto ZoomSpeed() const noexcept -> float;
 
 	private:
 		static constexpr float s_DefaultFOV = 45.0f;

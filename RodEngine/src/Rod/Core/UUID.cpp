@@ -6,10 +6,15 @@
 
 namespace Rod {
 
-	static std::random_device g_RandomDevice;
-	static std::mt19937_64 g_Engine(g_RandomDevice());
-	static std::uniform_int_distribution<uint64_t> g_UniformDistribution;
+	namespace {
+		auto GenerateUUID() -> uint64_t
+		{
+			static std::mt19937_64 s_Engine{std::random_device{}()};
+			static std::uniform_int_distribution<uint64_t> s_Distribution;
+			return s_Distribution(s_Engine);
+		}
+	}
 
-	UUID::UUID() : m_UUID(g_UniformDistribution(g_Engine))
+	UUID::UUID() : m_UUID(GenerateUUID())
 	{}
 }

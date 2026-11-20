@@ -21,9 +21,9 @@ namespace Rod {
 		explicit Application(const WindowProps& props, std::optional<Project> project);
 		virtual ~Application();
 		Application(const Application&) = delete;
-		Application& operator=(const Application&) = delete;
+		auto operator=(const Application&) -> Application& = delete;
 		Application(Application&&) = delete;
-		Application& operator=(Application&&) = delete;
+		auto operator=(Application&&) -> Application& = delete;
 
 		void Run();
 
@@ -32,22 +32,22 @@ namespace Rod {
 		void PushLayer(Scope<Layer> layer);
 		void PushOverlay(Scope<Layer> overlay);
 
-		[[nodiscard]] Window& GetWindow() noexcept { return *m_Window; }
-		[[nodiscard]] const Input& GetInput() const noexcept { return m_Input; }
-		[[nodiscard]] std::optional<Project&> GetProject() noexcept { return m_Project; }
-		[[nodiscard]] std::optional<const Project&> GetProject() const noexcept { return m_Project; }
+		[[nodiscard]] auto GetWindow() noexcept -> Window& { return *m_Window; }
+		[[nodiscard]] auto GetInput() const noexcept -> const Input& { return m_Input; }
+		[[nodiscard]] auto GetProject() noexcept -> std::optional<Project&> { return m_Project; }
+		[[nodiscard]] auto GetProject() const noexcept -> std::optional<const Project&> { return m_Project; }
 
 		void Close() noexcept;
 
-		[[nodiscard]] std::optional<ImGuiLayer&> GetImGuiLayer() noexcept { return m_ImGuiLayer; }
+		[[nodiscard]] auto GetImGuiLayer() noexcept -> std::optional<ImGuiLayer&> { return m_ImGuiLayer; }
 
 	private:
-		[[nodiscard]] Timestep CalculateTimestep();
+		[[nodiscard]] auto CalculateTimestep() -> Timestep;
 		void UpdateLayers(Timestep timestep);
 		void RenderImGui();
 
-		bool OnWindowClose(WindowCloseEvent& e) noexcept;
-		bool OnWindowResize(WindowResizeEvent& e);
+		auto OnWindowClose(WindowCloseEvent& e) noexcept -> bool;
+		auto OnWindowResize(WindowResizeEvent& e) -> bool;
 
 	private:
 		std::optional<Project> m_Project;
@@ -60,5 +60,5 @@ namespace Rod {
 	};
 
 	// To be defined in CLIENT
-	[[nodiscard]] Scope<Application> CreateApplication(const std::optional<Project>& project);
+	[[nodiscard]] auto CreateApplication(const std::optional<Project>& project) -> Scope<Application>;
 }

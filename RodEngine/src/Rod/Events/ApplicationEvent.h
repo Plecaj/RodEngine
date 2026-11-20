@@ -12,10 +12,10 @@ namespace Rod {
 		constexpr WindowResizeEvent(unsigned int width, unsigned int height) noexcept : m_Width(width), m_Height(height)
 		{}
 
-		[[nodiscard]] constexpr unsigned int GetWidth() const noexcept { return m_Width; }
-		[[nodiscard]] constexpr unsigned int GetHeight() const noexcept { return m_Height; }
+		[[nodiscard]] constexpr auto GetWidth() const noexcept -> unsigned int { return m_Width; }
+		[[nodiscard]] constexpr auto GetHeight() const noexcept -> unsigned int { return m_Height; }
 
-		[[nodiscard]] virtual std::string ToString() const override
+		[[nodiscard]] auto ToString() const -> std::string override
 		{
 			std::stringstream ss;
 			ss << "WindowResizeEvent: " << m_Width << ", " << m_Height;

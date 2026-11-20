@@ -37,7 +37,7 @@ namespace Rod {
 		}
 	}
 
-	Scope<Window> Window::Create(const WindowProps& props)
+	auto Window::Create(const WindowProps& props) -> Scope<Window>
 	{
 		return CreateScope<GLFWWindow>(props);
 	}
@@ -130,6 +130,7 @@ namespace Rod {
 
 	void GLFWWindow::SetWindowCallbacks()
 	{
+		// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 		glfwSetWindowSizeCallback(m_Window.get(), [](GLFWwindow* window, int width, int height) {
 			WindowData& data = GetWindowData(window);
 			data.Width = static_cast<unsigned int>(width);
@@ -169,6 +170,8 @@ namespace Rod {
 					data.EventCallback(event);
 					break;
 				}
+				default:
+					break;
 			}
 		});
 
@@ -181,6 +184,7 @@ namespace Rod {
 
 	void GLFWWindow::SetMouseCallbacks()
 	{
+		// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 		glfwSetMouseButtonCallback(m_Window.get(), [](GLFWwindow* window, int button, int action, int) {
 			const WindowData& data = GetWindowData(window);
 
@@ -196,6 +200,8 @@ namespace Rod {
 					data.EventCallback(event);
 					break;
 				}
+				default:
+					break;
 			}
 		});
 
@@ -237,7 +243,7 @@ namespace Rod {
 		glfwSetWindowIcon(m_Window.get(), 1, &icon);
 	}
 
-	GLFWWindow::WindowData& GLFWWindow::GetWindowData(GLFWwindow* window)
+	auto GLFWWindow::GetWindowData(GLFWwindow* window) -> GLFWWindow::WindowData&
 	{
 		return *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
 	}
@@ -263,12 +269,12 @@ namespace Rod {
 		glfwMaximizeWindow(m_Window.get());
 	}
 
-	bool GLFWWindow::IsMinimized() const noexcept
+	auto GLFWWindow::IsMinimized() const noexcept -> bool
 	{
 		return glfwGetWindowAttrib(m_Window.get(), GLFW_ICONIFIED) == GLFW_TRUE;
 	}
 
-	bool GLFWWindow::IsMaximized() const noexcept
+	auto GLFWWindow::IsMaximized() const noexcept -> bool
 	{
 		return glfwGetWindowAttrib(m_Window.get(), GLFW_MAXIMIZED) == GLFW_TRUE;
 	}
@@ -323,7 +329,7 @@ namespace Rod {
 			ResetWindowDrag();
 	}
 
-	glm::vec2 GLFWWindow::GetMouseScreenPosition() const
+	auto GLFWWindow::GetMouseScreenPosition() const -> glm::vec2
 	{
 		int windowX{}, windowY{};
 		double mouseX{}, mouseY{};
@@ -347,7 +353,7 @@ namespace Rod {
 		m_Data.VSync = enabled;
 	}
 
-	bool GLFWWindow::IsVSync() const noexcept
+	auto GLFWWindow::IsVSync() const noexcept -> bool
 	{
 		return m_Data.VSync;
 	}

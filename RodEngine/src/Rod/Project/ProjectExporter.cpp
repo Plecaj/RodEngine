@@ -18,13 +18,15 @@
 namespace Rod {
 
 	namespace {
-		bool IsWithin(const std::filesystem::path& path, const std::filesystem::path& directory)
+		auto IsWithin(const std::filesystem::path& path, const std::filesystem::path& directory) -> bool
 		{
 			const auto relative = path.lexically_relative(directory);
 			return !relative.empty() && *relative.begin() != "..";
 		}
 
-		std::filesystem::path ProjectRelative(const std::filesystem::path& path, const std::filesystem::path& root)
+		// NOLINTNEXTLINE(bugprone-easily-swappable-parameters): Matches the path/base order of std::filesystem::relative.
+		auto ProjectRelative(const std::filesystem::path& path, const std::filesystem::path& root)
+		    -> std::filesystem::path
 		{
 			const auto resolved = std::filesystem::weakly_canonical(path);
 			if (!IsWithin(resolved, root) || resolved == root)
@@ -79,8 +81,9 @@ namespace Rod {
 			}
 		}
 
-		void ValidateSceneAssets(const std::filesystem::path& scenePath, const std::filesystem::path& root)
+		void ValidateSceneAssets(const std::filesystem::path& scenePath, const Project& package)
 		{
+			const auto root = package.GetDirectory();
 			const auto scene = YAML::LoadFile(scenePath.string());
 			const auto entities = scene["Entities"];
 			if (!scene["Scene"].IsScalar() || !entities.IsSequence())
@@ -119,7 +122,7 @@ namespace Rod {
 			for (const auto& entry : std::filesystem::recursive_directory_iterator(root))
 			{
 				if (entry.path().extension() == ".rod")
-					ValidateSceneAssets(entry.path(), root);
+					ValidateSceneAssets(entry.path(), package);
 			}
 		}
 

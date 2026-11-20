@@ -13,15 +13,15 @@ namespace Rod {
 		explicit Layer(std::string name = "Layer") noexcept;
 		virtual ~Layer();
 		Layer(const Layer&) = delete;
-		Layer& operator=(const Layer&) = delete;
+		auto operator=(const Layer&) -> Layer& = delete;
 		Layer(Layer&&) = delete;
-		Layer& operator=(Layer&&) = delete;
+		auto operator=(Layer&&) -> Layer& = delete;
 
 		virtual void OnUpdate(Timestep){};
 		virtual void OnImGuiRender() {};
 		virtual void OnEvent(Event&) {};
 
-		[[nodiscard]] const std::string& GetName() const noexcept { return m_DebugName; }
+		[[nodiscard]] auto GetName() const noexcept -> const std::string& { return m_DebugName; }
 
 	private:
 		std::string m_DebugName;

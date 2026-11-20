@@ -29,7 +29,7 @@ namespace Rod {
 				throw std::runtime_error("A selected file no longer exists or is not a regular file. Select it again.");
 		}
 
-		std::string EscapeXml(std::string_view value)
+		auto EscapeXml(std::string_view value) -> std::string
 		{
 			std::string result;
 			for (const char character : value)

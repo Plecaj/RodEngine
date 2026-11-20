@@ -13,19 +13,19 @@ namespace Rod {
 	public:
 		explicit OpenGLVertexBuffer(uint32_t size);
 		explicit OpenGLVertexBuffer(std::span<const std::byte> vertices);
-		virtual ~OpenGLVertexBuffer() override;
+		~OpenGLVertexBuffer() override;
 		OpenGLVertexBuffer(const OpenGLVertexBuffer&) = delete;
-		OpenGLVertexBuffer& operator=(const OpenGLVertexBuffer&) = delete;
+		auto operator=(const OpenGLVertexBuffer&) -> OpenGLVertexBuffer& = delete;
 		OpenGLVertexBuffer(OpenGLVertexBuffer&&) = delete;
-		OpenGLVertexBuffer& operator=(OpenGLVertexBuffer&&) = delete;
+		auto operator=(OpenGLVertexBuffer&&) -> OpenGLVertexBuffer& = delete;
 
-		virtual void Bind() const override;
-		virtual void Unbind() const override;
+		void Bind() const override;
+		void Unbind() const override;
 
-		virtual void SetData(std::span<const std::byte> data) override;
+		void SetData(std::span<const std::byte> data) override;
 
-		[[nodiscard]] virtual const BufferLayout& GetLayout() const noexcept override { return m_Layout; };
-		virtual void SetBufferLayout(const BufferLayout& layout) override { m_Layout = layout; };
+		[[nodiscard]] auto GetLayout() const noexcept -> const BufferLayout& override { return m_Layout; };
+		void SetBufferLayout(const BufferLayout& layout) override { m_Layout = layout; };
 
 	private:
 		uint32_t m_RendererID = 0;
@@ -36,16 +36,16 @@ namespace Rod {
 	{
 	public:
 		explicit OpenGLIndexBuffer(std::span<const uint32_t> indices);
-		virtual ~OpenGLIndexBuffer() override;
+		~OpenGLIndexBuffer() override;
 		OpenGLIndexBuffer(const OpenGLIndexBuffer&) = delete;
-		OpenGLIndexBuffer& operator=(const OpenGLIndexBuffer&) = delete;
+		auto operator=(const OpenGLIndexBuffer&) -> OpenGLIndexBuffer& = delete;
 		OpenGLIndexBuffer(OpenGLIndexBuffer&&) = delete;
-		OpenGLIndexBuffer& operator=(OpenGLIndexBuffer&&) = delete;
+		auto operator=(OpenGLIndexBuffer&&) -> OpenGLIndexBuffer& = delete;
 
-		[[nodiscard]] virtual uint32_t GetCount() const noexcept override { return m_Count; }
+		[[nodiscard]] auto GetCount() const noexcept -> uint32_t override { return m_Count; }
 
-		virtual void Bind() const override;
-		virtual void Unbind() const override;
+		void Bind() const override;
+		void Unbind() const override;
 
 	private:
 		uint32_t m_RendererID = 0;
@@ -56,17 +56,17 @@ namespace Rod {
 	{
 	public:
 		explicit OpenGLUniformBuffer(uint32_t size);
-		virtual ~OpenGLUniformBuffer() override;
+		~OpenGLUniformBuffer() override;
 		OpenGLUniformBuffer(const OpenGLUniformBuffer&) = delete;
-		OpenGLUniformBuffer& operator=(const OpenGLUniformBuffer&) = delete;
+		auto operator=(const OpenGLUniformBuffer&) -> OpenGLUniformBuffer& = delete;
 		OpenGLUniformBuffer(OpenGLUniformBuffer&&) = delete;
-		OpenGLUniformBuffer& operator=(OpenGLUniformBuffer&&) = delete;
+		auto operator=(OpenGLUniformBuffer&&) -> OpenGLUniformBuffer& = delete;
 
-		virtual void Bind() const override;
-		virtual void Unbind() const override;
-		virtual void BindBase(uint32_t bindingIndex) const override;
+		void Bind() const override;
+		void Unbind() const override;
+		void BindBase(uint32_t bindingIndex) const override;
 
-		virtual void SetData(std::span<const std::byte> data) override;
+		void SetData(std::span<const std::byte> data) override;
 
 	private:
 		uint32_t m_RendererID = 0;

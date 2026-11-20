@@ -14,7 +14,7 @@ namespace Rod {
 
 	using Handle = std::unique_ptr<void, HandleDeleter>;
 
-	static std::wstring QuoteArgument(const std::string& argument)
+	static auto QuoteArgument(const std::string& argument) -> std::wstring
 	{
 		constexpr size_t quoteEscapeMultiplier = 2;
 		const int size = MultiByteToWideChar(
@@ -24,7 +24,7 @@ namespace Rod {
 		    static_cast<int>(argument.size()),
 		    nullptr,
 		    0);
-		std::wstring value(size, L'\0');
+		std::wstring value(static_cast<std::wstring::size_type>(size), L'\0');
 		MultiByteToWideChar(
 		    CP_UTF8,
 		    MB_ERR_INVALID_CHARS,
@@ -50,7 +50,7 @@ namespace Rod {
 		return quoted + L'"';
 	}
 
-	static std::wstring BuildCommand(const std::vector<std::string>& arguments)
+	static auto BuildCommand(const std::vector<std::string>& arguments) -> std::wstring
 	{
 		std::wstring command;
 		for (const auto& argument : arguments)
@@ -62,7 +62,7 @@ namespace Rod {
 		return command;
 	}
 
-	static std::string ReadPipe(HANDLE readPipe)
+	static auto ReadPipe(HANDLE readPipe) -> std::string
 	{
 		constexpr size_t outputBufferSize = 4096;
 		char buffer[outputBufferSize];
@@ -73,10 +73,10 @@ namespace Rod {
 		return output;
 	}
 
-	ProcessResult Process::Start(const std::vector<std::string>& arguments)
+	auto Process::Start(const std::vector<std::string>& arguments) -> ProcessResult
 	{
 		if (arguments.empty())
-			return {-1, "No executable specified."};
+			return {.ExitCode = -1, .Output = "No executable specified."};
 
 		auto command = BuildCommand(arguments);
 		STARTUPINFOW startup = {};
@@ -93,26 +93,29 @@ namespace Rod {
 		        nullptr,
 		        &startup,
 		        &information))
-			return {-1, "Failed to start process: " + std::to_string(GetLastError())};
+			return {.ExitCode = -1, .Output = "Failed to start process: " + std::to_string(GetLastError())};
 		const Handle process(information.hProcess), thread(information.hThread);
-		return {0, {}};
+		return {.ExitCode = 0, .Output = {}};
 	}
 
-	ProcessResult Process::Run(const std::vector<std::string>& arguments, bool captureErrors)
+	auto Process::Run(const std::vector<std::string>& arguments, bool captureErrors) -> ProcessResult
 	{
 		if (arguments.empty())
-			return {-1, "No executable specified."};
+			return {.ExitCode = -1, .Output = "No executable specified."};
 
 		auto command = BuildCommand(arguments);
 
-		SECURITY_ATTRIBUTES security = {sizeof(SECURITY_ATTRIBUTES), nullptr, TRUE};
+		SECURITY_ATTRIBUTES security{
+		    .nLength = sizeof(SECURITY_ATTRIBUTES),
+		    .lpSecurityDescriptor = nullptr,
+		    .bInheritHandle = TRUE};
 		HANDLE readPipe = nullptr, writePipe = nullptr;
 		if (!CreatePipe(&readPipe, &writePipe, &security, 0))
-			return {-1, "Failed to create process output pipe."};
+			return {.ExitCode = -1, .Output = "Failed to create process output pipe."};
 		const Handle reader(readPipe);
 		Handle writer(writePipe);
 		if (!SetHandleInformation(readPipe, HANDLE_FLAG_INHERIT, 0))
-			return {-1, "Failed to configure process output pipe."};
+			return {.ExitCode = -1, .Output = "Failed to configure process output pipe."};
 
 		STARTUPINFOW startup = {};
 		startup.cb = sizeof(startup);
@@ -132,7 +135,7 @@ namespace Rod {
 		        nullptr,
 		        &startup,
 		        &information))
-			return {-1, "Failed to start process: " + std::to_string(GetLastError())};
+			return {.ExitCode = -1, .Output = "Failed to start process: " + std::to_string(GetLastError())};
 
 		const Handle process(information.hProcess), thread(information.hThread);
 		writer.reset();

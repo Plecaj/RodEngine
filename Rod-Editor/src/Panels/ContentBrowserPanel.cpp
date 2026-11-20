@@ -8,9 +8,8 @@ namespace Rod {
 
 	namespace {
 
-		bool DrawBackButton(const char* id, const ImVec2& size)
+		auto DrawBackButton(const char* id, const ImVec2& size) -> bool
 		{
-			constexpr float half = 0.5f;
 			constexpr float cornerRadius = 4.0f;
 			constexpr float arrowWingScale = 0.65f;
 			constexpr float stroke = 1.8f;
@@ -29,22 +28,22 @@ namespace Rod {
 
 			drawList.AddRectFilled(min, max, background, cornerRadius);
 
-			const ImVec2 center = ImVec2((min.x + max.x) * half, (min.y + max.y) * half);
+			const ImVec2 center = ImVec2((min.x + max.x) * 0.5f, (min.y + max.y) * 0.5f);
 			constexpr float width = 13.0f;
 			constexpr float height = 9.0f;
 			drawList.AddLine(
-			    ImVec2(center.x - width * half, center.y),
-			    ImVec2(center.x + width * half, center.y),
+			    ImVec2(center.x - width * 0.5f, center.y),
+			    ImVec2(center.x + width * 0.5f, center.y),
 			    arrow,
 			    stroke);
 			drawList.AddLine(
-			    ImVec2(center.x - width * half, center.y),
-			    ImVec2(center.x - width * half + height * arrowWingScale, center.y - height * half),
+			    ImVec2(center.x - width * 0.5f, center.y),
+			    ImVec2(center.x - width * 0.5f + height * arrowWingScale, center.y - height * 0.5f),
 			    arrow,
 			    stroke);
 			drawList.AddLine(
-			    ImVec2(center.x - width * half, center.y),
-			    ImVec2(center.x - width * half + height * arrowWingScale, center.y + height * half),
+			    ImVec2(center.x - width * 0.5f, center.y),
+			    ImVec2(center.x - width * 0.5f + height * arrowWingScale, center.y + height * 0.5f),
 			    arrow,
 			    stroke);
 
@@ -65,8 +64,8 @@ namespace Rod {
 		{
 			constexpr auto buttonColors = std::to_array<std::pair<ImGuiCol, ImVec4>>(
 			    {{ImGuiCol_Button, {0.11f, 0.13f, 0.16f, 1.0f}},
-			     {ImGuiCol_ButtonHovered, {0.18f, 0.21f, 0.25f, 1.0f}},
-			     {ImGuiCol_ButtonActive, {0.14f, 0.16f, 0.20f, 1.0f}}});
+				 {ImGuiCol_ButtonHovered, {0.18f, 0.21f, 0.25f, 1.0f}},
+				 {ImGuiCol_ButtonActive, {0.14f, 0.16f, 0.20f, 1.0f}}});
 			constexpr ImVec2 framePadding{8.0f, 8.0f};
 			for (const auto& [slot, color] : buttonColors)
 				ImGui::PushStyleColor(slot, color);
@@ -95,17 +94,15 @@ namespace Rod {
 			}
 		}
 
-		void HandleDragDrop(
-		    const std::filesystem::path& path,
-		    const std::filesystem::path& relativePath,
-		    const std::string& filename)
+		[[nodiscard]] auto DragDropPayloadType(const std::filesystem::path& extension) -> const char*
 		{
-			if (path.extension() == ".rod")
-				BeginAssetDragDrop("CONTENT_BROWSER_SCENE_ITEM", relativePath, filename);
-			else if (path.extension() == ".png")
-				BeginAssetDragDrop("CONTENT_BROWSER_TEXTURE_ITEM", relativePath, filename);
-			else if (path.extension() == ".glb")
-				BeginAssetDragDrop("CONTENT_BROWSER_MESH_ITEM", relativePath, filename);
+			if (extension == ".rod")
+				return "CONTENT_BROWSER_SCENE_ITEM";
+			if (extension == ".png")
+				return "CONTENT_BROWSER_TEXTURE_ITEM";
+			if (extension == ".glb")
+				return "CONTENT_BROWSER_MESH_ITEM";
+			return nullptr;
 		}
 	}
 
@@ -153,10 +150,10 @@ namespace Rod {
 
 	void ContentBrowserPanel::DrawDirectoryContents(float thumbnailSize)
 	{
-		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
+		for (const auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
 		{
 			const auto& path = directoryEntry.path();
-			auto relativePath = std::filesystem::relative(path, m_AssetsPath);
+			const auto relativePath = std::filesystem::relative(path, m_AssetsPath);
 			const std::string filenameString = path.filename().string();
 
 			const std::string uniqueID = relativePath.string();
@@ -165,7 +162,8 @@ namespace Rod {
 			const Texture2D& icon = directoryEntry.is_directory() ? *m_DirectoryIcon : *m_FileIcon;
 
 			DrawIconButton(uniqueID, icon, thumbnailSize);
-			HandleDragDrop(path, relativePath, filenameString);
+			if (const auto* payloadType = DragDropPayloadType(path.extension()))
+				BeginAssetDragDrop(payloadType, relativePath, filenameString);
 
 			if (directoryEntry.is_directory() && ImGui::IsItemHovered() &&
 			    ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))

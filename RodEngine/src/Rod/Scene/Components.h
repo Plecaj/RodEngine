@@ -44,7 +44,7 @@ namespace Rod {
 		TransformComponent() = default;
 		constexpr explicit TransformComponent(const glm::vec3& translation) noexcept : Translation(translation) {}
 
-		[[nodiscard]] glm::mat4 GetTransform() const noexcept
+		[[nodiscard]] auto GetTransform() const noexcept -> glm::mat4
 		{
 			const glm::mat4 rotation = glm::rotate(glm::mat4(1.0f), Rotation.x, {1, 0, 0}) *
 			                           glm::rotate(glm::mat4(1.0f), Rotation.y, {0, 1, 0}) *
@@ -84,6 +84,7 @@ namespace Rod {
 		float Intensity = 1.0f;
 
 		DirectionalLightComponent() = default;
+		// NOLINTNEXTLINE(bugprone-easily-swappable-parameters): Direction and color use the same vector type.
 		DirectionalLightComponent(const glm::vec3& direction, const glm::vec3& color, float intensity = 1.0f) noexcept
 		    : Direction(direction), Color(color), Intensity(intensity)
 		{}

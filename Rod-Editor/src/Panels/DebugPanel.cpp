@@ -17,9 +17,6 @@ namespace Rod {
 		const char* gizmoMode = "None";
 		switch (gizmoType)
 		{
-			case -1:
-				gizmoMode = "None";
-				break;
 			case ImGuizmo::OPERATION::TRANSLATE:
 				gizmoMode = "Translate";
 				break;
@@ -28,6 +25,8 @@ namespace Rod {
 				break;
 			case ImGuizmo::OPERATION::SCALE:
 				gizmoMode = "Scale";
+				break;
+			default:
 				break;
 		}
 		ImGui::Text("Current Gizmo mode: %s", gizmoMode);

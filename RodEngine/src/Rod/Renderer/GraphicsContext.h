@@ -8,9 +8,9 @@ namespace Rod {
 		GraphicsContext() = default;
 		virtual ~GraphicsContext() = default;
 		GraphicsContext(const GraphicsContext&) = delete;
-		GraphicsContext& operator=(const GraphicsContext&) = delete;
+		auto operator=(const GraphicsContext&) -> GraphicsContext& = delete;
 		GraphicsContext(GraphicsContext&&) = delete;
-		GraphicsContext& operator=(GraphicsContext&&) = delete;
+		auto operator=(GraphicsContext&&) -> GraphicsContext& = delete;
 
 		virtual void SwapBuffers() = 0;
 	};

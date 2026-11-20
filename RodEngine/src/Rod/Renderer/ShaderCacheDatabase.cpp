@@ -4,6 +4,7 @@
 
 #include "Renderer.h"
 
+#include <algorithm>
 #include <limits>
 
 namespace Rod {
@@ -39,7 +40,7 @@ namespace Rod {
 		SaveDatabase();
 	}
 
-	bool ShaderCacheDatabase::CacheShader(const std::string& key, std::span<const uint32_t> data)
+	auto ShaderCacheDatabase::CacheShader(const std::string& key, std::span<const uint32_t> data) -> bool
 	{
 		const auto maxWords = static_cast<size_t>(std::numeric_limits<std::streamsize>::max()) / sizeof(uint32_t);
 		if (data.size() > maxWords)
@@ -63,14 +64,12 @@ namespace Rod {
 		return true;
 	}
 
-	bool ShaderCacheDatabase::Contains(const std::string& key) const
+	auto ShaderCacheDatabase::Contains(const std::string& key) const -> bool
 	{
-		for (auto hashEntry : m_CacheData["Hashes"])
-		{
-			if (hashEntry.as<std::string>() == key)
-				return true;
-		}
-		return false;
+		const auto hashes = m_CacheData["Hashes"];
+		return std::any_of(hashes.begin(), hashes.end(), [&key](const auto& hashEntry) {
+			return hashEntry.template as<std::string>() == key;
+		});
 	}
 
 	void ShaderCacheDatabase::CreateYAMLCacheDatabase()
@@ -91,7 +90,7 @@ namespace Rod {
 	{
 		std::unordered_set<std::string> existingFiles;
 
-		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CacheDirectory))
+		for (const auto& directoryEntry : std::filesystem::directory_iterator(m_CacheDirectory))
 		{
 			if (!directoryEntry.is_directory())
 				existingFiles.insert(directoryEntry.path().filename().string());
@@ -121,7 +120,7 @@ namespace Rod {
 			m_CacheData["Hashes"] = newHashes;
 		}
 
-		for (auto& directoryEntry : std::filesystem::directory_iterator(m_CacheDirectory))
+		for (const auto& directoryEntry : std::filesystem::directory_iterator(m_CacheDirectory))
 		{
 			const std::string name = directoryEntry.path().filename().string();
 			if (!allowedFiles.contains(name))

@@ -28,25 +28,25 @@ namespace Rod {
 			m_ProjectionType = type;
 			RecalculateProjection();
 		}
-		[[nodiscard]] ProjectionType GetProjectionType() const noexcept { return m_ProjectionType; }
+		[[nodiscard]] auto GetProjectionType() const noexcept -> ProjectionType { return m_ProjectionType; }
 
 		void SetPerspective(float verticalFOV, float nearClip, float farClip) noexcept;
 
-		[[nodiscard]] float GetPerspectiveVerticalFOV() const noexcept { return m_PerspectiveFOV; }
+		[[nodiscard]] auto GetPerspectiveVerticalFOV() const noexcept -> float { return m_PerspectiveFOV; }
 		void SetPerspectiveVerticalFOV(float fov) noexcept
 		{
 			m_PerspectiveFOV = fov;
 			RecalculateProjection();
 		}
 
-		[[nodiscard]] float GetPerspectiveNearClip() const noexcept { return m_PerspectiveNear; }
+		[[nodiscard]] auto GetPerspectiveNearClip() const noexcept -> float { return m_PerspectiveNear; }
 		void SetPerspectiveNearClip(float nearClip) noexcept
 		{
 			m_PerspectiveNear = nearClip;
 			RecalculateProjection();
 		}
 
-		[[nodiscard]] float GetPerspectiveFarClip() const noexcept { return m_PerspectiveFar; }
+		[[nodiscard]] auto GetPerspectiveFarClip() const noexcept -> float { return m_PerspectiveFar; }
 		void SetPerspectiveFarClip(float farClip) noexcept
 		{
 			m_PerspectiveFar = farClip;
@@ -55,21 +55,21 @@ namespace Rod {
 
 		void SetOrthographic(float size, float nearClip, float farClip) noexcept;
 
-		[[nodiscard]] float GetOrthographicSize() const noexcept { return m_OrthographicSize; }
+		[[nodiscard]] auto GetOrthographicSize() const noexcept -> float { return m_OrthographicSize; }
 		void SetOrthographicSize(float size) noexcept
 		{
 			m_OrthographicSize = size;
 			RecalculateProjection();
 		}
 
-		[[nodiscard]] float GetOrthographicNearClip() const noexcept { return m_OrthographicNear; }
+		[[nodiscard]] auto GetOrthographicNearClip() const noexcept -> float { return m_OrthographicNear; }
 		void SetOrthographicNearClip(float nearClip) noexcept
 		{
 			m_OrthographicNear = nearClip;
 			RecalculateProjection();
 		}
 
-		[[nodiscard]] float GetOrthographicFarClip() const noexcept { return m_OrthographicFar; }
+		[[nodiscard]] auto GetOrthographicFarClip() const noexcept -> float { return m_OrthographicFar; }
 		void SetOrthographicFarClip(float farClip) noexcept
 		{
 			m_OrthographicFar = farClip;

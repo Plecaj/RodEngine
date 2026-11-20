@@ -13,6 +13,7 @@
 #include <yaml-cpp/yaml.h> // IWYU pragma: keep
 
 #include <fstream>
+#include <ranges>
 #include <stdexcept>
 #include <vector>
 
@@ -21,7 +22,7 @@ namespace YAML {
 	template <>
 	struct convert<glm::vec3>
 	{
-		static Node encode(const glm::vec3& rhs)
+		static auto encode(const glm::vec3& rhs) -> Node
 		{
 			Node node;
 			node.push_back(rhs.x);
@@ -30,7 +31,7 @@ namespace YAML {
 			return node;
 		}
 
-		static bool decode(const Node& node, glm::vec3& rhs)
+		static auto decode(const Node& node, glm::vec3& rhs) -> bool
 		{
 			if (!node.IsSequence() || node.size() != static_cast<size_t>(rhs.length()))
 				return false;
@@ -44,7 +45,7 @@ namespace YAML {
 	template <>
 	struct convert<glm::vec4>
 	{
-		static Node encode(const glm::vec4& rhs)
+		static auto encode(const glm::vec4& rhs) -> Node
 		{
 			Node node;
 			node.push_back(rhs.x);
@@ -54,7 +55,7 @@ namespace YAML {
 			return node;
 		}
 
-		static bool decode(const Node& node, glm::vec4& rhs)
+		static auto decode(const Node& node, glm::vec4& rhs) -> bool
 		{
 			if (!node.IsSequence() || node.size() != static_cast<size_t>(rhs.length()))
 				return false;
@@ -70,14 +71,14 @@ namespace YAML {
 namespace Rod {
 
 	namespace {
-		YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec3& v)
+		auto operator<<(YAML::Emitter& out, const glm::vec3& v) -> YAML::Emitter&
 		{
 			out << YAML::Flow;
 			out << YAML::BeginSeq << v.x << v.y << v.z << YAML::EndSeq;
 			return out;
 		}
 
-		YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec4& v)
+		auto operator<<(YAML::Emitter& out, const glm::vec4& v) -> YAML::Emitter&
 		{
 			out << YAML::Flow;
 			out << YAML::BeginSeq << v.x << v.y << v.z << v.w << YAML::EndSeq;
@@ -124,7 +125,7 @@ namespace Rod {
 			out << YAML::EndMap;
 		}
 
-		[[nodiscard]] std::string NormalizeAssetPath(std::string path)
+		[[nodiscard]] auto NormalizeAssetPath(std::string path) -> std::string
 		{
 			std::replace(path.begin(), path.end(), '\\', '/');
 			return path;
@@ -214,7 +215,7 @@ namespace Rod {
 			auto& script = entity.AddComponent<ScriptComponent>();
 			script.ClassName = scriptComponent["ClassName"].as<std::string>();
 
-			auto fields = scriptComponent["Fields"];
+			const auto fields = scriptComponent["Fields"];
 			if (!fields.IsSequence())
 				throw std::runtime_error("Field 'Fields': sequence required");
 
@@ -234,16 +235,16 @@ namespace Rod {
 	}
 
 	namespace {
-		std::string RollbackLoad(Scene& scene, const std::vector<Entity>& createdEntities)
+		auto RollbackLoad(Scene& scene, const std::vector<Entity>& createdEntities) -> std::string
 		{
 			std::string rollbackErrors;
-			for (auto it = createdEntities.rbegin(); it != createdEntities.rend(); ++it)
+			for (const auto& createdEntity : std::views::reverse(createdEntities))
 			{
-				if (!*it)
+				if (!createdEntity)
 					continue;
 				try
 				{
-					scene.DestroyEntity(*it);
+					scene.DestroyEntity(createdEntity);
 				}
 				catch (const std::exception& exception)
 				{
@@ -262,7 +263,7 @@ namespace Rod {
 	    : m_Scene(scene), m_ProjectDirectory(std::move(projectDirectory))
 	{}
 
-	std::string SceneSerializer::SerializeAssetPath(const std::string& path) const
+	auto SceneSerializer::SerializeAssetPath(const std::string& path) const -> std::string
 	{
 		const std::filesystem::path assetPath = NormalizeAssetPath(path);
 		if (m_ProjectDirectory.empty())
@@ -270,7 +271,7 @@ namespace Rod {
 		return assetPath.lexically_normal().lexically_relative(m_ProjectDirectory.lexically_normal()).generic_string();
 	}
 
-	std::string SceneSerializer::ResolveAssetPath(const std::string& path) const
+	auto SceneSerializer::ResolveAssetPath(const std::string& path) const -> std::string
 	{
 		return (m_ProjectDirectory / NormalizeAssetPath(path)).lexically_normal().string();
 	}
@@ -335,8 +336,8 @@ namespace Rod {
 		out << YAML::BeginMap;
 		out << YAML::Key << "Scene" << YAML::Value << "Untitled";
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
-		auto view = m_Scene.m_Registry.view<IDComponent>();
-		for (auto entityID : view)
+		const auto view = m_Scene.m_Registry.view<IDComponent>();
+		for (const auto entityID : view)
 		{
 			const Entity entity = {entityID, m_Scene};
 			if (entity)
@@ -390,7 +391,7 @@ namespace Rod {
 	    const YAML::Node& entityNode,
 	    std::vector<Entity>& createdEntities) const
 	{
-		auto uuid = entityNode["Entity"].as<uint64_t>();
+		const auto uuid = entityNode["Entity"].as<uint64_t>();
 		if (scene.FindEntityByUUID(UUID{uuid}))
 			throw std::runtime_error("Duplicate entity UUID: " + std::to_string(uuid));
 

@@ -11,12 +11,12 @@ namespace Rod {
 		explicit SharedLibrary(const std::filesystem::path& path);
 		~SharedLibrary();
 		SharedLibrary(const SharedLibrary&) = delete;
-		SharedLibrary& operator=(const SharedLibrary&) = delete;
+		auto operator=(const SharedLibrary&) -> SharedLibrary& = delete;
 		SharedLibrary(SharedLibrary&& other) noexcept;
-		SharedLibrary& operator=(SharedLibrary&& other) noexcept;
+		auto operator=(SharedLibrary&& other) noexcept -> SharedLibrary&;
 
-		[[nodiscard]] bool IsLoaded() const noexcept { return m_Handle != nullptr; }
-		[[nodiscard]] void* GetFunction(const char* name) const noexcept;
+		[[nodiscard]] auto IsLoaded() const noexcept -> bool { return m_Handle != nullptr; }
+		[[nodiscard]] auto GetFunction(const char* name) const noexcept -> void*;
 
 	private:
 		void Close() noexcept;

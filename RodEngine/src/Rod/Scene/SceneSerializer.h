@@ -24,8 +24,8 @@ namespace Rod {
 		void DeserializeText(const std::string& filepath) const;
 
 	private:
-		[[nodiscard]] std::string SerializeAssetPath(const std::string& path) const;
-		[[nodiscard]] std::string ResolveAssetPath(const std::string& path) const;
+		[[nodiscard]] auto SerializeAssetPath(const std::string& path) const -> std::string;
+		[[nodiscard]] auto ResolveAssetPath(const std::string& path) const -> std::string;
 		void SerializeSpriteRendererComponent(YAML::Emitter& out, const SpriteRendererComponent& sprite) const;
 		void SerializeMeshComponent(YAML::Emitter& out, const MeshComponent& meshComponent) const;
 		void SerializeEntity(YAML::Emitter& out, Entity entity) const;

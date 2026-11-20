@@ -12,11 +12,11 @@ namespace Rod {
 
 		virtual ~Camera() = default;
 		Camera(const Camera&) = default;
-		Camera& operator=(const Camera&) = default;
+		auto operator=(const Camera&) -> Camera& = default;
 		Camera(Camera&&) = default;
-		Camera& operator=(Camera&&) = default;
+		auto operator=(Camera&&) -> Camera& = default;
 
-		[[nodiscard]] constexpr const glm::mat4& GetProjection() const noexcept { return m_Projection; }
+		[[nodiscard]] constexpr auto GetProjection() const noexcept -> const glm::mat4& { return m_Projection; }
 
 	protected:
 		glm::mat4 m_Projection = glm::mat4(1.0f);

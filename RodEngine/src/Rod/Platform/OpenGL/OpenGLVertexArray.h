@@ -12,23 +12,23 @@ namespace Rod {
 	{
 	public:
 		OpenGLVertexArray();
-		virtual ~OpenGLVertexArray() override;
+		~OpenGLVertexArray() override;
 		OpenGLVertexArray(const OpenGLVertexArray&) = delete;
-		OpenGLVertexArray& operator=(const OpenGLVertexArray&) = delete;
+		auto operator=(const OpenGLVertexArray&) -> OpenGLVertexArray& = delete;
 		OpenGLVertexArray(OpenGLVertexArray&&) = delete;
-		OpenGLVertexArray& operator=(OpenGLVertexArray&&) = delete;
+		auto operator=(OpenGLVertexArray&&) -> OpenGLVertexArray& = delete;
 
-		virtual void Bind() const override;
-		virtual void Unbind() const override;
+		void Bind() const override;
+		void Unbind() const override;
 
-		virtual void AddVertexBuffer(Scope<VertexBuffer> vertexBuffer) override;
-		virtual void SetIndexBuffer(Scope<IndexBuffer> indexBuffer) override;
+		void AddVertexBuffer(Scope<VertexBuffer> vertexBuffer) override;
+		void SetIndexBuffer(Scope<IndexBuffer> indexBuffer) override;
 
-		[[nodiscard]] virtual std::span<const Scope<VertexBuffer>> GetVertexBuffers() const noexcept override
+		[[nodiscard]] auto GetVertexBuffers() const noexcept -> std::span<const Scope<VertexBuffer>> override
 		{
 			return m_VertexBuffers;
 		}
-		[[nodiscard]] std::optional<const IndexBuffer&> GetIndexBuffer() const noexcept override
+		[[nodiscard]] auto GetIndexBuffer() const noexcept -> std::optional<const IndexBuffer&> override
 		{
 			if (m_IndexBuffer)
 				return *m_IndexBuffer;

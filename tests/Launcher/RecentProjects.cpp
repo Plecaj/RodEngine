@@ -13,11 +13,11 @@ namespace {
 	class RecentProjectsFixture
 	{
 	protected:
-		[[nodiscard]] std::filesystem::path HistoryPath() const
+		[[nodiscard]] auto HistoryPath() const -> std::filesystem::path
 		{
 			return m_Directory.GetPath() / "RecentProjects.yaml";
 		}
-		[[nodiscard]] Rod::Project MakeProject(const std::string& name) const
+		[[nodiscard]] auto MakeProject(const std::string& name) const -> Rod::Project
 		{
 			const auto path = m_Directory.GetPath() / (name + ".rodproj");
 			const std::ofstream file(path);
@@ -58,7 +58,7 @@ TEST_CASE_METHOD(
 	REQUIRE(
 	    std::ranges::equal(restored.GetEntries(), history.GetEntries(), [](const auto& loaded, const auto& original) {
 		    return loaded.Name == original.Name && loaded.Path == original.Path &&
-		           loaded.LastOpened == original.LastOpened && loaded.LastOpened.size() == dateLength;
+			       loaded.LastOpened == original.LastOpened && loaded.LastOpened.size() == dateLength;
 	    }));
 }
 

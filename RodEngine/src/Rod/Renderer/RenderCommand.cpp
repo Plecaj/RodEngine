@@ -6,6 +6,10 @@
 
 namespace Rod {
 
-	Scope<RendererAPI> RenderCommand::s_RendererAPI = CreateScope<OpenGLRendererAPI>();
+	auto RenderCommand::GetRendererAPI() -> RendererAPI&
+	{
+		static OpenGLRendererAPI s_RendererAPI;
+		return s_RendererAPI;
+	}
 
 }

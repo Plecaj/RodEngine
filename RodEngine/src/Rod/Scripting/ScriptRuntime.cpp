@@ -2,7 +2,8 @@
 
 #include "ScriptRuntime.h"
 
-#include <bit>
+#include "Rod/Utils/FunctionPointerCast.h"
+
 #include <memory>
 #include <stdexcept>
 
@@ -19,7 +20,7 @@ namespace Rod {
 
 	namespace {
 
-		[[nodiscard]] std::filesystem::path GetHostFxrPath()
+		[[nodiscard]] auto GetHostFxrPath() -> std::filesystem::path
 		{
 #ifdef ROD_HAS_DOTNET_HOST
 			size_t size = 0;
@@ -33,7 +34,7 @@ namespace Rod {
 #endif
 		}
 
-		[[nodiscard]] std::shared_ptr<const SharedLibrary> GetHostFxrLibrary()
+		[[nodiscard]] auto GetHostFxrLibrary() -> std::shared_ptr<const SharedLibrary>
 		{
 			static const auto library = std::make_shared<const SharedLibrary>(GetHostFxrPath());
 			return library;
@@ -46,7 +47,7 @@ namespace Rod {
 	      m_CoreAssemblyPath(std::move(other.m_CoreAssemblyPath))
 	{}
 
-	ScriptRuntime& ScriptRuntime::operator=(ScriptRuntime&& other) noexcept
+	auto ScriptRuntime::operator=(ScriptRuntime&& other) noexcept -> ScriptRuntime&
 	{
 		if (this != &other)
 		{
@@ -58,7 +59,7 @@ namespace Rod {
 	}
 
 #ifdef ROD_HAS_DOTNET_HOST
-	ScriptRuntime::HostString ScriptRuntime::ToHostString(const std::string& value)
+	auto ScriptRuntime::ToHostString(const std::string& value) -> ScriptRuntime::HostString
 	{
 	#ifdef RD_PLATFORM_WINDOWS
 		const int size = MultiByteToWideChar(
@@ -99,11 +100,11 @@ namespace Rod {
 		if (!std::filesystem::is_regular_file(m_CoreAssemblyPath))
 			throw std::runtime_error("Core assembly unavailable '" + m_CoreAssemblyPath.string() + "'");
 
-		auto initializeForRuntimeConfig = std::bit_cast<hostfxr_initialize_for_runtime_config_fn>(
+		const auto initializeForRuntimeConfig = FunctionPointerCast<hostfxr_initialize_for_runtime_config_fn>(
 		    m_HostFxr->GetFunction("hostfxr_initialize_for_runtime_config"));
-		auto getRuntimeDelegate =
-		    std::bit_cast<hostfxr_get_runtime_delegate_fn>(m_HostFxr->GetFunction("hostfxr_get_runtime_delegate"));
-		auto close = std::bit_cast<hostfxr_close_fn>(m_HostFxr->GetFunction("hostfxr_close"));
+		const auto getRuntimeDelegate = FunctionPointerCast<hostfxr_get_runtime_delegate_fn>(
+		    m_HostFxr->GetFunction("hostfxr_get_runtime_delegate"));
+		const auto close = FunctionPointerCast<hostfxr_close_fn>(m_HostFxr->GetFunction("hostfxr_close"));
 
 		if (!initializeForRuntimeConfig || !getRuntimeDelegate || !close)
 			throw std::runtime_error("hostfxr symbols missing");
@@ -127,7 +128,7 @@ namespace Rod {
 #endif
 	}
 
-	void* ScriptRuntime::GetFunction(const std::string& typeName, const std::string& methodName) const
+	auto ScriptRuntime::GetFunction(const std::string& typeName, const std::string& methodName) const -> void*
 	{
 		if (!m_LoadAssemblyAndGetFunctionPointer)
 			return nullptr;
@@ -136,8 +137,8 @@ namespace Rod {
 		// hostfxr requires it
 		// NOLINTNEXTLINE(misc-const-correctness)
 		void* function = nullptr;
-		auto loadAssemblyAndGetFunctionPointer =
-		    std::bit_cast<load_assembly_and_get_function_pointer_fn>(m_LoadAssemblyAndGetFunctionPointer);
+		const auto loadAssemblyAndGetFunctionPointer =
+		    FunctionPointerCast<load_assembly_and_get_function_pointer_fn>(m_LoadAssemblyAndGetFunctionPointer);
 		const int32_t result = loadAssemblyAndGetFunctionPointer(
 		    m_CoreAssemblyPath.c_str(),
 		    ToHostString(typeName).c_str(),

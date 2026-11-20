@@ -10,8 +10,8 @@ namespace Rod {
 	class Platform
 	{
 	public:
-		[[nodiscard]] static float GetTime();
-		[[nodiscard]] static std::filesystem::path GetExecutablePath();
+		[[nodiscard]] static auto GetTime() -> float;
+		[[nodiscard]] static auto GetExecutablePath() -> std::filesystem::path;
 	};
 
 	class FileDialogs
@@ -20,9 +20,9 @@ namespace Rod {
 		FileDialogs() noexcept = default;
 		explicit FileDialogs(const Window& owner) noexcept : m_Owner(&owner) {}
 
-		[[nodiscard]] std::string OpenFile(const char* filter, const std::string& initialDirectory = {}) const;
-		[[nodiscard]] std::string SelectFolder(const std::string& initialDirectory = {}) const;
-		[[nodiscard]] std::string SaveFile(const char* filter) const;
+		[[nodiscard]] auto OpenFile(const char* filter, const std::string& initialDirectory = {}) const -> std::string;
+		[[nodiscard]] auto SelectFolder(const std::string& initialDirectory = {}) const -> std::string;
+		[[nodiscard]] auto SaveFile(const char* filter) const -> std::string;
 
 	private:
 		[[maybe_unused]] const Window* m_Owner = nullptr;

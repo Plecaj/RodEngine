@@ -10,15 +10,17 @@
 #include "Rod/Renderer/SceneRenderer.h"
 #include "Rod/Scripting/ScriptEngine.h"
 
+#include <algorithm>
+
 namespace Rod {
 	namespace {
 		template <typename Component, typename Equal>
-		bool SameComponent(
+		auto SameComponent(
 		    const entt::registry& left,
 		    entt::entity leftEntity,
 		    const entt::registry& right,
 		    entt::entity rightEntity,
-		    Equal equal)
+		    Equal equal) -> bool
 		{
 			const bool leftHas = left.all_of<Component>(leftEntity);
 			const bool rightHas = right.all_of<Component>(rightEntity);
@@ -27,27 +29,25 @@ namespace Rod {
 		}
 
 		template <typename Asset>
-		bool SameAsset(const Ref<Asset>& left, const Ref<Asset>& right)
+		auto SameAsset(const Ref<Asset>& left, const Ref<Asset>& right) -> bool
 		{
 			return (!left && !right) || (left && right && left->GetPath() == right->GetPath());
 		}
 
-		bool SameScriptFields(const ScriptFieldMap& left, const ScriptFieldMap& right)
+		auto SameScriptFields(const ScriptFieldMap& left, const ScriptFieldMap& right) -> bool
 		{
 			if (left.size() != right.size())
 				return false;
-			for (const auto& [name, field] : left)
-			{
+			return std::ranges::all_of(left, [&right](const auto& entry) {
+				const auto& [name, field] = entry;
 				const auto it = right.find(name);
-				if (it == right.end() || field.Field.Name != it->second.Field.Name ||
-				    field.Field.TypeName != it->second.Field.TypeName || field.Field.Type != it->second.Field.Type ||
-				    field.Value != it->second.Value)
-					return false;
-			}
-			return true;
+				return it != right.end() && field.Field.Name == it->second.Field.Name &&
+				       field.Field.TypeName == it->second.Field.TypeName && field.Field.Type == it->second.Field.Type &&
+				       field.Value == it->second.Value;
+			});
 		}
 
-		bool SameCamera(const SceneCamera& left, const SceneCamera& right)
+		auto SameCamera(const SceneCamera& left, const SceneCamera& right) -> bool
 		{
 			if (left.GetProjectionType() != right.GetProjectionType() ||
 			    left.GetPerspectiveVerticalFOV() != right.GetPerspectiveVerticalFOV() ||
@@ -65,11 +65,11 @@ namespace Rod {
 			return true;
 		}
 
-		bool SameEntityComponents(
+		auto SameEntityComponents(
 		    const entt::registry& left,
 		    entt::entity leftEntity,
 		    const entt::registry& right,
-		    entt::entity rightEntity)
+		    entt::entity rightEntity) -> bool
 		{
 			return SameComponent<TagComponent>(
 			           left,
@@ -92,7 +92,7 @@ namespace Rod {
 			           rightEntity,
 			           [](const auto& a, const auto& b) {
 				           return a.Color == b.Color && a.TilingFactor == b.TilingFactor &&
-				                  SameAsset(a.Texture, b.Texture);
+						          SameAsset(a.Texture, b.Texture);
 			           }) &&
 			       SameComponent<MeshComponent>(
 			           left,
@@ -101,9 +101,9 @@ namespace Rod {
 			           rightEntity,
 			           [](const auto& a, const auto& b) {
 				           return SameAsset(a.Mesh, b.Mesh) && a.Material.GetAlbedo() == b.Material.GetAlbedo() &&
-				                  a.Material.GetEmissive() == b.Material.GetEmissive() &&
-				                  a.Material.GetRoughness() == b.Material.GetRoughness() &&
-				                  a.Material.GetMetallic() == b.Material.GetMetallic();
+						          a.Material.GetEmissive() == b.Material.GetEmissive() &&
+						          a.Material.GetRoughness() == b.Material.GetRoughness() &&
+						          a.Material.GetMetallic() == b.Material.GetMetallic();
 			           }) &&
 			       SameComponent<DirectionalLightComponent>(
 			           left,
@@ -120,7 +120,7 @@ namespace Rod {
 			           rightEntity,
 			           [](const auto& a, const auto& b) {
 				           return a.Primary == b.Primary && a.FixedAspectRatio == b.FixedAspectRatio &&
-				                  SameCamera(a.Camera, b.Camera);
+						          SameCamera(a.Camera, b.Camera);
 			           }) &&
 			       SameComponent<ScriptComponent>(
 			           left,
@@ -147,8 +147,8 @@ namespace Rod {
 	{
 		(
 		    [&]() {
-			    auto view = src.view<Components>();
-			    for (auto srcEntity : view)
+			    const auto view = src.view<Components>();
+			    for (const auto srcEntity : view)
 			    {
 				    const UUID uuid = src.get<IDComponent>(srcEntity).ID;
 				    const entt::entity dstEntity = entityMap.at(static_cast<uint64_t>(uuid));
@@ -163,8 +163,8 @@ namespace Rod {
 	{
 
 		std::unordered_map<uint64_t, entt::entity> entityMap;
-		auto idView = other.m_Registry.view<IDComponent>();
-		for (auto entityID : idView)
+		const auto idView = other.m_Registry.view<IDComponent>();
+		for (const auto entityID : idView)
 		{
 			const UUID uuid = other.m_Registry.get<IDComponent>(entityID).ID;
 			const auto& name = other.m_Registry.get<TagComponent>(entityID).Tag;
@@ -180,18 +180,18 @@ namespace Rod {
 		    CameraComponent,
 		    ScriptComponent>(this->m_Registry, other.m_Registry, entityMap);
 
-		auto nativeScriptView = other.m_Registry.view<NativeScriptComponent, IDComponent>();
-		for (auto entityID : nativeScriptView)
+		const auto nativeScriptView = other.m_Registry.view<NativeScriptComponent, IDComponent>();
+		for (const auto entityID : nativeScriptView)
 		{
 			const UUID uuid = other.m_Registry.get<IDComponent>(entityID).ID;
-			auto dstEntity = entityMap.at(static_cast<uint64_t>(uuid));
+			const auto dstEntity = entityMap.at(static_cast<uint64_t>(uuid));
 			const auto& srcComponent = other.m_Registry.get<NativeScriptComponent>(entityID);
 			auto& dstComponent = this->m_Registry.emplace_or_replace<NativeScriptComponent>(dstEntity);
 			dstComponent.InstantiateScript = srcComponent.InstantiateScript;
 		}
 	}
 
-	Scene& Scene::operator=(const Scene& other)
+	auto Scene::operator=(const Scene& other) -> Scene&
 	{
 		if (this != &other)
 		{
@@ -208,7 +208,8 @@ namespace Rod {
 		RebindNativeScripts();
 	}
 
-	Scene& Scene::operator=(Scene&& other) noexcept(false)
+	// NOLINTNEXTLINE(bugprone-unsafe-to-allow-exceptions): Native script OnDestroy callbacks may throw.
+	auto Scene::operator=(Scene&& other) noexcept(false) -> Scene&
 	{
 		if (this != &other)
 		{
@@ -229,12 +230,12 @@ namespace Rod {
 		});
 	}
 
-	Entity Scene::CreateEntity(const std::string& name)
+	auto Scene::CreateEntity(const std::string& name) -> Entity
 	{
 		return CreateEntityWithUUID(UUID(), name);
 	}
 
-	Entity Scene::CreateEntityWithUUID(UUID uuid, const std::string& name)
+	auto Scene::CreateEntityWithUUID(UUID uuid, const std::string& name) -> Entity
 	{
 		Entity entity = {m_Registry.create(), *this};
 		try
@@ -285,7 +286,7 @@ namespace Rod {
 		SceneRenderer::RenderEditor(*this, camera);
 	}
 
-	bool Scene::operator==(const Scene& other) const
+	auto Scene::operator==(const Scene& other) const -> bool
 	{
 		if (this == &other)
 			return true;
@@ -352,8 +353,8 @@ namespace Rod {
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
 
-		auto view = m_Registry.view<CameraComponent>();
-		for (auto entity : view)
+		const auto view = m_Registry.view<CameraComponent>();
+		for (const auto entity : view)
 		{
 			auto& cameraComponent = view.get<CameraComponent>(entity);
 			if (cameraComponent.FixedAspectRatio)
@@ -363,10 +364,10 @@ namespace Rod {
 		}
 	}
 
-	Entity Scene::GetPrimaryCameraEntity()
+	auto Scene::GetPrimaryCameraEntity() -> Entity
 	{
-		auto view = m_Registry.view<CameraComponent>();
-		for (auto entity : view)
+		const auto view = m_Registry.view<CameraComponent>();
+		for (const auto entity : view)
 		{
 			const auto& camera = view.get<CameraComponent>(entity);
 			if (camera.Primary)
@@ -375,10 +376,10 @@ namespace Rod {
 		return {};
 	}
 
-	Entity Scene::FindEntityByUUID(UUID uuid)
+	auto Scene::FindEntityByUUID(UUID uuid) -> Entity
 	{
-		auto view = m_Registry.view<IDComponent>();
-		for (auto entity : view)
+		const auto view = m_Registry.view<IDComponent>();
+		for (const auto entity : view)
 		{
 			const auto& id = view.get<IDComponent>(entity);
 			if (id.ID == uuid)
@@ -387,10 +388,10 @@ namespace Rod {
 		return {};
 	}
 
-	Entity Scene::FindEntityByName(const std::string& name)
+	auto Scene::FindEntityByName(const std::string& name) -> Entity
 	{
-		auto view = m_Registry.view<TagComponent>();
-		for (auto entity : view)
+		const auto view = m_Registry.view<TagComponent>();
+		for (const auto entity : view)
 		{
 			const auto& tag = view.get<TagComponent>(entity);
 			if (tag.Tag == name)

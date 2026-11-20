@@ -26,17 +26,17 @@ namespace Rod {
 		    std::function<void()> requestClose);
 		~RuntimeLayer() override;
 		RuntimeLayer(const RuntimeLayer&) = delete;
-		RuntimeLayer& operator=(const RuntimeLayer&) = delete;
+		auto operator=(const RuntimeLayer&) -> RuntimeLayer& = delete;
 		RuntimeLayer(RuntimeLayer&&) = delete;
-		RuntimeLayer& operator=(RuntimeLayer&&) = delete;
+		auto operator=(RuntimeLayer&&) -> RuntimeLayer& = delete;
 
-		virtual void OnUpdate(Timestep ts) override;
-		virtual void OnEvent(Event& event) override;
+		void OnUpdate(Timestep ts) override;
+		void OnEvent(Event& event) override;
 
 	private:
 		void LoadScene(const Project& project, const Window& window);
-		bool OnWindowResize(WindowResizeEvent& event);
-		bool OnKeyPressed(KeyPressedEvent& event);
+		auto OnWindowResize(WindowResizeEvent& event) -> bool;
+		auto OnKeyPressed(KeyPressedEvent& event) -> bool;
 
 	private:
 		static constexpr glm::vec4 s_ClearColor{0.15f, 0.15f, 0.15f, 1.0f};

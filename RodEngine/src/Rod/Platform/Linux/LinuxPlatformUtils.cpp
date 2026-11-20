@@ -7,13 +7,14 @@
 
 namespace Rod {
 
-	std::filesystem::path Platform::GetExecutablePath()
+	auto Platform::GetExecutablePath() -> std::filesystem::path
 	{
 		return std::filesystem::read_symlink("/proc/self/exe");
 	}
 
-	static std::string
+	static auto
 	ShowFileDialog(const char* filter, bool save, const std::string& initialDirectory = {}, bool directory = false)
+	    -> std::string
 	{
 		std::vector<std::string> arguments = {"zenity", "--file-selection"};
 		if (directory)
@@ -51,17 +52,17 @@ namespace Rod {
 		return result.Output;
 	}
 
-	std::string FileDialogs::OpenFile(const char* filter, const std::string& initialDirectory) const
+	auto FileDialogs::OpenFile(const char* filter, const std::string& initialDirectory) const -> std::string
 	{
 		return ShowFileDialog(filter, false, initialDirectory);
 	}
 
-	std::string FileDialogs::SelectFolder(const std::string& initialDirectory) const
+	auto FileDialogs::SelectFolder(const std::string& initialDirectory) const -> std::string
 	{
 		return ShowFileDialog(nullptr, false, initialDirectory, true);
 	}
 
-	std::string FileDialogs::SaveFile(const char* filter) const
+	auto FileDialogs::SaveFile(const char* filter) const -> std::string
 	{
 		return ShowFileDialog(filter, true);
 	}

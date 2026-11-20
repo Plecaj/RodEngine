@@ -11,11 +11,12 @@
 
 namespace Rod::Math {
 
-	bool DecomposeTransform(
+	auto DecomposeTransform(
 	    const glm::mat4& transform,
+	    // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 	    glm::vec3& translation,
 	    glm::vec3& rotation,
-	    glm::vec3& scale) noexcept
+	    glm::vec3& scale) noexcept -> bool
 	{
 		glm::quat orientation;
 		glm::vec3 skew;

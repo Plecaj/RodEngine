@@ -11,12 +11,12 @@ namespace Rod {
 		ScriptableEntity() = default;
 		virtual ~ScriptableEntity() = default;
 		ScriptableEntity(const ScriptableEntity&) = delete;
-		ScriptableEntity& operator=(const ScriptableEntity&) = delete;
+		auto operator=(const ScriptableEntity&) -> ScriptableEntity& = delete;
 		ScriptableEntity(ScriptableEntity&&) = delete;
-		ScriptableEntity& operator=(ScriptableEntity&&) = delete;
+		auto operator=(ScriptableEntity&&) -> ScriptableEntity& = delete;
 
 		template <typename T>
-		[[nodiscard]] T& GetComponent()
+		[[nodiscard]] auto GetComponent() -> T&
 		{
 			return m_Entity.GetComponent<T>();
 		}

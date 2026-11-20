@@ -21,14 +21,14 @@ namespace Rod {
 	public:
 		explicit Mesh(const std::string& glbPath);
 
-		[[nodiscard]] std::optional<const VertexArray&> GetVAO() const noexcept
+		[[nodiscard]] auto GetVAO() const noexcept -> std::optional<const VertexArray&>
 		{
 			if (m_VAO)
 				return *m_VAO;
 			return std::nullopt;
 		}
-		[[nodiscard]] const Material& GetMaterial() const noexcept { return m_Material; }
-		[[nodiscard]] const std::string& GetPath() const noexcept { return m_SourcePath; }
+		[[nodiscard]] auto GetMaterial() const noexcept -> const Material& { return m_Material; }
+		[[nodiscard]] auto GetPath() const noexcept -> const std::string& { return m_SourcePath; }
 
 	private:
 		void ProcessPrimitive(std::span<const float> vertices, std::span<const uint32_t> indices);

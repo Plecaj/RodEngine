@@ -11,10 +11,10 @@ namespace Rod {
 	public:
 		constexpr MouseMovedEvent(const float x, const float y) noexcept : m_MouseX(x), m_MouseY(y) {}
 
-		[[nodiscard]] constexpr float GetX() const noexcept { return m_MouseX; }
-		[[nodiscard]] constexpr float GetY() const noexcept { return m_MouseY; }
+		[[nodiscard]] constexpr auto GetX() const noexcept -> float { return m_MouseX; }
+		[[nodiscard]] constexpr auto GetY() const noexcept -> float { return m_MouseY; }
 
-		[[nodiscard]] virtual std::string ToString() const override
+		[[nodiscard]] auto ToString() const -> std::string override
 		{
 			std::stringstream ss;
 			ss << "MouseMovedEvent: " << m_MouseX << ", " << m_MouseY;
@@ -22,7 +22,8 @@ namespace Rod {
 		}
 
 		EVENT_CLASS_TYPE(MouseMoved)
-		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
+		EVENT_CLASS_CATEGORY(
+		    static_cast<unsigned int>(EventCategoryMouse) | static_cast<unsigned int>(EventCategoryInput))
 	private:
 		float m_MouseX, m_MouseY;
 	};
@@ -34,10 +35,10 @@ namespace Rod {
 		    : m_XOffset(xOffset), m_YOffset(yOffset)
 		{}
 
-		[[nodiscard]] constexpr float GetXOffset() const noexcept { return m_XOffset; }
-		[[nodiscard]] constexpr float GetYOffset() const noexcept { return m_YOffset; }
+		[[nodiscard]] constexpr auto GetXOffset() const noexcept -> float { return m_XOffset; }
+		[[nodiscard]] constexpr auto GetYOffset() const noexcept -> float { return m_YOffset; }
 
-		[[nodiscard]] virtual std::string ToString() const override
+		[[nodiscard]] auto ToString() const -> std::string override
 		{
 			std::stringstream ss;
 			ss << "MouseScrolledEvent: " << GetXOffset() << ", " << GetYOffset();
@@ -45,7 +46,8 @@ namespace Rod {
 		}
 
 		EVENT_CLASS_TYPE(MouseScrolled)
-		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
+		EVENT_CLASS_CATEGORY(
+		    static_cast<unsigned int>(EventCategoryMouse) | static_cast<unsigned int>(EventCategoryInput))
 	private:
 		float m_XOffset, m_YOffset;
 	};
@@ -53,9 +55,11 @@ namespace Rod {
 	class MouseButtonEvent : public Event
 	{
 	public:
-		[[nodiscard]] constexpr int GetMouseButton() const noexcept { return m_Button; }
+		[[nodiscard]] constexpr auto GetMouseButton() const noexcept -> int { return m_Button; }
 
-		EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput | EventCategoryMouseButton)
+		EVENT_CLASS_CATEGORY(
+		    static_cast<unsigned int>(EventCategoryMouse) | static_cast<unsigned int>(EventCategoryInput) |
+		    static_cast<unsigned int>(EventCategoryMouseButton))
 	protected:
 		constexpr explicit MouseButtonEvent(const int button) noexcept : m_Button(button) {}
 
@@ -67,7 +71,7 @@ namespace Rod {
 	public:
 		constexpr explicit MouseButtonPressedEvent(const int button) noexcept : MouseButtonEvent(button) {}
 
-		[[nodiscard]] virtual std::string ToString() const override
+		[[nodiscard]] auto ToString() const -> std::string override
 		{
 			std::stringstream ss;
 			ss << "MouseButtonPressedEvent: " << m_Button;
@@ -82,7 +86,7 @@ namespace Rod {
 	public:
 		constexpr explicit MouseButtonReleasedEvent(const int button) noexcept : MouseButtonEvent(button) {}
 
-		[[nodiscard]] virtual std::string ToString() const override
+		[[nodiscard]] auto ToString() const -> std::string override
 		{
 			std::stringstream ss;
 			ss << "MouseButtonReleasedEvent: " << m_Button;

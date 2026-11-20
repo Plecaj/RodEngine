@@ -21,12 +21,12 @@ namespace Rod {
 		RendererAPI() = default;
 		virtual ~RendererAPI() = default;
 		RendererAPI(const RendererAPI&) = delete;
-		RendererAPI& operator=(const RendererAPI&) = delete;
+		auto operator=(const RendererAPI&) -> RendererAPI& = delete;
 		RendererAPI(RendererAPI&&) = delete;
-		RendererAPI& operator=(RendererAPI&&) = delete;
+		auto operator=(RendererAPI&&) -> RendererAPI& = delete;
 
 		virtual void Init() = 0;
-		[[nodiscard]] virtual int GetMaxTextureSlots() const = 0;
+		[[nodiscard]] virtual auto GetMaxTextureSlots() const -> int = 0;
 		virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) = 0;
 		virtual void SetClearColor(const glm::vec4& color) = 0;
 		virtual void Clear() = 0;
@@ -44,10 +44,10 @@ namespace Rod {
 			uint32_t ViewportHeight = 0;
 		};
 
-		[[nodiscard]] virtual RendererState GetState() const = 0;
+		[[nodiscard]] virtual auto GetState() const -> RendererState = 0;
 		virtual void SetState(const RendererState& state) = 0;
 
-		[[nodiscard]] static API GetAPI() noexcept { return s_API; }
+		[[nodiscard]] static auto GetAPI() noexcept -> API { return s_API; }
 
 	private:
 		static API s_API;

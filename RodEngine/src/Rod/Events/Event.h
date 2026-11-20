@@ -32,31 +32,31 @@ namespace Rod {
 	enum EventCategory : std::uint8_t
 	{
 		None = 0,
-		EventCategoryApplication = 1 << 0,
-		EventCategoryInput = 1 << 1,
-		EventCategoryKeyboard = 1 << 2,
-		EventCategoryMouse = 1 << 3,
-		EventCategoryMouseButton = 1 << 4
+		EventCategoryApplication = 1U << 0U,
+		EventCategoryInput = 1U << 1U,
+		EventCategoryKeyboard = 1U << 2U,
+		EventCategoryMouse = 1U << 3U,
+		EventCategoryMouseButton = 1U << 4U
 	};
 
 #define EVENT_CLASS_TYPE(type) \
-	[[nodiscard]] static constexpr EventType GetStaticType() noexcept \
+	[[nodiscard]] static constexpr auto GetStaticType() noexcept -> EventType \
 	{ \
 		return EventType::type; \
 	} \
-	[[nodiscard]] virtual constexpr EventType GetEventType() const noexcept override \
+	[[nodiscard]] virtual constexpr auto GetEventType() const noexcept -> EventType override \
 	{ \
 		return GetStaticType(); \
 	} \
-	[[nodiscard]] virtual constexpr const char* GetName() const noexcept override \
+	[[nodiscard]] virtual constexpr auto GetName() const noexcept -> const char* override \
 	{ \
 		return #type; \
 	}
 
 #define EVENT_CLASS_CATEGORY(category) \
-	[[nodiscard]] virtual constexpr int GetCategoryFlags() const noexcept override \
+	[[nodiscard]] virtual constexpr auto GetCategoryFlags() const noexcept -> int override \
 	{ \
-		return category; \
+		return static_cast<int>(category); \
 	}
 
 	class Event
@@ -65,20 +65,20 @@ namespace Rod {
 		Event() = default;
 		virtual ~Event() = default;
 		Event(const Event&) = delete;
-		Event& operator=(const Event&) = delete;
+		auto operator=(const Event&) -> Event& = delete;
 		Event(Event&&) = delete;
-		Event& operator=(Event&&) = delete;
+		auto operator=(Event&&) -> Event& = delete;
 
 		bool Handled = false;
 
-		[[nodiscard]] virtual constexpr EventType GetEventType() const noexcept = 0;
-		[[nodiscard]] virtual constexpr const char* GetName() const noexcept = 0;
-		[[nodiscard]] virtual constexpr int GetCategoryFlags() const noexcept = 0;
-		[[nodiscard]] virtual std::string ToString() const { return GetName(); }
+		[[nodiscard]] virtual constexpr auto GetEventType() const noexcept -> EventType = 0;
+		[[nodiscard]] virtual constexpr auto GetName() const noexcept -> const char* = 0;
+		[[nodiscard]] virtual constexpr auto GetCategoryFlags() const noexcept -> int = 0;
+		[[nodiscard]] virtual auto ToString() const -> std::string { return GetName(); }
 
-		[[nodiscard]] constexpr bool IsInCategory(EventCategory category) const noexcept
+		[[nodiscard]] constexpr auto IsInCategory(EventCategory category) const noexcept -> bool
 		{
-			return (GetCategoryFlags() & category) != 0;
+			return (static_cast<unsigned int>(GetCategoryFlags()) & static_cast<unsigned int>(category)) != 0U;
 		}
 	};
 
@@ -92,7 +92,7 @@ namespace Rod {
 			event.Handled = true;
 	}
 
-	inline std::ostream& operator<<(std::ostream& os, const Event& e)
+	inline auto operator<<(std::ostream& os, const Event& e) -> std::ostream&
 	{
 		return os << e.ToString();
 	}

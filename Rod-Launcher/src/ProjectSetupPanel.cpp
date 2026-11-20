@@ -19,7 +19,7 @@ namespace Rod {
 		constexpr float g_FieldSpacing = 12.0f;
 		constexpr ImVec2 g_ButtonSize{144.0f, 36.0f};
 
-		[[nodiscard]] constexpr bool HasText(const char* value) noexcept
+		[[nodiscard]] constexpr auto HasText(const char* value) noexcept -> bool
 		{
 			return std::string_view(value).find_first_not_of(" \t\r\n") != std::string_view::npos;
 		}
@@ -44,7 +44,7 @@ namespace Rod {
 		m_ShaderDirectory = defaults.ShadersPath;
 	}
 
-	std::optional<Project> ProjectSetupPanel::OnImGuiRender()
+	auto ProjectSetupPanel::OnImGuiRender() -> std::optional<Project>
 	{
 		constexpr auto titles = std::to_array<const char*>({"Directory", "Project details", "Project files"});
 		const auto stepIndex = static_cast<size_t>(m_Step);
@@ -82,7 +82,7 @@ namespace Rod {
 		return DrawNavigation();
 	}
 
-	bool ProjectSetupPanel::DrawPathPicker(const char* label, const std::filesystem::path& value)
+	auto ProjectSetupPanel::DrawPathPicker(const char* label, const std::filesystem::path& value) -> bool
 	{
 		ImGui::PushID(label);
 		ImGui::TextUnformatted(label);
@@ -94,7 +94,10 @@ namespace Rod {
 		return browse;
 	}
 
-	void ProjectSetupPanel::PickProjectPath(std::filesystem::path& value, const char* filter, const char* extension)
+	void ProjectSetupPanel::PickProjectPath(
+	    std::filesystem::path& value,
+	    const char* filter,
+	    const std::filesystem::path& extension)
 	{
 		const auto selected = filter ? m_FileDialogs.OpenFile(filter, m_Directory.string())
 		                             : m_FileDialogs.SelectFolder(m_Directory.string());
@@ -105,8 +108,8 @@ namespace Rod {
 		const auto relative = std::filesystem::relative(std::filesystem::canonical(selected), m_Directory);
 		if (relative.empty() || relative.has_root_path() || std::ranges::find(relative, "..") != relative.end())
 			throw std::runtime_error("Choose a path inside the project folder.");
-		if (extension != nullptr && relative.extension() != extension)
-			throw std::runtime_error(std::string("Choose a ") + extension + " file.");
+		if (!extension.empty() && relative.extension() != extension)
+			throw std::runtime_error("Choose a " + extension.string() + " file.");
 		value = relative;
 		m_Error.clear();
 	}
@@ -176,7 +179,7 @@ namespace Rod {
 		ImGui::TextWrapped("Project file: %s", (m_Directory / (ProjectName() + ".rodproj")).string().c_str());
 	}
 
-	std::optional<Project> ProjectSetupPanel::DrawNavigation()
+	auto ProjectSetupPanel::DrawNavigation() -> std::optional<Project>
 	{
 		constexpr float bottomPadding = 20.0f;
 		const float top = ImGui::GetWindowHeight() - bottomPadding - g_ButtonSize.y;
@@ -220,7 +223,7 @@ namespace Rod {
 		return created;
 	}
 
-	Project ProjectSetupPanel::CreateProject() const
+	auto ProjectSetupPanel::CreateProject() const -> Project
 	{
 		const std::filesystem::path name = ProjectName();
 		if (name.has_parent_path() || name.has_root_path() || name == "." || name == ".." || name.filename().empty())
@@ -251,7 +254,7 @@ namespace Rod {
 		return project;
 	}
 
-	bool ProjectSetupPanel::CanContinue() const noexcept
+	auto ProjectSetupPanel::CanContinue() const noexcept -> bool
 	{
 		switch (m_Step)
 		{
@@ -265,7 +268,7 @@ namespace Rod {
 		return false;
 	}
 
-	std::string ProjectSetupPanel::ProjectName() const
+	auto ProjectSetupPanel::ProjectName() const -> std::string
 	{
 		return HasText(m_Name.data()) ? m_Name.data() : m_Directory.filename().string();
 	}

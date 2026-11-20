@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
+#include <filesystem>
 #include <fstream>
 #include <memory>
 #include <string>
@@ -32,7 +33,7 @@ namespace Rod {
 	public:
 		Instrumentor() = default;
 
-		void BeginSession(const std::string& name, const std::string& filepath = "results.json")
+		void BeginSession(const std::string& name, const std::filesystem::path& filepath = "results.json")
 		{
 			if (m_CurrentSession)
 				EndSession();
@@ -60,11 +61,11 @@ namespace Rod {
 			if (!m_Enabled || !m_CurrentSession)
 				return;
 
-			if (m_ProfileCount++ > 0)
-				m_OutputStream << ",";
-
 			std::string name = result.Name;
 			std::replace(name.begin(), name.end(), '"', '\'');
+
+			if (m_ProfileCount++ > 0)
+				m_OutputStream << ",";
 
 			m_OutputStream << "{";
 			m_OutputStream << "\"cat\":\"function\",";
@@ -91,7 +92,7 @@ namespace Rod {
 			m_OutputStream.flush();
 		}
 
-		[[nodiscard]] static Instrumentor& Get()
+		[[nodiscard]] static auto Get() -> Instrumentor&
 		{
 			static Instrumentor s_Instance;
 			return s_Instance;
@@ -106,15 +107,22 @@ namespace Rod {
 			m_StartTimepoint = std::chrono::high_resolution_clock::now();
 		}
 
-		~InstrumentationTimer()
+		~InstrumentationTimer() noexcept
 		{
-			if (!m_Stopped)
+			if (m_Stopped)
+				return;
+
+			try
+			{
 				Stop();
+			}
+			catch (...) // NOLINT(bugprone-empty-catch)
+			{}
 		}
 		InstrumentationTimer(const InstrumentationTimer&) = delete;
-		InstrumentationTimer& operator=(const InstrumentationTimer&) = delete;
+		auto operator=(const InstrumentationTimer&) -> InstrumentationTimer& = delete;
 		InstrumentationTimer(InstrumentationTimer&&) = delete;
-		InstrumentationTimer& operator=(InstrumentationTimer&&) = delete;
+		auto operator=(InstrumentationTimer&&) -> InstrumentationTimer& = delete;
 
 		void Stop()
 		{
@@ -126,7 +134,7 @@ namespace Rod {
 			    std::chrono::time_point_cast<std::chrono::microseconds>(endTimepoint).time_since_epoch().count();
 
 			const size_t threadID = std::hash<std::thread::id>{}(std::this_thread::get_id());
-			Instrumentor::Get().WriteProfile({m_Name, start, end, threadID});
+			Instrumentor::Get().WriteProfile({.Name = m_Name, .Start = start, .End = end, .ThreadID = threadID});
 
 			m_Stopped = true;
 		}
@@ -150,7 +158,7 @@ namespace Rod {
 	#define RD_PROFILE_CONCAT(lhs, rhs) RD_PROFILE_CONCAT_IMPL(lhs, rhs)
 	#define RD_PROFILE_BEGIN_SESSION(name, filepath) ::Rod::Instrumentor::Get().BeginSession(name, filepath)
 	#define RD_PROFILE_END_SESSION() ::Rod::Instrumentor::Get().EndSession()
-	#define RD_PROFILE_SCOPE(name) ::Rod::InstrumentationTimer RD_PROFILE_CONCAT(timer, __LINE__)(name)
+	#define RD_PROFILE_SCOPE(name) const ::Rod::InstrumentationTimer RD_PROFILE_CONCAT(timer, __LINE__)(name)
 	#define RD_PROFILE_FUNCTION() RD_PROFILE_SCOPE(RD_PROFILE_FUNC_SIG)
 #else
 	#define RD_PROFILE_BEGIN_SESSION(name, filepath)

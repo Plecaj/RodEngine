@@ -39,8 +39,8 @@ namespace Rod {
 		};
 		struct AxisStyle
 		{
-			const char* Label;
-			const char* InputID;
+			const char* Label = "";
+			const char* InputID = "";
 			ImVec4 Normal;
 			ImVec4 Hovered;
 		};
@@ -58,26 +58,26 @@ namespace Rod {
 		static void DrawPerspectiveControls(SceneCamera& camera);
 		static void DrawOrthographicControls(CameraComponent& component);
 		template <typename Vector>
-		static std::string VecToFieldValue(const Vector& value);
+		static auto VecToFieldValue(const Vector& value) -> std::string;
 		template <typename Vector>
-		static Vector FieldValueToVector(const std::string& value);
+		static auto FieldValueToVector(const std::string& value) -> Vector;
 		static void SyncScriptFields(ScriptComponent& component);
 		static void PushRuntimeScriptField(Entity entity, const std::string& fieldName);
 		static void DrawScriptClassSelector(ScriptComponent& component);
-		static bool DrawFloatingScriptField(const std::string& name, ScriptFieldInstance& field);
-		static bool DrawBooleanScriptField(const std::string& name, ScriptFieldInstance& field);
-		static bool DrawIntegerScriptField(const std::string& name, ScriptFieldInstance& field);
-		static bool DrawStringScriptField(const std::string& name, ScriptFieldInstance& field);
+		static auto DrawFloatingScriptField(const std::string& name, ScriptFieldInstance& field) -> bool;
+		static auto DrawBooleanScriptField(const std::string& name, ScriptFieldInstance& field) -> bool;
+		static auto DrawIntegerScriptField(const std::string& name, ScriptFieldInstance& field) -> bool;
+		static auto DrawStringScriptField(const std::string& name, ScriptFieldInstance& field) -> bool;
 		template <typename Vector>
-		static bool DrawVectorScriptField(const std::string& name, ScriptFieldInstance& field);
-		static bool DrawScriptField(const std::string& name, ScriptFieldInstance& field);
+		static auto DrawVectorScriptField(const std::string& name, ScriptFieldInstance& field) -> bool;
+		static auto DrawScriptField(const std::string& name, ScriptFieldInstance& field) -> bool;
 
 		void DrawSceneHierarchy(Scene& scene) const;
 		void DrawPropertiesPanel() const;
 
 		void DrawEntityNode(Scene& scene, Entity entity) const;
 		void HandleHierarchyBlankSpace(Scene& scene) const;
-		[[nodiscard]] static bool HandleEntityContextMenu();
+		[[nodiscard]] static auto HandleEntityContextMenu() -> bool;
 
 		static void DrawTag(Entity entity);
 		static void DrawAddComponentButton(Entity entity);

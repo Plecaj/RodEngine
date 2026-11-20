@@ -11,7 +11,7 @@ namespace Rod {
 
 	namespace {
 
-		[[nodiscard]] std::string Trim(const std::string& value)
+		[[nodiscard]] auto Trim(const std::string& value) -> std::string
 		{
 			const size_t begin = value.find_first_not_of(" \t\r\n");
 			if (begin == std::string::npos)
@@ -21,7 +21,7 @@ namespace Rod {
 			return value.substr(begin, end - begin + 1);
 		}
 
-		[[nodiscard]] shaderc_shader_kind ShadercTypeFromString(const std::string& type)
+		[[nodiscard]] auto ShadercTypeFromString(const std::string& type) -> shaderc_shader_kind
 		{
 			if (type == "vertex")
 				return shaderc_vertex_shader;
@@ -40,7 +40,7 @@ namespace Rod {
 			return shaderc_glsl_infer_from_source;
 		}
 
-		[[nodiscard]] std::string ReadFile(const std::string& filepath)
+		[[nodiscard]] auto ReadFile(const std::string& filepath) -> std::string
 		{
 			RD_PROFILE_FUNCTION();
 
@@ -67,7 +67,7 @@ namespace Rod {
 			return result;
 		}
 
-		[[nodiscard]] std::unordered_map<shaderc_shader_kind, std::string> PreProcess(const std::string& source)
+		[[nodiscard]] auto PreProcess(const std::string& source) -> std::unordered_map<shaderc_shader_kind, std::string>
 		{
 			RD_PROFILE_FUNCTION();
 
@@ -95,7 +95,7 @@ namespace Rod {
 		}
 	}
 
-	Scope<Shader> Shader::Create(const std::string& filepath, const ShaderOptions& options)
+	auto Shader::Create(const std::string& filepath, const ShaderOptions& options) -> Scope<Shader>
 	{
 		const std::string source = ReadFile(filepath);
 		const std::unordered_map<shaderc_shader_kind, std::string> processed = PreProcess(source);
@@ -122,31 +122,32 @@ namespace Rod {
 
 	void ShaderLibrary::Add(const Ref<Shader>& shader)
 	{
-		auto& name = shader->GetName();
+		const auto& name = shader->GetName();
 		Add(name, shader);
 	}
 
-	Ref<Shader> ShaderLibrary::Load(const std::string& filepath)
+	auto ShaderLibrary::Load(const std::string& filepath) -> Ref<Shader>
 	{
 		Ref<Shader> shader = Shader::Create(filepath);
 		Add(shader);
 		return shader;
 	}
 
-	Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& filepath)
+	// NOLINTNEXTLINE(bugprone-easily-swappable-parameters):
+	auto ShaderLibrary::Load(const std::string& name, const std::string& filepath) -> Ref<Shader>
 	{
 		Ref<Shader> shader = Shader::Create(filepath);
 		Add(name, shader);
 		return shader;
 	}
 
-	Ref<Shader> ShaderLibrary::Get(const std::string& name)
+	auto ShaderLibrary::Get(const std::string& name) -> Ref<Shader>
 	{
 		RD_CORE_ASSERT(Exists(name), "Shader not found");
 		return m_Shaders[name];
 	}
 
-	bool ShaderLibrary::Exists(const std::string& name) const
+	auto ShaderLibrary::Exists(const std::string& name) const -> bool
 	{
 		return m_Shaders.contains(name);
 	}

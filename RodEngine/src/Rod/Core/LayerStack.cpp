@@ -26,8 +26,8 @@ namespace Rod {
 
 	void LayerStack::PopLayer(Layer& layer)
 	{
-		auto layerEnd = m_Layers.begin() + m_LayerInsertIndex;
-		auto it =
+		const auto layerEnd = m_Layers.begin() + m_LayerInsertIndex;
+		const auto it =
 		    std::find_if(m_Layers.begin(), layerEnd, [&layer](const auto& entry) { return entry.get() == &layer; });
 		if (it != layerEnd)
 		{
@@ -38,8 +38,8 @@ namespace Rod {
 
 	void LayerStack::PopOverlay(Layer& overlay)
 	{
-		auto overlayBegin = m_Layers.begin() + m_LayerInsertIndex;
-		auto it = std::find_if(overlayBegin, m_Layers.end(), [&overlay](const auto& entry) {
+		const auto overlayBegin = m_Layers.begin() + m_LayerInsertIndex;
+		const auto it = std::find_if(overlayBegin, m_Layers.end(), [&overlay](const auto& entry) {
 			return entry.get() == &overlay;
 		});
 		if (it != m_Layers.end())

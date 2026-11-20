@@ -8,8 +8,8 @@
 #include "Rod/Scene/Components.h"
 #include "Rod/Scene/Entity.h"
 #include "Rod/Scene/Scene.h"
+#include "Rod/Utils/FunctionPointerCast.h"
 
-#include <bit>
 #include <cstdlib> // IWYU pragma: keep
 #include <cstring>
 #include <stdexcept>
@@ -23,12 +23,12 @@ namespace Rod {
 	namespace {
 
 		template <typename Function>
-		[[nodiscard]] NativeCall MakeNativeCall(const char* name, Function function) noexcept
+		[[nodiscard]] auto MakeNativeCall(const char* name, Function function) noexcept -> NativeCall
 		{
-			return {name, std::bit_cast<void*>(function)};
+			return {name, FunctionPointerCast<void*>(function)};
 		}
 
-		[[nodiscard]] Entity GetEntity(uint64_t entityID)
+		[[nodiscard]] auto GetEntity(uint64_t entityID) -> Entity
 		{
 			const auto scene = ScriptGlue::GetSceneContext();
 			if (!scene)
@@ -36,7 +36,7 @@ namespace Rod {
 			return scene->FindEntityByUUID(UUID{entityID});
 		}
 
-		[[nodiscard]] void* AllocateString(const std::string& value) noexcept
+		[[nodiscard]] auto AllocateString(const std::string& value) noexcept -> void*
 		{
 #ifdef RD_PLATFORM_WINDOWS
 			auto* buffer = static_cast<char*>(CoTaskMemAlloc(value.size() + 1));
@@ -79,24 +79,24 @@ namespace Rod {
 	std::optional<Scene&> ScriptGlue::s_SceneContext;
 	std::optional<const Input&> ScriptGlue::s_InputContext;
 
-	glm::vec3 ScriptGlue::ToGLM(ScriptVec3 value)
+	auto ScriptGlue::ToGLM(ScriptVec3 value) -> glm::vec3
 	{
 		return {value.X, value.Y, value.Z};
 	}
 
-	glm::vec4 ScriptGlue::ToGLM(ScriptVec4 value)
+	auto ScriptGlue::ToGLM(ScriptVec4 value) -> glm::vec4
 	{
 		return {value.X, value.Y, value.Z, value.W};
 	}
 
-	ScriptGlue::ScriptVec3 ScriptGlue::ToScript(const glm::vec3& value) noexcept
+	auto ScriptGlue::ToScript(const glm::vec3& value) noexcept -> ScriptGlue::ScriptVec3
 	{
-		return {value.x, value.y, value.z};
+		return {.X = value.x, .Y = value.y, .Z = value.z};
 	}
 
-	ScriptGlue::ScriptVec4 ScriptGlue::ToScript(const glm::vec4& value) noexcept
+	auto ScriptGlue::ToScript(const glm::vec4& value) noexcept -> ScriptGlue::ScriptVec4
 	{
-		return {value.x, value.y, value.z, value.w};
+		return {.X = value.x, .Y = value.y, .Z = value.z, .W = value.w};
 	}
 
 	void RD_CDECL ScriptGlue::LogMessage(int32_t level, const char* message)
@@ -121,26 +121,26 @@ namespace Rod {
 		}
 	}
 
-	bool RD_CDECL ScriptGlue::InputIsKeyPressed(int32_t keycode)
+	auto RD_CDECL ScriptGlue::InputIsKeyPressed(int32_t keycode) -> bool
 	{
 		return s_InputContext && s_InputContext->IsKeyPressed(keycode);
 	}
 
-	bool RD_CDECL ScriptGlue::InputIsMouseButtonPressed(int32_t button)
+	auto RD_CDECL ScriptGlue::InputIsMouseButtonPressed(int32_t button) -> bool
 	{
 		return s_InputContext && s_InputContext->IsMouseButtonPressed(button);
 	}
 
-	ScriptGlue::ScriptVec2 RD_CDECL ScriptGlue::InputGetMousePosition()
+	auto RD_CDECL ScriptGlue::InputGetMousePosition() -> ScriptGlue::ScriptVec2
 	{
 		if (!s_InputContext)
 			return {};
 
 		auto [x, y] = s_InputContext->GetMousePosition();
-		return {x, y};
+		return {.X = x, .Y = y};
 	}
 
-	uint64_t RD_CDECL ScriptGlue::EntityCreate(const char* name)
+	auto RD_CDECL ScriptGlue::EntityCreate(const char* name) -> uint64_t
 	{
 		if (!s_SceneContext)
 			return 0;
@@ -150,12 +150,14 @@ namespace Rod {
 
 	void RD_CDECL ScriptGlue::EntityDestroy(uint64_t entityID)
 	{
-		const Entity entity = GetEntity(entityID);
-		if (entity)
-			s_SceneContext->DestroyEntity(entity);
+		if (!s_SceneContext)
+			return;
+		auto& scene = *s_SceneContext;
+		if (const Entity entity = scene.FindEntityByUUID(UUID{entityID}))
+			scene.DestroyEntity(entity);
 	}
 
-	uint64_t RD_CDECL ScriptGlue::EntityFindByName(const char* name)
+	auto RD_CDECL ScriptGlue::EntityFindByName(const char* name) -> uint64_t
 	{
 		if (!s_SceneContext || !name)
 			return 0;
@@ -163,7 +165,7 @@ namespace Rod {
 		return entity ? static_cast<uint64_t>(entity.GetUUID()) : 0;
 	}
 
-	void* RD_CDECL ScriptGlue::EntityGetName(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::EntityGetName(uint64_t entityID) -> void*
 	{
 		const Entity entity = GetEntity(entityID);
 		return AllocateString(entity ? entity.GetName() : "");
@@ -176,7 +178,7 @@ namespace Rod {
 			entity.GetComponent<TagComponent>().Tag = name;
 	}
 
-	bool RD_CDECL ScriptGlue::EntityHasComponent(uint64_t entityID, int32_t componentType)
+	auto RD_CDECL ScriptGlue::EntityHasComponent(uint64_t entityID, int32_t componentType) -> bool
 	{
 		const Entity entity = GetEntity(entityID);
 		if (!entity)
@@ -276,7 +278,7 @@ namespace Rod {
 		}
 	}
 
-	bool RD_CDECL ScriptGlue::CameraGetPrimary(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::CameraGetPrimary(uint64_t entityID) -> bool
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>() ? entity.GetComponent<CameraComponent>().Primary
@@ -290,12 +292,12 @@ namespace Rod {
 			entity.GetComponent<CameraComponent>().Primary = value;
 	}
 
-	bool RD_CDECL ScriptGlue::CameraGetFixedAspectRatio(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::CameraGetFixedAspectRatio(uint64_t entityID) -> bool
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>()
 		           ? entity.GetComponent<CameraComponent>().FixedAspectRatio
-		           : false;
+				   : false;
 	}
 
 	void RD_CDECL ScriptGlue::CameraSetFixedAspectRatio(uint64_t entityID, bool value)
@@ -305,12 +307,12 @@ namespace Rod {
 			entity.GetComponent<CameraComponent>().FixedAspectRatio = value;
 	}
 
-	int32_t RD_CDECL ScriptGlue::CameraGetProjectionType(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::CameraGetProjectionType(uint64_t entityID) -> int32_t
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>()
 		           ? static_cast<int32_t>(entity.GetComponent<CameraComponent>().Camera.GetProjectionType())
-		           : 0;
+				   : 0;
 	}
 
 	void RD_CDECL ScriptGlue::CameraSetProjectionType(uint64_t entityID, int32_t value)
@@ -321,12 +323,12 @@ namespace Rod {
 			    static_cast<SceneCamera::ProjectionType>(value));
 	}
 
-	float RD_CDECL ScriptGlue::CameraGetPerspectiveVerticalFOV(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::CameraGetPerspectiveVerticalFOV(uint64_t entityID) -> float
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>()
 		           ? entity.GetComponent<CameraComponent>().Camera.GetPerspectiveVerticalFOV()
-		           : 0.0f;
+				   : 0.0f;
 	}
 
 	void RD_CDECL ScriptGlue::CameraSetPerspectiveVerticalFOV(uint64_t entityID, float value)
@@ -336,12 +338,12 @@ namespace Rod {
 			entity.GetComponent<CameraComponent>().Camera.SetPerspectiveVerticalFOV(value);
 	}
 
-	float RD_CDECL ScriptGlue::CameraGetPerspectiveNearClip(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::CameraGetPerspectiveNearClip(uint64_t entityID) -> float
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>()
 		           ? entity.GetComponent<CameraComponent>().Camera.GetPerspectiveNearClip()
-		           : 0.0f;
+				   : 0.0f;
 	}
 
 	void RD_CDECL ScriptGlue::CameraSetPerspectiveNearClip(uint64_t entityID, float value)
@@ -351,12 +353,12 @@ namespace Rod {
 			entity.GetComponent<CameraComponent>().Camera.SetPerspectiveNearClip(value);
 	}
 
-	float RD_CDECL ScriptGlue::CameraGetPerspectiveFarClip(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::CameraGetPerspectiveFarClip(uint64_t entityID) -> float
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>()
 		           ? entity.GetComponent<CameraComponent>().Camera.GetPerspectiveFarClip()
-		           : 0.0f;
+				   : 0.0f;
 	}
 
 	void RD_CDECL ScriptGlue::CameraSetPerspectiveFarClip(uint64_t entityID, float value)
@@ -366,12 +368,12 @@ namespace Rod {
 			entity.GetComponent<CameraComponent>().Camera.SetPerspectiveFarClip(value);
 	}
 
-	float RD_CDECL ScriptGlue::CameraGetOrthographicSize(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::CameraGetOrthographicSize(uint64_t entityID) -> float
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>()
 		           ? entity.GetComponent<CameraComponent>().Camera.GetOrthographicSize()
-		           : 0.0f;
+				   : 0.0f;
 	}
 
 	void RD_CDECL ScriptGlue::CameraSetOrthographicSize(uint64_t entityID, float value)
@@ -381,12 +383,12 @@ namespace Rod {
 			entity.GetComponent<CameraComponent>().Camera.SetOrthographicSize(value);
 	}
 
-	float RD_CDECL ScriptGlue::CameraGetOrthographicNearClip(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::CameraGetOrthographicNearClip(uint64_t entityID) -> float
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>()
 		           ? entity.GetComponent<CameraComponent>().Camera.GetOrthographicNearClip()
-		           : 0.0f;
+				   : 0.0f;
 	}
 
 	void RD_CDECL ScriptGlue::CameraSetOrthographicNearClip(uint64_t entityID, float value)
@@ -396,12 +398,12 @@ namespace Rod {
 			entity.GetComponent<CameraComponent>().Camera.SetOrthographicNearClip(value);
 	}
 
-	float RD_CDECL ScriptGlue::CameraGetOrthographicFarClip(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::CameraGetOrthographicFarClip(uint64_t entityID) -> float
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<CameraComponent>()
 		           ? entity.GetComponent<CameraComponent>().Camera.GetOrthographicFarClip()
-		           : 0.0f;
+				   : 0.0f;
 	}
 
 	void RD_CDECL ScriptGlue::CameraSetOrthographicFarClip(uint64_t entityID, float value)
@@ -411,12 +413,12 @@ namespace Rod {
 			entity.GetComponent<CameraComponent>().Camera.SetOrthographicFarClip(value);
 	}
 
-	ScriptGlue::ScriptVec3 RD_CDECL ScriptGlue::TransformGetTranslation(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::TransformGetTranslation(uint64_t entityID) -> ScriptGlue::ScriptVec3
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<TransformComponent>()
 		           ? ToScript(entity.GetComponent<TransformComponent>().Translation)
-		           : ScriptVec3{};
+				   : ScriptVec3{};
 	}
 
 	void RD_CDECL ScriptGlue::TransformSetTranslation(uint64_t entityID, ScriptVec3 value)
@@ -426,12 +428,12 @@ namespace Rod {
 			entity.GetComponent<TransformComponent>().Translation = ToGLM(value);
 	}
 
-	ScriptGlue::ScriptVec3 RD_CDECL ScriptGlue::TransformGetRotation(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::TransformGetRotation(uint64_t entityID) -> ScriptGlue::ScriptVec3
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<TransformComponent>()
 		           ? ToScript(entity.GetComponent<TransformComponent>().Rotation)
-		           : ScriptVec3{};
+				   : ScriptVec3{};
 	}
 
 	void RD_CDECL ScriptGlue::TransformSetRotation(uint64_t entityID, ScriptVec3 value)
@@ -441,12 +443,12 @@ namespace Rod {
 			entity.GetComponent<TransformComponent>().Rotation = ToGLM(value);
 	}
 
-	ScriptGlue::ScriptVec3 RD_CDECL ScriptGlue::TransformGetScale(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::TransformGetScale(uint64_t entityID) -> ScriptGlue::ScriptVec3
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<TransformComponent>()
 		           ? ToScript(entity.GetComponent<TransformComponent>().Scale)
-		           : ScriptVec3{1.0f, 1.0f, 1.0f};
+				   : ScriptVec3{.X = 1.0f, .Y = 1.0f, .Z = 1.0f};
 	}
 
 	void RD_CDECL ScriptGlue::TransformSetScale(uint64_t entityID, ScriptVec3 value)
@@ -456,12 +458,12 @@ namespace Rod {
 			entity.GetComponent<TransformComponent>().Scale = ToGLM(value);
 	}
 
-	ScriptGlue::ScriptVec4 RD_CDECL ScriptGlue::SpriteRendererGetColor(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::SpriteRendererGetColor(uint64_t entityID) -> ScriptGlue::ScriptVec4
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<SpriteRendererComponent>()
 		           ? ToScript(entity.GetComponent<SpriteRendererComponent>().Color)
-		           : ScriptVec4{1.0f, 1.0f, 1.0f, 1.0f};
+				   : ScriptVec4{.X = 1.0f, .Y = 1.0f, .Z = 1.0f, .W = 1.0f};
 	}
 
 	void RD_CDECL ScriptGlue::SpriteRendererSetColor(uint64_t entityID, ScriptVec4 value)
@@ -471,12 +473,12 @@ namespace Rod {
 			entity.GetComponent<SpriteRendererComponent>().Color = ToGLM(value);
 	}
 
-	float RD_CDECL ScriptGlue::SpriteRendererGetTilingFactor(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::SpriteRendererGetTilingFactor(uint64_t entityID) -> float
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<SpriteRendererComponent>()
 		           ? entity.GetComponent<SpriteRendererComponent>().TilingFactor
-		           : 1.0f;
+				   : 1.0f;
 	}
 
 	void RD_CDECL ScriptGlue::SpriteRendererSetTilingFactor(uint64_t entityID, float value)
@@ -486,7 +488,7 @@ namespace Rod {
 			entity.GetComponent<SpriteRendererComponent>().TilingFactor = value;
 	}
 
-	void* RD_CDECL ScriptGlue::SpriteRendererGetTexturePath(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::SpriteRendererGetTexturePath(uint64_t entityID) -> void*
 	{
 		Entity entity = GetEntity(entityID);
 		if (!entity || !entity.HasComponent<SpriteRendererComponent>() ||
@@ -504,7 +506,7 @@ namespace Rod {
 		sprite.Texture = path && path[0] ? Texture2D::Create(path) : nullptr;
 	}
 
-	void* RD_CDECL ScriptGlue::MeshGetPath(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::MeshGetPath(uint64_t entityID) -> void*
 	{
 		Entity entity = GetEntity(entityID);
 		if (!entity || !entity.HasComponent<MeshComponent>() || !entity.GetComponent<MeshComponent>().Mesh)
@@ -533,11 +535,11 @@ namespace Rod {
 		}
 	}
 
-	ScriptGlue::ScriptVec4 RD_CDECL ScriptGlue::MeshGetAlbedo(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::MeshGetAlbedo(uint64_t entityID) -> ScriptGlue::ScriptVec4
 	{
 		Entity entity = GetEntity(entityID);
 		if (!entity || !entity.HasComponent<MeshComponent>() || !entity.GetComponent<MeshComponent>().Mesh)
-			return {1.0f, 1.0f, 1.0f, 1.0f};
+			return {.X = 1.0f, .Y = 1.0f, .Z = 1.0f, .W = 1.0f};
 		return ToScript(entity.GetComponent<MeshComponent>().Material.GetAlbedo());
 	}
 
@@ -548,7 +550,7 @@ namespace Rod {
 			entity.GetComponent<MeshComponent>().Material.SetAlbedo(ToGLM(value));
 	}
 
-	ScriptGlue::ScriptVec3 RD_CDECL ScriptGlue::MeshGetEmissive(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::MeshGetEmissive(uint64_t entityID) -> ScriptGlue::ScriptVec3
 	{
 		Entity entity = GetEntity(entityID);
 		if (!entity || !entity.HasComponent<MeshComponent>() || !entity.GetComponent<MeshComponent>().Mesh)
@@ -563,12 +565,12 @@ namespace Rod {
 			entity.GetComponent<MeshComponent>().Material.SetEmissive(ToGLM(value));
 	}
 
-	float RD_CDECL ScriptGlue::MeshGetRoughness(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::MeshGetRoughness(uint64_t entityID) -> float
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<MeshComponent>() && entity.GetComponent<MeshComponent>().Mesh
 		           ? entity.GetComponent<MeshComponent>().Material.GetRoughness()
-		           : 1.0f;
+				   : 1.0f;
 	}
 
 	void RD_CDECL ScriptGlue::MeshSetRoughness(uint64_t entityID, float value)
@@ -578,12 +580,12 @@ namespace Rod {
 			entity.GetComponent<MeshComponent>().Material.SetRoughness(value);
 	}
 
-	float RD_CDECL ScriptGlue::MeshGetMetallic(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::MeshGetMetallic(uint64_t entityID) -> float
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<MeshComponent>() && entity.GetComponent<MeshComponent>().Mesh
 		           ? entity.GetComponent<MeshComponent>().Material.GetMetallic()
-		           : 0.0f;
+				   : 0.0f;
 	}
 
 	void RD_CDECL ScriptGlue::MeshSetMetallic(uint64_t entityID, float value)
@@ -593,12 +595,12 @@ namespace Rod {
 			entity.GetComponent<MeshComponent>().Material.SetMetallic(value);
 	}
 
-	ScriptGlue::ScriptVec3 RD_CDECL ScriptGlue::DirectionalLightGetDirection(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::DirectionalLightGetDirection(uint64_t entityID) -> ScriptGlue::ScriptVec3
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<DirectionalLightComponent>()
 		           ? ToScript(entity.GetComponent<DirectionalLightComponent>().Direction)
-		           : ScriptVec3{};
+				   : ScriptVec3{};
 	}
 
 	void RD_CDECL ScriptGlue::DirectionalLightSetDirection(uint64_t entityID, ScriptVec3 value)
@@ -608,12 +610,12 @@ namespace Rod {
 			entity.GetComponent<DirectionalLightComponent>().Direction = glm::normalize(ToGLM(value));
 	}
 
-	ScriptGlue::ScriptVec3 RD_CDECL ScriptGlue::DirectionalLightGetColor(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::DirectionalLightGetColor(uint64_t entityID) -> ScriptGlue::ScriptVec3
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<DirectionalLightComponent>()
 		           ? ToScript(entity.GetComponent<DirectionalLightComponent>().Color)
-		           : ScriptVec3{1.0f, 1.0f, 1.0f};
+				   : ScriptVec3{.X = 1.0f, .Y = 1.0f, .Z = 1.0f};
 	}
 
 	void RD_CDECL ScriptGlue::DirectionalLightSetColor(uint64_t entityID, ScriptVec3 value)
@@ -623,12 +625,12 @@ namespace Rod {
 			entity.GetComponent<DirectionalLightComponent>().Color = ToGLM(value);
 	}
 
-	float RD_CDECL ScriptGlue::DirectionalLightGetIntensity(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::DirectionalLightGetIntensity(uint64_t entityID) -> float
 	{
 		Entity entity = GetEntity(entityID);
 		return entity && entity.HasComponent<DirectionalLightComponent>()
 		           ? entity.GetComponent<DirectionalLightComponent>().Intensity
-		           : 1.0f;
+				   : 1.0f;
 	}
 
 	void RD_CDECL ScriptGlue::DirectionalLightSetIntensity(uint64_t entityID, float value)
@@ -638,7 +640,7 @@ namespace Rod {
 			entity.GetComponent<DirectionalLightComponent>().Intensity = value;
 	}
 
-	void* RD_CDECL ScriptGlue::ScriptGetClassName(uint64_t entityID)
+	auto RD_CDECL ScriptGlue::ScriptGetClassName(uint64_t entityID) -> void*
 	{
 		Entity entity = GetEntity(entityID);
 		if (!entity || !entity.HasComponent<ScriptComponent>())
@@ -663,7 +665,7 @@ namespace Rod {
 		s_InputContext = input;
 	}
 
-	std::vector<NativeCall> ScriptGlue::GetNativeCalls()
+	auto ScriptGlue::GetNativeCalls() -> std::vector<NativeCall>
 	{
 		return {
 		    MakeNativeCall("Log.Message", LogMessage),

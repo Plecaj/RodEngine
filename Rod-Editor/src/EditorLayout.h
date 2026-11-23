@@ -66,7 +66,6 @@ namespace Rod {
 		DebugPanel m_DebugPanel;
 		GuidePanel m_GuidePanel;
 		ToolbarPanel m_ToolbarPanel;
-		bool m_Profiling = false;
 		bool m_DockLayoutInitialized = false;
 		ImGuiID m_ToolbarDockID = 0;
 	};

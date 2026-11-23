@@ -163,10 +163,13 @@ namespace Rod {
 		ImGui::SetCursorPos(ImVec2(dragZoneStartX + dragZoneWidth, rowY));
 		DrawButtons();
 
-		ImGui::SetCursorPos(ImVec2(dragZoneStartX, rowY));
-		ImGui::InvisibleButton("TitlebarDragZone", ImVec2(dragZoneWidth, m_ButtonSize.y));
-		if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
-			m_Window.BeginWindowDrag();
+		if (dragZoneWidth > 0.0f)
+		{
+			ImGui::SetCursorPos(ImVec2(dragZoneStartX, rowY));
+			ImGui::InvisibleButton("TitlebarDragZone", ImVec2(dragZoneWidth, m_ButtonSize.y));
+			if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+				m_Window.BeginWindowDrag();
+		}
 	}
 
 	void TitlebarPanel::DrawFileMenu() const

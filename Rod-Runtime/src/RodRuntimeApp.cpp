@@ -1,33 +1,32 @@
 #include "rdpch.h"
 
-#include "Rod/Core/Application.h"
+#include "Rod/Core/AppMain.h"
+#include "Rod/Core/DesktopHost.h"
 #include "Rod/Project/ProjectExporter.h"
 #include "Rod/Project/ProjectSerializer.h"
+#include "Rod/Renderer/SceneRenderer.h"
 #include "Rod/Utils/PlatformUtils.h"
-#include "RuntimeLayer.h"
+#include "RuntimeApp.h"
 
-#include <optional>
-#include <stdexcept>
-
-namespace Rod {
-
-	auto CreateApplication(const std::optional<Project>& project) -> Scope<Application>
-	{
-		const auto directory = Platform::GetExecutablePath().parent_path();
-		Project runtimeProject = project ? *project : Project{directory / ProjectExporter::s_ManifestFilename, {}};
+auto main(int argc, char* argv[]) -> int
+{
+	return Rod::RunMain([&] {
+		const auto dir = Rod::Platform::GetExecutablePath().parent_path();
+		auto project = Rod::ReadProject(argc, argv);
 		if (!project)
-			ProjectSerializer::Deserialize(runtimeProject);
-		std::filesystem::current_path(directory);
+		{
+			auto& manifest = project.emplace(dir / Rod::ProjectExporter::s_ManifestFilename, Rod::ProjectProperties{});
+			Rod::ProjectSerializer::Deserialize(manifest);
+		}
+		std::filesystem::current_path(dir);
 
-		auto app = CreateScope<Application>(WindowProps{"Rod Game"}, std::move(runtimeProject));
-		const auto requestClose = [application = app.get()] {
-			application->Close();
-		};
-		const auto activeProject = app->GetProject();
-		if (!activeProject)
-			throw std::logic_error("Rod Runtime requires a project");
-		app->PushLayer(CreateScope<RuntimeLayer>(*activeProject, app->GetWindow(), app->GetInput(), requestClose));
-		return app;
-	}
-
+		Rod::DesktopHost host(Rod::WindowProps{"Rod Game"});
+		const Rod::SceneRenderer renderer(project->GetShadersPath());
+		Rod::RuntimeApp app(*project, host);
+		while (const auto frame = host.NextFrame())
+		{
+			if (app.Update(*frame))
+				host.Present();
+		}
+	});
 }

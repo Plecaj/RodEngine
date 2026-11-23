@@ -1,9 +1,6 @@
 #pragma once
 
 #include "Camera.h"
-#include "Rod/Core/Timestep.h"
-#include "Rod/Events/Event.h"
-#include "Rod/Events/MouseEvent.h"
 
 #include <glm/glm.hpp>
 
@@ -11,16 +8,16 @@
 
 namespace Rod {
 
-	class Input;
-
 	class EditorCamera : public Camera
 	{
 	public:
 		EditorCamera() noexcept = default;
 		EditorCamera(float fov, float aspectRatio, float nearClip, float farClip) noexcept;
 
-		void OnUpdate(Timestep ts, const Input& input);
-		void OnEvent(Event& e);
+		void Pan(glm::vec2 delta) noexcept;
+		void Orbit(glm::vec2 delta) noexcept;
+		void Dolly(float delta) noexcept;
+		void Zoom(float scroll) noexcept;
 
 		[[nodiscard]] auto GetDistance() const noexcept -> float { return m_Distance; }
 		void SetDistance(float distance) noexcept { m_Distance = distance; }
@@ -44,8 +41,6 @@ namespace Rod {
 		[[nodiscard]] auto GetPitch() const noexcept -> float { return m_Pitch; }
 		[[nodiscard]] auto GetYaw() const noexcept -> float { return m_Yaw; }
 
-		void SetControlsEnabled(bool controlsEnabled) noexcept { m_ControlsEnabled = controlsEnabled; };
-
 	private:
 		static constexpr float s_RotationSpeed = 0.8f;
 		static constexpr float s_ZoomDistanceScale = 0.2f;
@@ -56,10 +51,6 @@ namespace Rod {
 		void UpdateProjection() noexcept;
 		void UpdateView() noexcept;
 
-		auto OnMouseScroll(MouseScrolledEvent& e) noexcept -> bool;
-
-		void MousePan(const glm::vec2& delta) noexcept;
-		void MouseRotate(const glm::vec2& delta) noexcept;
 		void MouseZoom(float delta) noexcept;
 
 		[[nodiscard]] auto CalculatePosition() const noexcept -> glm::vec3;
@@ -83,14 +74,10 @@ namespace Rod {
 		glm::vec3 m_Position = {0.0f, 0.0f, 0.0f};
 		glm::vec3 m_FocalPoint = {0.0f, 0.0f, 0.0f};
 
-		glm::vec2 m_InitialMousePosition = {0.0f, 0.0f};
-
 		float m_Distance = s_DefaultDistance;
 		float m_Pitch = 0.0f, m_Yaw = 0.0f;
 
 		float m_ViewportWidth = s_DefaultViewportWidth, m_ViewportHeight = s_DefaultViewportHeight;
-
-		bool m_ControlsEnabled = true;
 	};
 
 }

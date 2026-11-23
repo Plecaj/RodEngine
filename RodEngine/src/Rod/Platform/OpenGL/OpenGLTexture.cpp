@@ -15,8 +15,6 @@ namespace Rod {
 	OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height)
 	    : m_Width(width), m_Height(height), m_InternalFormat(GL_RGBA8), m_DataFormat(GL_RGBA)
 	{
-		RD_PROFILE_FUNCTION();
-
 		glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 
 		glTextureStorage2D(
@@ -32,16 +30,9 @@ namespace Rod {
 
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& path) : m_Path(path)
 	{
-		RD_PROFILE_FUNCTION();
-
 		int width{}, height{}, channels{};
 		stbi_set_flip_vertically_on_load(1);
-		ImagePixels data;
-
-		{
-			RD_PROFILE_SCOPE("stbi_load - OpenGLTexture2D::OpenGLTexture2D(const std::string& path)");
-			data.reset(stbi_load(path.c_str(), &width, &height, &channels, 0));
-		}
+		const ImagePixels data(stbi_load(path.c_str(), &width, &height, &channels, 0));
 
 		if (!data)
 			throw std::runtime_error("Failed to load image: " + path);
@@ -86,8 +77,6 @@ namespace Rod {
 
 	OpenGLTexture2D::~OpenGLTexture2D()
 	{
-		RD_PROFILE_FUNCTION();
-
 		glDeleteTextures(1, &m_RendererID);
 	}
 
@@ -117,8 +106,6 @@ namespace Rod {
 
 	void OpenGLTexture2D::Bind(uint32_t slot) const
 	{
-		RD_PROFILE_FUNCTION();
-
 		glBindTextureUnit(slot, m_RendererID);
 	}
 }

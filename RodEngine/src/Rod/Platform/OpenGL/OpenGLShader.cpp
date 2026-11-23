@@ -133,8 +133,6 @@ namespace Rod {
 	    const ShaderOptions& options)
 	    : m_Name(std::move(name))
 	{
-		RD_PROFILE_FUNCTION();
-
 		shaderc::Compiler compiler;
 		shaderc::CompileOptions compileOptions;
 
@@ -181,8 +179,6 @@ namespace Rod {
 
 	OpenGLShader::~OpenGLShader()
 	{
-		RD_PROFILE_FUNCTION();
-
 		glDeleteProgram(m_RendererID);
 	}
 
@@ -242,8 +238,6 @@ namespace Rod {
 
 	void OpenGLShader::LoadSpirv()
 	{
-		RD_PROFILE_FUNCTION();
-
 		const GLuint program = glCreateProgram();
 		std::vector<GLuint> glShaderIDs;
 		glShaderIDs.reserve(m_SPIRV.size());
@@ -308,57 +302,41 @@ namespace Rod {
 
 	void OpenGLShader::Bind() const
 	{
-		RD_PROFILE_FUNCTION();
-
 		glUseProgram(m_RendererID);
 	}
 
 	void OpenGLShader::Unbind() const
 	{
-		RD_PROFILE_FUNCTION();
-
 		glUseProgram(0);
 	}
 
 	void OpenGLShader::SetInt(const std::string& name, int value)
 	{
-		RD_PROFILE_FUNCTION();
-
 		UploadUniformInt(name, value);
 	}
 
 	void OpenGLShader::SetIntArray(const std::string& name, std::span<const int> values)
 	{
-		RD_PROFILE_FUNCTION();
-
 		UploadUniformIntArray(name, values);
 	}
 
 	void OpenGLShader::SetFloat(const std::string& name, const float value)
 	{
-		RD_PROFILE_FUNCTION();
-
 		UploadUniformFloat(name, value);
 	}
 
 	void OpenGLShader::SetFloat3(const std::string& name, const glm::vec3& value)
 	{
-		RD_PROFILE_FUNCTION();
-
 		UploadUniformFloat3(name, value);
 	}
 
 	void OpenGLShader::SetFloat4(const std::string& name, const glm::vec4& value)
 	{
-		RD_PROFILE_FUNCTION();
-
 		UploadUniformFloat4(name, value);
 	}
 
 	void OpenGLShader::SetMat4(const std::string& name, const glm::mat4& value)
 	{
-		RD_PROFILE_FUNCTION();
-
 		UploadUniformMat4(name, value);
 	}
 

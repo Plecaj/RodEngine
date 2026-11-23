@@ -2,7 +2,7 @@
 
 #include "ViewportPanel.h"
 
-#include "Rod/Core/Input.h"
+#include "Rod/Core/InputState.h"
 #include "Rod/Core/KeyCodes.h"
 #include "Rod/Math/Math.h"
 #include "Rod/Scene/Components.h"
@@ -85,7 +85,7 @@ namespace Rod {
 		    context.Bounds[1].y - context.Bounds[0].y);
 		auto& component = selectedEntity.GetComponent<TransformComponent>();
 		glm::mat4 transform = component.GetTransform();
-		const bool snap = context.WindowInput.IsKeyPressed(Key::LeftControl);
+		const bool snap = context.WindowInput.IsKeyDown(Key::LeftControl);
 		const float snapValue = context.GizmoType == ImGuizmo::OPERATION::ROTATE ? s_RotationSnap : s_TranslationSnap;
 		const std::array<float, s_VectorComponentCount> snapValues{snapValue, snapValue, snapValue};
 		ImGuizmo::Manipulate(

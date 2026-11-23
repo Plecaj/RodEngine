@@ -138,8 +138,6 @@ namespace Rod {
 	Mesh::Mesh(const std::string& path)
 	try : m_SourcePath(path)
 	{
-		RD_PROFILE_FUNCTION();
-
 		tinygltf::TinyGLTF loader;
 		tinygltf::Model model;
 		std::string err, warn;
@@ -179,7 +177,6 @@ namespace Rod {
 
 	void Mesh::ProcessPrimitive(std::span<const float> vertices, std::span<const uint32_t> indices)
 	{
-		RD_PROFILE_FUNCTION();
 		m_VAO = VertexArray::Create();
 		auto vertexBuffer = VertexBuffer::Create(std::as_bytes(vertices));
 		const BufferLayout layout = {{ShaderDataType::Float3, "a_Position"}, {ShaderDataType::Float3, "a_Normal"}};

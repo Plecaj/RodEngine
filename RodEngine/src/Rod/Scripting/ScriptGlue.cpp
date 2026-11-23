@@ -2,7 +2,7 @@
 
 #include "ScriptGlue.h"
 
-#include "Rod/Core/Input.h"
+#include "Rod/Core/InputState.h"
 #include "Rod/Renderer/Mesh.h"
 #include "Rod/Renderer/Texture.h"
 #include "Rod/Scene/Components.h"
@@ -77,7 +77,7 @@ namespace Rod {
 	};
 
 	std::optional<Scene&> ScriptGlue::s_SceneContext;
-	std::optional<const Input&> ScriptGlue::s_InputContext;
+	std::optional<const InputState&> ScriptGlue::s_InputContext;
 
 	auto ScriptGlue::ToGLM(ScriptVec3 value) -> glm::vec3
 	{
@@ -123,12 +123,12 @@ namespace Rod {
 
 	auto RD_CDECL ScriptGlue::InputIsKeyPressed(int32_t keycode) -> bool
 	{
-		return s_InputContext && s_InputContext->IsKeyPressed(keycode);
+		return s_InputContext && s_InputContext->IsKeyDown(keycode);
 	}
 
 	auto RD_CDECL ScriptGlue::InputIsMouseButtonPressed(int32_t button) -> bool
 	{
-		return s_InputContext && s_InputContext->IsMouseButtonPressed(button);
+		return s_InputContext && s_InputContext->IsMouseDown(button);
 	}
 
 	auto RD_CDECL ScriptGlue::InputGetMousePosition() -> ScriptGlue::ScriptVec2
@@ -136,8 +136,8 @@ namespace Rod {
 		if (!s_InputContext)
 			return {};
 
-		auto [x, y] = s_InputContext->GetMousePosition();
-		return {.X = x, .Y = y};
+		const auto cursor = s_InputContext->GetCursor();
+		return {.X = cursor.x, .Y = cursor.y};
 	}
 
 	auto RD_CDECL ScriptGlue::EntityCreate(const char* name) -> uint64_t
@@ -660,7 +660,7 @@ namespace Rod {
 		s_SceneContext = scene;
 	}
 
-	void ScriptGlue::SetInputContext(std::optional<const Input&> input) noexcept
+	void ScriptGlue::SetInputContext(std::optional<const InputState&> input) noexcept
 	{
 		s_InputContext = input;
 	}

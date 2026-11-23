@@ -174,8 +174,6 @@ namespace Rod {
 
 	void Renderer3D::Init()
 	{
-		RD_PROFILE_FUNCTION();
-
 		s_SceneData = CreateScope<SceneData>();
 		s_SceneData->Shader = Shader::Create((Renderer::GetShaderDirectory() / "3D.glsl").string());
 		s_SceneData->ShadowShader = Shader::Create((Renderer::GetShaderDirectory() / "Shadow.glsl").string());
@@ -196,8 +194,6 @@ namespace Rod {
 
 	void Renderer3D::Shutdown()
 	{
-		RD_PROFILE_FUNCTION();
-
 		s_SceneData.reset();
 	}
 
@@ -206,8 +202,6 @@ namespace Rod {
 	    const glm::mat4& transform,
 	    std::span<const DirectionalLightComponent> lights)
 	{
-		RD_PROFILE_FUNCTION();
-
 		s_SceneData->ViewProjection = camera.GetProjection() * glm::inverse(transform);
 		s_SceneData->DrawCommands.clear();
 		SetupScene(lights);
@@ -215,8 +209,6 @@ namespace Rod {
 
 	void Renderer3D::BeginScene(const EditorCamera& camera, std::span<const DirectionalLightComponent> lights)
 	{
-		RD_PROFILE_FUNCTION();
-
 		s_SceneData->ViewProjection = camera.GetViewProjection();
 		s_SceneData->DrawCommands.clear();
 		SetupScene(lights);
@@ -231,8 +223,6 @@ namespace Rod {
 
 	void Renderer3D::Submit(const Ref<Mesh>& mesh, const glm::mat4& transform, const Material& material, int entityID)
 	{
-		RD_PROFILE_FUNCTION();
-
 		// Commands retain the shared mesh, which owns its GPU buffers.
 		if (mesh && mesh->GetVAO())
 			s_SceneData->DrawCommands.push_back(

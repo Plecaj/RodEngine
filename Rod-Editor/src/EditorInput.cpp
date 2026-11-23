@@ -4,9 +4,8 @@
 
 #include "EditorCommands.h"
 #include "EditorInteractionState.h"
-#include "Rod/Core/Input.h"
 #include "Rod/Core/KeyCodes.h"
-#include "Rod/Core/MouseButtonCodes.h"
+#include "Rod/Events/Event.h"
 
 #include "imgui.h" // IWYU pragma: keep
 
@@ -14,28 +13,16 @@
 
 namespace Rod {
 
-	EditorInput::EditorInput(EditorCommands& commands, EditorInteractionState& interaction, const Input& input) noexcept
-	    : m_Commands(commands), m_Interaction(interaction), m_Input(input)
+	EditorInput::EditorInput(EditorCommands& commands, EditorInteractionState& interaction) noexcept
+	    : m_Commands(commands), m_Interaction(interaction)
 	{}
 
-	void EditorInput::OnEvent(Event& event) const
+	void EditorInput::HandleKey(const KeyChanged& key) const
 	{
-		HandleEvent<KeyPressedEvent>(event, [this](const KeyPressedEvent& keyEvent) { return OnKeyPressed(keyEvent); });
-		HandleEvent<MouseButtonPressedEvent>(event, [this](const MouseButtonPressedEvent& mouseEvent) {
-			return OnMouseButtonPressed(mouseEvent);
-		});
-	}
+		const bool controlPressed = key.Mods.Control;
+		const bool shiftPressed = key.Mods.Shift;
 
-	auto EditorInput::OnKeyPressed(const KeyPressedEvent& e) const -> bool
-	{
-		// Shortcuts
-		if (e.IsRepeat())
-			return false;
-
-		const bool controlPressed = m_Input.IsKeyPressed(Key::LeftControl) || m_Input.IsKeyPressed(Key::RightControl);
-		const bool shiftPressed = m_Input.IsKeyPressed(Key::LeftShift) || m_Input.IsKeyPressed(Key::RightShift);
-
-		switch (e.GetKeyCode())
+		switch (key.Key)
 		{
 			case Key::N: {
 				if (controlPressed)
@@ -80,18 +67,6 @@ namespace Rod {
 			default:
 				break;
 		}
-
-		return false;
-	}
-
-	auto EditorInput::OnMouseButtonPressed(const MouseButtonPressedEvent& e) const -> bool
-	{
-		if (e.GetMouseButton() == Mouse::Button0 && m_Interaction.ViewportHovered && !ImGuizmo::IsOver() &&
-		    !m_Input.IsKeyPressed(Key::LeftAlt))
-		{
-			m_Interaction.SelectedEntity = m_Interaction.HoveredEntity;
-		}
-		return false;
 	}
 
 }

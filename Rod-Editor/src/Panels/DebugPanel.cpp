@@ -8,7 +8,7 @@
 
 namespace Rod {
 
-	void DebugPanel::OnImGuiRender(int gizmoType, Entity hoveredEntity, bool& profiling)
+	void DebugPanel::OnImGuiRender(int gizmoType, Entity hoveredEntity)
 	{
 		ImGui::Begin("Other");
 
@@ -36,24 +36,6 @@ namespace Rod {
 			name = hoveredEntity.GetComponent<TagComponent>().Tag;
 
 		ImGui::Text("Hovered Entity: %s", name.c_str());
-
-		ImGui::Separator();
-		ImGui::TextDisabled("Profiling");
-
-		const char* profilingButtonText = profiling ? "Stop Profiling" : "Start Profiling";
-		if (ImGui::Button(profilingButtonText))
-		{
-			if (profiling)
-			{
-				profiling = false;
-				RD_PROFILE_END_SESSION();
-				ImGui::End();
-				return;
-			}
-
-			profiling = true;
-			RD_PROFILE_BEGIN_SESSION("Runtime", "RodProfile-Runtime.json");
-		}
 
 		ImGui::End();
 	}

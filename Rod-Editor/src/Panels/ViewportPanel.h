@@ -13,7 +13,7 @@
 
 namespace Rod {
 
-	class Input;
+	class InputState;
 	class Scene;
 	class SceneHierarchyPanel;
 
@@ -38,7 +38,7 @@ namespace Rod {
 			bool& Hovered;
 			const std::filesystem::path& AssetsPath;
 			const std::function<void(const std::filesystem::path&)>& OpenScene;
-			const Input& WindowInput;
+			const InputState& WindowInput;
 		};
 		static void OnImGuiRender(const RenderContext& context);
 

@@ -51,7 +51,6 @@ namespace Rod {
 
 	void Renderer2D::Init()
 	{
-		RD_PROFILE_FUNCTION();
 		g_Data = CreateScope<Renderer2DData>();
 		g_Data->TextureSlots.resize(g_Data->s_MaxTextureSlots);
 
@@ -135,15 +134,11 @@ namespace Rod {
 
 	void Renderer2D::Shutdown()
 	{
-		RD_PROFILE_FUNCTION();
-
 		g_Data.reset();
 	}
 
 	void Renderer2D::BeginScene(const Camera& camera, const glm::mat4& transform)
 	{
-		RD_PROFILE_FUNCTION();
-
 		glm::mat4 viewProj = camera.GetProjection() * glm::inverse(transform);
 
 		g_Data->TextureShader->Bind();
@@ -156,8 +151,6 @@ namespace Rod {
 
 	void Renderer2D::BeginScene(const EditorCamera& camera)
 	{
-		RD_PROFILE_FUNCTION();
-
 		glm::mat4 viewProj = camera.GetViewProjection();
 
 		g_Data->TextureShader->Bind();
@@ -170,8 +163,6 @@ namespace Rod {
 
 	void Renderer2D::EndScene()
 	{
-		RD_PROFILE_FUNCTION();
-
 		if (g_Data->QuadIndexCount == 0)
 			return;
 
@@ -181,7 +172,6 @@ namespace Rod {
 
 	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& color, int entityID)
 	{
-		RD_PROFILE_FUNCTION();
 		if (g_Data->QuadIndexCount + s_QuadIndexCount > g_Data->s_MaxIndicesCount)
 		{
 			EndBatch();
@@ -216,7 +206,6 @@ namespace Rod {
 	    const glm::vec4& tintColor,
 	    int entityID)
 	{
-		RD_PROFILE_FUNCTION();
 		if ((g_Data->QuadIndexCount + s_QuadIndexCount > g_Data->s_MaxIndicesCount))
 		{
 			EndBatch();
@@ -285,8 +274,6 @@ namespace Rod {
 
 	void Renderer2D::BeginBatch()
 	{
-		RD_PROFILE_FUNCTION();
-
 		g_Data->TextureSlotIndex = 1;
 		g_Data->QuadIndexCount = 0;
 		g_Data->QuadVertexBufferPtr = g_Data->QuadVertexBufferBase.data();
@@ -294,8 +281,6 @@ namespace Rod {
 
 	void Renderer2D::EndBatch()
 	{
-		RD_PROFILE_FUNCTION();
-
 		const auto vertexCount = static_cast<size_t>(g_Data->QuadVertexBufferPtr - g_Data->QuadVertexBufferBase.data());
 		const auto vertices = std::span{g_Data->QuadVertexBufferBase}.first(vertexCount);
 		g_Data->QuadVertexBuffer->SetData(std::as_bytes(vertices));
@@ -303,8 +288,6 @@ namespace Rod {
 
 	void Renderer2D::Flush()
 	{
-		RD_PROFILE_FUNCTION();
-
 		for (uint32_t i = 0; i < g_Data->TextureSlotIndex; i++)
 			g_Data->TextureSlots[i]->Bind(i);
 

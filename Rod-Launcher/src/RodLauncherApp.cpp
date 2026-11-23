@@ -2,11 +2,12 @@
 
 #include "ProjectSetupPanel.h"
 #include "RecentProjects.h"
-#include "Rod/Core/Application.h"
+#include "Rod/Core/AppMain.h"
 #include "Rod/Core/Core.h"
-#include "Rod/Core/Layer.h"
+#include "Rod/Core/DesktopHost.h"
 #include "Rod/Core/Log.h"
 #include "Rod/ImGui/ImGuiFlags.h"
+#include "Rod/ImGui/ImGuiSession.h"
 #include "Rod/Project/Project.h"
 #include "Rod/Project/ProjectSerializer.h"
 #include "Rod/Renderer/Texture.h"
@@ -16,11 +17,9 @@
 #include "imgui.h"
 
 #include <exception>
-#include <functional>
 #include <optional>
 #include <stdexcept>
 #include <string>
-#include <utility>
 
 namespace Rod {
 
@@ -35,20 +34,18 @@ namespace Rod {
 
 		auto LauncherWindowProps() -> WindowProps
 		{
-			WindowProps props{g_WindowTitle, g_LauncherWidth, g_LauncherHeight, "RodAssets/Textures/logo.png", true};
-			props.NativeTitlebar = true;
+			WindowProps props{g_WindowTitle, g_LauncherWidth, g_LauncherHeight, "RodAssets/Textures/logo.png"};
 			props.Resizable = false;
 			props.Centered = true;
 			return props;
 		}
 	}
 
-	class LauncherLayer final : public Layer
+	class LauncherApp
 	{
 	public:
-		LauncherLayer(const Window& window, std::function<void()> requestClose)
-		    : Layer("LauncherLayer"), m_RequestClose(std::move(requestClose)), m_FileDialogs(window),
-		      m_ProjectSetup(m_FileDialogs)
+		explicit LauncherApp(DesktopHost& host)
+		    : m_Host(host), m_FileDialogs(host.GetWindow()), m_ProjectSetup(m_FileDialogs)
 		{
 			m_FolderIcon = Texture2D::Create("RodAssets/Textures/DirectoryIcon.png");
 			try
@@ -62,7 +59,7 @@ namespace Rod {
 			}
 		}
 
-		void OnImGuiRender() override
+		void Draw()
 		{
 			const ImGuiViewport& viewport = *ImGui::GetMainViewport();
 			ImGui::SetNextWindowPos(viewport.Pos);
@@ -233,7 +230,7 @@ namespace Rod {
 					RD_CORE_WARN("Could not save recent projects: {}", exception.what());
 				}
 				m_Error.clear();
-				m_RequestClose();
+				m_Host.RequestClose();
 			}
 			catch (const std::exception& exception)
 			{
@@ -309,7 +306,7 @@ namespace Rod {
 		}
 
 	private:
-		std::function<void()> m_RequestClose;
+		DesktopHost& m_Host;
 		FileDialogs m_FileDialogs;
 		Scope<Texture2D> m_FolderIcon;
 		RecentProjects m_RecentProjects;
@@ -318,14 +315,24 @@ namespace Rod {
 		std::string m_Error;
 	};
 
-	auto CreateApplication(const std::optional<Project>& project) -> Scope<Application>
-	{
-		RD_CORE_ASSERT(!project, "Launcher does not accept a project argument");
-		auto app = CreateScope<Application>(LauncherWindowProps(), std::nullopt);
-		const auto requestClose = [application = app.get()] {
-			application->Close();
-		};
-		app->PushLayer(CreateScope<LauncherLayer>(app->GetWindow(), requestClose));
-		return app;
-	}
+}
+
+auto main(int argc, char*[]) -> int
+{
+	return Rod::RunMain([argc] {
+		if (argc != 1)
+			throw std::invalid_argument("Launcher does not accept a project argument");
+
+		Rod::DesktopHost host(Rod::LauncherWindowProps());
+		const Rod::ImGuiSession ui(host.GetWindow());
+		Rod::LauncherApp launcher(host);
+		while (const auto frame = host.NextFrame())
+		{
+			Rod::ImGuiSession::Begin();
+			launcher.Draw();
+			Rod::ImGuiSession::End(frame->Drawable);
+			if (frame->Drawable)
+				host.Present();
+		}
+	});
 }

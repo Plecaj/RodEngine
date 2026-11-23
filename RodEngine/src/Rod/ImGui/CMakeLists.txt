@@ -1,10 +1,10 @@
 target_sources(RodEngine PRIVATE
-    ImGuiLayer.cpp
+    ImGuiSession.cpp
 )
 
 target_sources(RodEngine PUBLIC
     FILE_SET HEADERS
     FILES
         ImGuiFlags.h
-        ImGuiLayer.h
+        ImGuiSession.h
 )

@@ -9,7 +9,7 @@ namespace Rod {
 	public:
 		DebugPanel() = default;
 
-		static void OnImGuiRender(int gizmoType, Entity hoveredEntity, bool& profiling);
+		static void OnImGuiRender(int gizmoType, Entity hoveredEntity);
 	};
 
 }

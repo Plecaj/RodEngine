@@ -13,7 +13,7 @@
 namespace Rod {
 
 	class Entity;
-	class Input;
+	class InputState;
 	class Project;
 	class Scene;
 
@@ -26,7 +26,7 @@ namespace Rod {
 			Runtime
 		};
 
-		static void Init(const Project& project, const Input& input, Mode mode);
+		static void Init(const Project& project, const InputState& input, Mode mode);
 		static void Shutdown();
 
 		static void SetScriptProject(const std::filesystem::path& projectPath);
@@ -52,7 +52,7 @@ namespace Rod {
 		struct Configuration
 		{
 			const Project& ProjectData;
-			const Input& InputDevice;
+			const InputState& Input;
 			Mode StartupMode;
 		};
 		struct ScriptPaths;

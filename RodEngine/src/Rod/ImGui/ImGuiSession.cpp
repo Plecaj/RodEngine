@@ -1,6 +1,6 @@
 #include "rdpch.h"
 
-#include "ImGuiLayer.h"
+#include "ImGuiSession.h"
 
 #include "Rod/Core/Window.h"
 #include "Rod/ImGui/ImGuiFlags.h"
@@ -72,10 +72,8 @@ namespace Rod {
 		});
 	}
 
-	ImGuiLayer::ImGuiLayer(const Window& window) : Layer("ImGuiLayer"), m_Window(window)
+	ImGuiSession::ImGuiSession(const Window& window)
 	{
-		RD_PROFILE_FUNCTION();
-
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
 		try
@@ -102,7 +100,7 @@ namespace Rod {
 
 			SetDarkThemeColors();
 
-			auto* nativeWindow = static_cast<GLFWwindow*>(m_Window.GetNativeWindow());
+			auto* nativeWindow = static_cast<GLFWwindow*>(window.GetNativeWindow());
 
 			if (!ImGui_ImplGlfw_InitForOpenGL(nativeWindow, true))
 				throw std::runtime_error("Failed to initialize the ImGui GLFW backend");
@@ -121,47 +119,28 @@ namespace Rod {
 		}
 	}
 
-	ImGuiLayer::~ImGuiLayer()
+	ImGuiSession::~ImGuiSession()
 	{
-		RD_PROFILE_FUNCTION();
-
 		ImGui_ImplOpenGL3_Shutdown();
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
 	}
 
-	void ImGuiLayer::OnImGuiRender()
-	{}
-
-	void ImGuiLayer::OnEvent(Event& e)
+	void ImGuiSession::Begin()
 	{
-		if (m_BlockEvents)
-		{
-			const ImGuiIO& io = ImGui::GetIO();
-			e.Handled |= e.IsInCategory(EventCategoryMouse) && io.WantCaptureMouse;
-			e.Handled |= e.IsInCategory(EventCategoryKeyboard) && io.WantCaptureKeyboard;
-		}
-	}
-
-	void ImGuiLayer::Begin()
-	{
-		RD_PROFILE_FUNCTION();
-
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		ImGuizmo::BeginFrame();
 	}
 
-	void ImGuiLayer::End() const
+	void ImGuiSession::End(bool drawable)
 	{
-		RD_PROFILE_FUNCTION();
-
-		ImGuiIO& io = ImGui::GetIO();
-		io.DisplaySize = ImVec2(static_cast<float>(m_Window.GetWidth()), static_cast<float>(m_Window.GetHeight()));
-
 		ImGui::Render();
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		if (drawable)
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		const ImGuiIO& io = ImGui::GetIO();
 
 		if (HasAnyImGuiFlag(io.ConfigFlags, ImGuiConfigFlags_ViewportsEnable))
 		{
@@ -172,7 +151,7 @@ namespace Rod {
 		}
 	}
 
-	void ImGuiLayer::SetDarkThemeColors()
+	void ImGuiSession::SetDarkThemeColors()
 	{
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.WindowPadding = g_WindowPadding;

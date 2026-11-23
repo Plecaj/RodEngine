@@ -2,10 +2,6 @@
 
 #include "EditorCamera.h"
 
-#include "Rod/Core/Input.h"
-#include "Rod/Core/KeyCodes.h"
-#include "Rod/Core/MouseButtonCodes.h"
-
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 
@@ -62,53 +58,34 @@ namespace Rod {
 		return speed;
 	}
 
-	void EditorCamera::OnUpdate(Timestep ts, const Input& input)
+	void EditorCamera::Pan(glm::vec2 delta) noexcept
 	{
-		(void)ts;
-
-		if (m_ControlsEnabled && input.IsKeyPressed(Key::LeftAlt))
-		{
-			const auto [mouseX, mouseY] = input.GetMousePosition();
-			const glm::vec2 mouse{mouseX, mouseY};
-			const glm::vec2 delta = (mouse - m_InitialMousePosition) * s_MouseDeltaScale;
-			m_InitialMousePosition = mouse;
-
-			if (input.IsMouseButtonPressed(Mouse::ButtonMiddle))
-				MousePan(delta);
-			else if (input.IsMouseButtonPressed(Mouse::ButtonLeft))
-				MouseRotate(delta);
-			else if (input.IsMouseButtonPressed(Mouse::ButtonRight))
-				MouseZoom(delta.y);
-		}
-
-		UpdateView();
-	}
-
-	void EditorCamera::OnEvent(Event& e)
-	{
-		HandleEvent<MouseScrolledEvent>(e, [this](MouseScrolledEvent& event) { return OnMouseScroll(event); });
-	}
-
-	auto EditorCamera::OnMouseScroll(MouseScrolledEvent& e) noexcept -> bool
-	{
-		const float delta = e.GetYOffset() * s_ScrollDeltaScale;
-		MouseZoom(delta);
-		UpdateView();
-		return false;
-	}
-
-	void EditorCamera::MousePan(const glm::vec2& delta) noexcept
-	{
-		auto [xSpeed, ySpeed] = PanSpeed();
+		delta *= s_MouseDeltaScale;
+		const auto [xSpeed, ySpeed] = PanSpeed();
 		m_FocalPoint += -GetRightDirection() * delta.x * xSpeed * m_Distance;
 		m_FocalPoint += GetUpDirection() * delta.y * ySpeed * m_Distance;
+		UpdateView();
 	}
 
-	void EditorCamera::MouseRotate(const glm::vec2& delta) noexcept
+	void EditorCamera::Orbit(glm::vec2 delta) noexcept
 	{
+		delta *= s_MouseDeltaScale;
 		const float yawSign = GetUpDirection().y < 0 ? -1.0f : 1.0f;
 		m_Yaw += yawSign * delta.x * s_RotationSpeed;
 		m_Pitch += delta.y * s_RotationSpeed;
+		UpdateView();
+	}
+
+	void EditorCamera::Dolly(float delta) noexcept
+	{
+		MouseZoom(delta * s_MouseDeltaScale);
+		UpdateView();
+	}
+
+	void EditorCamera::Zoom(float scroll) noexcept
+	{
+		MouseZoom(scroll * s_ScrollDeltaScale);
+		UpdateView();
 	}
 
 	void EditorCamera::MouseZoom(float delta) noexcept

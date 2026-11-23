@@ -5,6 +5,7 @@
 #include "Renderer.h"
 
 #include <algorithm>
+#include <fstream>
 #include <limits>
 
 namespace Rod {

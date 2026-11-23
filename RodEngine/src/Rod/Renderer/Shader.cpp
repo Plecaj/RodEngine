@@ -7,6 +7,8 @@
 #include <glad/glad.h>
 #include <shaderc/shaderc.h>
 
+#include <fstream>
+
 namespace Rod {
 
 	namespace {
@@ -42,8 +44,6 @@ namespace Rod {
 
 		[[nodiscard]] auto ReadFile(const std::string& filepath) -> std::string
 		{
-			RD_PROFILE_FUNCTION();
-
 			std::string result;
 			std::ifstream in(filepath, std::ios::in | std::ios::binary);
 			if (in)
@@ -69,8 +69,6 @@ namespace Rod {
 
 		[[nodiscard]] auto PreProcess(const std::string& source) -> std::unordered_map<shaderc_shader_kind, std::string>
 		{
-			RD_PROFILE_FUNCTION();
-
 			std::unordered_map<shaderc_shader_kind, std::string> shaderSources;
 
 			const char* typeToken = "#type";

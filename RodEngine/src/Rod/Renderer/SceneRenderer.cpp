@@ -8,6 +8,9 @@
 #include "Rod/Scene/Components.h"
 #include "Rod/Scene/Scene.h"
 
+#include <cstdio>
+#include <exception>
+
 namespace Rod {
 
 	struct SceneRenderer::RuntimeCameraData
@@ -67,27 +70,38 @@ namespace Rod {
 		});
 	}
 
-	void SceneRenderer::Init(const std::filesystem::path& shaderDirectory)
+	SceneRenderer::SceneRenderer(const std::filesystem::path& shaderDirectory)
 	{
-		RD_PROFILE_FUNCTION();
-
 		Renderer::Init(shaderDirectory);
-		Renderer3D::Init();
-		Renderer2D::Init();
+		try
+		{
+			Renderer3D::Init();
+			Renderer2D::Init();
+		}
+		catch (...)
+		{
+			Renderer2D::Shutdown();
+			Renderer3D::Shutdown();
+			throw;
+		}
 	}
 
-	void SceneRenderer::Shutdown()
+	SceneRenderer::~SceneRenderer() noexcept
 	{
-		RD_PROFILE_FUNCTION();
-
 		Renderer2D::Shutdown();
 		Renderer3D::Shutdown();
-		Renderer::Shutdown();
-	}
-
-	void SceneRenderer::OnViewportResize(uint32_t width, uint32_t height)
-	{
-		Renderer::OnWindowResize(width, height);
+		try
+		{
+			Renderer::Shutdown();
+		}
+		catch (const std::exception& error)
+		{
+			std::fprintf(stderr, "Could not save shader cache: %s\n", error.what());
+		}
+		catch (...)
+		{
+			std::fputs("Could not save shader cache\n", stderr);
+		}
 	}
 
 	void SceneRenderer::RenderRuntime(Scene& scene)

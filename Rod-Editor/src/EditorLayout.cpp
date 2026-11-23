@@ -39,7 +39,7 @@ namespace Rod {
 		m_SceneHierarchyPanel.OnImGuiRender(m_Scenes.GetActiveScene());
 		m_ContentBrowserPanel.OnImGuiRender();
 		m_PerformancePanel.OnImGuiRender(deltaTime);
-		m_DebugPanel.OnImGuiRender(m_Interaction.GizmoType, m_Interaction.HoveredEntity, m_Profiling);
+		m_DebugPanel.OnImGuiRender(m_Interaction.GizmoType, m_Interaction.HoveredEntity);
 		m_GuidePanel.OnImGuiRender();
 
 		m_Viewport.OnImGuiRender(m_Scenes, m_Project.GetAssetsPath(), [this](const std::filesystem::path& path) {

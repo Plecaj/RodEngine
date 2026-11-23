@@ -11,7 +11,6 @@ namespace Rod {
 
 	OpenGLContext::OpenGLContext(GLFWwindow* windowHandle) : m_WindowHandle(windowHandle)
 	{
-		RD_PROFILE_FUNCTION();
 		if (!windowHandle)
 			throw std::invalid_argument("OpenGL window handle required");
 
@@ -41,8 +40,6 @@ namespace Rod {
 
 	void OpenGLContext::SwapBuffers()
 	{
-		RD_PROFILE_FUNCTION();
-
 		glfwSwapBuffers(m_WindowHandle);
 	}
 

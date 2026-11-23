@@ -1,8 +1,7 @@
 include(vendor/Catch2)
 
 add_executable(RodEngineTests
-    Core/LayerStack.cpp
-    Core/Events.cpp
+    Core/InputState.cpp
     Math/Math.cpp
     Project/Serialization.cpp
     Project/Export.cpp

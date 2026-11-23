@@ -195,10 +195,10 @@ namespace Rod {
 		    .ScriptCacheDirectory = assetsPath / "Scripts" / "Cache"};
 	}
 
-	void ScriptEngine::Init(const Project& project, const Input& input, Mode mode)
+	void ScriptEngine::Init(const Project& project, const InputState& input, Mode mode)
 	{
 		if (!s_Configuration)
-			s_Configuration.emplace(Configuration{.ProjectData = project, .InputDevice = input, .StartupMode = mode});
+			s_Configuration.emplace(Configuration{.ProjectData = project, .Input = input, .StartupMode = mode});
 		EnsureInitialized();
 	}
 
@@ -220,7 +220,7 @@ namespace Rod {
 		}
 
 		// Managed input callbacks have no user-data parameter.
-		ScriptGlue::SetInputContext(s_Configuration->InputDevice);
+		ScriptGlue::SetInputContext(s_Configuration->Input);
 		if (s_Configuration->StartupMode != Mode::Editor || BuildScripts())
 			ReloadAssembly();
 		RefreshSourceWriteTime();

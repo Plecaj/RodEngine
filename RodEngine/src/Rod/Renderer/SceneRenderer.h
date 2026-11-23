@@ -13,9 +13,12 @@ namespace Rod {
 	class SceneRenderer
 	{
 	public:
-		static void Init(const std::filesystem::path& shaderDirectory);
-		static void Shutdown();
-		static void OnViewportResize(uint32_t width, uint32_t height);
+		explicit SceneRenderer(const std::filesystem::path& shaderDirectory);
+		~SceneRenderer() noexcept;
+		SceneRenderer(const SceneRenderer&) = delete;
+		auto operator=(const SceneRenderer&) -> SceneRenderer& = delete;
+		SceneRenderer(SceneRenderer&&) = delete;
+		auto operator=(SceneRenderer&&) -> SceneRenderer& = delete;
 
 		static void RenderRuntime(Scene& scene);
 		static void RenderEditor(Scene& scene, EditorCamera& camera);

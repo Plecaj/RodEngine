@@ -7,6 +7,8 @@
 
 #include <catch2/catch_test_macros.hpp>
 
+#include <stdexcept>
+
 namespace {
 	constexpr uint64_t g_PlayerID = 1001;
 	constexpr uint64_t g_EnemyID = 1002;
@@ -42,6 +44,32 @@ TEST_CASE("Scene finds entities by UUID and name", "[scene]")
 	REQUIRE(!scene.FindEntityByName("Missing"));
 }
 
+TEST_CASE("Scene owns entity identity", "[scene]")
+{
+	Rod::Scene scene;
+	const auto player = scene.CreateEntityWithUUID(Rod::UUID{g_PlayerID}, "Player");
+	REQUIRE_THROWS_AS(scene.CreateEntityWithUUID(Rod::UUID{g_PlayerID}), std::invalid_argument);
+
+	Rod::Scene other;
+	const auto foreign = other.CreateEntity("Foreign");
+	scene.DestroyEntity(foreign);
+	REQUIRE(player);
+	REQUIRE(foreign);
+}
+
+TEST_CASE("Entity component lookup handles optional and removed components", "[scene]")
+{
+	Rod::Scene scene;
+	auto entity = scene.CreateEntity();
+	REQUIRE_FALSE(entity.TryGetComponent<Rod::MeshComponent>());
+	auto& mesh = entity.AddComponent<Rod::MeshComponent>();
+	REQUIRE(entity.TryGetComponent<Rod::MeshComponent>() == &mesh);
+	entity.RemoveComponent<Rod::MeshComponent>();
+	REQUIRE_FALSE(entity.TryGetComponent<Rod::MeshComponent>());
+	scene.DestroyEntity(entity);
+	REQUIRE_FALSE(entity.TryGetComponent<Rod::TransformComponent>());
+}
+
 TEST_CASE("Scene equality compares component data", "[scene]")
 {
 	constexpr uint32_t viewportWidth = 800;
@@ -51,7 +79,7 @@ TEST_CASE("Scene equality compares component data", "[scene]")
 	constexpr float changedIntensity = 2.0f;
 
 	Rod::Scene original;
-	original.OnViewportResize(viewportWidth, viewportHeight);
+	original.ResizeViewport(viewportWidth, viewportHeight);
 	auto entity = original.CreateEntityWithUUID(Rod::UUID{g_PlayerID}, "Player");
 	entity.AddComponent<Rod::SpriteRendererComponent>();
 	entity.AddComponent<Rod::MeshComponent>();
@@ -100,7 +128,7 @@ TEST_CASE("Scene equality compares component data", "[scene]")
 	}
 	SECTION("viewport")
 	{
-		copy.OnViewportResize(viewportHeight, viewportHeight);
+		copy.ResizeViewport(viewportHeight, viewportHeight);
 	}
 	REQUIRE_FALSE(original == copy);
 	REQUIRE_FALSE(copy == original);
@@ -124,19 +152,24 @@ TEST_CASE("Scene selects the primary camera", "[scene]")
 {
 	Rod::Scene scene;
 	constexpr glm::uvec2 viewportSize{1920, 1080};
-	scene.OnViewportResize(viewportSize.x, viewportSize.y);
-	REQUIRE(!scene.GetPrimaryCameraEntity());
+	scene.ResizeViewport(viewportSize.x, viewportSize.y);
+	REQUIRE(!scene.FindPrimaryCamera());
 
 	auto minimap = scene.CreateEntity("Minimap");
 	minimap.AddComponent<Rod::CameraComponent>().Primary = false;
-	REQUIRE(!scene.GetPrimaryCameraEntity());
+	REQUIRE(!scene.FindPrimaryCamera());
 
 	auto camera = scene.CreateEntity("Camera");
 	camera.AddComponent<Rod::CameraComponent>();
-	REQUIRE(scene.GetPrimaryCameraEntity() == camera);
+	REQUIRE(scene.FindPrimaryCamera() == camera);
+	auto spare = scene.CreateEntity("Spare");
+	REQUIRE_FALSE(spare.AddComponent<Rod::CameraComponent>().Primary);
+	scene.SetCameraPrimary(spare, true);
+	REQUIRE(scene.FindPrimaryCamera() == spare);
+	REQUIRE_FALSE(camera.GetComponent<Rod::CameraComponent>().Primary);
 
-	scene.DestroyEntity(camera);
-	REQUIRE(!scene.GetPrimaryCameraEntity());
+	scene.DestroyEntity(spare);
+	REQUIRE(!scene.FindPrimaryCamera());
 }
 
 namespace {
@@ -224,43 +257,21 @@ TEST_CASE("Scene assignment replaces entities with independent copies", "[scene]
 	REQUIRE(!destination.FindEntityByName("Player"));
 }
 
-namespace {
-	class TrackedScript : public Rod::ScriptableEntity
-	{
-	public:
-		static inline int s_Destroyed = 0;
-
-	protected:
-		void OnDestroy() override { ++s_Destroyed; }
-	};
-}
-
-TEST_CASE("Scene moves rebind native scripts and release replaced instances", "[scene]")
+TEST_CASE("Scene moves transfer entities and replace destination contents", "[scene]")
 {
-	TrackedScript::s_Destroyed = 0;
 	Rod::Scene source;
 	auto entity = source.CreateEntityWithUUID(Rod::UUID{g_PlayerID}, "Player");
-	auto& script = entity.AddComponent<Rod::NativeScriptComponent>();
-	script.Bind<TrackedScript>();
-	script.Instance = Rod::CreateScope<TrackedScript>();
+	entity.AddComponent<Rod::ScriptComponent>("Game.Player");
 
 	Rod::Scene moved(std::move(source));
-	auto movedEntity = moved.FindEntityByName("Player");
-	REQUIRE(
-	    movedEntity.GetComponent<Rod::NativeScriptComponent>().Instance->GetComponent<Rod::IDComponent>().ID ==
-	    Rod::UUID{g_PlayerID});
+	REQUIRE(moved.FindEntityByUUID(Rod::UUID{g_PlayerID}));
 
 	Rod::Scene destination;
-	auto old = destination.CreateEntity("Old");
-	auto& oldScript = old.AddComponent<Rod::NativeScriptComponent>();
-	oldScript.Bind<TrackedScript>();
-	oldScript.Instance = Rod::CreateScope<TrackedScript>();
+	destination.CreateEntity("Old");
 	destination = std::move(moved);
-	REQUIRE(TrackedScript::s_Destroyed == 1);
-	auto player = destination.FindEntityByName("Player");
-	REQUIRE(
-	    player.GetComponent<Rod::NativeScriptComponent>().Instance->GetComponent<Rod::TagComponent>().Tag == "Player");
-	destination.DestroyEntity(player);
-	constexpr int expectedDestroyCount = 2;
-	REQUIRE(TrackedScript::s_Destroyed == expectedDestroyCount);
+	REQUIRE_FALSE(destination.FindEntityByName("Old"));
+	const auto player = destination.FindEntityByUUID(Rod::UUID{g_PlayerID});
+	REQUIRE(player);
+	REQUIRE(player.GetName() == "Player");
+	REQUIRE(player.GetComponent<Rod::ScriptComponent>().ClassName == "Game.Player");
 }

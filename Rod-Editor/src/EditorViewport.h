@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Panels/ViewportPanel.h"
-#include "Rod/Core/Timestep.h"
 #include "Rod/Renderer/EditorCamera.h"
 
 #include <optional>
@@ -22,7 +21,8 @@ namespace Rod {
 
 		EditorViewport(EditorInteractionState& interaction, const InputState& input);
 
-		void OnUpdate(Timestep ts, EditorSceneManager& scenes);
+		void ResizeViewportIfNeeded(EditorSceneManager& scenes);
+		void OnUpdate(EditorSceneManager& scenes);
 		void HandleButton(const MouseButtonChanged& button, EditorSceneManager& scenes);
 		void HandleScroll(const Scrolled& scroll, SceneState state);
 		void OnImGuiRender(
@@ -40,8 +40,7 @@ namespace Rod {
 		static constexpr glm::vec4 s_ClearColor{0.15f, 0.15f, 0.15f, 1.0f};
 
 		void CreateFramebuffer();
-		void ResizeViewportIfNeeded(EditorSceneManager& scenes);
-		void RenderScene(Timestep ts, EditorSceneManager& scenes);
+		void RenderScene(EditorSceneManager& scenes);
 		void UpdateCamera();
 		[[nodiscard]] auto Contains(glm::vec2 pos) const noexcept -> bool;
 		[[nodiscard]] auto Pick(glm::vec2 pos, Scene& scene) const -> Entity;

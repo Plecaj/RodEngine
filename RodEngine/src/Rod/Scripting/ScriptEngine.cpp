@@ -327,9 +327,9 @@ namespace Rod {
 		s_Data->RuntimeRunning = true;
 		ScriptGlue::SetSceneContext(scene);
 
-		const auto view = scene.m_Registry.view<IDComponent, ScriptComponent>();
+		const auto view = scene.View<IDComponent, ScriptComponent>();
 		for (const auto entityID : view)
-			OnCreateEntity(Entity{entityID, scene});
+			OnCreateEntity(scene.FindEntityByHandle(entityID));
 	}
 
 	void ScriptEngine::OnRuntimeStop()
@@ -339,9 +339,9 @@ namespace Rod {
 
 		if (s_Data->SceneContext)
 		{
-			const auto view = s_Data->SceneContext->m_Registry.view<IDComponent, ScriptComponent>();
+			const auto view = s_Data->SceneContext->View<IDComponent, ScriptComponent>();
 			for (const auto entityID : view)
-				OnDestroyEntity(Entity{entityID, *s_Data->SceneContext});
+				OnDestroyEntity(s_Data->SceneContext->FindEntityByHandle(entityID));
 		}
 
 		s_Data->RuntimeRunning = false;
@@ -354,9 +354,9 @@ namespace Rod {
 		if (!s_Data || !s_Data->RuntimeRunning || !s_Data->SceneContext)
 			return;
 
-		const auto view = s_Data->SceneContext->m_Registry.view<IDComponent, ScriptComponent>();
+		const auto view = s_Data->SceneContext->View<IDComponent, ScriptComponent>();
 		for (const auto entityID : view)
-			OnUpdateEntity(Entity{entityID, *s_Data->SceneContext}, ts);
+			OnUpdateEntity(s_Data->SceneContext->FindEntityByHandle(entityID), ts);
 	}
 
 	void ScriptEngine::OnCreateEntity(Entity entity)

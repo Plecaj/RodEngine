@@ -287,9 +287,8 @@ namespace Rod {
 
 	void RD_CDECL ScriptGlue::CameraSetPrimary(uint64_t entityID, bool value)
 	{
-		Entity entity = GetEntity(entityID);
-		if (entity && entity.HasComponent<CameraComponent>())
-			entity.GetComponent<CameraComponent>().Primary = value;
+		if (s_SceneContext)
+			s_SceneContext->SetCameraPrimary(s_SceneContext->FindEntityByUUID(UUID{entityID}), value);
 	}
 
 	auto RD_CDECL ScriptGlue::CameraGetFixedAspectRatio(uint64_t entityID) -> bool

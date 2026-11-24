@@ -7,6 +7,7 @@
 #include "Rod/Project/Project.h"
 #include "Rod/Renderer/RenderCommand.h"
 #include "Rod/Renderer/Renderer2D.h"
+#include "Rod/Renderer/SceneRenderer.h"
 #include "Rod/Scene/SceneSerializer.h"
 #include "Rod/Scripting/ScriptEngine.h"
 
@@ -26,7 +27,7 @@ namespace Rod {
 			}
 
 			Resize(host.GetWindow().GetFramebufferSize());
-			m_Scene.OnRuntimeStart();
+			ScriptEngine::OnRuntimeStart(m_Scene);
 			m_Running = true;
 		}
 		catch (...)
@@ -39,7 +40,7 @@ namespace Rod {
 	RuntimeApp::~RuntimeApp()
 	{
 		if (m_Running)
-			m_Scene.OnRuntimeStop();
+			ScriptEngine::OnRuntimeStop();
 		ScriptEngine::Shutdown();
 	}
 
@@ -83,8 +84,8 @@ namespace Rod {
 		RenderCommand::SetClearColor(s_ClearColor);
 		RenderCommand::Clear();
 		Renderer2D::ResetStats();
-		auto delta = frame.Delta;
-		m_Scene.OnUpdateRuntime(delta);
+		ScriptEngine::OnRuntimeUpdate(frame.Delta);
+		SceneRenderer::RenderRuntime(m_Scene);
 		return true;
 	}
 
@@ -95,7 +96,7 @@ namespace Rod {
 
 		m_Size = size;
 		RenderCommand::SetViewport(0, 0, size.x, size.y);
-		m_Scene.OnViewportResize(size.x, size.y);
+		m_Scene.ResizeViewport(size.x, size.y);
 	}
 
 }

@@ -59,7 +59,7 @@ namespace Rod {
 			return CameraMatrices{
 			    .View = context.EditorCamera.GetViewMatrix(),
 			    .Projection = context.EditorCamera.GetProjection()};
-		const auto cameraEntity = context.ActiveScene.GetPrimaryCameraEntity();
+		const auto cameraEntity = context.ActiveScene.FindPrimaryCamera();
 		if (!cameraEntity)
 			return std::nullopt;
 		return CameraMatrices{

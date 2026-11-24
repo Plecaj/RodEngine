@@ -8,9 +8,6 @@
 #include "Rod/Scene/SceneSerializer.h"
 #include "Rod/Scripting/ScriptBuilder.h"
 
-#include <yaml-cpp/node/parse.h>
-#include <yaml-cpp/yaml.h> // IWYU pragma: keep
-
 #include <span>
 #include <stdexcept>
 #include <system_error>
@@ -84,23 +81,8 @@ namespace Rod {
 		void ValidateSceneAssets(const std::filesystem::path& scenePath, const Project& package)
 		{
 			const auto root = package.GetDirectory();
-			const auto scene = YAML::LoadFile(scenePath.string());
-			const auto entities = scene["Entities"];
-			if (!scene["Scene"].IsScalar() || !entities.IsSequence())
-				throw std::runtime_error("Export scene is invalid: " + scenePath.string());
-			for (const auto& entity : entities)
-			{
-				for (const auto& [component, key] :
-				     {std::pair{"SpriteRendererComponent", "Texture"}, std::pair{"MeshComponent", "Path"}})
-				{
-					const auto data = entity[component];
-					if (!data)
-						continue;
-					const auto value = data[key].as<std::string>();
-					if (value != "None")
-						RequireFile(root / ProjectRelative(root / value, root));
-				}
-			}
+			for (const auto& path : SceneSerializer::ReadAssetReferences(scenePath))
+				RequireFile(root / ProjectRelative(root / path, root));
 		}
 
 		void ValidatePackage(const Project& package)

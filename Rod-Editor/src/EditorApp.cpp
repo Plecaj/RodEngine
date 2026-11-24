@@ -52,7 +52,10 @@ namespace Rod {
 		if (frame.Drawable)
 		{
 			ScriptEngine::OnUpdate();
-			m_Viewport.OnUpdate(frame.Delta, m_Scenes);
+			m_Viewport.ResizeViewportIfNeeded(m_Scenes);
+			if (m_Scenes.GetState() == SceneState::Play)
+				ScriptEngine::OnRuntimeUpdate(frame.Delta);
+			m_Viewport.OnUpdate(m_Scenes);
 		}
 		m_Layout.OnImGuiRender(frame.Delta.GetSeconds());
 	}

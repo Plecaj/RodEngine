@@ -84,7 +84,7 @@ TEST_CASE("Scene resize preserves fixed-aspect camera projection", "[scene][came
 	constexpr float defaultHalfExtent = 5.0f;
 
 	Rod::Scene scene;
-	scene.OnViewportResize(wideWidth, wideHeight);
+	scene.ResizeViewport(wideWidth, wideHeight);
 	auto fixedEntity = scene.CreateEntity("Fixed");
 	auto& fixed = fixedEntity.AddComponent<Rod::CameraComponent>();
 	fixed.FixedAspectRatio = true;
@@ -92,7 +92,7 @@ TEST_CASE("Scene resize preserves fixed-aspect camera projection", "[scene][came
 
 	auto resizableEntity = scene.CreateEntity("Resizable");
 	const auto& resizable = resizableEntity.AddComponent<Rod::CameraComponent>();
-	scene.OnViewportResize(squareSize, squareSize);
+	scene.ResizeViewport(squareSize, squareSize);
 
 	RequireProjectionNear(fixed.Camera.GetProjection(), fixedProjection);
 	RequireProjectionNear(

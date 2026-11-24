@@ -11,7 +11,6 @@
 #include "Rod/Scene/Entity.h"
 #include "Rod/Scene/Scene.h"
 #include "Rod/Scene/SceneSerializer.h"
-#include "Rod/Scene/ScriptableEntity.h"
 #include "Rod/Scripting/ScriptEngine.h"
 
 //------Renderer-----------------------

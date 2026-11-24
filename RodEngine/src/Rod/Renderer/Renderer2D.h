@@ -3,7 +3,6 @@
 #include "Rod/Renderer/Camera.h"
 #include "Rod/Renderer/EditorCamera.h"
 #include "Rod/Scene/Components.h"
-#include "Rod/Scene/ScriptableEntity.h"
 #include "SubTexture2D.h"
 #include "Texture.h"
 
@@ -30,7 +29,7 @@ namespace Rod {
 		    const glm::vec4& tintColor = glm::vec4(1.0f),
 		    int entityID = -1);
 
-		static void DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID);
+		static void DrawSprite(const glm::mat4& transform, const SpriteRendererComponent& src, int entityID);
 
 		struct Statistics
 		{

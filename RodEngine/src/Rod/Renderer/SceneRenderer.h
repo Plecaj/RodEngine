@@ -21,14 +21,12 @@ namespace Rod {
 		auto operator=(SceneRenderer&&) -> SceneRenderer& = delete;
 
 		static void RenderRuntime(Scene& scene);
-		static void RenderEditor(Scene& scene, EditorCamera& camera);
+		static void RenderEditor(const Scene& scene, const EditorCamera& camera);
 
 	private:
-		struct RuntimeCameraData;
-		[[nodiscard]] static auto FindRuntimeCamera(Scene& scene) -> RuntimeCameraData;
-		static auto CollectLights(Scene& scene) -> std::vector<DirectionalLightComponent>;
-		static void SubmitMeshes(Scene& scene);
-		static void SubmitSprites(Scene& scene);
+		static auto CollectLights(const Scene& scene) -> std::vector<DirectionalLightComponent>;
+		static void SubmitMeshes(const Scene& scene);
+		static void SubmitSprites(const Scene& scene);
 	};
 
 }

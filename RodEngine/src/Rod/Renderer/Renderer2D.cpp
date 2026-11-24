@@ -254,7 +254,7 @@ namespace Rod {
 		g_Data->Stats.QuadCount++;
 	}
 
-	void Renderer2D::DrawSprite(const glm::mat4& transform, SpriteRendererComponent& src, int entityID)
+	void Renderer2D::DrawSprite(const glm::mat4& transform, const SpriteRendererComponent& src, int entityID)
 	{
 		if (src.Texture)
 			DrawQuad(transform, src.Texture, src.TilingFactor, src.Color, entityID);

@@ -120,7 +120,7 @@ TEST_CASE_METHOD(
 	Rod::Scene scene;
 	const Rod::SceneSerializer serializer(scene, project.GetDirectory());
 	REQUIRE_NOTHROW(serializer.DeserializeText(project.GetStartupScenePath().string()));
-	const Rod::Entity camera = scene.GetPrimaryCameraEntity();
+	const Rod::Entity camera = scene.FindPrimaryCamera();
 	REQUIRE(camera);
 	std::ofstream file(project.GetScriptProjectPath());
 	file << "preserve this content";

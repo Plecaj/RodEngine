@@ -23,6 +23,7 @@ add_executable(RodEngineTests
     Scripting/ScriptAssembly.cpp
     Scripting/ScriptGlue.cpp
     Scripting/ScriptRuntime.cpp
+    Scene/ComponentSerializers.cpp
     Scene/Scene.cpp
     Scene/SceneCamera.cpp
     Scene/Serialization.cpp

@@ -3,6 +3,16 @@ target_sources(RodEngine PRIVATE
     Scene.cpp
     SceneCamera.cpp
     SceneSerializer.cpp
+    Serialization/ComponentSerializers.h
+    Serialization/YamlVectors.h
+    Serialization/AssetPaths.cpp
+    Serialization/TagSerializer.cpp
+    Serialization/TransformSerializer.cpp
+    Serialization/CameraSerializer.cpp
+    Serialization/SpriteRendererSerializer.cpp
+    Serialization/MeshSerializer.cpp
+    Serialization/DirectionalLightSerializer.cpp
+    Serialization/ScriptSerializer.cpp
 )
 
 target_sources(RodEngine PUBLIC
@@ -13,5 +23,4 @@ target_sources(RodEngine PUBLIC
         Scene.h
         SceneCamera.h
         SceneSerializer.h
-        ScriptableEntity.h
 )

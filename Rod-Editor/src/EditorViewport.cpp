@@ -10,6 +10,7 @@
 #include "Rod/Events/Event.h"
 #include "Rod/Renderer/RenderCommand.h"
 #include "Rod/Renderer/Renderer2D.h"
+#include "Rod/Renderer/SceneRenderer.h"
 
 #include "imgui.h"
 
@@ -91,17 +92,15 @@ namespace Rod {
 		m_Framebuffer = Framebuffer::Create(fbSpec);
 	}
 
-	void EditorViewport::OnUpdate(Timestep ts, EditorSceneManager& scenes)
+	void EditorViewport::OnUpdate(EditorSceneManager& scenes)
 	{
-		ResizeViewportIfNeeded(scenes);
-
 		m_Framebuffer->Bind();
 		Renderer2D::ResetStats();
 		RenderCommand::SetClearColor(s_ClearColor);
 		RenderCommand::Clear();
 		m_Framebuffer->ClearColorAttachment(1, -1);
 
-		RenderScene(ts, scenes);
+		RenderScene(scenes);
 		const auto mouse = ImGui::GetMousePos();
 		m_Interaction.HoveredEntity = Pick({mouse.x, mouse.y}, scenes.GetActiveScene());
 
@@ -120,20 +119,20 @@ namespace Rod {
 		}
 	}
 
-	void EditorViewport::RenderScene(Timestep ts, EditorSceneManager& scenes)
+	void EditorViewport::RenderScene(EditorSceneManager& scenes)
 	{
 		switch (scenes.GetState())
 		{
 			case SceneState::Edit: {
 				UpdateCamera();
 
-				scenes.GetActiveScene().OnUpdateEditor(ts, m_EditorCamera);
+				SceneRenderer::RenderEditor(scenes.GetActiveScene(), m_EditorCamera);
 				break;
 			}
 			case SceneState::Play: {
 				m_Dragging = false;
 				m_DragStart.reset();
-				scenes.GetActiveScene().OnUpdateRuntime(ts);
+				SceneRenderer::RenderRuntime(scenes.GetActiveScene());
 				break;
 			}
 		}
@@ -181,7 +180,7 @@ namespace Rod {
 
 		const int id = m_Framebuffer->ReadPixel(1, x, static_cast<int>(spec.Height) - 1 - y);
 		const auto handle = static_cast<entt::entity>(id);
-		return id != -1 && scene.IsValidEntityHandle(handle) ? Entity{handle, scene} : Entity{};
+		return id == -1 ? Entity{} : scene.FindEntityByHandle(handle);
 	}
 
 }

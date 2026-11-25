@@ -3,14 +3,15 @@
 #include "ToolbarPanel.h"
 
 #include "Rod/ImGui/ImGuiFlags.h"
+#include "Rod/Renderer/RenderDevice.h"
 
 #include "imgui.h"
 
 namespace Rod {
 
-	ToolbarPanel::ToolbarPanel()
-	    : m_PlayButton(Texture2D::Create("RodAssets/Textures/PlayButton.png")),
-	      m_StopButton(Texture2D::Create("RodAssets/Textures/StopButton.png"))
+	ToolbarPanel::ToolbarPanel(const RenderDevice& device)
+	    : m_PlayButton(device.LoadTexture2D("RodAssets/Textures/PlayButton.png")),
+	      m_StopButton(device.LoadTexture2D("RodAssets/Textures/StopButton.png"))
 	{}
 
 	void ToolbarPanel::OnImGuiRender(SceneState sceneState, ImGuiID dockID, const Actions& actions) const

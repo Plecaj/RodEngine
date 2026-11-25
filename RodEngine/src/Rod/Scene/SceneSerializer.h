@@ -5,6 +5,7 @@
 #include <vector>
 
 namespace Rod {
+	class RenderDevice;
 	class Scene;
 
 	class SceneSerializer
@@ -13,7 +14,7 @@ namespace Rod {
 		explicit SceneSerializer(Scene& scene, std::filesystem::path projectDirectory = {}) noexcept;
 
 		void SerializeText(const std::string& filepath) const;
-		void DeserializeText(const std::string& filepath) const;
+		void DeserializeText(const std::string& filepath, const RenderDevice& device) const;
 		[[nodiscard]] static auto ReadAssetReferences(const std::filesystem::path& filepath)
 		    -> std::vector<std::filesystem::path>;
 

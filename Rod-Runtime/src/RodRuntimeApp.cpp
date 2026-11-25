@@ -4,7 +4,9 @@
 #include "Rod/Core/DesktopHost.h"
 #include "Rod/Project/ProjectExporter.h"
 #include "Rod/Project/ProjectSerializer.h"
+#include "Rod/Renderer/RenderDevice.h"
 #include "Rod/Renderer/SceneRenderer.h"
+#include "Rod/Renderer/ShaderLoader.h"
 #include "Rod/Utils/PlatformUtils.h"
 #include "RuntimeApp.h"
 
@@ -21,8 +23,12 @@ auto main(int argc, char* argv[]) -> int
 		std::filesystem::current_path(dir);
 
 		Rod::DesktopHost host(Rod::WindowProps{"Rod Game"});
-		const Rod::SceneRenderer renderer(project->GetShadersPath());
-		Rod::RuntimeApp app(*project, host);
+		const Rod::RenderDevice device;
+		device.ConfigureDefaults();
+		const auto shaderDirectory = project->GetShadersPath();
+		const Rod::ShaderLoader shaders(shaderDirectory, shaderDirectory / "Cached");
+		Rod::SceneRenderer renderer(device, shaders);
+		Rod::RuntimeApp app(*project, host, device, renderer);
 		while (const auto frame = host.NextFrame())
 		{
 			if (app.Update(*frame))

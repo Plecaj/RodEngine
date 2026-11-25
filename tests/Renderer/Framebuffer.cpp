@@ -3,6 +3,7 @@
 #include "Rod/Renderer/FrameBuffer.h"
 
 #include "../OpenGLFixture.h"
+#include "Rod/Renderer/RenderDevice.h"
 
 #include <catch2/catch_test_macros.hpp>
 #include <glad/glad.h>
@@ -18,7 +19,7 @@ TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Framebuffers retain attachments aft
 	    Rod::FramebufferTextureSpecification{Rod::FramebufferTextureFormat::RGBA8},
 	    Rod::FramebufferTextureSpecification{Rod::FramebufferTextureFormat::RedInteger},
 	    Rod::FramebufferTextureSpecification{Rod::FramebufferTextureFormat::DEPTH24STENCIL8}};
-	const auto framebuffer = Rod::Framebuffer::Create(spec);
+	const auto framebuffer = Rod::RenderDevice{}.CreateFramebuffer(spec);
 
 	SECTION("initial size")
 	{}

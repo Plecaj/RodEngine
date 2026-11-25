@@ -10,10 +10,15 @@
 
 namespace Rod {
 
+	class RenderDevice;
+
 	class SceneHierarchyPanel
 	{
 	public:
-		SceneHierarchyPanel(std::filesystem::path assetsPath, EditorInteractionState& interaction) noexcept;
+		SceneHierarchyPanel(
+		    std::filesystem::path assetsPath,
+		    EditorInteractionState& interaction,
+		    const RenderDevice& device) noexcept;
 
 		void OnImGuiRender(Scene& scene) const;
 
@@ -94,6 +99,7 @@ namespace Rod {
 	private:
 		std::filesystem::path m_AssetsPath;
 		EditorInteractionState& m_Interaction;
+		const RenderDevice& m_Device;
 	};
 
 }

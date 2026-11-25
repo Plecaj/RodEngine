@@ -195,11 +195,19 @@ namespace Rod {
 		    .ScriptCacheDirectory = assetsPath / "Scripts" / "Cache"};
 	}
 
-	void ScriptEngine::Init(const Project& project, const InputState& input, Mode mode)
+	void ScriptEngine::Init(const Project& project, const InputState& input, const RenderDevice& device, Mode mode)
 	{
 		if (!s_Configuration)
-			s_Configuration.emplace(Configuration{.ProjectData = project, .Input = input, .StartupMode = mode});
+			s_Configuration.emplace(
+			    Configuration{.ProjectData = project, .Input = input, .Device = device, .StartupMode = mode});
 		EnsureInitialized();
+	}
+
+	auto ScriptEngine::GetRenderDevice() noexcept -> std::optional<const RenderDevice&>
+	{
+		if (s_Configuration)
+			return s_Configuration->Device;
+		return std::nullopt;
 	}
 
 	auto ScriptEngine::EnsureInitialized() -> bool

@@ -4,11 +4,12 @@
 
 #include "Rod/Core/InputState.h"
 #include "Rod/Renderer/Mesh.h"
-#include "Rod/Renderer/Texture.h"
+#include "Rod/Renderer/RenderDevice.h"
 #include "Rod/Scene/Components.h"
 #include "Rod/Scene/Entity.h"
 #include "Rod/Scene/Scene.h"
 #include "Rod/Utils/FunctionPointerCast.h"
+#include "ScriptEngine.h"
 
 #include <cstdlib> // IWYU pragma: keep
 #include <cstring>
@@ -502,7 +503,23 @@ namespace Rod {
 		if (!entity || !entity.HasComponent<SpriteRendererComponent>())
 			return;
 		auto& sprite = entity.GetComponent<SpriteRendererComponent>();
-		sprite.Texture = path && path[0] ? Texture2D::Create(path) : nullptr;
+		if (!path || !path[0])
+		{
+			sprite.Texture.reset();
+			return;
+		}
+
+		if (const auto device = ScriptEngine::GetRenderDevice())
+		{
+			try
+			{
+				sprite.Texture = device->LoadTexture2D(path);
+			}
+			catch (const std::runtime_error& exception)
+			{
+				RD_CORE_ERROR("{}", exception.what());
+			}
+		}
 	}
 
 	auto RD_CDECL ScriptGlue::MeshGetPath(uint64_t entityID) -> void*
@@ -526,7 +543,8 @@ namespace Rod {
 		}
 		try
 		{
-			mesh.SetMesh(CreateRef<Mesh>(path));
+			if (const auto device = ScriptEngine::GetRenderDevice())
+				mesh.SetMesh(CreateRef<Mesh>(*device, path));
 		}
 		catch (const std::runtime_error& exception)
 		{

@@ -4,6 +4,7 @@
 
 #include "../EditorCommands.h"
 #include "Rod/Core/Window.h"
+#include "Rod/Renderer/RenderDevice.h"
 
 #include <utility>
 
@@ -116,10 +117,14 @@ namespace Rod {
 		}
 	}
 
-	TitlebarPanel::TitlebarPanel(EditorCommands& commands, const Window& window, std::function<void()> requestClose)
+	TitlebarPanel::TitlebarPanel(
+	    EditorCommands& commands,
+	    const Window& window,
+	    const RenderDevice& device,
+	    std::function<void()> requestClose)
 	    : m_Commands(commands), m_Window(window), m_RequestClose(std::move(requestClose))
 	{
-		m_Logo = Texture2D::Create("RodAssets/Textures/titlebarLogo.png");
+		m_Logo = device.LoadTexture2D("RodAssets/Textures/titlebarLogo.png");
 		m_ButtonSize = ImVec2(s_ButtonWidth, static_cast<float>(s_Height));
 	}
 

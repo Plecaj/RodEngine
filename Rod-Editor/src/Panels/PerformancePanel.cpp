@@ -19,7 +19,6 @@ namespace Rod {
 		ImGui::Text("Frame Time: %.3f ms", deltaTime * millisecondsPerSecond);
 
 		// ImGui::Separator();
-		// auto stats = Renderer2D::GetStats();
 		// ImGui::TextDisabled("Renderer 2D");
 		// ImGui::Text("Draw Calls: %u", stats.DrawCalls);
 		// ImGui::Text("Quad Count: %u", stats.QuadCount);

@@ -8,8 +8,12 @@
 
 namespace Rod {
 
-	EditorSceneManager::EditorSceneManager(const Project& project, uint32_t viewportWidth, uint32_t viewportHeight)
-	    : m_Project(project), m_ViewportWidth(viewportWidth), m_ViewportHeight(viewportHeight)
+	EditorSceneManager::EditorSceneManager(
+	    const Project& project,
+	    const RenderDevice& device,
+	    uint32_t viewportWidth,
+	    uint32_t viewportHeight)
+	    : m_Project(project), m_Device(device), m_ViewportWidth(viewportWidth), m_ViewportHeight(viewportHeight)
 	{
 		m_EditorScene.ResizeViewport(m_ViewportWidth, m_ViewportHeight);
 	}
@@ -32,7 +36,7 @@ namespace Rod {
 		Scene loadedScene;
 		loadedScene.ResizeViewport(m_ViewportWidth, m_ViewportHeight);
 		const SceneSerializer serializer(loadedScene, m_Project.GetDirectory());
-		serializer.DeserializeText(path.string());
+		serializer.DeserializeText(path.string(), m_Device);
 
 		Stop();
 		m_EditorScene = std::move(loadedScene);

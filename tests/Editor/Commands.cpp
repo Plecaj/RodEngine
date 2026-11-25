@@ -6,6 +6,7 @@
 #include "../TemporaryDirectory.h"
 #include "Rod/Core/Log.h"
 #include "Rod/Project/Project.h"
+#include "Rod/Renderer/RenderDevice.h"
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -13,7 +14,8 @@ TEST_CASE("Scene commands clear stale entity references", "[editor][commands]")
 {
 	const Rod::Tests::TemporaryDirectory directory;
 	const Rod::Project project{directory.GetPath() / "test.rodproj", {}};
-	Rod::EditorSceneManager scenes{project, 1, 1};
+	const Rod::RenderDevice device;
+	Rod::EditorSceneManager scenes{project, device, 1, 1};
 	const auto entity = scenes.GetActiveScene().CreateEntity("Selected");
 	Rod::EditorInteractionState interaction{.SelectedEntity = entity, .HoveredEntity = entity};
 	const Rod::EditorCommands commands{project, scenes, interaction, {}};
@@ -40,7 +42,8 @@ TEST_CASE("Failed open commands preserve the scene and selection", "[editor][com
 		Rod::Log::Init();
 	const Rod::Tests::TemporaryDirectory directory;
 	const Rod::Project project{directory.GetPath() / "test.rodproj", {}};
-	Rod::EditorSceneManager scenes{project, 1, 1};
+	const Rod::RenderDevice device;
+	Rod::EditorSceneManager scenes{project, device, 1, 1};
 	const auto entity = scenes.GetActiveScene().CreateEntity("Selected");
 	Rod::EditorInteractionState interaction{.SelectedEntity = entity, .HoveredEntity = entity};
 	const Rod::EditorCommands commands{project, scenes, interaction, {}};

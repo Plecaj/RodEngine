@@ -12,9 +12,9 @@
 
 namespace Rod {
 
-	EditorApp::EditorApp(const Project& project, DesktopHost& host)
-	    : m_Scenes(project, EditorViewport::s_DefaultWidth, EditorViewport::s_DefaultHeight),
-	      m_Viewport(m_Interaction, host.GetInput()),
+	EditorApp::EditorApp(const Project& project, DesktopHost& host, const RenderDevice& device, SceneRenderer& renderer)
+	    : m_Scenes(project, device, EditorViewport::s_DefaultWidth, EditorViewport::s_DefaultHeight),
+	      m_Viewport(m_Interaction, host.GetInput(), device, renderer),
 	      m_Commands(project, m_Scenes, m_Interaction, FileDialogs{host.GetWindow()}),
 	      m_Layout(
 	          project,
@@ -23,6 +23,7 @@ namespace Rod {
 	          m_Commands,
 	          m_Interaction,
 	          host.GetWindow(),
+	          device,
 	          [&host] { host.RequestClose(); }),
 	      m_Input(m_Commands, m_Interaction)
 	{
@@ -31,7 +32,7 @@ namespace Rod {
 
 		try
 		{
-			ScriptEngine::Init(project, host.GetInput(), ScriptEngine::Mode::Editor);
+			ScriptEngine::Init(project, host.GetInput(), device, ScriptEngine::Mode::Editor);
 		}
 		catch (...)
 		{

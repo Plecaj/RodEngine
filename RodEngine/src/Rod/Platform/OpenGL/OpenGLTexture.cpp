@@ -6,6 +6,7 @@
 
 #include <glad/glad.h>
 
+#include <algorithm>
 #include <stdexcept>
 
 namespace Rod {
@@ -31,7 +32,6 @@ namespace Rod {
 	OpenGLTexture2D::OpenGLTexture2D(const std::string& path) : m_Path(path)
 	{
 		int width{}, height{}, channels{};
-		stbi_set_flip_vertically_on_load(1);
 		const ImagePixels data(stbi_load(path.c_str(), &width, &height, &channels, 0));
 
 		if (!data)
@@ -70,9 +70,15 @@ namespace Rod {
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-		OpenGLTexture2D::SetData(
-		    std::as_bytes(
-		        std::span{data.get(), static_cast<size_t>(m_Width) * m_Height * static_cast<size_t>(channels)}));
+		const auto rowSize = static_cast<size_t>(m_Width) * static_cast<size_t>(channels);
+		const std::span pixels(data.get(), rowSize * m_Height);
+		for (uint32_t row = 0; row < m_Height / 2; ++row)
+		{
+			const auto top = pixels.subspan(row * rowSize, rowSize);
+			const auto bottom = pixels.subspan((m_Height - 1 - row) * rowSize, rowSize);
+			std::ranges::swap_ranges(top, bottom);
+		}
+		OpenGLTexture2D::SetData(std::as_bytes(pixels));
 	}
 
 	OpenGLTexture2D::~OpenGLTexture2D()

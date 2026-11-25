@@ -4,8 +4,7 @@
 
 #include "../OpenGLFixture.h"
 #include "../TemporaryDirectory.h"
-#include "Rod/Renderer/Renderer.h"
-#include "Rod/Renderer/ShaderCacheDatabase.h"
+#include "Rod/Renderer/ShaderLoader.h"
 
 #include <catch2/catch_test_macros.hpp>
 #include <glad/glad.h>
@@ -13,13 +12,12 @@
 #include <chrono>
 
 namespace {
-	void RequireLinkedShaders()
+	void RequireLinkedShaders(const Rod::ShaderLoader& loader)
 	{
 		for (const auto* filename : {"Texture.glsl", "3D.glsl", "Shadow.glsl"})
 		{
 			CAPTURE(filename);
-			const auto path = std::filesystem::path(ROD_TEST_SHADER_DIRECTORY) / filename;
-			const auto shader = Rod::Shader::Create(path.string());
+			const auto shader = loader.Load(filename);
 			shader->Bind();
 			GLint program = 0;
 			glGetIntegerv(GL_CURRENT_PROGRAM, &program);
@@ -36,32 +34,43 @@ namespace {
 TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Engine shaders compile and reload from cache", "[renderer][opengl]")
 {
 	const Rod::Tests::TemporaryDirectory directory;
-	Rod::Renderer::Init(directory.GetPath());
-	RequireLinkedShaders();
-	auto& cache = Rod::ShaderCacheDatabase::Get();
-	cache.Flush();
+	const auto cacheDirectory = directory.GetPath() / "cache";
+	RequireLinkedShaders(Rod::ShaderLoader(ROD_TEST_SHADER_DIRECTORY, cacheDirectory));
 
 	std::vector<std::pair<std::filesystem::path, std::filesystem::file_time_type>> cachedFiles;
 	constexpr auto cacheAge = std::chrono::hours{24};
 	const auto timestamp = std::filesystem::file_time_type::clock::now() - cacheAge;
-	for (const auto& entry : std::filesystem::directory_iterator(cache.GetCacheDirectory()))
+	for (const auto& entry : std::filesystem::directory_iterator(cacheDirectory))
 	{
-		if (entry.path().filename() == "cache.yaml")
-			continue;
 		std::filesystem::last_write_time(entry.path(), timestamp);
 		cachedFiles.emplace_back(entry.path(), std::filesystem::last_write_time(entry.path()));
 	}
 	constexpr size_t binaryCount = 6;
 	REQUIRE(cachedFiles.size() == binaryCount);
 
-	const Rod::ShaderCacheDatabase restored(cache.GetCacheDirectory());
-	cache = restored;
-	RequireLinkedShaders();
+	RequireLinkedShaders(Rod::ShaderLoader(ROD_TEST_SHADER_DIRECTORY, cacheDirectory));
 	for (const auto& [path, modified] : cachedFiles)
 	{
 		CAPTURE(path);
 		// libc++ can store filesystem timestamps with a 128-bit tick count.
 		REQUIRE((std::filesystem::last_write_time(path) == modified));
 	}
-	Rod::Renderer::Shutdown();
+}
+
+TEST_CASE_METHOD(
+    Rod::Tests::OpenGLFixture,
+    "Shader compile options select separate cached artifacts",
+    "[renderer][shader-cache][opengl]")
+{
+	const Rod::Tests::TemporaryDirectory directory;
+	const Rod::ShaderLoader loader(ROD_TEST_SHADER_DIRECTORY, directory.GetPath());
+	const auto regular = loader.Load("3D.glsl");
+	Rod::ShaderCompileOptions options;
+	options.GenerateDebugInfo = true;
+	const auto debug = loader.Load("3D.glsl", options);
+	constexpr auto stageCount = 4;
+	REQUIRE(
+	    std::distance(
+	        std::filesystem::directory_iterator(directory.GetPath()),
+	        std::filesystem::directory_iterator{}) == stageCount);
 }

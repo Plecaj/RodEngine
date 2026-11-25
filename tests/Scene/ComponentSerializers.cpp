@@ -2,6 +2,7 @@
 
 #include "Rod/Scene/Serialization/ComponentSerializers.h"
 
+#include "Rod/Renderer/RenderDevice.h"
 #include "Rod/Renderer/Texture.h"
 #include "Rod/Scene/Components.h"
 #include "Rod/Scripting/ScriptField.h"
@@ -127,7 +128,7 @@ TEST_CASE("Sprite serialization preserves settings and texture references", "[sc
 	const auto withoutTexture = WriteComponent(serializer, sprite);
 	REQUIRE(withoutTexture["Texture"].as<std::string>() == "None");
 	Rod::SpriteRendererComponent restored;
-	serializer.Read(withoutTexture, restored);
+	serializer.Read(withoutTexture, restored, Rod::RenderDevice{});
 	REQUIRE(restored.Color == sprite.Color);
 	REQUIRE(restored.TilingFactor == sprite.TilingFactor);
 	REQUIRE_FALSE(restored.Texture);
@@ -146,7 +147,7 @@ TEST_CASE("Mesh serialization preserves an unset mesh", "[scene][serialization][
 	REQUIRE(output["Path"].as<std::string>() == "None");
 
 	Rod::MeshComponent restored;
-	serializer.Read(output, restored);
+	serializer.Read(output, restored, Rod::RenderDevice{});
 	REQUIRE_FALSE(restored.Mesh);
 }
 

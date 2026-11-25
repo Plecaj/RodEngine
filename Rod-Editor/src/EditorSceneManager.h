@@ -10,11 +10,16 @@
 namespace Rod {
 
 	class Project;
+	class RenderDevice;
 
 	class EditorSceneManager
 	{
 	public:
-		EditorSceneManager(const Project& project, uint32_t viewportWidth, uint32_t viewportHeight);
+		EditorSceneManager(
+		    const Project& project,
+		    const RenderDevice& device,
+		    uint32_t viewportWidth,
+		    uint32_t viewportHeight);
 		~EditorSceneManager();
 		EditorSceneManager(const EditorSceneManager&) = delete;
 		auto operator=(const EditorSceneManager&) -> EditorSceneManager& = delete;
@@ -44,6 +49,7 @@ namespace Rod {
 
 	private:
 		const Project& m_Project;
+		const RenderDevice& m_Device;
 		Scene m_EditorScene;
 		std::optional<Scene> m_RuntimeScene;
 		std::filesystem::path m_ScenePath;

@@ -2,6 +2,7 @@
 
 #include "../OpenGLFixture.h"
 #include "Rod/Renderer/Mesh.h"
+#include "Rod/Renderer/RenderDevice.h"
 #include "Rod/Renderer/VertexArray.h"
 
 #include <catch2/catch_test_macros.hpp>
@@ -31,7 +32,8 @@ TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Meshes load vertices, indices and m
 	}
 
 	const auto path = AssetPath(filename).string();
-	const Rod::Mesh mesh(path);
+	const Rod::RenderDevice device;
+	const Rod::Mesh mesh(device, path);
 	const auto vao = mesh.GetVAO();
 	if (!vao)
 	{
@@ -69,6 +71,6 @@ TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Meshes load vertices, indices and m
 
 TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Vertex arrays can have no index buffer", "[renderer][opengl]")
 {
-	const auto vertexArray = Rod::VertexArray::Create();
+	const auto vertexArray = Rod::RenderDevice{}.CreateVertexArray();
 	REQUIRE_FALSE(vertexArray->GetIndexBuffer().has_value());
 }

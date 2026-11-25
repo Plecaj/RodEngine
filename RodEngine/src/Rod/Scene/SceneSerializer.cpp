@@ -73,9 +73,12 @@ namespace Rod {
 			out << YAML::EndMap;
 		}
 
-		auto
-		ReadEntity(Scene& scene, const YAML::Node& node, const AssetPaths& paths, std::vector<Entity>& createdEntities)
-		    -> Entity
+		auto ReadEntity(
+		    Scene& scene,
+		    const YAML::Node& node,
+		    const AssetPaths& paths,
+		    const RenderDevice& device,
+		    std::vector<Entity>& createdEntities) -> Entity
 		{
 			using TagSerializer = SceneSerialization::TagSerializer;
 			TagComponent tag;
@@ -91,15 +94,16 @@ namespace Rod {
 				using Component = Serializer::Component;
 				if (const auto componentNode = node[Serializer::s_Key])
 				{
-					if constexpr (OptionalComponent<Component>)
-					{
-						auto& component = entity.AddComponent<Component>();
-						serializer.Read(componentNode, component);
-					}
+					auto& component = [&]() -> Component& {
+						if constexpr (OptionalComponent<Component>)
+							return entity.AddComponent<Component>();
+						else
+							return entity.GetComponent<Component>();
+					}();
+					if constexpr (requires { serializer.Read(componentNode, component, device); })
+						serializer.Read(componentNode, component, device);
 					else
-					{
-						serializer.Read(componentNode, entity.GetComponent<Component>());
-					}
+						serializer.Read(componentNode, component);
 				}
 			});
 			return entity;
@@ -162,7 +166,7 @@ namespace Rod {
 		WriteTextFile(filepath, out.c_str());
 	}
 
-	void SceneSerializer::DeserializeText(const std::string& filepath) const
+	void SceneSerializer::DeserializeText(const std::string& filepath, const RenderDevice& device) const
 	{
 		const SceneSerialization::AssetPaths paths(m_ProjectDirectory);
 		std::vector<Entity> createdEntities;
@@ -175,7 +179,7 @@ namespace Rod {
 			{
 				if (!entityNode.IsMap() || !entityNode["Entity"])
 					throw std::runtime_error("Field 'Entity': ID required");
-				const auto entity = ReadEntity(m_Scene, entityNode, paths, createdEntities);
+				const auto entity = ReadEntity(m_Scene, entityNode, paths, device, createdEntities);
 				const auto* camera = entity.TryGetComponent<CameraComponent>();
 				if (camera && camera->Primary)
 				{

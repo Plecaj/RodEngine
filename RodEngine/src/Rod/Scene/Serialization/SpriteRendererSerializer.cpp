@@ -1,7 +1,7 @@
 #include "rdpch.h"
 
 #include "ComponentSerializers.h"
-#include "Rod/Renderer/Texture.h"
+#include "Rod/Renderer/RenderDevice.h"
 #include "Rod/Scene/Components.h"
 #include "YamlVectors.h"
 
@@ -19,13 +19,16 @@ namespace Rod::SceneSerialization {
 		out << YAML::EndMap;
 	}
 
-	void SpriteRendererSerializer::Read(const YAML::Node& node, SpriteRendererComponent& sprite) const
+	void SpriteRendererSerializer::Read(
+	    const YAML::Node& node,
+	    SpriteRendererComponent& sprite,
+	    const RenderDevice& device) const
 	{
 		sprite.Color = node["Color"].as<glm::vec4>();
 		sprite.TilingFactor = node["TilingFactor"].as<float>();
 
 		const auto path = ReadAssetPath(node);
-		sprite.Texture = path ? Texture2D::Create(Paths.ForLoad(*path)) : nullptr;
+		sprite.Texture = path ? device.LoadTexture2D(Paths.ForLoad(*path)) : nullptr;
 	}
 
 	auto SpriteRendererSerializer::ReadAssetPath(const YAML::Node& node) -> std::optional<std::string>

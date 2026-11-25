@@ -1,20 +1,13 @@
 target_sources(RodEngine PRIVATE
-    Buffer.cpp
     EditorCamera.cpp
-    FrameBuffer.cpp
     Mesh.cpp
-    RenderCommand.cpp
-    Renderer.cpp
     Renderer2D.cpp
     Renderer3D.cpp
-    RendererAPI.cpp
     SceneRenderer.cpp
-    Shader.cpp
-    ShaderCacheDatabase.cpp
-    ShaderCacheDatabase.h
+    ShaderCache.cpp
+    ShaderLoader.cpp
+    ShaderStage.h
     SubTexture2D.cpp
-    Texture.cpp
-    VertexArray.cpp
 )
 
 target_sources(RodEngine PUBLIC
@@ -27,14 +20,13 @@ target_sources(RodEngine PUBLIC
         GraphicsContext.h
         Material.h
         Mesh.h
-        RenderCommand.h
-        Renderer.h
+        RenderDevice.h
         Renderer2D.h
         Renderer3D.h
-        RendererAPI.h
-        RendererLimits.h
         SceneRenderer.h
         Shader.h
+        ShaderCache.h
+        ShaderLoader.h
         SubTexture2D.h
         Texture.h
         VertexArray.h

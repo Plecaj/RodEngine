@@ -11,12 +11,14 @@ namespace Rod {
 
 	class DesktopHost;
 	class Project;
+	class RenderDevice;
+	class SceneRenderer;
 	struct Frame;
 
 	class EditorApp
 	{
 	public:
-		EditorApp(const Project& project, DesktopHost& host);
+		EditorApp(const Project& project, DesktopHost& host, const RenderDevice& device, SceneRenderer& renderer);
 		~EditorApp();
 		EditorApp(const EditorApp&) = delete;
 		auto operator=(const EditorApp&) -> EditorApp& = delete;

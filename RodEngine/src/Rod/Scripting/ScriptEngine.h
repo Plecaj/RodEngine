@@ -15,6 +15,8 @@ namespace Rod {
 	class Entity;
 	class InputState;
 	class Project;
+	class RenderDevice;
+	class ScriptGlue;
 	class Scene;
 
 	class ScriptEngine
@@ -26,7 +28,7 @@ namespace Rod {
 			Runtime
 		};
 
-		static void Init(const Project& project, const InputState& input, Mode mode);
+		static void Init(const Project& project, const InputState& input, const RenderDevice& device, Mode mode);
 		static void Shutdown();
 
 		static void SetScriptProject(const std::filesystem::path& projectPath);
@@ -49,10 +51,14 @@ namespace Rod {
 		[[nodiscard]] static auto GetScriptClass(const std::string& className) -> std::optional<ScriptClass&>;
 
 	private:
+		friend class ScriptGlue;
+		[[nodiscard]] static auto GetRenderDevice() noexcept -> std::optional<const RenderDevice&>;
+
 		struct Configuration
 		{
 			const Project& ProjectData;
 			const InputState& Input;
+			const RenderDevice& Device;
 			Mode StartupMode;
 		};
 		struct ScriptPaths;

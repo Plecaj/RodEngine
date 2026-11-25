@@ -10,6 +10,7 @@
 #include "Rod/ImGui/ImGuiSession.h"
 #include "Rod/Project/Project.h"
 #include "Rod/Project/ProjectSerializer.h"
+#include "Rod/Renderer/RenderDevice.h"
 #include "Rod/Renderer/Texture.h"
 #include "Rod/Utils/PlatformUtils.h"
 #include "Rod/Utils/Process.h"
@@ -44,10 +45,10 @@ namespace Rod {
 	class LauncherApp
 	{
 	public:
-		explicit LauncherApp(DesktopHost& host)
+		LauncherApp(DesktopHost& host, const RenderDevice& device)
 		    : m_Host(host), m_FileDialogs(host.GetWindow()), m_ProjectSetup(m_FileDialogs)
 		{
-			m_FolderIcon = Texture2D::Create("RodAssets/Textures/DirectoryIcon.png");
+			m_FolderIcon = device.LoadTexture2D("RodAssets/Textures/DirectoryIcon.png");
 			try
 			{
 				m_RecentProjectsPath = Platform::GetExecutablePath().parent_path() / "RecentProjects.yaml";
@@ -325,7 +326,8 @@ auto main(int argc, char*[]) -> int
 
 		Rod::DesktopHost host(Rod::LauncherWindowProps());
 		const Rod::ImGuiSession ui(host.GetWindow());
-		Rod::LauncherApp launcher(host);
+		const Rod::RenderDevice device;
+		Rod::LauncherApp launcher(host, device);
 		while (const auto frame = host.NextFrame())
 		{
 			Rod::ImGuiSession::Begin();

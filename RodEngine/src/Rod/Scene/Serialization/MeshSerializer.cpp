@@ -27,10 +27,10 @@ namespace Rod::SceneSerialization {
 		out << YAML::EndMap;
 	}
 
-	void MeshSerializer::Read(const YAML::Node& node, MeshComponent& mesh) const
+	void MeshSerializer::Read(const YAML::Node& node, MeshComponent& mesh, const RenderDevice& device) const
 	{
 		const auto path = ReadAssetPath(node);
-		mesh.SetMesh(path ? CreateRef<Mesh>(Paths.ForLoad(*path)) : nullptr);
+		mesh.SetMesh(path ? CreateRef<Mesh>(device, Paths.ForLoad(*path)) : nullptr);
 
 		if (!mesh.Mesh)
 			return;

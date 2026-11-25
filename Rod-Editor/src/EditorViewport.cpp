@@ -8,8 +8,7 @@
 #include "Rod/Core/KeyCodes.h"
 #include "Rod/Core/MouseButtonCodes.h"
 #include "Rod/Events/Event.h"
-#include "Rod/Renderer/RenderCommand.h"
-#include "Rod/Renderer/Renderer2D.h"
+#include "Rod/Renderer/RenderDevice.h"
 #include "Rod/Renderer/SceneRenderer.h"
 
 #include "imgui.h"
@@ -26,8 +25,12 @@ namespace Rod {
 		}
 	}
 
-	EditorViewport::EditorViewport(EditorInteractionState& interaction, const InputState& input)
-	    : m_Interaction(interaction), m_Input(input),
+	EditorViewport::EditorViewport(
+	    EditorInteractionState& interaction,
+	    const InputState& input,
+	    const RenderDevice& device,
+	    SceneRenderer& renderer)
+	    : m_Interaction(interaction), m_Input(input), m_Device(device), m_Renderer(renderer),
 	      m_EditorCamera(s_EditorFOV, s_EditorAspectRatio, s_EditorNearClip, s_EditorFarClip)
 	{
 		CreateFramebuffer();
@@ -89,15 +92,13 @@ namespace Rod {
 		    FramebufferTextureSpecification{FramebufferTextureFormat::DEPTH24}};
 		fbSpec.Width = static_cast<uint32_t>(s_DefaultViewportSize.x);
 		fbSpec.Height = static_cast<uint32_t>(s_DefaultViewportSize.y);
-		m_Framebuffer = Framebuffer::Create(fbSpec);
+		m_Framebuffer = m_Device.CreateFramebuffer(fbSpec);
 	}
 
 	void EditorViewport::OnUpdate(EditorSceneManager& scenes)
 	{
 		m_Framebuffer->Bind();
-		Renderer2D::ResetStats();
-		RenderCommand::SetClearColor(s_ClearColor);
-		RenderCommand::Clear();
+		m_Device.Clear(s_ClearColor);
 		m_Framebuffer->ClearColorAttachment(1, -1);
 
 		RenderScene(scenes);
@@ -126,13 +127,13 @@ namespace Rod {
 			case SceneState::Edit: {
 				UpdateCamera();
 
-				SceneRenderer::RenderEditor(scenes.GetActiveScene(), m_EditorCamera);
+				m_Renderer.Render(scenes.GetActiveScene(), m_EditorCamera.GetViewProjection());
 				break;
 			}
 			case SceneState::Play: {
 				m_Dragging = false;
 				m_DragStart.reset();
-				SceneRenderer::RenderRuntime(scenes.GetActiveScene());
+				m_Renderer.RenderRuntime(scenes.GetActiveScene());
 				break;
 			}
 		}

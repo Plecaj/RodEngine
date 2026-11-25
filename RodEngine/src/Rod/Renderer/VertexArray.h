@@ -25,8 +25,6 @@ namespace Rod {
 
 		[[nodiscard]] virtual auto GetVertexBuffers() const noexcept -> std::span<const Scope<VertexBuffer>> = 0;
 		[[nodiscard]] virtual auto GetIndexBuffer() const noexcept -> std::optional<const IndexBuffer&> = 0;
-
-		[[nodiscard]] static auto Create() -> Scope<VertexArray>;
 	};
 
 }

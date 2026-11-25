@@ -9,6 +9,8 @@ namespace Rod {
 
 	class EditorSceneManager;
 	class InputState;
+	class RenderDevice;
+	class SceneRenderer;
 	struct MouseButtonChanged;
 	struct Scrolled;
 	struct EditorInteractionState;
@@ -19,7 +21,11 @@ namespace Rod {
 		static constexpr uint32_t s_DefaultWidth = 1280;
 		static constexpr uint32_t s_DefaultHeight = 720;
 
-		EditorViewport(EditorInteractionState& interaction, const InputState& input);
+		EditorViewport(
+		    EditorInteractionState& interaction,
+		    const InputState& input,
+		    const RenderDevice& device,
+		    SceneRenderer& renderer);
 
 		void ResizeViewportIfNeeded(EditorSceneManager& scenes);
 		void OnUpdate(EditorSceneManager& scenes);
@@ -47,6 +53,8 @@ namespace Rod {
 
 		EditorInteractionState& m_Interaction;
 		const InputState& m_Input;
+		const RenderDevice& m_Device;
+		SceneRenderer& m_Renderer;
 		EditorCamera m_EditorCamera;
 		Scope<Framebuffer> m_Framebuffer;
 		std::optional<glm::vec2> m_DragStart;

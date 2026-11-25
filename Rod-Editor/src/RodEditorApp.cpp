@@ -4,7 +4,9 @@
 #include "Rod/Core/AppMain.h"
 #include "Rod/Core/DesktopHost.h"
 #include "Rod/ImGui/ImGuiSession.h"
+#include "Rod/Renderer/RenderDevice.h"
 #include "Rod/Renderer/SceneRenderer.h"
+#include "Rod/Renderer/ShaderLoader.h"
 
 #include <stdexcept>
 
@@ -22,9 +24,13 @@ auto main(int argc, char* argv[]) -> int
 		    "RodAssets/Textures/logo.png"};
 		props.NativeTitlebar = false;
 		Rod::DesktopHost host(props);
-		const Rod::SceneRenderer renderer(project->GetShadersPath());
+		const Rod::RenderDevice device;
+		device.ConfigureDefaults();
+		const auto shaderDirectory = project->GetShadersPath();
+		const Rod::ShaderLoader shaders(shaderDirectory, shaderDirectory / "Cached");
+		Rod::SceneRenderer renderer(device, shaders);
 		const Rod::ImGuiSession ui(host.GetWindow());
-		Rod::EditorApp editor(*project, host);
+		Rod::EditorApp editor(*project, host, device, renderer);
 
 		while (const auto frame = host.NextFrame())
 		{

@@ -15,6 +15,7 @@
 namespace Rod {
 
 	class Project;
+	class RenderDevice;
 	class EditorCommands;
 	class EditorSceneManager;
 	class EditorViewport;
@@ -31,6 +32,7 @@ namespace Rod {
 		    EditorCommands& commands,
 		    EditorInteractionState& interaction,
 		    const Window& window,
+		    const RenderDevice& device,
 		    std::function<void()> requestClose);
 		~EditorLayout() = default;
 		EditorLayout(const EditorLayout&) = delete;

@@ -8,13 +8,19 @@
 
 namespace Rod {
 
+	class RenderDevice;
+
 	class EditorCommands;
 	class Window;
 
 	class TitlebarPanel
 	{
 	public:
-		TitlebarPanel(EditorCommands& commands, const Window& window, std::function<void()> requestClose);
+		TitlebarPanel(
+		    EditorCommands& commands,
+		    const Window& window,
+		    const RenderDevice& device,
+		    std::function<void()> requestClose);
 
 		void OnImGuiRender() const;
 

@@ -9,10 +9,12 @@
 
 namespace Rod {
 
+	class RenderDevice;
+
 	class ToolbarPanel
 	{
 	public:
-		ToolbarPanel();
+		explicit ToolbarPanel(const RenderDevice& device);
 
 		struct Actions
 		{

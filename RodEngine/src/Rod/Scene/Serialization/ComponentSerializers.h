@@ -10,6 +10,7 @@ namespace YAML {
 }
 
 namespace Rod {
+	class RenderDevice;
 	struct TagComponent;
 	struct TransformComponent;
 	struct CameraComponent;
@@ -67,7 +68,7 @@ namespace Rod::SceneSerialization {
 		const AssetPaths& Paths;
 
 		void Write(YAML::Emitter& out, const Component& sprite) const;
-		void Read(const YAML::Node& node, Component& sprite) const;
+		void Read(const YAML::Node& node, Component& sprite, const RenderDevice& device) const;
 		[[nodiscard]] static auto ReadAssetPath(const YAML::Node& node) -> std::optional<std::string>;
 	};
 
@@ -79,7 +80,7 @@ namespace Rod::SceneSerialization {
 		const AssetPaths& Paths;
 
 		void Write(YAML::Emitter& out, const Component& meshComponent) const;
-		void Read(const YAML::Node& node, Component& mesh) const;
+		void Read(const YAML::Node& node, Component& mesh, const RenderDevice& device) const;
 		[[nodiscard]] static auto ReadAssetPath(const YAML::Node& node) -> std::optional<std::string>;
 	};
 

@@ -8,12 +8,14 @@ namespace Rod {
 
 	class DesktopHost;
 	class Project;
+	class RenderDevice;
+	class SceneRenderer;
 	struct Frame;
 
 	class RuntimeApp
 	{
 	public:
-		RuntimeApp(const Project& project, DesktopHost& host);
+		RuntimeApp(const Project& project, DesktopHost& host, const RenderDevice& device, SceneRenderer& renderer);
 		~RuntimeApp();
 		RuntimeApp(const RuntimeApp&) = delete;
 		auto operator=(const RuntimeApp&) -> RuntimeApp& = delete;
@@ -28,6 +30,8 @@ namespace Rod {
 
 		static constexpr glm::vec4 s_ClearColor{0.15f, 0.15f, 0.15f, 1.0f};
 		DesktopHost& m_Host;
+		const RenderDevice& m_Device;
+		SceneRenderer& m_Renderer;
 		Scene m_Scene;
 		glm::uvec2 m_Size{};
 		bool m_Running = false;

@@ -5,8 +5,7 @@
 #include "Rod/Core/DesktopHost.h"
 #include "Rod/Core/KeyCodes.h"
 #include "Rod/Project/Project.h"
-#include "Rod/Renderer/RenderCommand.h"
-#include "Rod/Renderer/Renderer2D.h"
+#include "Rod/Renderer/RenderDevice.h"
 #include "Rod/Renderer/SceneRenderer.h"
 #include "Rod/Scene/SceneSerializer.h"
 #include "Rod/Scripting/ScriptEngine.h"
@@ -15,11 +14,16 @@
 
 namespace Rod {
 
-	RuntimeApp::RuntimeApp(const Project& project, DesktopHost& host) : m_Host(host)
+	RuntimeApp::RuntimeApp(
+	    const Project& project,
+	    DesktopHost& host,
+	    const RenderDevice& device,
+	    SceneRenderer& renderer)
+	    : m_Host(host), m_Device(device), m_Renderer(renderer)
 	{
 		try
 		{
-			ScriptEngine::Init(project, host.GetInput(), ScriptEngine::Mode::Runtime);
+			ScriptEngine::Init(project, host.GetInput(), device, ScriptEngine::Mode::Runtime);
 			if (!LoadScene(project))
 			{
 				host.RequestClose();
@@ -56,7 +60,7 @@ namespace Rod {
 		try
 		{
 			const SceneSerializer serializer(m_Scene, project.GetDirectory());
-			serializer.DeserializeText(path.string());
+			serializer.DeserializeText(path.string(), m_Device);
 			return true;
 		}
 		catch (const std::exception& error)
@@ -81,11 +85,9 @@ namespace Rod {
 		if (frame.Framebuffer != m_Size)
 			Resize(frame.Framebuffer);
 
-		RenderCommand::SetClearColor(s_ClearColor);
-		RenderCommand::Clear();
-		Renderer2D::ResetStats();
+		m_Device.Clear(s_ClearColor);
 		ScriptEngine::OnRuntimeUpdate(frame.Delta);
-		SceneRenderer::RenderRuntime(m_Scene);
+		m_Renderer.RenderRuntime(m_Scene);
 		return true;
 	}
 
@@ -95,7 +97,7 @@ namespace Rod {
 			return;
 
 		m_Size = size;
-		RenderCommand::SetViewport(0, 0, size.x, size.y);
+		m_Device.SetViewport(0, 0, size.x, size.y);
 		m_Scene.ResizeViewport(size.x, size.y);
 	}
 

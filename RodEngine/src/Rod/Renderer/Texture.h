@@ -33,10 +33,6 @@ namespace Rod {
 	};
 
 	class Texture2D : public Texture
-	{
-	public:
-		[[nodiscard]] static auto Create(uint32_t width, uint32_t height) -> Scope<Texture2D>;
-		[[nodiscard]] static auto Create(const std::string& path) -> Scope<Texture2D>;
-	};
+	{};
 
 }

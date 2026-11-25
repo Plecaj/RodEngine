@@ -1,32 +1,25 @@
 #pragma once
 
-#include "Rod/Renderer/EditorCamera.h"
+#include "Renderer2D.h"
+#include "Renderer3D.h"
 
-#include <filesystem>
-#include <vector>
+#include <glm/mat4x4.hpp>
 
 namespace Rod {
 
 	class Scene;
-	struct DirectionalLightComponent;
 
 	class SceneRenderer
 	{
 	public:
-		explicit SceneRenderer(const std::filesystem::path& shaderDirectory);
-		~SceneRenderer() noexcept;
-		SceneRenderer(const SceneRenderer&) = delete;
-		auto operator=(const SceneRenderer&) -> SceneRenderer& = delete;
-		SceneRenderer(SceneRenderer&&) = delete;
-		auto operator=(SceneRenderer&&) -> SceneRenderer& = delete;
+		SceneRenderer(const RenderDevice& device, const ShaderLoader& shaders);
 
-		static void RenderRuntime(Scene& scene);
-		static void RenderEditor(const Scene& scene, const EditorCamera& camera);
+		void Render(const Scene& scene, const glm::mat4& viewProjection);
+		void RenderRuntime(Scene& scene);
 
 	private:
-		static auto CollectLights(const Scene& scene) -> std::vector<DirectionalLightComponent>;
-		static void SubmitMeshes(const Scene& scene);
-		static void SubmitSprites(const Scene& scene);
+		Renderer3D m_Meshes;
+		Renderer2D m_Sprites;
 	};
 
 }

@@ -19,7 +19,9 @@ add_executable(RodEngineTests
     Renderer/Framebuffer.cpp
     Renderer/OpenGLMesh.cpp
     Renderer/Shader.cpp
-    Renderer/ShaderCacheDatabase.cpp
+    Renderer/ShaderCache.cpp
+    Renderer/Renderer2D.cpp
+    Renderer/SceneRenderer.cpp
     Scripting/ScriptAssembly.cpp
     Scripting/ScriptGlue.cpp
     Scripting/ScriptRuntime.cpp

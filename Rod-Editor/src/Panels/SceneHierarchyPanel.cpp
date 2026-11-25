@@ -3,6 +3,7 @@
 #include "SceneHierarchyPanel.h"
 
 #include "Rod/ImGui/ImGuiFlags.h"
+#include "Rod/Renderer/RenderDevice.h"
 #include "Rod/Scene/Components.h"
 #include "Rod/Scripting/ScriptEngine.h"
 
@@ -61,7 +62,8 @@ namespace Rod {
 			return remove;
 		}
 
-		void HandleMeshDrop(MeshComponent& component, const std::filesystem::path& assetsPath)
+		void
+		HandleMeshDrop(MeshComponent& component, const std::filesystem::path& assetsPath, const RenderDevice& device)
 		{
 			if (!ImGui::BeginDragDropTarget())
 				return;
@@ -72,7 +74,7 @@ namespace Rod {
 				const std::filesystem::path meshAssetPath = assetsPath / path;
 				try
 				{
-					component.SetMesh(CreateRef<Mesh>(meshAssetPath.string()));
+					component.SetMesh(CreateRef<Mesh>(device, meshAssetPath.string()));
 				}
 				catch (const std::runtime_error& exception)
 				{
@@ -85,8 +87,9 @@ namespace Rod {
 
 	SceneHierarchyPanel::SceneHierarchyPanel(
 	    std::filesystem::path assetsPath,
-	    EditorInteractionState& interaction) noexcept
-	    : m_AssetsPath(std::move(assetsPath)), m_Interaction(interaction)
+	    EditorInteractionState& interaction,
+	    const RenderDevice& device) noexcept
+	    : m_AssetsPath(std::move(assetsPath)), m_Interaction(interaction), m_Device(device)
 	{}
 
 	void SceneHierarchyPanel::OnImGuiRender(Scene& scene) const
@@ -458,7 +461,7 @@ namespace Rod {
 				{
 					const char* path = static_cast<const char*>(payload->Data);
 					const std::filesystem::path texturePath = m_AssetsPath / path;
-					component.Texture = Texture2D::Create(texturePath.string());
+					component.Texture = m_Device.LoadTexture2D(texturePath.string());
 				}
 				ImGui::EndDragDropTarget();
 			}
@@ -479,7 +482,7 @@ namespace Rod {
 				return;
 			}
 
-			HandleMeshDrop(component, m_AssetsPath);
+			HandleMeshDrop(component, m_AssetsPath, m_Device);
 			if (!component.Mesh)
 				return;
 

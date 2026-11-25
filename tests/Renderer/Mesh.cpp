@@ -3,6 +3,7 @@
 #include "Rod/Renderer/Mesh.h"
 
 #include "../TemporaryDirectory.h"
+#include "Rod/Renderer/RenderDevice.h"
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -20,5 +21,5 @@ TEST_CASE("Mesh construction rejects missing or corrupt files", "[renderer][load
 		std::ofstream file(filepath);
 		file << "not a GLB";
 	}
-	REQUIRE_THROWS_AS(Rod::Mesh(filepath), std::runtime_error);
+	REQUIRE_THROWS_AS(Rod::Mesh(Rod::RenderDevice{}, filepath), std::runtime_error);
 }

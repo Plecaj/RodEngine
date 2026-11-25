@@ -75,8 +75,6 @@ namespace Rod {
 		virtual void BindDepthAttachment(uint32_t slot = 0) const = 0;
 
 		[[nodiscard]] virtual auto GetSpecification() const noexcept -> const FramebufferSpecification& = 0;
-
-		[[nodiscard]] static auto Create(const FramebufferSpecification& spec) -> Scope<Framebuffer>;
 	};
 
 }

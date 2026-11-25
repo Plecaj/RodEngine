@@ -1,6 +1,7 @@
 #include "rdpch.h"
 
 #include "../TemporaryDirectory.h"
+#include "Rod/Renderer/RenderDevice.h"
 #include "Rod/Scene/Components.h"
 #include "Rod/Scene/Entity.h"
 #include "Rod/Scene/Scene.h"
@@ -58,7 +59,7 @@ TEST_CASE_METHOD(SerializationFixture, "Scene round-trips over an existing file"
 
 	Rod::Scene restored;
 	restored.ResizeViewport(1920, 1080);
-	Rod::SceneSerializer(restored).DeserializeText(Filepath());
+	Rod::SceneSerializer(restored).DeserializeText(Filepath(), Rod::RenderDevice{});
 	REQUIRE(restored == original);
 }
 
@@ -66,7 +67,7 @@ TEST_CASE_METHOD(SerializationFixture, "Empty scenes load", "[scene][serializati
 {
 	WriteScene("Scene: Empty\nEntities: []\n");
 	Rod::Scene scene;
-	Rod::SceneSerializer(scene).DeserializeText(Filepath());
+	Rod::SceneSerializer(scene).DeserializeText(Filepath(), Rod::RenderDevice{});
 	REQUIRE(scene == Rod::Scene{});
 }
 
@@ -97,7 +98,7 @@ FixedAspectRatio: false)");
 	WriteScene(YAML::Dump(sceneFile));
 
 	Rod::Scene scene;
-	Rod::SceneSerializer(scene).DeserializeText(Filepath());
+	Rod::SceneSerializer(scene).DeserializeText(Filepath(), Rod::RenderDevice{});
 	const auto first = scene.FindEntityByUUID(Rod::UUID{firstID});
 	const auto second = scene.FindEntityByUUID(Rod::UUID{secondID});
 	REQUIRE(first);
@@ -156,7 +157,7 @@ Entities:
 	Rod::Scene scene;
 	scene.CreateEntityWithUUID(Rod::UUID{42}, "Existing");
 	const Rod::Scene original = scene;
-	REQUIRE_THROWS_AS(Rod::SceneSerializer(scene).DeserializeText(Filepath()), std::runtime_error);
+	REQUIRE_THROWS_AS(Rod::SceneSerializer(scene).DeserializeText(Filepath(), Rod::RenderDevice{}), std::runtime_error);
 	REQUIRE(scene == original);
 }
 
@@ -187,7 +188,7 @@ TEST_CASE_METHOD(
 	const Rod::Scene original = scene;
 	const auto expectedPath = (projectDirectory / assetPath).lexically_normal();
 	REQUIRE_THROWS_WITH(
-	    Rod::SceneSerializer(scene, projectDirectory).DeserializeText(Filepath()),
+	    Rod::SceneSerializer(scene, projectDirectory).DeserializeText(Filepath(), Rod::RenderDevice{}),
 	    Catch::Matchers::ContainsSubstring(expectedPath.string()));
 	REQUIRE(scene == original);
 }

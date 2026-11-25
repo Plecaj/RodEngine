@@ -2,79 +2,59 @@
 
 #include "SceneRenderer.h"
 
-#include "Rod/Renderer/Renderer.h"
-#include "Rod/Renderer/Renderer2D.h"
-#include "Rod/Renderer/Renderer3D.h"
 #include "Rod/Scene/Components.h"
 #include "Rod/Scene/Entity.h"
 #include "Rod/Scene/Scene.h"
 
-#include <cstdio>
-#include <exception>
+#include <vector>
 
 namespace Rod {
-
-	auto SceneRenderer::CollectLights(const Scene& scene) -> std::vector<DirectionalLightComponent>
-	{
-		std::vector<DirectionalLightComponent> lightSources;
-
-		const auto view = scene.View<DirectionalLightComponent>();
-		view.each([&](const DirectionalLightComponent& light) { lightSources.push_back(light); });
-
-		return lightSources;
-	}
-
-	void SceneRenderer::SubmitMeshes(const Scene& scene)
-	{
-		const auto view = scene.View<TransformComponent, MeshComponent>();
-		view.each([&](auto entity, const TransformComponent& transform, const MeshComponent& mesh) {
-			if (!mesh.Mesh)
-				return;
-
-			Renderer3D::Submit(mesh.Mesh, transform.GetTransform(), mesh.Material, static_cast<int>(entity));
-		});
-	}
-
-	void SceneRenderer::SubmitSprites(const Scene& scene)
-	{
-		const auto view = scene.View<TransformComponent, SpriteRendererComponent>();
-		view.each([&](auto entity, const TransformComponent& transform, const SpriteRendererComponent& sprite) {
-			Renderer2D::DrawSprite(transform.GetTransform(), sprite, static_cast<int>(entity));
-		});
-	}
-
-	SceneRenderer::SceneRenderer(const std::filesystem::path& shaderDirectory)
-	{
-		Renderer::Init(shaderDirectory);
-		try
+	namespace {
+		auto CollectLights(const Scene& scene) -> std::vector<Renderer3D::DirectionalLight>
 		{
-			Renderer3D::Init();
-			Renderer2D::Init();
+			std::vector<Renderer3D::DirectionalLight> lights;
+			scene.View<DirectionalLightComponent>().each([&](const DirectionalLightComponent& light) {
+				lights.push_back({.Direction = light.Direction, .Color = light.Color, .Intensity = light.Intensity});
+			});
+			return lights;
 		}
-		catch (...)
+
+		void SubmitMeshes(const Scene& scene, Renderer3D& renderer)
 		{
-			Renderer2D::Shutdown();
-			Renderer3D::Shutdown();
-			throw;
+			scene.View<TransformComponent, MeshComponent>().each(
+			    [&](auto entity, const TransformComponent& transform, const MeshComponent& mesh) {
+				    renderer.Submit(mesh.Mesh, transform.GetTransform(), mesh.Material, static_cast<int>(entity));
+			    });
+		}
+
+		void SubmitSprites(const Scene& scene, Renderer2D& renderer)
+		{
+			scene.View<TransformComponent, SpriteRendererComponent>().each(
+			    [&](auto entity, const TransformComponent& transform, const SpriteRendererComponent& sprite) {
+				    renderer.SubmitQuad(
+				        transform.GetTransform(),
+				        sprite.Texture,
+				        sprite.Texture ? sprite.TilingFactor : 1.0f,
+				        sprite.Color,
+				        static_cast<int>(entity));
+			    });
 		}
 	}
 
-	SceneRenderer::~SceneRenderer() noexcept
+	SceneRenderer::SceneRenderer(const RenderDevice& device, const ShaderLoader& shaders)
+	    : m_Meshes(device, shaders), m_Sprites(device, shaders)
+	{}
+
+	void SceneRenderer::Render(const Scene& scene, const glm::mat4& viewProjection)
 	{
-		Renderer2D::Shutdown();
-		Renderer3D::Shutdown();
-		try
-		{
-			Renderer::Shutdown();
-		}
-		catch (const std::exception& error)
-		{
-			std::fprintf(stderr, "Could not save shader cache: %s\n", error.what());
-		}
-		catch (...)
-		{
-			std::fputs("Could not save shader cache\n", stderr);
-		}
+		const auto lights = CollectLights(scene);
+		m_Meshes.Begin(viewProjection, lights);
+		SubmitMeshes(scene, m_Meshes);
+		m_Meshes.End();
+
+		m_Sprites.Begin(viewProjection);
+		SubmitSprites(scene, m_Sprites);
+		m_Sprites.End();
 	}
 
 	void SceneRenderer::RenderRuntime(Scene& scene)
@@ -85,28 +65,7 @@ namespace Rod {
 
 		const auto& camera = primary.GetComponent<CameraComponent>().Camera;
 		const auto transform = primary.GetComponent<TransformComponent>().GetTransform();
-		const auto lights = CollectLights(scene);
-
-		Renderer3D::BeginScene(camera, transform, lights);
-		SubmitMeshes(scene);
-		Renderer3D::EndScene();
-
-		Renderer2D::BeginScene(camera, transform);
-		SubmitSprites(scene);
-		Renderer2D::EndScene();
-	}
-
-	void SceneRenderer::RenderEditor(const Scene& scene, const EditorCamera& camera)
-	{
-		const auto lights = CollectLights(scene);
-
-		Renderer3D::BeginScene(camera, lights);
-		SubmitMeshes(scene);
-		Renderer3D::EndScene();
-
-		Renderer2D::BeginScene(camera);
-		SubmitSprites(scene);
-		Renderer2D::EndScene();
+		Render(scene, camera.GetProjection() * glm::inverse(transform));
 	}
 
 }

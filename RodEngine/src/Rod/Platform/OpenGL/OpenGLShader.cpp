@@ -2,121 +2,35 @@
 
 #include "OpenGLShader.h"
 
-#include "Rod/Renderer/Shader.h"
-#include "Rod/Renderer/ShaderCacheDatabase.h"
-
 #include <glad/glad.h>
-#include <glm/ext/matrix_float3x3.hpp>
-#include <glm/ext/vector_float2.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <shaderc/env.h>
-#include <shaderc/shaderc.h>
-#include <shaderc/shaderc.hpp>
-#include <shaderc/status.h>
 
-#include <fstream>
-#include <ios>
-#include <span>
 #include <stdexcept>
 #include <utility>
 
 namespace Rod {
-
-	namespace Utils {
-
-		static auto ShaderExtensionFromType(shaderc_shader_kind type) -> std::string
+	namespace {
+		auto ToOpenGLStage(ShaderStage stage) -> GLenum
 		{
-			if (type == shaderc_vertex_shader)
-				return "vert";
-			if (type == shaderc_fragment_shader)
-				return "frag";
-			if (type == shaderc_geometry_shader)
-				return "geom";
-			if (type == shaderc_tess_control_shader)
-				return "tesc";
-			if (type == shaderc_tess_evaluation_shader)
-				return "tese";
-			if (type == shaderc_compute_shader)
-				return "comp";
-
-			RD_CORE_ASSERT(false, "Invalid shaderc_shader_kind");
-			return "unknown";
-		}
-
-		static auto OptimizationName(Shader::OptimizationLevel level) -> std::string
-		{
-			switch (level)
+			switch (stage)
 			{
-				case Shader::OptimizationLevel::None:
-					return "none";
-				case Shader::OptimizationLevel::Performance:
-					return "performance";
-				case Shader::OptimizationLevel::Size:
-					return "size";
+				case ShaderStage::Vertex:
+					return GL_VERTEX_SHADER;
+				case ShaderStage::Fragment:
+					return GL_FRAGMENT_SHADER;
+				case ShaderStage::Geometry:
+					return GL_GEOMETRY_SHADER;
+				case ShaderStage::TessellationControl:
+					return GL_TESS_CONTROL_SHADER;
+				case ShaderStage::TessellationEvaluation:
+					return GL_TESS_EVALUATION_SHADER;
+				case ShaderStage::Compute:
+					return GL_COMPUTE_SHADER;
 			}
-
-			RD_CORE_ASSERT(false, "Invalid shader optimization level");
-			return "unknown";
+			throw std::invalid_argument("Unknown shader stage");
 		}
 
-		static auto HashToString(size_t hash) -> std::string
-		{
-			std::stringstream stream;
-			stream << std::hex << hash;
-			return stream.str();
-		}
-
-		static auto CreateShaderCacheKey(
-		    const std::string& shaderName,
-		    shaderc_shader_kind kind,
-		    const std::string& source,
-		    const Shader::ShaderOptions& options) -> std::string
-		{
-			std::string hashInput;
-			hashInput += shaderName;
-			hashInput += '|';
-			hashInput += Utils::ShaderExtensionFromType(kind);
-			hashInput += '|';
-			hashInput += source;
-			hashInput += '|';
-			hashInput += OptimizationName(options.OptimizationLevel);
-			hashInput += '|';
-			hashInput += options.GenerateDebugInfo ? "debug" : "nodebug";
-
-			std::vector<std::pair<std::string, std::string>> macros(options.Macros.begin(), options.Macros.end());
-			std::sort(macros.begin(), macros.end());
-			for (const auto& [key, value] : macros)
-			{
-				hashInput += '|';
-				hashInput += key;
-				hashInput += '=';
-				hashInput += value;
-			}
-
-			const size_t hash = std::hash<std::string>{}(hashInput);
-			return shaderName + "." + Utils::ShaderExtensionFromType(kind) + "." + HashToString(hash);
-		}
-
-		static auto OpenGLShaderKind(shaderc_shader_kind kind) -> GLenum
-		{
-			if (kind == shaderc_vertex_shader)
-				return GL_VERTEX_SHADER;
-			if (kind == shaderc_fragment_shader)
-				return GL_FRAGMENT_SHADER;
-			if (kind == shaderc_geometry_shader)
-				return GL_GEOMETRY_SHADER;
-			if (kind == shaderc_tess_control_shader)
-				return GL_TESS_CONTROL_SHADER;
-			if (kind == shaderc_tess_evaluation_shader)
-				return GL_TESS_EVALUATION_SHADER;
-			if (kind == shaderc_compute_shader)
-				return GL_COMPUTE_SHADER;
-
-			RD_CORE_ASSERT(false, "Unsupported Shaderc type for OpenGL");
-			return 0;
-		}
-
-		static void DeleteAttachedShaders(GLuint program, const std::vector<GLuint>& shaders)
+		void DeleteAttachedShaders(GLuint program, std::span<const GLuint> shaders)
 		{
 			for (const GLuint shader : shaders)
 			{
@@ -124,134 +38,24 @@ namespace Rod {
 				glDeleteShader(shader);
 			}
 		}
-
 	}
 
-	OpenGLShader::OpenGLShader(
-	    std::unordered_map<shaderc_shader_kind, std::string> shaders,
-	    std::string name,
-	    const ShaderOptions& options)
-	    : m_Name(std::move(name))
-	{
-		shaderc::Compiler compiler;
-		shaderc::CompileOptions compileOptions;
-
-		compileOptions.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_2);
-
-		switch (options.OptimizationLevel)
-		{
-			case Shader::OptimizationLevel::None:
-				compileOptions.SetOptimizationLevel(shaderc_optimization_level_zero);
-				break;
-			case Shader::OptimizationLevel::Performance:
-				compileOptions.SetOptimizationLevel(shaderc_optimization_level_performance);
-				break;
-			case Shader::OptimizationLevel::Size:
-				compileOptions.SetOptimizationLevel(shaderc_optimization_level_size);
-				break;
-		}
-
-		for (auto&& [key, value] : options.Macros)
-			compileOptions.AddMacroDefinition(key, value);
-
-		if (options.GenerateDebugInfo)
-			compileOptions.SetGenerateDebugInfo();
-
-		for (auto&& [kind, source] : shaders)
-		{
-			RD_CORE_ASSERT(!m_SPIRV.contains(kind), "2 Shaders of same kind defined");
-
-			const std::string cacheKey = Utils::CreateShaderCacheKey(m_Name, kind, source, options);
-			if ((ShaderCacheDatabase::Get().Contains(cacheKey)) && (OpenSpirv(kind, cacheKey)))
-
-			{
-				RD_CORE_TRACE("Loaded shader {}.{} from cache!", m_Name, Utils::ShaderExtensionFromType(kind));
-				ShaderCacheDatabase::Get().AddValidKey(cacheKey);
-				continue;
-			}
-
-			const std::vector<uint32_t> res = CompileSpirv(kind, source, compiler, compileOptions);
-			if (!ShaderCacheDatabase::Get().CacheShader(cacheKey, res))
-				RD_CORE_WARN("Could not cache shader {}.{}", m_Name, Utils::ShaderExtensionFromType(kind));
-		}
-		LoadSpirv();
-	}
-
-	OpenGLShader::~OpenGLShader()
-	{
-		glDeleteProgram(m_RendererID);
-	}
-
-	auto OpenGLShader::OpenSpirv(const shaderc_shader_kind& kind, const std::string& cacheKey) -> bool
-	{
-		const std::filesystem::path filename = ShaderCacheDatabase::Get().GetCacheDirectory() / cacheKey;
-		std::ifstream in(filename, std::ios::binary | std::ios::ate);
-		if (!in)
-		{
-			RD_CORE_ERROR("Failed to open cached shader file: {}", filename.string());
-			return false;
-		}
-		const std::streamsize size = in.tellg();
-		if (size <= 0 || size % static_cast<std::streamsize>(sizeof(uint32_t)) != 0)
-		{
-			RD_CORE_WARN("Cached shader file is invalid: {}", filename.string());
-			return false;
-		}
-
-		in.seekg(0, std::ios::beg);
-
-		const size_t count = static_cast<size_t>(size) / sizeof(uint32_t);
-		std::vector<uint32_t> buffer(count);
-
-		// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-		in.read(reinterpret_cast<char*>(buffer.data()), size);
-		if (!in)
-		{
-			RD_CORE_WARN("Could not read cached shader file: {}", filename.string());
-			return false;
-		}
-
-		m_SPIRV[kind] = buffer;
-
-		return true;
-	}
-
-	auto OpenGLShader::CompileSpirv(
-	    const shaderc_shader_kind& kind,
-	    const std::string& source,
-	    shaderc::Compiler& compiler,
-	    const shaderc::CompileOptions& options) -> std::vector<uint32_t>
-	{
-		const shaderc::SpvCompilationResult res = compiler.CompileGlslToSpv(source, kind, m_Name.c_str(), options);
-		std::string messages = res.GetErrorMessage();
-		if (!messages.empty())
-			RD_CORE_WARN("Shader compilation messages:\n{0}", messages);
-
-		if (res.GetCompilationStatus() != shaderc_compilation_status_success)
-			throw std::runtime_error("Shader compilation failed: " + messages);
-
-		std::vector<uint32_t> data(res.cbegin(), res.cend());
-		m_SPIRV[kind] = data;
-
-		return data;
-	}
-
-	void OpenGLShader::LoadSpirv()
+	OpenGLShader::OpenGLShader(std::string name, std::span<const CompiledShaderStage> stages) : m_Name(std::move(name))
 	{
 		const GLuint program = glCreateProgram();
 		std::vector<GLuint> glShaderIDs;
-		glShaderIDs.reserve(m_SPIRV.size());
+		glShaderIDs.reserve(stages.size());
 
-		for (auto&& [kind, spirvBinary] : m_SPIRV)
+		for (const auto& [stage, words] : stages)
 		{
-			const GLuint shader = glCreateShader(Utils::OpenGLShaderKind(kind));
+			const GLuint shader = glCreateShader(ToOpenGLStage(stage));
 
 			glShaderBinary(
 			    1,
 			    &shader,
 			    GL_SHADER_BINARY_FORMAT_SPIR_V,
-			    spirvBinary.data(),
-			    static_cast<GLsizei>(spirvBinary.size() * sizeof(uint32_t)));
+			    words.data(),
+			    static_cast<GLsizei>(words.size() * sizeof(uint32_t)));
 			glSpecializeShader(shader, "main", 0, nullptr, nullptr);
 
 			GLint isCompiled = 0;
@@ -265,7 +69,7 @@ namespace Rod {
 				glGetShaderInfoLog(shader, maxLength, &maxLength, infoLog.data());
 
 				glDeleteShader(shader);
-				Utils::DeleteAttachedShaders(program, glShaderIDs);
+				DeleteAttachedShaders(program, glShaderIDs);
 				glDeleteProgram(program);
 
 				throw std::runtime_error(
@@ -289,15 +93,20 @@ namespace Rod {
 			std::vector<GLchar> infoLog(static_cast<size_t>(maxLength));
 			glGetProgramInfoLog(program, maxLength, &maxLength, infoLog.data());
 
-			Utils::DeleteAttachedShaders(program, glShaderIDs);
+			DeleteAttachedShaders(program, glShaderIDs);
 			glDeleteProgram(program);
 
 			throw std::runtime_error(
 			    "SPIR-V shader linking failed: " + std::string(infoLog.empty() ? "unknown error" : infoLog.data()));
 		}
 
-		Utils::DeleteAttachedShaders(program, glShaderIDs);
+		DeleteAttachedShaders(program, glShaderIDs);
 		m_RendererID = program;
+	}
+
+	OpenGLShader::~OpenGLShader()
+	{
+		glDeleteProgram(m_RendererID);
 	}
 
 	void OpenGLShader::Bind() const
@@ -312,91 +121,43 @@ namespace Rod {
 
 	void OpenGLShader::SetInt(const std::string& name, int value)
 	{
-		UploadUniformInt(name, value);
+		glProgramUniform1i(m_RendererID, GetUniformLocation(name), value);
 	}
 
 	void OpenGLShader::SetIntArray(const std::string& name, std::span<const int> values)
 	{
-		UploadUniformIntArray(name, values);
+		RD_CORE_ASSERT(std::in_range<GLsizei>(values.size()), "Uniform integer array exceeds the OpenGL count limit");
+		glProgramUniform1iv(m_RendererID, GetUniformLocation(name), static_cast<GLsizei>(values.size()), values.data());
 	}
 
-	void OpenGLShader::SetFloat(const std::string& name, const float value)
+	void OpenGLShader::SetFloat(const std::string& name, float value)
 	{
-		UploadUniformFloat(name, value);
+		glProgramUniform1f(m_RendererID, GetUniformLocation(name), value);
 	}
 
 	void OpenGLShader::SetFloat3(const std::string& name, const glm::vec3& value)
 	{
-		UploadUniformFloat3(name, value);
+		glProgramUniform3f(m_RendererID, GetUniformLocation(name), value.x, value.y, value.z);
 	}
 
 	void OpenGLShader::SetFloat4(const std::string& name, const glm::vec4& value)
 	{
-		UploadUniformFloat4(name, value);
+		glProgramUniform4f(m_RendererID, GetUniformLocation(name), value.x, value.y, value.z, value.w);
 	}
 
 	void OpenGLShader::SetMat4(const std::string& name, const glm::mat4& value)
 	{
-		UploadUniformMat4(name, value);
-	}
-
-	void OpenGLShader::UploadUniformInt(const std::string& name, int value)
-	{
-		const GLint location = GetUniformLocation(name);
-		glUniform1i(location, value);
-	}
-
-	void OpenGLShader::UploadUniformIntArray(const std::string& name, std::span<const int> values)
-	{
-		RD_CORE_ASSERT(std::in_range<GLsizei>(values.size()), "Uniform integer array exceeds the OpenGL count limit");
-
-		const GLint location = GetUniformLocation(name);
-		glUniform1iv(location, static_cast<GLsizei>(values.size()), values.data());
-	}
-
-	void OpenGLShader::UploadUniformFloat(const std::string& name, float value)
-	{
-		const GLint location = GetUniformLocation(name);
-		glUniform1f(location, value);
-	}
-
-	void OpenGLShader::UploadUniformFloat2(const std::string& name, const glm::vec2& values)
-	{
-		const GLint location = GetUniformLocation(name);
-		glUniform2f(location, values.x, values.y);
-	}
-
-	void OpenGLShader::UploadUniformFloat3(const std::string& name, const glm::vec3& values)
-	{
-		const GLint location = GetUniformLocation(name);
-		glUniform3f(location, values.x, values.y, values.z);
-	}
-
-	void OpenGLShader::UploadUniformFloat4(const std::string& name, const glm::vec4& values)
-	{
-		const GLint location = GetUniformLocation(name);
-		glUniform4f(location, values.x, values.y, values.z, values.w);
-	}
-
-	void OpenGLShader::UploadUniformMat3(const std::string& name, const glm::mat3& matrix)
-	{
-		const GLint location = GetUniformLocation(name);
-		glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
-	}
-
-	void OpenGLShader::UploadUniformMat4(const std::string& name, const glm::mat4& matrix)
-	{
-		const GLint location = GetUniformLocation(name);
-		glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(matrix));
+		glProgramUniformMatrix4fv(m_RendererID, GetUniformLocation(name), 1, GL_FALSE, glm::value_ptr(value));
 	}
 
 	auto OpenGLShader::GetUniformLocation(const std::string& name) const -> int
 	{
-		if (m_UniformLocationCache.contains(name))
-			return m_UniformLocationCache[name];
+		const auto found = m_UniformLocationCache.find(name);
+		if (found != m_UniformLocationCache.end())
+			return found->second;
 
 		const int location = glGetUniformLocation(m_RendererID, name.c_str());
-		m_UniformLocationCache[name] = location;
+		m_UniformLocationCache.emplace(name, location);
 		return location;
 	}
 

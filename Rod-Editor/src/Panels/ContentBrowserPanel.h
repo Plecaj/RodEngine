@@ -6,10 +6,12 @@
 
 namespace Rod {
 
+	class RenderDevice;
+
 	class ContentBrowserPanel
 	{
 	public:
-		explicit ContentBrowserPanel(const std::filesystem::path& assetsPath);
+		explicit ContentBrowserPanel(const std::filesystem::path& assetsPath, const RenderDevice& device);
 
 		void OnImGuiRender();
 

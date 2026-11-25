@@ -5,8 +5,7 @@ target_sources(RodEngine PRIVATE
     OpenGLContext.h
     OpenGLFrameBuffer.cpp
     OpenGLFrameBuffer.h
-    OpenGLRendererAPI.cpp
-    OpenGLRendererAPI.h
+    OpenGLRenderDevice.cpp
     OpenGLShader.cpp
     OpenGLShader.h
     OpenGLTexture.cpp

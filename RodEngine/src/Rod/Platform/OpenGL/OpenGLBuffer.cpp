@@ -17,16 +17,18 @@ namespace Rod {
 	{
 		RD_CORE_ASSERT(std::in_range<GLsizeiptr>(size), "Buffer size exceeds OpenGL size limits");
 		glCreateBuffers(1, &m_RendererID);
-		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-		glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(size), nullptr, GL_DYNAMIC_DRAW);
+		glNamedBufferData(m_RendererID, static_cast<GLsizeiptr>(size), nullptr, GL_DYNAMIC_DRAW);
 	}
 
 	OpenGLVertexBuffer::OpenGLVertexBuffer(std::span<const std::byte> vertices)
 	{
 		RD_CORE_ASSERT(std::in_range<GLsizeiptr>(vertices.size_bytes()), "Buffer size exceeds OpenGL size limits");
 		glCreateBuffers(1, &m_RendererID);
-		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-		glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(vertices.size_bytes()), vertices.data(), GL_STATIC_DRAW);
+		glNamedBufferData(
+		    m_RendererID,
+		    static_cast<GLsizeiptr>(vertices.size_bytes()),
+		    vertices.data(),
+		    GL_STATIC_DRAW);
 	}
 
 	OpenGLVertexBuffer::~OpenGLVertexBuffer()
@@ -47,8 +49,7 @@ namespace Rod {
 	void OpenGLVertexBuffer::SetData(std::span<const std::byte> data)
 	{
 		RD_CORE_ASSERT(std::in_range<GLsizeiptr>(data.size_bytes()), "Buffer size exceeds OpenGL size limits");
-		glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(data.size_bytes()), data.data());
+		glNamedBufferSubData(m_RendererID, 0, static_cast<GLsizeiptr>(data.size_bytes()), data.data());
 	}
 
 	/// ========================================
@@ -63,12 +64,7 @@ namespace Rod {
 		    "Index buffer size exceeds OpenGL size limits");
 		m_Count = static_cast<uint32_t>(indices.size());
 		glCreateBuffers(1, &m_RendererID);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
-		glBufferData(
-		    GL_ELEMENT_ARRAY_BUFFER,
-		    static_cast<GLsizeiptr>(indices.size_bytes()),
-		    indices.data(),
-		    GL_STATIC_DRAW);
+		glNamedBufferData(m_RendererID, static_cast<GLsizeiptr>(indices.size_bytes()), indices.data(), GL_STATIC_DRAW);
 	}
 
 	OpenGLIndexBuffer::~OpenGLIndexBuffer()
@@ -93,9 +89,8 @@ namespace Rod {
 	OpenGLUniformBuffer::OpenGLUniformBuffer(uint32_t size)
 	{
 		RD_CORE_ASSERT(std::in_range<GLsizeiptr>(size), "Buffer size exceeds OpenGL size limits");
-		glGenBuffers(1, &m_RendererID);
-		glBindBuffer(GL_UNIFORM_BUFFER, m_RendererID);
-		glBufferData(GL_UNIFORM_BUFFER, static_cast<GLsizeiptr>(size), nullptr, GL_DYNAMIC_DRAW);
+		glCreateBuffers(1, &m_RendererID);
+		glNamedBufferData(m_RendererID, static_cast<GLsizeiptr>(size), nullptr, GL_DYNAMIC_DRAW);
 	}
 
 	OpenGLUniformBuffer::~OpenGLUniformBuffer()
@@ -121,8 +116,7 @@ namespace Rod {
 	void OpenGLUniformBuffer::SetData(std::span<const std::byte> data)
 	{
 		RD_CORE_ASSERT(std::in_range<GLsizeiptr>(data.size_bytes()), "Buffer size exceeds OpenGL size limits");
-		glBindBuffer(GL_UNIFORM_BUFFER, m_RendererID);
-		glBufferSubData(GL_UNIFORM_BUFFER, 0, static_cast<GLsizeiptr>(data.size_bytes()), data.data());
+		glNamedBufferSubData(m_RendererID, 0, static_cast<GLsizeiptr>(data.size_bytes()), data.data());
 	}
 
 }

@@ -1,64 +1,68 @@
 #pragma once
 
-#include "Rod/Renderer/Camera.h"
-#include "Rod/Renderer/EditorCamera.h"
-#include "Rod/Scene/Components.h"
-#include "SubTexture2D.h"
+#include "Buffer.h"
+#include "Shader.h"
 #include "Texture.h"
+#include "VertexArray.h"
+
+#include <glm/glm.hpp>
+
+#include <cstdint>
+#include <vector>
 
 namespace Rod {
+
+	class RenderDevice;
+	class ShaderLoader;
 
 	class Renderer2D
 	{
 	public:
-		static constexpr uint32_t s_QuadVertexCount = 4;
-		static constexpr uint32_t s_QuadIndexCount = 6;
+		Renderer2D(const RenderDevice& device, const ShaderLoader& shaders);
 
-		static void Init();
-		static void Shutdown();
-
-		static void BeginScene(const Camera& camera, const glm::mat4& transform);
-		static void BeginScene(const EditorCamera& camera);
-		static void EndScene();
-
-		static void DrawQuad(const glm::mat4& transform, const glm::vec4& color, int entityID = -1);
-		static void DrawQuad(
+		void Begin(const glm::mat4& viewProjection);
+		void SubmitQuad(
 		    const glm::mat4& transform,
 		    const Ref<Texture2D>& texture,
-		    float tilingFactor = 1.0f,
-		    const glm::vec4& tintColor = glm::vec4(1.0f),
+		    float tiling,
+		    const glm::vec4& tint,
 		    int entityID = -1);
-
-		static void DrawSprite(const glm::mat4& transform, const SpriteRendererComponent& src, int entityID);
+		void End();
 
 		struct Statistics
 		{
 			uint32_t DrawCalls = 0;
 			uint32_t QuadCount = 0;
-
-			[[nodiscard]] constexpr auto GetTotalVertexCount() const noexcept -> uint32_t
-			{
-				return QuadCount * s_QuadVertexCount;
-			};
-			[[nodiscard]] constexpr auto GetTotalIndexCount() const noexcept -> uint32_t
-			{
-				return QuadCount * s_QuadIndexCount;
-			};
 		};
-		static void ResetStats() noexcept;
-		[[nodiscard]] static auto GetStats() noexcept -> Statistics;
+
+		[[nodiscard]] auto GetStats() const noexcept -> Statistics { return m_Stats; }
 
 	private:
-		// Initialize
-		static void InitShader();
-		static void InitSamplers();
-		static void InitQuadVertexArray();
-		static void InitWhiteTexture();
-		static void InitQuadVertexPositions();
+		static constexpr uint32_t s_VerticesPerQuad = 4;
+		static constexpr uint32_t s_IndicesPerQuad = 6;
+		static constexpr uint32_t s_QuadCapacity = 10000;
+		static constexpr uint32_t s_TextureCapacity = 32;
 
-		static void BeginBatch();
-		static void Flush();
-		static void EndBatch();
+		struct Vertex
+		{
+			glm::vec3 Position;
+			glm::vec4 Tint;
+			glm::vec2 UV;
+			float TextureSlot;
+			float Tiling;
+			int EntityID;
+		};
+
+		void Flush();
+		[[nodiscard]] auto AssignTextureSlot(const Ref<Texture2D>& texture) -> uint32_t;
+
+		const RenderDevice& m_Device;
+		Scope<VertexArray> m_VertexArray;
+		Scope<UniformBuffer> m_CameraBuffer;
+		Scope<Shader> m_Shader;
+		std::vector<Vertex> m_Vertices;
+		std::vector<Ref<Texture2D>> m_Textures;
+		Statistics m_Stats;
 	};
 
 }

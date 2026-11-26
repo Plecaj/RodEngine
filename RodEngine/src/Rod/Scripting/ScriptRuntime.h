@@ -20,13 +20,6 @@ namespace Rod {
 		[[nodiscard]] auto GetFunction(const std::string& typeName, const std::string& methodName) const -> void*;
 
 	private:
-#ifdef RD_PLATFORM_WINDOWS
-		using HostString = std::wstring;
-#else
-		using HostString = std::string;
-#endif
-		[[nodiscard]] static auto ToHostString(const std::string& value) -> HostString;
-
 		std::shared_ptr<const SharedLibrary> m_HostFxr;
 		void* m_LoadAssemblyAndGetFunctionPointer = nullptr;
 		std::filesystem::path m_CoreAssemblyPath;

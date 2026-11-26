@@ -143,18 +143,12 @@ jobs:
       - name: Run clang-tidy
         if: matrix.run_tidy
         run: |
-          if [[ "$RUNNER_OS" == Windows ]]; then
-            analysis_preset=windows-clang-analysis
-          else
-            analysis_preset=linux-clang-analysis
+          if [[ "$RUNNER_OS" == Linux ]]; then
             sudo apt-get install -y clang-tidy-23
             export PATH="/usr/lib/llvm-23/bin:$PATH"
           fi
-          cmake --preset "$analysis_preset" \
-            "-DCMAKE_C_COMPILER=$ROD_CI_CC" "-DCMAKE_CXX_COMPILER=$ROD_CI_CXX" \
-            -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON -DCMAKE_CXX_SCAN_FOR_MODULES=OFF
           clang-tidy --version
-          python scripts/tidy.py
+          CC="$ROD_CI_CC" CXX="$ROD_CI_CXX" python scripts/tidy.py
 
       - name: Upload test results
         if: always()

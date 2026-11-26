@@ -10,14 +10,10 @@
 #include "Rod/Scene/Scene.h"
 #include "Rod/Utils/FunctionPointerCast.h"
 #include "ScriptEngine.h"
+#include "ScriptInterop.h"
 
-#include <cstdlib> // IWYU pragma: keep
 #include <cstring>
 #include <stdexcept>
-
-#ifdef RD_PLATFORM_WINDOWS
-	#include <objbase.h> // IWYU pragma: keep
-#endif
 
 namespace Rod {
 
@@ -39,12 +35,7 @@ namespace Rod {
 
 		[[nodiscard]] auto AllocateString(const std::string& value) noexcept -> void*
 		{
-#ifdef RD_PLATFORM_WINDOWS
-			auto* buffer = static_cast<char*>(CoTaskMemAlloc(value.size() + 1));
-#else
-			// NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
-			auto* buffer = static_cast<char*>(std::malloc(value.size() + 1));
-#endif
+			auto* buffer = ScriptInterop::Allocate(value.size() + 1);
 			if (buffer)
 				std::memcpy(buffer, value.c_str(), value.size() + 1);
 			return buffer;

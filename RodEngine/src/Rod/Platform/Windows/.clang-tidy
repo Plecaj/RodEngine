@@ -1,0 +1,2 @@
+InheritParentConfig: true
+Checks: '-portability-restrict-system-includes'

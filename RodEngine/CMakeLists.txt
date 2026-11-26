@@ -29,4 +29,6 @@ target_link_libraries(RodEngine
         ${CMAKE_DL_LIBS}
 )
 
-include(RodDotnet)
+if(TARGET Rod::DotnetHost)
+    target_link_libraries(RodEngine PRIVATE Rod::DotnetHost)
+endif()

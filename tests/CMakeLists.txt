@@ -23,8 +23,6 @@ add_executable(RodEngineTests
     Renderer/Renderer2D.cpp
     Renderer/SceneRenderer.cpp
     Scripting/ScriptAssembly.cpp
-    Scripting/ScriptGlue.cpp
-    Scripting/ScriptRuntime.cpp
     Scene/ComponentSerializers.cpp
     Scene/Scene.cpp
     Scene/SceneCamera.cpp
@@ -36,7 +34,8 @@ add_library(RodTestLibrary SHARED Platform/TestLibrary.cpp)
 add_dependencies(RodEngineTests RodTestLibrary)
 target_compile_definitions(RodEngineTests PRIVATE ROD_TEST_LIBRARY_PATH="$<TARGET_FILE:RodTestLibrary>")
 
-if(DOTNET_EXE AND ROD_DOTNET_HOST_INCLUDE_DIR AND ROD_DOTNET_HOST_LIBRARY AND TARGET RodGameScripts-Build)
+if(TARGET Rod::DotnetHost)
+    target_sources(RodEngineTests PRIVATE Scripting/ScriptGlue.cpp Scripting/ScriptRuntime.cpp)
     add_dependencies(RodEngineTests RodGameScripts-Build)
     target_compile_definitions(RodEngineTests PRIVATE
         ROD_TEST_CORE_ASSEMBLY_PATH="${ROD_SCRIPT_CORE_OUTPUT_DIR}/Rod.ScriptCore.dll"

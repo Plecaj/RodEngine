@@ -9,6 +9,7 @@
 
 #include <cstdio>
 #include <exception>
+#include <span>
 #include <stdexcept>
 
 auto main(int argc, char* argv[]) -> int
@@ -22,19 +23,21 @@ auto main(int argc, char* argv[]) -> int
 	try
 	{
 		Rod::Log::Init();
-		Rod::Project project{std::filesystem::absolute(argv[1]).lexically_normal(), {}};
+		const std::span arguments(argv, static_cast<size_t>(argc));
+		Rod::Project project{std::filesystem::absolute(arguments.at(1)).lexically_normal(), {}};
 		Rod::ProjectSerializer::Deserialize(project);
 		const auto scripts = Rod::ScriptBuilder::BuildProject(project.GetScriptProjectPath());
 		if (!scripts.Success)
 			throw std::runtime_error("Script build failed: " + scripts.Output);
 		const auto directory = Rod::Platform::GetExecutablePath().parent_path();
-		constexpr int outputArgument = 2;
-		Rod::ProjectExporter::Export(project, directory / "Rod-Runtime" ROD_EXECUTABLE_SUFFIX, argv[outputArgument]);
+		Rod::ProjectExporter::Export(project, directory / "Rod-Runtime" ROD_EXECUTABLE_SUFFIX, arguments.back());
 		return 0;
 	}
 	catch (const std::exception& exception)
 	{
-		std::fprintf(stderr, "Game export failed: %s\n", exception.what());
+		std::fputs("Game export failed: ", stderr);
+		std::fputs(exception.what(), stderr);
+		std::fputc('\n', stderr);
 		return 1;
 	}
 }

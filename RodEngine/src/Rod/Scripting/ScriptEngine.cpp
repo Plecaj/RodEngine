@@ -9,16 +9,12 @@
 #include "Rod/Utils/FunctionPointerCast.h"
 #include "ScriptBuilder.h"
 #include "ScriptGlue.h"
+#include "ScriptInterop.h"
 #include "ScriptRuntime.h"
 
-#include <cstdlib> // IWYU pragma: keep
 #include <optional>
 #include <stdexcept>
 #include <system_error>
-
-#ifdef RD_PLATFORM_WINDOWS
-	#include <objbase.h> // IWYU pragma: keep
-#endif
 
 namespace Rod {
 
@@ -29,14 +25,7 @@ namespace Rod {
 			if (!value)
 				return {};
 
-			const auto release = [](void* text) {
-#ifdef RD_PLATFORM_WINDOWS
-				CoTaskMemFree(text);
-#else
-				std::free(text);
-#endif
-			};
-			const std::unique_ptr<void, decltype(release)> text(value, release);
+			const std::unique_ptr<void, decltype(&ScriptInterop::Free)> text(value, ScriptInterop::Free);
 			return {static_cast<const char*>(text.get())};
 		}
 	}

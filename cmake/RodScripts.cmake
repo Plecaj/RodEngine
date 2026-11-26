@@ -1,6 +1,6 @@
 set(ROD_SCRIPT_CORE_OUTPUT_DIR "${CMAKE_SOURCE_DIR}/Rod-ScriptCore/bin/Debug/net9.0")
 
-if(DOTNET_EXE)
+if(TARGET Rod::DotnetHost)
     add_custom_target(RodScriptCore-Build
         COMMAND "${DOTNET_EXE}" build "${CMAKE_SOURCE_DIR}/Rod-ScriptCore/Rod.ScriptCore.csproj" --nologo
         WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
@@ -15,8 +15,6 @@ if(DOTNET_EXE)
     )
 
     add_dependencies(RodGameScripts-Build RodScriptCore-Build)
-else()
-    message(WARNING "dotnet was not found. C# scripting projects will not be built by CMake.")
 endif()
 
 add_custom_target(RodAssets-Copy

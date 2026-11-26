@@ -147,7 +147,7 @@ namespace Rod {
 				if (result.GetCompilationStatus() != shaderc_compilation_status_success)
 					throw std::runtime_error(result.GetErrorMessage());
 				if (result.GetNumWarnings() != 0)
-					RD_CORE_WARN("{}", result.GetErrorMessage());
+					Log::Core().warn("{}", result.GetErrorMessage());
 				return {result.cbegin(), result.cend()};
 			}
 
@@ -233,7 +233,7 @@ namespace Rod {
 					compiler.emplace(options);
 				auto words = compiler->Compile(stage, name);
 				if (!m_Cache.Store(key, words))
-					RD_CORE_WARN("Could not cache shader '{}'", name);
+					Log::Core().warn("Could not cache shader '{}'", name);
 				stages.push_back({.Stage = stage.Stage, .Words = std::move(words)});
 			}
 

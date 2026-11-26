@@ -31,10 +31,11 @@ namespace Rod {
 			    {"Vector3", ScriptFieldType::Vector3},
 			    {"Vector4", ScriptFieldType::Vector4},
 			    {"Entity", ScriptFieldType::Entity},
-			    {"String", ScriptFieldType::String}};
+			    {"String", ScriptFieldType::String},
+			};
 
-			const auto it = fieldTypes.find(type);
-			return it != fieldTypes.end() ? it->second : ScriptFieldType::None;
+			const auto fieldType = fieldTypes.find(type);
+			return fieldType != fieldTypes.end() ? fieldType->second : ScriptFieldType::None;
 		}
 	}
 
@@ -45,16 +46,20 @@ namespace Rod {
 		{
 			const auto metadata = nlohmann::json::parse(metadataJson);
 			if (metadata.contains("error"))
+			{
 				throw std::runtime_error(
 				    "Assembly load failed '" + assemblyPath.string() + "': " + metadata.at("error").get<std::string>());
+			}
 			if (!metadata.is_object() || !metadata.contains("classes") || !metadata.at("classes").is_array())
 				throw std::runtime_error("Assembly metadata invalid '" + assemblyPath.string() + "': classes required");
 			for (const auto& classJson : metadata.at("classes"))
 			{
 				const auto fullName = classJson.at("fullName").get<std::string>();
 				if (fullName.empty() || !classJson.at("fields").is_array())
+				{
 					throw std::runtime_error(
 					    "Assembly metadata invalid '" + assemblyPath.string() + "': class/fields required");
+				}
 				const auto namespaceName = classJson.at("namespace").get<std::string>();
 				const auto className = classJson.at("name").get<std::string>();
 
@@ -67,10 +72,13 @@ namespace Rod {
 					field.TypeName = fieldJson.at("type").get<std::string>();
 					field.Type = ScriptFieldTypeFromString(field.TypeName);
 
-					if (field.Type != ScriptFieldType::None)
-						scriptClass.GetFields()[field.Name] = {
-						    .Field = field,
-						    .Value = fieldJson.at("defaultValue").get<std::string>()};
+					if (field.Type == ScriptFieldType::None)
+						continue;
+
+					scriptClass.GetFields()[field.Name] = {
+					    .Field = field,
+					    .Value = fieldJson.at("defaultValue").get<std::string>(),
+					};
 				}
 
 				m_Classes[fullName] = std::move(scriptClass);
@@ -89,9 +97,9 @@ namespace Rod {
 
 	auto ScriptAssembly::GetClass(const std::string& className) -> std::optional<ScriptClass&>
 	{
-		const auto it = m_Classes.find(className);
-		if (it == m_Classes.end())
+		const auto scriptClass = m_Classes.find(className);
+		if (scriptClass == m_Classes.end())
 			return std::nullopt;
-		return it->second;
+		return scriptClass->second;
 	}
 }

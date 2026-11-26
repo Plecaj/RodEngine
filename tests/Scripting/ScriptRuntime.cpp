@@ -3,6 +3,7 @@
 #include "Rod/Scripting/ScriptRuntime.h"
 
 #include "Rod/Scripting/ScriptAssembly.h"
+#include "Rod/Scripting/ScriptInterop.h"
 #include "Rod/Utils/FunctionPointerCast.h"
 
 #include <catch2/catch_test_macros.hpp>
@@ -10,13 +11,6 @@
 #include <memory>
 #include <stdexcept>
 
-#ifdef RD_PLATFORM_WINDOWS
-	#include <objbase.h> // IWYU pragma: keep
-#else
-	#include <cstdlib> // IWYU pragma: keep
-#endif
-
-#ifdef ROD_TEST_CORE_ASSEMBLY_PATH
 namespace {
 	using LoadFn = void*(RD_CDECL*)(const char*);
 
@@ -31,14 +25,9 @@ namespace {
 
 	auto LoadAssembly(LoadFn load, const std::string& path) -> Rod::ScriptAssembly
 	{
-		const auto release = [](void* text) {
-	#ifdef RD_PLATFORM_WINDOWS
-			CoTaskMemFree(text);
-	#else
-			std::free(text);
-	#endif
-		};
-		const std::unique_ptr<void, decltype(release)> text(load(path.c_str()), release);
+		const std::unique_ptr<void, decltype(&Rod::ScriptInterop::Free)> text(
+		    load(path.c_str()),
+		    Rod::ScriptInterop::Free);
 		REQUIRE(text != nullptr);
 		return {path, static_cast<const char*>(text.get())};
 	}
@@ -68,4 +57,3 @@ TEST_CASE("Failed managed assembly loads preserve the active assembly", "[script
 	REQUIRE_THROWS_AS(LoadAssembly(load, std::string(ROD_TEST_GAME_ASSEMBLY_PATH) + ".missing"), std::runtime_error);
 	REQUIRE(create(1, "Game.Rotator") == 1);
 }
-#endif

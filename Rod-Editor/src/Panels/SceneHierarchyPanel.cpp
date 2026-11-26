@@ -11,6 +11,7 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
+#include <ranges>
 #include <stdexcept>
 #include <typeinfo> // IWYU pragma: keep
 
@@ -78,7 +79,7 @@ namespace Rod {
 				}
 				catch (const std::runtime_error& exception)
 				{
-					RD_CORE_ERROR("{}", exception.what());
+					Log::Core().error("{}", exception.what());
 				}
 			}
 			ImGui::EndDragDropTarget();
@@ -221,14 +222,17 @@ namespace Rod {
 		constexpr int columnCount = 2;
 		constexpr float linePaddingFactor = 2.0f;
 		constexpr float buttonWidthOffset = 3.0f;
-		constexpr auto axes = std::to_array<AxisStyle>(
-		    {{.Label = "X", .InputID = "##X", .Normal = {0.8f, 0.1f, 0.15f, 1.0f}, .Hovered = {0.9f, 0.2f, 0.2f, 1.0f}},
-			 {.Label = "Y", .InputID = "##Y", .Normal = {0.2f, 0.7f, 0.2f, 1.0f}, .Hovered = {0.3f, 0.8f, 0.3f, 1.0f}},
-			 {.Label = "Z",
-			  .InputID = "##Z",
-			  .Normal = {0.1f, 0.25f, 0.8f, 1.0f},
-			  .Hovered = {0.2f, 0.35f, 0.9f, 1.0f}}});
-		auto* boldFont = ImGui::GetIO().Fonts->Fonts[0];
+		constexpr auto axes = std::to_array<AxisStyle>({
+		    {.Label = "X", .InputID = "##X", .Normal = {0.8f, 0.1f, 0.15f, 1.0f}, .Hovered = {0.9f, 0.2f, 0.2f, 1.0f}},
+		    {.Label = "Y", .InputID = "##Y", .Normal = {0.2f, 0.7f, 0.2f, 1.0f}, .Hovered = {0.3f, 0.8f, 0.3f, 1.0f}},
+		    {
+		        .Label = "Z",
+		        .InputID = "##Z",
+		        .Normal = {0.1f, 0.25f, 0.8f, 1.0f},
+		        .Hovered = {0.2f, 0.35f, 0.9f, 1.0f},
+		    },
+		});
+		auto* boldFont = ImGui::GetIO().Fonts->Fonts.front();
 		ImGui::PushID(label.c_str());
 		ImGui::Columns(columnCount);
 		ImGui::SetColumnWidth(0, settings.ColumnWidth);
@@ -236,14 +240,14 @@ namespace Rod {
 		ImGui::NextColumn();
 		ImGui::PushMultiItemsWidths(static_cast<int>(axes.size()), ImGui::CalcItemWidth());
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0, 0});
-		const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * linePaddingFactor;
+		const float lineHeight = GImGui->Font->FontSize + (GImGui->Style.FramePadding.y * linePaddingFactor);
 		const ImVec2 buttonSize{lineHeight + buttonWidthOffset, lineHeight};
-		for (size_t axis = 0; axis < axes.size(); ++axis)
+		for (const auto& [axis, presentation] : std::views::enumerate(axes))
 		{
 			if (axis != 0)
 				ImGui::SameLine();
 			DrawAxisControl(
-			    axes[axis],
+			    presentation,
 			    values[static_cast<glm::vec3::length_type>(axis)],
 			    buttonSize,
 			    boldFont,
@@ -272,14 +276,14 @@ namespace Rod {
 		    ImGuiTreeNodeFlags_FramePadding);
 		const ImVec2 contentRegion = ImGui::GetContentRegionAvail();
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, framePadding);
-		const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * linePaddingFactor;
+		const float lineHeight = GImGui->Font->FontSize + (GImGui->Style.FramePadding.y * linePaddingFactor);
 		ImGui::Separator();
 		const auto typeHash = typeid(T).hash_code();
 		const bool open = ImGui::TreeNodeEx(NodeID(typeHash), flags, "%s", name.c_str());
 		ImGui::PopStyleVar();
 		const bool removeComponent =
 		    OptionalComponent<T> &&
-		    DrawRemoveComponentMenu(typeHash, contentRegion.x - lineHeight * settingsButtonOffset, lineHeight);
+		    DrawRemoveComponentMenu(typeHash, contentRegion.x - (lineHeight * settingsButtonOffset), lineHeight);
 		if (open)
 		{
 			ImGui::Dummy({0.0f, verticalSpacing});
@@ -385,15 +389,15 @@ namespace Rod {
 	{
 		constexpr auto names = std::to_array<const char*>({"Perspective", "Orthographic"});
 		const auto projectionIndex = static_cast<size_t>(camera.GetProjectionType());
-		const char* current = names[std::min(projectionIndex, names.size() - 1)];
+		const char* current = names.at(std::min(projectionIndex, names.size() - 1));
 		if (ImGui::BeginCombo("Projection", current))
 		{
-			for (size_t index = 0; index < names.size(); ++index)
+			for (const auto& [index, name] : std::views::enumerate(names))
 			{
-				const bool selected = current == names[index];
-				if (ImGui::Selectable(names[index], selected))
+				const bool selected = current == name;
+				if (ImGui::Selectable(name, selected))
 				{
-					current = names[index];
+					current = name;
 					camera.SetProjectionType(static_cast<SceneCamera::ProjectionType>(index));
 				}
 				if (selected)
@@ -593,8 +597,10 @@ namespace Rod {
 	{
 		float value = 0.0f;
 		if (!field.Value.empty())
+		{
 			value = field.Field.Type == ScriptFieldType::Double ? static_cast<float>(std::stod(field.Value))
 			                                                    : std::stof(field.Value);
+		}
 		if (!ImGui::DragFloat(name.c_str(), &value, s_DefaultDragSpeed))
 			return false;
 		field.Value = std::to_string(value);

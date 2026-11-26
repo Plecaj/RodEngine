@@ -19,6 +19,9 @@ namespace Rod {
 		[[nodiscard]] constexpr auto GetProjection() const noexcept -> const glm::mat4& { return m_Projection; }
 
 	protected:
+		constexpr void SetProjection(const glm::mat4& projection) noexcept { m_Projection = projection; }
+
+	private:
 		glm::mat4 m_Projection = glm::mat4(1.0f);
 	};
 

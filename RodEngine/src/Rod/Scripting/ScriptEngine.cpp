@@ -9,16 +9,12 @@
 #include "Rod/Utils/FunctionPointerCast.h"
 #include "ScriptBuilder.h"
 #include "ScriptGlue.h"
+#include "ScriptInterop.h"
 #include "ScriptRuntime.h"
 
-#include <cstdlib> // IWYU pragma: keep
 #include <optional>
 #include <stdexcept>
 #include <system_error>
-
-#ifdef RD_PLATFORM_WINDOWS
-	#include <objbase.h> // IWYU pragma: keep
-#endif
 
 namespace Rod {
 
@@ -29,14 +25,7 @@ namespace Rod {
 			if (!value)
 				return {};
 
-			const auto release = [](void* text) {
-#ifdef RD_PLATFORM_WINDOWS
-				CoTaskMemFree(text);
-#else
-				std::free(text);
-#endif
-			};
-			const std::unique_ptr<void, decltype(release)> text(value, release);
+			const std::unique_ptr<void, decltype(&ScriptInterop::Free)> text(value, ScriptInterop::Free);
 			return {static_cast<const char*>(text.get())};
 		}
 	}
@@ -192,14 +181,17 @@ namespace Rod {
 		    .ScriptProjectPath = scriptProject,
 		    .ScriptAssemblyPath = ScriptBuilder::GetAssemblyPath(scriptProject),
 		    .ScriptSourceDirectory = scriptProject.parent_path() / "Source",
-		    .ScriptCacheDirectory = assetsPath / "Scripts" / "Cache"};
+		    .ScriptCacheDirectory = assetsPath / "Scripts" / "Cache",
+		};
 	}
 
 	void ScriptEngine::Init(const Project& project, const InputState& input, const RenderDevice& device, Mode mode)
 	{
 		if (!s_Configuration)
+		{
 			s_Configuration.emplace(
 			    Configuration{.ProjectData = project, .Input = input, .Device = device, .StartupMode = mode});
+		}
 		EnsureInitialized();
 	}
 
@@ -223,7 +215,7 @@ namespace Rod {
 		}
 		catch (const std::runtime_error& exception)
 		{
-			RD_CORE_ERROR("Script startup failed: {}", exception.what());
+			Log::Core().error("Script startup failed: {}", exception.what());
 			return false;
 		}
 
@@ -261,11 +253,11 @@ namespace Rod {
 		ScriptBuildResult result = ScriptBuilder::BuildProject(s_Data->Paths.ScriptProjectPath);
 		if (!result.Success)
 		{
-			RD_CORE_ERROR("Script build failed:\n{}", result.Output);
+			Log::Core().error("Script build failed:\n{}", result.Output);
 			return false;
 		}
 
-		RD_CORE_TRACE("Script build succeeded:\n{}", result.Output);
+		Log::Core().trace("Script build succeeded:\n{}", result.Output);
 		s_Data->Paths.ScriptAssemblyPath = ScriptBuilder::GetAssemblyPath(s_Data->Paths.ScriptProjectPath);
 		return true;
 	}
@@ -279,7 +271,7 @@ namespace Rod {
 		{
 			if (!std::filesystem::exists(s_Data->Paths.ScriptAssemblyPath))
 			{
-				RD_CORE_ERROR("Assembly missing '{}'", s_Data->Paths.ScriptAssemblyPath.string());
+				Log::Core().error("Assembly missing '{}'", s_Data->Paths.ScriptAssemblyPath.string());
 				return false;
 			}
 			const auto cachedAssembly = startupMode == Mode::Editor
@@ -289,7 +281,7 @@ namespace Rod {
 			    CopyManagedString(s_Data->Functions.LoadAssembly(cachedAssembly.string().c_str()));
 			if (metadataJson.empty())
 			{
-				RD_CORE_ERROR("Assembly load failed '{}'", cachedAssembly.string());
+				Log::Core().error("Assembly load failed '{}'", cachedAssembly.string());
 				return false;
 			}
 			ScriptAssembly assembly(cachedAssembly, metadataJson);
@@ -298,7 +290,7 @@ namespace Rod {
 		}
 		catch (const std::runtime_error& exception)
 		{
-			RD_CORE_ERROR("Assembly reload failed: {}", exception.what());
+			Log::Core().error("Assembly reload failed: {}", exception.what());
 			return false;
 		}
 	}
@@ -357,14 +349,14 @@ namespace Rod {
 		ScriptGlue::SetSceneContext(std::nullopt);
 	}
 
-	void ScriptEngine::OnRuntimeUpdate(Timestep ts)
+	void ScriptEngine::OnRuntimeUpdate(Timestep timestep)
 	{
 		if (!s_Data || !s_Data->RuntimeRunning || !s_Data->SceneContext)
 			return;
 
 		const auto view = s_Data->SceneContext->View<IDComponent, ScriptComponent>();
 		for (const auto entityID : view)
-			OnUpdateEntity(s_Data->SceneContext->FindEntityByHandle(entityID), ts);
+			OnUpdateEntity(s_Data->SceneContext->FindEntityByHandle(entityID), timestep);
 	}
 
 	void ScriptEngine::OnCreateEntity(Entity entity)
@@ -391,11 +383,11 @@ namespace Rod {
 		s_Data->Functions.DestroyScript(static_cast<uint64_t>(entity.GetUUID()));
 	}
 
-	void ScriptEngine::OnUpdateEntity(Entity entity, Timestep ts)
+	void ScriptEngine::OnUpdateEntity(Entity entity, Timestep timestep)
 	{
 		if (!s_Data)
 			return;
-		s_Data->Functions.UpdateScript(static_cast<uint64_t>(entity.GetUUID()), ts.GetSeconds());
+		s_Data->Functions.UpdateScript(static_cast<uint64_t>(entity.GetUUID()), timestep.GetSeconds());
 	}
 
 	void ScriptEngine::SetRuntimeFieldValue(Entity entity, const std::string& fieldName)
@@ -470,11 +462,13 @@ namespace Rod {
 		for (const auto& [name, field] : script.Fields)
 		{
 			if (!field.Value.empty())
+			{
 				s_Data->Functions.SetFieldValue(
 				    static_cast<uint64_t>(entity.GetUUID()),
 				    name.c_str(),
 				    static_cast<int32_t>(field.Field.Type),
 				    field.Value.c_str());
+			}
 		}
 	}
 }

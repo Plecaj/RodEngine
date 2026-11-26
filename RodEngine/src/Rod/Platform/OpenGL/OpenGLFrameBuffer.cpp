@@ -8,28 +8,29 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <array>
+#include <ranges>
 #include <stdexcept>
 
 namespace Rod {
 
-	namespace Utils {
+	namespace {
 
-		static auto TextureTarget(bool multisampled) -> GLenum
+		auto TextureTarget(bool multisampled) -> GLenum
 		{
 			return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
 		}
 
-		static void CreateTextures(bool multisampled, uint32_t* outID, uint32_t count)
+		void CreateTextures(bool multisampled, uint32_t* outID, uint32_t count)
 		{
 			glCreateTextures(TextureTarget(multisampled), static_cast<GLsizei>(count), outID);
 		}
 
-		static void BindTexture(bool multisampled, uint32_t id)
+		void BindTexture(bool multisampled, uint32_t id)
 		{
 			glBindTexture(TextureTarget(multisampled), id);
 		}
 
-		static void AttachColorTexture(
+		void AttachColorTexture(
 		    uint32_t id,
 		    const FramebufferSpecification& spec,
 		    GLenum internalFormat,
@@ -70,8 +71,7 @@ namespace Rod {
 			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, TextureTarget(multisampled), id, 0);
 		}
 
-		static void
-		AttachDepthTexture(uint32_t id, const FramebufferSpecification& spec, FramebufferTextureFormat format)
+		void AttachDepthTexture(uint32_t id, const FramebufferSpecification& spec, FramebufferTextureFormat format)
 		{
 			const bool hasStencil = format == FramebufferTextureFormat::DEPTH24STENCIL8;
 			const GLenum textureFormat = hasStencil ? GL_DEPTH24_STENCIL8 : GL_DEPTH_COMPONENT24;
@@ -102,14 +102,14 @@ namespace Rod {
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
-				constexpr float borderColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
-				glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+				constexpr std::array borderColor = {1.0f, 1.0f, 1.0f, 1.0f};
+				glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor.data());
 			}
 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, TextureTarget(multisampled), id, 0);
 		}
 
-		static auto IsDepthFormat(FramebufferTextureFormat format) -> bool
+		auto IsDepthFormat(FramebufferTextureFormat format) -> bool
 		{
 			switch (format)
 			{
@@ -131,10 +131,14 @@ namespace Rod {
 	{
 		for (auto attachmentSpec : m_Specification.Attachments.Attachments)
 		{
-			if (Utils::IsDepthFormat(attachmentSpec.TextureFormat))
+			if (IsDepthFormat(attachmentSpec.TextureFormat))
+			{
 				m_DepthAttachmentSpecification = attachmentSpec;
+			}
 			else
+			{
 				m_ColorAttachmentSpecifications.emplace_back(attachmentSpec.TextureFormat);
+			}
 		}
 
 		Invalidate();
@@ -166,31 +170,20 @@ namespace Rod {
 		if (!m_ColorAttachmentSpecifications.empty())
 		{
 			m_ColorAttachments.resize(m_ColorAttachmentSpecifications.size());
-			Utils::CreateTextures(
-			    multisample,
-			    m_ColorAttachments.data(),
-			    static_cast<uint32_t>(m_ColorAttachments.size()));
+			CreateTextures(multisample, m_ColorAttachments.data(), static_cast<uint32_t>(m_ColorAttachments.size()));
 
-			for (size_t i = 0; i < m_ColorAttachments.size(); i++)
+			const auto attachments = std::views::zip(m_ColorAttachments, m_ColorAttachmentSpecifications);
+			for (const auto [index, attachment] : std::views::enumerate(attachments))
 			{
-				Utils::BindTexture(multisample, m_ColorAttachments[i]);
-				switch (m_ColorAttachmentSpecifications[i].TextureFormat)
+				const auto& [id, spec] = attachment;
+				BindTexture(multisample, id);
+				switch (spec.TextureFormat)
 				{
 					case FramebufferTextureFormat::RGBA8:
-						Utils::AttachColorTexture(
-						    m_ColorAttachments[i],
-						    m_Specification,
-						    GL_RGBA8,
-						    GL_RGBA,
-						    static_cast<int>(i));
+						AttachColorTexture(id, m_Specification, GL_RGBA8, GL_RGBA, static_cast<int>(index));
 						break;
 					case FramebufferTextureFormat::RedInteger:
-						Utils::AttachColorTexture(
-						    m_ColorAttachments[i],
-						    m_Specification,
-						    GL_R32I,
-						    GL_RED_INTEGER,
-						    static_cast<int>(i));
+						AttachColorTexture(id, m_Specification, GL_R32I, GL_RED_INTEGER, static_cast<int>(index));
 						break;
 					case FramebufferTextureFormat::None:
 					case FramebufferTextureFormat::DEPTH24:
@@ -202,13 +195,13 @@ namespace Rod {
 
 		if (m_DepthAttachmentSpecification.TextureFormat != FramebufferTextureFormat::None)
 		{
-			Utils::CreateTextures(multisample, &m_DepthAttachment, 1);
-			Utils::BindTexture(multisample, m_DepthAttachment);
+			CreateTextures(multisample, &m_DepthAttachment, 1);
+			BindTexture(multisample, m_DepthAttachment);
 			switch (m_DepthAttachmentSpecification.TextureFormat)
 			{
 				case FramebufferTextureFormat::DEPTH24STENCIL8:
 				case FramebufferTextureFormat::DEPTH24:
-					Utils::AttachDepthTexture(
+					AttachDepthTexture(
 					    m_DepthAttachment,
 					    m_Specification,
 					    m_DepthAttachmentSpecification.TextureFormat);
@@ -255,7 +248,7 @@ namespace Rod {
 		constexpr uint32_t maxFramebufferSize = 8192;
 		if (width == 0 || height == 0 || width > maxFramebufferSize || height > maxFramebufferSize)
 		{
-			RD_CORE_WARN("Attempted to change framebuffer size to: {0}, {1}", width, height);
+			Log::Core().warn("Attempted to change framebuffer size to: {0}, {1}", width, height);
 			return;
 		}
 

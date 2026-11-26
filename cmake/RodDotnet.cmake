@@ -64,19 +64,19 @@ if(DOTNET_EXE)
 endif()
 
 if(DOTNET_EXE AND ROD_DOTNET_HOST_INCLUDE_DIR AND ROD_DOTNET_HOST_LIBRARY)
-  target_include_directories(RodEngine SYSTEM PRIVATE "${ROD_DOTNET_HOST_INCLUDE_DIR}")
-  target_link_libraries(RodEngine PRIVATE "${ROD_DOTNET_HOST_LIBRARY}")
-  target_compile_definitions(RodEngine PRIVATE ROD_HAS_DOTNET_HOST)
+  add_library(Rod::DotnetHost INTERFACE IMPORTED)
+  target_include_directories(Rod::DotnetHost SYSTEM INTERFACE "${ROD_DOTNET_HOST_INCLUDE_DIR}")
+  target_link_libraries(Rod::DotnetHost INTERFACE "${ROD_DOTNET_HOST_LIBRARY}")
   if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     # .NET SDK libnethost.a is built against libstdc++.
-    target_link_libraries(RodEngine PRIVATE stdc++)
-    target_compile_definitions(RodEngine PRIVATE NETHOST_USE_AS_STATIC)
+    target_link_libraries(Rod::DotnetHost INTERFACE stdc++)
+    target_compile_definitions(Rod::DotnetHost INTERFACE NETHOST_USE_AS_STATIC)
   endif()
 else()
   message(WARNING ".NET hosting files were not found. Install the .NET 9 SDK to enable C# scripting.")
 endif()
 
-if(WIN32 AND DOTNET_EXE AND ROD_DOTNET_HOST_RUNTIME_LIBRARY)
+if(WIN32 AND TARGET Rod::DotnetHost AND ROD_DOTNET_HOST_RUNTIME_LIBRARY)
     add_custom_target(RodDotnetHost-Copy
         COMMAND "${CMAKE_COMMAND}" -E make_directory "${ROD_RUNTIME_OUTPUT_DIR}"
         COMMAND "${CMAKE_COMMAND}" -E copy_if_different

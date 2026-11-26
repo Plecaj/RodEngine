@@ -3,18 +3,14 @@
 #include "ScriptRuntime.h"
 
 #include "Rod/Utils/FunctionPointerCast.h"
+#include "ScriptInterop.h"
+
+#include <coreclr_delegates.h>
+#include <hostfxr.h>
+#include <nethost.h>
 
 #include <memory>
 #include <stdexcept>
-
-#ifdef ROD_HAS_DOTNET_HOST
-	#include <coreclr_delegates.h>
-	#include <hostfxr.h>
-	#include <nethost.h>
-	#ifdef RD_PLATFORM_WINDOWS
-		#include <Windows.h> // IWYU pragma: keep
-	#endif
-#endif
 
 namespace Rod {
 
@@ -22,16 +18,12 @@ namespace Rod {
 
 		[[nodiscard]] auto GetHostFxrPath() -> std::filesystem::path
 		{
-#ifdef ROD_HAS_DOTNET_HOST
 			size_t size = 0;
 			get_hostfxr_path(nullptr, &size, nullptr);
 			std::vector<char_t> path(size);
 			if (size == 0 || get_hostfxr_path(path.data(), &size, nullptr) != 0)
 				throw std::runtime_error("hostfxr missing; install .NET 9");
 			return path.data();
-#else
-			throw std::runtime_error("Scripting unavailable: .NET host missing");
-#endif
 		}
 
 		[[nodiscard]] auto GetHostFxrLibrary() -> std::shared_ptr<const SharedLibrary>
@@ -58,38 +50,11 @@ namespace Rod {
 		return *this;
 	}
 
-#ifdef ROD_HAS_DOTNET_HOST
-	auto ScriptRuntime::ToHostString(const std::string& value) -> ScriptRuntime::HostString
-	{
-	#ifdef RD_PLATFORM_WINDOWS
-		const int size = MultiByteToWideChar(
-		    CP_UTF8,
-		    MB_ERR_INVALID_CHARS,
-		    value.data(),
-		    static_cast<int>(value.size()),
-		    nullptr,
-		    0);
-		std::wstring result(static_cast<size_t>(size), L'\0');
-		MultiByteToWideChar(
-		    CP_UTF8,
-		    MB_ERR_INVALID_CHARS,
-		    value.data(),
-		    static_cast<int>(value.size()),
-		    result.data(),
-		    size);
-		return result;
-	#else
-		return value;
-	#endif
-	}
-#endif
-
 	ScriptRuntime::ScriptRuntime(
 	    const std::filesystem::path& runtimeConfigPath,
 	    const std::filesystem::path& coreAssemblyPath)
 	    : m_HostFxr(GetHostFxrLibrary())
 	{
-#ifdef ROD_HAS_DOTNET_HOST
 		if (runtimeConfigPath.empty() || coreAssemblyPath.empty())
 			throw std::runtime_error("Runtime paths required");
 
@@ -122,10 +87,6 @@ namespace Rod {
 			throw std::runtime_error("Runtime delegate unavailable: " + std::to_string(result));
 
 		m_LoadAssemblyAndGetFunctionPointer = delegate;
-#else
-		(void)runtimeConfigPath;
-		(void)coreAssemblyPath;
-#endif
 	}
 
 	auto ScriptRuntime::GetFunction(const std::string& typeName, const std::string& methodName) const -> void*
@@ -133,7 +94,6 @@ namespace Rod {
 		if (!m_LoadAssemblyAndGetFunctionPointer)
 			return nullptr;
 
-#ifdef ROD_HAS_DOTNET_HOST
 		// hostfxr requires it
 		// NOLINTNEXTLINE(misc-const-correctness)
 		void* function = nullptr;
@@ -141,8 +101,8 @@ namespace Rod {
 		    FunctionPointerCast<load_assembly_and_get_function_pointer_fn>(m_LoadAssemblyAndGetFunctionPointer);
 		const int32_t result = loadAssemblyAndGetFunctionPointer(
 		    m_CoreAssemblyPath.c_str(),
-		    ToHostString(typeName).c_str(),
-		    ToHostString(methodName).c_str(),
+		    ScriptInterop::ToHostString(typeName).c_str(),
+		    ScriptInterop::ToHostString(methodName).c_str(),
 		    UNMANAGEDCALLERSONLY_METHOD,
 		    nullptr,
 		    &function);
@@ -151,11 +111,6 @@ namespace Rod {
 			return nullptr;
 
 		return function;
-#else
-		(void)typeName;
-		(void)methodName;
-		return nullptr;
-#endif
 	}
 
 }

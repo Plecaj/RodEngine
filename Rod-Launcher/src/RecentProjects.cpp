@@ -53,7 +53,8 @@ namespace Rod {
 			RecentProject project{
 			    .Name = name.as<std::string>(),
 			    .Path = std::filesystem::path(manifestPath.as<std::string>()).lexically_normal(),
-			    .LastOpened = lastOpened.as<std::string>()};
+			    .LastOpened = lastOpened.as<std::string>(),
+			};
 			if (!project.Path.is_absolute() || project.Path.extension() != ".rodproj")
 				continue;
 			if (std::ranges::any_of(entries, [&](const auto& existing) {
@@ -90,8 +91,8 @@ namespace Rod {
 		RecentProject entry{
 		    .Name = project.GetProperties().Name,
 		    .Path = std::filesystem::canonical(project.GetManifestPath()),
-		    .LastOpened =
-		        std::format("{:%F}", std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now()))};
+		    .LastOpened = std::format("{:%F}", std::chrono::floor<std::chrono::days>(std::chrono::system_clock::now())),
+		};
 		std::erase_if(m_Entries, [&](const auto& existing) { return SameProject(existing.Path, entry.Path); });
 		m_Entries.insert(m_Entries.begin(), std::move(entry));
 		if (m_Entries.size() > s_MaxProjects)

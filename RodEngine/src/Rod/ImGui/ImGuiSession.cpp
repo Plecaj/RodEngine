@@ -12,6 +12,7 @@
 #include <glad/glad.h>
 
 #include "ImGuizmo.h"
+#include <span>
 #include <stdexcept>
 
 namespace Rod {
@@ -78,21 +79,21 @@ namespace Rod {
 		ImGui::CreateContext();
 		try
 		{
-			ImGuiIO& io = ImGui::GetIO();
-			io.ConfigFlags = CombineImGuiFlags(
-			    io.ConfigFlags,
+			ImGuiIO& imguiIO = ImGui::GetIO();
+			imguiIO.ConfigFlags = CombineImGuiFlags(
+			    imguiIO.ConfigFlags,
 			    ImGuiConfigFlags_NavEnableKeyboard,
 			    ImGuiConfigFlags_DockingEnable,
 			    ImGuiConfigFlags_ViewportsEnable);
 
-			io.Fonts->AddFontFromFileTTF("RodAssets/Fonts/OpenSans/OpenSans-Bold.ttf", g_DefaultFontSize);
-			io.FontDefault =
-			    io.Fonts->AddFontFromFileTTF("RodAssets/Fonts/OpenSans/OpenSans-Regular.ttf", g_DefaultFontSize);
+			imguiIO.Fonts->AddFontFromFileTTF("RodAssets/Fonts/OpenSans/OpenSans-Bold.ttf", g_DefaultFontSize);
+			imguiIO.FontDefault =
+			    imguiIO.Fonts->AddFontFromFileTTF("RodAssets/Fonts/OpenSans/OpenSans-Regular.ttf", g_DefaultFontSize);
 
 			ImGui::StyleColorsDark();
 
 			ImGuiStyle& style = ImGui::GetStyle();
-			if (HasAnyImGuiFlag(io.ConfigFlags, ImGuiConfigFlags_ViewportsEnable))
+			if (HasAnyImGuiFlag(imguiIO.ConfigFlags, ImGuiConfigFlags_ViewportsEnable))
 			{
 				style.WindowRounding = 0.0f;
 				style.Colors[ImGuiCol_WindowBg].w = 1.0f;
@@ -109,10 +110,10 @@ namespace Rod {
 		}
 		catch (...)
 		{
-			const ImGuiIO& io = ImGui::GetIO();
-			if (io.BackendRendererUserData)
+			const ImGuiIO& imguiIO = ImGui::GetIO();
+			if (imguiIO.BackendRendererUserData)
 				ImGui_ImplOpenGL3_Shutdown();
-			if (io.BackendPlatformUserData)
+			if (imguiIO.BackendPlatformUserData)
 				ImGui_ImplGlfw_Shutdown();
 			ImGui::DestroyContext();
 			throw;
@@ -140,9 +141,9 @@ namespace Rod {
 		if (drawable)
 			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-		const ImGuiIO& io = ImGui::GetIO();
+		const ImGuiIO& imguiIO = ImGui::GetIO();
 
-		if (HasAnyImGuiFlag(io.ConfigFlags, ImGuiConfigFlags_ViewportsEnable))
+		if (HasAnyImGuiFlag(imguiIO.ConfigFlags, ImGuiConfigFlags_ViewportsEnable))
 		{
 			GLFWwindow* backupCurrentContext = glfwGetCurrentContext();
 			ImGui::UpdatePlatformWindows();
@@ -173,7 +174,8 @@ namespace Rod {
 		style.GrabRounding = g_ControlRounding;
 		style.TabRounding = g_ControlRounding;
 
+		std::span const colors(style.Colors);
 		for (const auto& [slot, color] : g_DarkColors)
-			style.Colors[slot] = color;
+			colors.at(static_cast<size_t>(slot)) = color;
 	}
 }

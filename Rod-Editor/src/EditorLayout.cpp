@@ -50,7 +50,7 @@ namespace Rod {
 		m_ToolbarPanel.OnImGuiRender(
 		    m_Scenes.GetState(),
 		    m_ToolbarDockID,
-		    {.Play = [this]() { m_Commands.Play(); }, .Stop = [this]() { m_Commands.Stop(); }});
+		    {.Play = [this] { m_Commands.Play(); }, .Stop = [this] { m_Commands.Stop(); }});
 	}
 
 	void EditorLayout::SetupDefaultDockLayout(ImGuiID dockspaceID)
@@ -203,10 +203,10 @@ namespace Rod {
 		if (fullscreen)
 			ImGui::PopStyleVar(fullscreenStyleCount);
 
-		const ImGuiIO& io = ImGui::GetIO();
+		const ImGuiIO& imguiIO = ImGui::GetIO();
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.WindowMinSize.x = dockMinimumWidth;
-		if (HasAnyImGuiFlag(io.ConfigFlags, ImGuiConfigFlags_DockingEnable))
+		if (HasAnyImGuiFlag(imguiIO.ConfigFlags, ImGuiConfigFlags_DockingEnable))
 		{
 			const ImGuiID dockspaceId = ImGui::GetID("MyDockSpace");
 

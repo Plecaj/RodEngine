@@ -42,6 +42,9 @@ namespace Rod {
 		[[nodiscard]] auto GetNativeWindow() const noexcept -> void* override { return m_Window.get(); }
 
 	private:
+		static void InitGLFW();
+		inline static uint32_t s_WindowCount = 0;
+
 		void Init(const WindowProps& props);
 		void CreateNativeWindow(const WindowProps& props);
 		void SetGLFWCallbacks();

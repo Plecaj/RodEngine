@@ -137,10 +137,10 @@ namespace Rod {
 		constexpr float dividerY = 196.0f;
 		const float width = ImGui::GetWindowWidth();
 
-		ImGui::SetCursorPos(ImVec2{width * (0.5f - centerOffset) - g_ActionCardSize.x * 0.5f, cardTop});
+		ImGui::SetCursorPos(ImVec2{(width * (0.5f - centerOffset)) - (g_ActionCardSize.x * 0.5f), cardTop});
 		if (DrawActionCard("New", ProjectAction::New))
 			m_ProjectSetup.Open();
-		ImGui::SetCursorPos(ImVec2{width * (0.5f + centerOffset) - g_ActionCardSize.x * 0.5f, cardTop});
+		ImGui::SetCursorPos(ImVec2{(width * (0.5f + centerOffset)) - (g_ActionCardSize.x * 0.5f), cardTop});
 		const bool open = DrawActionCard("Open", ProjectAction::Open);
 
 		const ImVec2 origin = ImGui::GetWindowPos();
@@ -183,12 +183,12 @@ namespace Rod {
 		ImGui::PopStyleVar();
 
 		const ImVec2 min = ImGui::GetItemRectMin();
-		const float centerX = min.x + g_ActionCardSize.x * 0.5f;
+		const float centerX = min.x + (g_ActionCardSize.x * 0.5f);
 		const float labelWidth = ImGui::CalcTextSize(label).x;
 		ImDrawList& drawList = *ImGui::GetWindowDrawList();
 		const ImU32 color = ImGui::GetColorU32(ImGuiCol_Text);
 		DrawActionIcon(drawList, action, ImVec2{centerX, min.y + iconTop}, color);
-		drawList.AddText(ImVec2{centerX - labelWidth * 0.5f, min.y + labelTop}, color, label);
+		drawList.AddText(ImVec2{centerX - (labelWidth * 0.5f), min.y + labelTop}, color, label);
 		ImGui::PopID();
 		return clicked;
 	}

@@ -3,6 +3,7 @@
 #include "Rod/Utils/PlatformUtils.h"
 #include "Rod/Utils/Process.h"
 
+#include <algorithm>
 #include <filesystem>
 
 namespace Rod {
@@ -12,46 +13,51 @@ namespace Rod {
 		return std::filesystem::read_symlink("/proc/self/exe");
 	}
 
-	static auto
-	ShowFileDialog(const char* filter, bool save, const std::string& initialDirectory = {}, bool directory = false)
-	    -> std::string
-	{
-		std::vector<std::string> arguments = {"zenity", "--file-selection"};
-		if (directory)
-			arguments.emplace_back("--directory");
-		if (!initialDirectory.empty())
-			arguments.push_back("--filename=" + (std::filesystem::path(initialDirectory) / "").string());
-		if (save)
+	namespace {
+		auto
+		ShowFileDialog(const char* filter, bool save, const std::string& initialDirectory = {}, bool directory = false)
+		    -> std::string
 		{
-			arguments.emplace_back("--save");
-			arguments.emplace_back("--confirm-overwrite");
-		}
-
-		if (filter && *filter)
-		{
-			const std::string description = filter;
-			const char* patterns = filter + description.size() + 1;
-			if (*patterns)
+			std::vector<std::string> arguments = {"zenity", "--file-selection"};
+			if (directory)
+				arguments.emplace_back("--directory");
+			if (!initialDirectory.empty())
+				arguments.push_back("--filename=" + (std::filesystem::path(initialDirectory) / "").string());
+			if (save)
 			{
-				std::string pattern = patterns;
-				std::replace(pattern.begin(), pattern.end(), ';', ' ');
-				arguments.push_back("--file-filter=" + description + " | " + pattern);
+				arguments.emplace_back("--save");
+				arguments.emplace_back("--confirm-overwrite");
 			}
-		}
 
-		auto result = Process::Run(arguments, false);
-		if (result.ExitCode != 0)
-		{
-			if (result.ExitCode != 1)
-				RD_CORE_ERROR("File dialog failed. Install zenity: {}", result.Output);
-			return {};
-		}
+			if (filter && *filter)
+			{
+				const std::string description = filter;
+				// Win32 stores the pattern after null terminator for some kind of reason.
+				// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+				const char* patterns = filter + description.size() + 1;
+				if (*patterns)
+				{
+					std::string pattern = patterns;
+					std::ranges::replace(pattern, ';', ' ');
+					arguments.push_back("--file-filter=" + description + " | " + pattern);
+				}
+			}
 
-		if (!result.Output.empty() && result.Output.back() == '\n')
-			result.Output.pop_back();
-		return result.Output;
+			auto result = Process::Run(arguments, false);
+			if (result.ExitCode != 0)
+			{
+				if (result.ExitCode != 1)
+					Log::Core().error("File dialog failed. Install zenity: {}", result.Output);
+				return {};
+			}
+
+			if (!result.Output.empty() && result.Output.back() == '\n')
+				result.Output.pop_back();
+			return result.Output;
+		}
 	}
 
+	// NOLINTBEGIN(readability-convert-member-functions-to-static)
 	auto FileDialogs::OpenFile(const char* filter, const std::string& initialDirectory) const -> std::string
 	{
 		return ShowFileDialog(filter, false, initialDirectory);
@@ -66,5 +72,6 @@ namespace Rod {
 	{
 		return ShowFileDialog(filter, true);
 	}
+	// NOLINTEND(readability-convert-member-functions-to-static)
 
 }

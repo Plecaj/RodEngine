@@ -31,8 +31,9 @@ namespace Rod {
 		    {1.0f, 0.0f});
 		const auto sceneToOpen = AcceptSceneDrop(context.AssetsPath);
 		const ImVec2 windowPosition = ImGui::GetWindowPos();
-		context.Bounds[0] = {windowPosition.x + viewportOffset.x, windowPosition.y + viewportOffset.y};
-		context.Bounds[1] = context.Bounds[0] + context.Size;
+		auto& [min, max] = context.Bounds;
+		min = {windowPosition.x + viewportOffset.x, windowPosition.y + viewportOffset.y};
+		max = min + context.Size;
 		DrawGizmo(context);
 
 		ImGui::End();
@@ -56,15 +57,19 @@ namespace Rod {
 	auto ViewportPanel::GetCameraMatrices(const RenderContext& context) -> std::optional<CameraMatrices>
 	{
 		if (context.State == SceneState::Edit)
+		{
 			return CameraMatrices{
 			    .View = context.EditorCamera.GetViewMatrix(),
-			    .Projection = context.EditorCamera.GetProjection()};
+			    .Projection = context.EditorCamera.GetProjection(),
+			};
+		}
 		const auto cameraEntity = context.ActiveScene.FindPrimaryCamera();
 		if (!cameraEntity)
 			return std::nullopt;
 		return CameraMatrices{
 		    .View = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform()),
-		    .Projection = cameraEntity.GetComponent<CameraComponent>().Camera.GetProjection()};
+		    .Projection = cameraEntity.GetComponent<CameraComponent>().Camera.GetProjection(),
+		};
 	}
 
 	void ViewportPanel::DrawGizmo(const RenderContext& context)
@@ -78,11 +83,8 @@ namespace Rod {
 
 		ImGuizmo::SetOrthographic(false);
 		ImGuizmo::SetDrawlist();
-		ImGuizmo::SetRect(
-		    context.Bounds[0].x,
-		    context.Bounds[0].y,
-		    context.Bounds[1].x - context.Bounds[0].x,
-		    context.Bounds[1].y - context.Bounds[0].y);
+		const auto& [min, max] = context.Bounds;
+		ImGuizmo::SetRect(min.x, min.y, max.x - min.x, max.y - min.y);
 		auto& component = selectedEntity.GetComponent<TransformComponent>();
 		glm::mat4 transform = component.GetTransform();
 		const bool snap = context.WindowInput.IsKeyDown(Key::LeftControl);

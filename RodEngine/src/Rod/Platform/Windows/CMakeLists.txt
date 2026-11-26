@@ -3,3 +3,7 @@ target_sources(RodEngine PRIVATE
     WindowsProcess.cpp
     WindowsSharedLibrary.cpp
 )
+
+if(TARGET Rod::DotnetHost)
+    target_sources(RodEngine PRIVATE WindowsScriptInterop.cpp)
+endif()

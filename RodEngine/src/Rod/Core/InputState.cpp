@@ -4,6 +4,7 @@
 
 namespace Rod {
 
+	// NOLINTBEGIN(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
 	void InputState::Update(std::span<const Event> events, glm::vec2 cursor) noexcept
 	{
 		bool focusChanged = false;
@@ -45,5 +46,6 @@ namespace Rod {
 	{
 		return button >= Mouse::Button0 && button <= Mouse::ButtonLast && m_Buttons[static_cast<size_t>(button)];
 	}
+	// NOLINTEND(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
 
 }

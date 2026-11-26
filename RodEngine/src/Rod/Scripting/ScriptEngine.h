@@ -25,7 +25,7 @@ namespace Rod {
 		enum class Mode
 		{
 			Editor,
-			Runtime
+			Runtime,
 		};
 
 		static void Init(const Project& project, const InputState& input, const RenderDevice& device, Mode mode);
@@ -38,11 +38,11 @@ namespace Rod {
 
 		static void OnRuntimeStart(Scene& scene);
 		static void OnRuntimeStop();
-		static void OnRuntimeUpdate(Timestep ts);
+		static void OnRuntimeUpdate(Timestep timestep);
 
 		static void OnCreateEntity(Entity entity);
 		static void OnDestroyEntity(Entity entity);
-		static void OnUpdateEntity(Entity entity, Timestep ts);
+		static void OnUpdateEntity(Entity entity, Timestep timestep);
 		static void SetRuntimeFieldValue(Entity entity, const std::string& fieldName);
 
 		[[nodiscard]] static auto IsInitialized() noexcept -> bool;

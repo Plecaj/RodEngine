@@ -13,6 +13,7 @@
 
 namespace Rod {
 
+	// NOLINTBEGIN(readability-convert-member-functions-to-static)
 	void RenderDevice::ConfigureDefaults() const
 	{
 		glEnable(GL_BLEND);
@@ -72,7 +73,8 @@ namespace Rod {
 		    .X = x,
 		    .Y = y,
 		    .Width = static_cast<uint32_t>(width),
-		    .Height = static_cast<uint32_t>(height)};
+		    .Height = static_cast<uint32_t>(height),
+		};
 	}
 
 	void RenderDevice::SetRenderTarget(const RenderTarget& target) const
@@ -121,5 +123,6 @@ namespace Rod {
 	{
 		return CreateScope<OpenGLTexture2D>(path);
 	}
+	// NOLINTEND(readability-convert-member-functions-to-static)
 
 }

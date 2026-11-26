@@ -7,6 +7,7 @@
 #include <GLFW/glfw3.h>
 #include <Windows.h>
 
+#include <array>
 #include <commdlg.h>
 #include <filesystem>
 #include <memory>
@@ -38,30 +39,33 @@ namespace Rod {
 		}
 	}
 
-	static auto GetOwnerWindow(const Window* owner) -> HWND
-	{
-		return owner ? glfwGetWin32Window(static_cast<GLFWwindow*>(owner->GetNativeWindow())) : nullptr;
-	}
+	namespace {
+		auto GetOwnerWindow(const Window* owner) -> HWND
+		{
+			return owner ? glfwGetWin32Window(static_cast<GLFWwindow*>(owner->GetNativeWindow())) : nullptr;
+		}
 
-	static auto CreateOpenFileName(HWND owner, std::span<char, MAX_PATH> fileBuffer, const char* filter, DWORD flags)
-	    -> OPENFILENAMEA
-	{
-		OPENFILENAMEA ofn = {};
-		ofn.lStructSize = sizeof(OPENFILENAMEA);
-		ofn.hwndOwner = owner;
-		ofn.lpstrFile = fileBuffer.data();
-		ofn.nMaxFile = static_cast<DWORD>(fileBuffer.size());
-		ofn.lpstrFilter = filter;
-		ofn.nFilterIndex = 1;
-		ofn.Flags = flags | OFN_NOCHANGEDIR;
+		auto CreateOpenFileName(HWND owner, std::span<char, MAX_PATH> fileBuffer, const char* filter, DWORD flags)
+		    -> OPENFILENAMEA
+		{
+			OPENFILENAMEA ofn = {};
+			ofn.lStructSize = sizeof(OPENFILENAMEA);
+			ofn.hwndOwner = owner;
+			ofn.lpstrFile = fileBuffer.data();
+			ofn.nMaxFile = static_cast<DWORD>(fileBuffer.size());
+			ofn.lpstrFilter = filter;
+			ofn.nFilterIndex = 1;
+			ofn.Flags = flags | OFN_NOCHANGEDIR;
 
-		return ofn;
+			return ofn;
+		}
 	}
 
 	auto FileDialogs::OpenFile(const char* filter, const std::string& initialDirectory) const -> std::string
 	{
-		CHAR szFile[MAX_PATH] = {0};
-		auto ofn = CreateOpenFileName(GetOwnerWindow(m_Owner), szFile, filter, OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST);
+		std::array<char, MAX_PATH> fileBuffer{};
+		auto ofn =
+		    CreateOpenFileName(GetOwnerWindow(m_Owner), fileBuffer, filter, OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST);
 		ofn.lpstrInitialDir = initialDirectory.empty() ? nullptr : initialDirectory.c_str();
 
 		if (GetOpenFileNameA(&ofn))
@@ -125,8 +129,8 @@ namespace Rod {
 
 	auto FileDialogs::SaveFile(const char* filter) const -> std::string
 	{
-		CHAR szFile[MAX_PATH] = {0};
-		auto ofn = CreateOpenFileName(GetOwnerWindow(m_Owner), szFile, filter, OFN_PATHMUSTEXIST);
+		std::array<char, MAX_PATH> fileBuffer{};
+		auto ofn = CreateOpenFileName(GetOwnerWindow(m_Owner), fileBuffer, filter, OFN_PATHMUSTEXIST);
 
 		if (GetSaveFileNameA(&ofn))
 			return ofn.lpstrFile;

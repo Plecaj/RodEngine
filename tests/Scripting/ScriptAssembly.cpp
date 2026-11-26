@@ -20,7 +20,9 @@ TEST_CASE("Script metadata loads classes and fields", "[scripting][loading]")
 		REQUIRE(speed.Value == "3.5");
 	}
 	else
+	{
 		FAIL("Expected script metadata for Game.Player");
+	}
 }
 
 TEST_CASE("Invalid script metadata is rejected", "[scripting][loading]")

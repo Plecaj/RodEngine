@@ -13,18 +13,20 @@
 
 namespace Rod {
 
-	static auto BuildArguments(const std::vector<std::string>& arguments) -> std::vector<char*>
-	{
-		std::vector<char*> argv;
-		argv.reserve(arguments.size() + 1);
-		for (const auto& argument : arguments)
+	namespace {
+		auto BuildArguments(const std::vector<std::string>& arguments) -> std::vector<char*>
 		{
-			// POSIX borrows these strings without modifying them, despite the mutable argv type.
-			// NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-			argv.push_back(const_cast<char*>(argument.c_str()));
+			std::vector<char*> argv;
+			argv.reserve(arguments.size() + 1);
+			for (const auto& argument : arguments)
+			{
+				// POSIX borrows strings without modifying them
+				// NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+				argv.push_back(const_cast<char*>(argument.c_str()));
+			}
+			argv.push_back(nullptr);
+			return argv;
 		}
-		argv.push_back(nullptr);
-		return argv;
 	}
 
 	auto Process::Start(const std::vector<std::string>& arguments) -> ProcessResult
@@ -34,7 +36,7 @@ namespace Rod {
 
 		auto argv = BuildArguments(arguments);
 		std::promise<pid_t> child;
-		std::thread([process = child.get_future()]() mutable {
+		std::thread([process = child.get_future()] mutable {
 			const auto pid = process.get();
 			if (pid > 0)
 			{
@@ -43,7 +45,7 @@ namespace Rod {
 			}
 		}).detach();
 		pid_t process = 0;
-		const int error = posix_spawnp(&process, argv[0], nullptr, nullptr, argv.data(), environ);
+		const int error = posix_spawnp(&process, argv.front(), nullptr, nullptr, argv.data(), environ);
 		child.set_value(error == 0 ? process : 0);
 		if (error != 0)
 			return {.ExitCode = -1, .Output = std::strerror(error)};
@@ -62,30 +64,33 @@ namespace Rod {
 		if (pipe2(output.data(), O_CLOEXEC) != 0)
 			return {.ExitCode = -1, .Output = std::strerror(errno)};
 
+		const auto [readEnd, writeEnd] = output;
 		posix_spawn_file_actions_t actions;
 		int error = posix_spawn_file_actions_init(&actions);
 		if (error != 0)
 		{
-			close(output[0]);
-			close(output[1]);
+			close(readEnd);
+			close(writeEnd);
 			return {.ExitCode = -1, .Output = std::strerror(error)};
 		}
 
-		error = posix_spawn_file_actions_adddup2(&actions, output[1], STDOUT_FILENO);
+		error = posix_spawn_file_actions_adddup2(&actions, writeEnd, STDOUT_FILENO);
 		if (error == 0)
-			error = captureErrors ? posix_spawn_file_actions_adddup2(&actions, output[1], STDERR_FILENO)
+		{
+			error = captureErrors ? posix_spawn_file_actions_adddup2(&actions, writeEnd, STDERR_FILENO)
 			                      : posix_spawn_file_actions_addopen(&actions, STDERR_FILENO, "/dev/null", O_WRONLY, 0);
+		}
 
 		pid_t process = 0;
 		if (error == 0)
-			error = posix_spawnp(&process, argv[0], &actions, nullptr, argv.data(), environ);
+			error = posix_spawnp(&process, argv.front(), &actions, nullptr, argv.data(), environ);
 		posix_spawn_file_actions_destroy(&actions);
-		close(output[1]);
+		close(writeEnd);
 
 		ProcessResult result;
 		if (error != 0)
 		{
-			close(output[0]);
+			close(readEnd);
 			result.Output = std::strerror(error);
 			return result;
 		}
@@ -93,14 +98,18 @@ namespace Rod {
 		constexpr size_t outputBufferSize = 4096;
 		std::array<char, outputBufferSize> buffer{};
 		ssize_t count{};
-		while ((count = read(output[0], buffer.data(), buffer.size())) != 0)
+		while ((count = read(readEnd, buffer.data(), buffer.size())) != 0)
 		{
 			if (count > 0)
+			{
 				result.Output.append(buffer.data(), static_cast<size_t>(count));
+			}
 			else if (errno != EINTR)
+			{
 				break;
+			}
 		}
-		close(output[0]);
+		close(readEnd);
 
 		int status = 0;
 		pid_t waited{};

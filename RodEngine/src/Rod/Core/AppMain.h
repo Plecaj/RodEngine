@@ -6,11 +6,12 @@
 #include <cstdio>
 #include <exception>
 #include <optional>
+#include <print>
 #include <utility>
 
 namespace Rod {
 
-	[[nodiscard]] auto ReadProject(int argc, char* argv[]) -> std::optional<Project>;
+	[[nodiscard]] auto ReadProject(int argc, char** argv) -> std::optional<Project>;
 
 	template <typename Run>
 	auto RunMain(Run&& run) -> int
@@ -23,7 +24,14 @@ namespace Rod {
 		}
 		catch (const std::exception& error)
 		{
-			std::fprintf(stderr, "RodEngine failed: %s\n", error.what());
+			try
+			{
+				std::print(stderr, "RodEngine failed: {}\n", error.what());
+			}
+			catch (...)
+			{
+				std::fputs("RodEngine failed.\n", stderr);
+			}
 		}
 		catch (...)
 		{

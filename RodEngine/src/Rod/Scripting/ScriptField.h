@@ -25,7 +25,7 @@ namespace Rod {
 		Vector3,
 		Vector4,
 		Entity,
-		String
+		String,
 	};
 
 	struct ScriptField

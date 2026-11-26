@@ -25,7 +25,7 @@ namespace Rod {
 		Int2,
 		Int3,
 		Int4,
-		Bool
+		Bool,
 	};
 
 	// NOLINTBEGIN(readability-magic-numbers)

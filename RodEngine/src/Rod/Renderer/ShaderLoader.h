@@ -14,7 +14,7 @@ namespace Rod {
 	{
 		None,
 		Performance,
-		Size
+		Size,
 	};
 
 	struct ShaderCompileOptions

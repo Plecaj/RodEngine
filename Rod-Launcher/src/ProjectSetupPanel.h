@@ -26,7 +26,7 @@ namespace Rod {
 		{
 			Directory,
 			Details,
-			Files
+			Files,
 		};
 
 		[[nodiscard]] static auto DrawPathPicker(const char* label, const std::filesystem::path& value) -> bool;

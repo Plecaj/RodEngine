@@ -58,7 +58,7 @@ namespace Rod {
 			out << YAML::BeginMap;
 			out << YAML::Key << "Entity" << YAML::Value << static_cast<uint64_t>(entity.GetUUID());
 
-			using TagSerializer = SceneSerialization::TagSerializer;
+			using SceneSerialization::TagSerializer;
 			out << YAML::Key << TagSerializer::s_Key << YAML::Value;
 			TagSerializer::Write(out, entity.GetComponent<TagComponent>());
 
@@ -80,7 +80,7 @@ namespace Rod {
 		    const RenderDevice& device,
 		    std::vector<Entity>& createdEntities) -> Entity
 		{
-			using TagSerializer = SceneSerialization::TagSerializer;
+			using SceneSerialization::TagSerializer;
 			TagComponent tag;
 			if (const auto tagNode = node[TagSerializer::s_Key])
 				TagSerializer::Read(tagNode, tag);
@@ -92,18 +92,27 @@ namespace Rod {
 			VisitComponentSerializers(paths, [&](const auto& serializer) {
 				using Serializer = std::remove_cvref_t<decltype(serializer)>;
 				using Component = Serializer::Component;
-				if (const auto componentNode = node[Serializer::s_Key])
-				{
-					auto& component = [&]() -> Component& {
-						if constexpr (OptionalComponent<Component>)
-							return entity.AddComponent<Component>();
-						else
-							return entity.GetComponent<Component>();
-					}();
-					if constexpr (requires { serializer.Read(componentNode, component, device); })
-						serializer.Read(componentNode, component, device);
+				const auto componentNode = node[Serializer::s_Key];
+				if (!componentNode)
+					return;
+
+				auto& component = [&] -> Component& {
+					if constexpr (OptionalComponent<Component>)
+					{
+						return entity.AddComponent<Component>();
+					}
 					else
-						serializer.Read(componentNode, component);
+					{
+						return entity.GetComponent<Component>();
+					}
+				}();
+				if constexpr (requires { serializer.Read(componentNode, component, device); })
+				{
+					serializer.Read(componentNode, component, device);
+				}
+				else
+				{
+					serializer.Read(componentNode, component);
 				}
 			});
 			return entity;

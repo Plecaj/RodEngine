@@ -1,7 +1,12 @@
 InheritParentConfig: true
 # Catch2 combines ResultDisposition flags without naming each possible value.
 Checks: >-
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -readability-magic-numbers,
   -clang-analyzer-optin.core.EnumCastOutOfRange
 CheckOptions:
+  cppcoreguidelines-non-private-member-variables-in-classes.IgnorePublicMemberVariables: true
+  misc-non-private-member-variables-in-classes.IgnorePublicMemberVariables: true
   readability-function-cognitive-complexity.IgnoreMacros: true

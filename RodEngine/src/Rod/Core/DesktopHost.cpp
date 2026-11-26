@@ -38,7 +38,9 @@ namespace Rod {
 			m_LastFrame = now;
 		}
 		else
+		{
 			m_LastFrame.reset();
+		}
 
 		return Frame{.Delta = delta, .Events = events, .Framebuffer = m_Framebuffer, .Drawable = drawable};
 	}

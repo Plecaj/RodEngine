@@ -27,8 +27,7 @@ namespace Rod {
 
 		[[nodiscard]] auto GetColorAttachmentRendererID(uint32_t index = 0) const -> uint32_t override
 		{
-			RD_CORE_ASSERT(index < m_ColorAttachments.size(), "Index < ColorAttachments.size()");
-			return m_ColorAttachments[index];
+			return m_ColorAttachments.at(index);
 		}
 		[[nodiscard]] auto GetDepthAttachmentRendererID() const noexcept -> uint32_t override
 		{

@@ -48,7 +48,8 @@ TEST_CASE_METHOD(
 	spec.Attachments = {
 	    Rod::FramebufferTextureSpecification{Rod::FramebufferTextureFormat::RGBA8},
 	    Rod::FramebufferTextureSpecification{Rod::FramebufferTextureFormat::RedInteger},
-	    Rod::FramebufferTextureSpecification{Rod::FramebufferTextureFormat::DEPTH24}};
+	    Rod::FramebufferTextureSpecification{Rod::FramebufferTextureFormat::DEPTH24},
+	};
 	const auto target = device.CreateFramebuffer(spec);
 	target->Bind();
 	target->ClearColorAttachment(0, glm::vec4(0.0f));

@@ -12,7 +12,7 @@ namespace Rod {
 		Geometry,
 		TessellationControl,
 		TessellationEvaluation,
-		Compute
+		Compute,
 	};
 
 	struct CompiledShaderStage

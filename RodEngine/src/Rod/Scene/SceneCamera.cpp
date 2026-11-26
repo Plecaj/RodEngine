@@ -44,15 +44,15 @@ namespace Rod {
 	{
 		if (m_ProjectionType == ProjectionType::Perspective)
 		{
-			m_Projection = glm::perspective(m_PerspectiveFOV, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar);
+			SetProjection(glm::perspective(m_PerspectiveFOV, m_AspectRatio, m_PerspectiveNear, m_PerspectiveFar));
 		}
 		else
 		{
 			const float halfWidth = m_OrthographicSize * m_AspectRatio * 0.5f;
 			const float halfHeight = m_OrthographicSize * 0.5f;
 
-			m_Projection =
-			    glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, m_OrthographicNear, m_OrthographicFar);
+			SetProjection(
+			    glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, m_OrthographicNear, m_OrthographicFar));
 		}
 	}
 

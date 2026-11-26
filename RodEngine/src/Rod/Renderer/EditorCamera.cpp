@@ -17,7 +17,7 @@ namespace Rod {
 		[[nodiscard]] constexpr auto PanFactor(float viewportSize) noexcept -> float
 		{
 			const float factor = std::min(viewportSize / g_PanViewportScale, g_MaxPanViewportFactor);
-			return g_PanQuadraticCoefficient * (factor * factor) - g_PanLinearCoefficient * factor +
+			return (g_PanQuadraticCoefficient * (factor * factor)) - (g_PanLinearCoefficient * factor) +
 			       g_PanConstantCoefficient;
 		}
 	}
@@ -32,7 +32,7 @@ namespace Rod {
 	void EditorCamera::UpdateProjection() noexcept
 	{
 		m_AspectRatio = m_ViewportWidth / m_ViewportHeight;
-		m_Projection = glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip);
+		SetProjection(glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip));
 	}
 
 	void EditorCamera::UpdateView() noexcept

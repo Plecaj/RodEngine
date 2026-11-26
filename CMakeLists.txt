@@ -23,6 +23,7 @@ include(RodCompilerOptions)
 include(RodOutputDirs)
 include(RodSanitizers)
 include(RodDependencies)
+include(RodDotnet)
 
 add_subdirectory(RodEngine)
 

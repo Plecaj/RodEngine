@@ -40,10 +40,13 @@ namespace Rod {
 
 			case Key::S: {
 				if (controlPressed && shiftPressed)
+				{
 					m_Commands.SaveSceneAs();
-
+				}
 				else if (controlPressed)
+				{
 					m_Commands.SaveScene();
+				}
 
 				break;
 			}

@@ -20,7 +20,7 @@ namespace {
 	public:
 		SerializationFixture()
 		{
-			if (!Rod::Log::GetCoreLogger())
+			if (!Rod::Log::IsInitialized())
 				Rod::Log::Init();
 		}
 

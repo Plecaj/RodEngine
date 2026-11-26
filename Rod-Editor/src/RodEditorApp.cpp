@@ -29,7 +29,7 @@ auto main(int argc, char* argv[]) -> int
 		const auto shaderDirectory = project->GetShadersPath();
 		const Rod::ShaderLoader shaders(shaderDirectory, shaderDirectory / "Cached");
 		Rod::SceneRenderer renderer(device, shaders);
-		const Rod::ImGuiSession ui(host.GetWindow());
+		const Rod::ImGuiSession imguiSession(host.GetWindow());
 		Rod::EditorApp editor(*project, host, device, renderer);
 
 		while (const auto frame = host.NextFrame())

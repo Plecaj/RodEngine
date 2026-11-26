@@ -22,7 +22,7 @@ namespace Rod {
 		}
 		catch (const std::exception& exception)
 		{
-			RD_CORE_WARN("Could not load recent projects: {}", exception.what());
+			Log::Core().warn("Could not load recent projects: {}", exception.what());
 		}
 	}
 
@@ -30,8 +30,10 @@ namespace Rod {
 	{
 		m_Layout.OnImGuiRender(
 		    m_RecentProjects,
-		    {.OpenProject = [this](const std::filesystem::path& path) { return OpenProject(path); },
-			 .LaunchEditor = [this](const Project& project) { return LaunchEditor(project); }});
+		    {
+		        .OpenProject = [this](const std::filesystem::path& path) { return OpenProject(path); },
+		        .LaunchEditor = [this](const Project& project) { return LaunchEditor(project); },
+		    });
 	}
 
 	auto LauncherApp::OpenProject(std::filesystem::path manifestPath) -> std::optional<std::string>
@@ -69,7 +71,7 @@ namespace Rod {
 			}
 			catch (const std::exception& exception)
 			{
-				RD_CORE_WARN("Could not save recent projects: {}", exception.what());
+				Log::Core().warn("Could not save recent projects: {}", exception.what());
 			}
 			m_Host.RequestClose();
 			return std::nullopt;

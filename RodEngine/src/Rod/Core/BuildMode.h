@@ -10,7 +10,7 @@ namespace Rod {
 		enum class Mode : std::uint8_t
 		{
 			Editor,
-			Sandbox
+			Sandbox,
 		};
 
 		[[nodiscard]] static Mode& GetMode() noexcept

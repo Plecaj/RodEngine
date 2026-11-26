@@ -11,7 +11,7 @@ namespace Rod::SceneSerialization {
 	namespace {
 		auto NormalizeAssetPath(std::string path) -> std::string
 		{
-			std::replace(path.begin(), path.end(), '\\', '/');
+			std::ranges::replace(path, '\\', '/');
 			return path;
 		}
 	}

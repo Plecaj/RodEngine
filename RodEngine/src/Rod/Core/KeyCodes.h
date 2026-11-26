@@ -6,6 +6,8 @@ namespace Rod {
 	using KeyCode = uint16_t;
 
 	namespace Key {
+		// GLFW constants implicity converted to MouseCode
+		// NOLINTNEXTLINE(cppcoreguidelines-use-enum-class)
 		enum : KeyCode
 		{
 			// From glfw3.h
@@ -138,7 +140,7 @@ namespace Rod {
 			RightControl = 345,
 			RightAlt = 346,
 			RightSuper = 347,
-			Menu = 348
+			Menu = 348,
 		};
 	}
 }

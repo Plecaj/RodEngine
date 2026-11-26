@@ -24,7 +24,7 @@ namespace Rod {
 	{
 		Press,
 		Release,
-		Repeat
+		Repeat,
 	};
 
 	struct Modifiers

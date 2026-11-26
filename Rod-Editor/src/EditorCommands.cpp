@@ -53,7 +53,7 @@ namespace Rod {
 		}
 		catch (const std::exception& exception)
 		{
-			RD_CORE_ERROR("{}", exception.what());
+			Log::Core().error("{}", exception.what());
 		}
 	}
 
@@ -71,7 +71,7 @@ namespace Rod {
 		}
 		catch (const std::exception& exception)
 		{
-			RD_CORE_ERROR("{}", exception.what());
+			Log::Core().error("{}", exception.what());
 		}
 	}
 
@@ -86,7 +86,7 @@ namespace Rod {
 			}
 			catch (const std::exception& exception)
 			{
-				RD_CORE_ERROR("{}", exception.what());
+				Log::Core().error("{}", exception.what());
 			}
 		}
 	}
@@ -105,11 +105,11 @@ namespace Rod {
 			    directory / "Rod-Runtime" ROD_EXECUTABLE_SUFFIX,
 			    output,
 			    m_Scenes.GetEditorScene());
-			RD_CORE_INFO("Exported game to {}", output.string());
+			Log::Core().info("Exported game to {}", output.string());
 		}
 		catch (const std::exception& exception)
 		{
-			RD_CORE_ERROR("Game export failed: {}", exception.what());
+			Log::Core().error("Game export failed: {}", exception.what());
 		}
 	}
 

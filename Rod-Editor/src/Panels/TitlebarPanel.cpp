@@ -16,7 +16,7 @@ namespace Rod {
 			Minimize,
 			Maximize,
 			Restore,
-			Close
+			Close,
 		};
 
 		void DrawButtonIcon(ImDrawList& drawList, ButtonIcon icon, const ImVec2& center)
@@ -31,8 +31,8 @@ namespace Rod {
 				case ButtonIcon::Minimize: {
 					constexpr float width = 10.0f;
 					drawList.AddLine(
-					    ImVec2(center.x - width * 0.5f, center.y + minimizeOffset),
-					    ImVec2(center.x + width * 0.5f, center.y + minimizeOffset),
+					    ImVec2(center.x - (width * 0.5f), center.y + minimizeOffset),
+					    ImVec2(center.x + (width * 0.5f), center.y + minimizeOffset),
 					    iconColor,
 					    stroke);
 					break;
@@ -40,8 +40,8 @@ namespace Rod {
 				case ButtonIcon::Maximize: {
 					constexpr float side = 10.0f;
 					drawList.AddRect(
-					    ImVec2(center.x - side * 0.5f, center.y - side * 0.5f),
-					    ImVec2(center.x + side * 0.5f, center.y + side * 0.5f),
+					    ImVec2(center.x - (side * 0.5f), center.y - (side * 0.5f)),
+					    ImVec2(center.x + (side * 0.5f), center.y + (side * 0.5f)),
 					    iconColor,
 					    0.0f,
 					    0,
@@ -51,15 +51,15 @@ namespace Rod {
 				case ButtonIcon::Restore: {
 					constexpr float side = 9.0f;
 					drawList.AddRect(
-					    ImVec2(center.x - side * 0.5f - restoreOffset, center.y - side * 0.5f + restoreOffset),
-					    ImVec2(center.x + side * 0.5f - restoreOffset, center.y + side * 0.5f + restoreOffset),
+					    ImVec2(center.x - (side * 0.5f) - restoreOffset, center.y - (side * 0.5f) + restoreOffset),
+					    ImVec2(center.x + (side * 0.5f) - restoreOffset, center.y + (side * 0.5f) + restoreOffset),
 					    iconColor,
 					    0.0f,
 					    0,
 					    stroke);
 					drawList.AddRect(
-					    ImVec2(center.x - side * 0.5f + restoreOffset, center.y - side * 0.5f - restoreOffset),
-					    ImVec2(center.x + side * 0.5f + restoreOffset, center.y + side * 0.5f - restoreOffset),
+					    ImVec2(center.x - (side * 0.5f) + restoreOffset, center.y - (side * 0.5f) - restoreOffset),
+					    ImVec2(center.x + (side * 0.5f) + restoreOffset, center.y + (side * 0.5f) - restoreOffset),
 					    iconColor,
 					    0.0f,
 					    0,
@@ -103,9 +103,13 @@ namespace Rod {
 			if (hovered || active)
 			{
 				if (isClose)
+				{
 					background = active ? closeActive : closeHovered;
+				}
 				else
+				{
 					background = active ? buttonActive : buttonHovered;
+				}
 			}
 
 			drawList.AddRectFilled(min, max, background, 0.0f);
@@ -224,9 +228,13 @@ namespace Rod {
 		if (DrawTitlebarButton("##MaximizeRestore", maximizeIcon, m_ButtonSize))
 		{
 			if (maximized)
+			{
 				m_Window.Restore();
+			}
 			else
+			{
 				m_Window.Maximize();
+			}
 		}
 
 		ImGui::SameLine(0.0f, 0.0f);

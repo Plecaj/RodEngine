@@ -9,7 +9,8 @@ TEST_CASE("Buffer layouts pack vertex attributes", "[renderer][buffer]")
 	const Rod::BufferLayout layout = {
 	    {Rod::ShaderDataType::Float3, "Position"},
 	    {Rod::ShaderDataType::Float2, "UV"},
-	    {Rod::ShaderDataType::Int, "Entity"}};
+	    {Rod::ShaderDataType::Int, "Entity"},
+	};
 	const auto elements = layout.GetElements();
 
 	REQUIRE(elements.size() == 3);

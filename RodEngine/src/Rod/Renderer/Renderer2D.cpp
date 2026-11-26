@@ -25,7 +25,8 @@ namespace Rod {
 		    {ShaderDataType::Float2, "a_TexCoord"},
 		    {ShaderDataType::Float, "a_TexIdx"},
 		    {ShaderDataType::Float, "a_TilingFactor"},
-		    {ShaderDataType::Int, "a_EntityID"}};
+		    {ShaderDataType::Int, "a_EntityID"},
+		};
 		RD_CORE_ASSERT(layout.GetStride() == sizeof(Vertex), "Sprite vertex stride does not match the GPU layout");
 		RD_CORE_ASSERT(
 		    layout.GetElements().back().Offset == offsetof(Vertex, EntityID),
@@ -49,7 +50,7 @@ namespace Rod {
 		auto whiteTexture = device.CreateTexture2D(1, 1);
 		whiteTexture->SetData(std::as_bytes(std::span{white}));
 		std::array<int, s_TextureCapacity> samplers{};
-		std::iota(samplers.begin(), samplers.end(), 0);
+		std::ranges::iota(samplers, 0);
 		m_Shader->SetIntArray("u_Textures", samplers);
 		m_Vertices.reserve(vertexCapacity);
 		m_Textures.reserve(s_TextureCapacity);
@@ -76,17 +77,19 @@ namespace Rod {
 
 		const auto slot = static_cast<float>(AssignTextureSlot(texture));
 		constexpr std::array<glm::vec2, s_VerticesPerQuad> uvs{
-		    {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}}};
+		    {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}},
+		};
 		for (const auto uv : uvs)
 		{
 			const auto corner = glm::vec4(uv - glm::vec2{0.5f}, 0.0f, 1.0f);
-			m_Vertices.push_back(
-			    {.Position = glm::vec3(transform * corner),
-				 .Tint = tint,
-				 .UV = uv,
-				 .TextureSlot = slot,
-				 .Tiling = tiling,
-				 .EntityID = entityID});
+			m_Vertices.push_back({
+			    .Position = glm::vec3(transform * corner),
+			    .Tint = tint,
+			    .UV = uv,
+			    .TextureSlot = slot,
+			    .Tiling = tiling,
+			    .EntityID = entityID,
+			});
 		}
 
 		++m_Stats.QuadCount;
@@ -121,8 +124,9 @@ namespace Rod {
 
 		m_Shader->Bind();
 		m_CameraBuffer->BindBase(0);
-		for (uint32_t slot = 0; slot < m_Textures.size(); ++slot)
-			m_Textures[slot]->Bind(slot);
+		uint32_t slot = 0;
+		for (const auto& texture : m_Textures)
+			texture->Bind(slot++);
 
 		m_VertexArray->GetVertexBuffers().front()->SetData(std::as_bytes(std::span{m_Vertices}));
 		const auto indexCount = static_cast<uint32_t>(m_Vertices.size() / s_VerticesPerQuad) * s_IndicesPerQuad;

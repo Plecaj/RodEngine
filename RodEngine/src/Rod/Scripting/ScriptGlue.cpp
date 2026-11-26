@@ -10,14 +10,10 @@
 #include "Rod/Scene/Scene.h"
 #include "Rod/Utils/FunctionPointerCast.h"
 #include "ScriptEngine.h"
+#include "ScriptInterop.h"
 
-#include <cstdlib> // IWYU pragma: keep
 #include <cstring>
 #include <stdexcept>
-
-#ifdef RD_PLATFORM_WINDOWS
-	#include <objbase.h> // IWYU pragma: keep
-#endif
 
 namespace Rod {
 
@@ -39,11 +35,7 @@ namespace Rod {
 
 		[[nodiscard]] auto AllocateString(const std::string& value) noexcept -> void*
 		{
-#ifdef RD_PLATFORM_WINDOWS
-			auto* buffer = static_cast<char*>(CoTaskMemAlloc(value.size() + 1));
-#else
-			auto* buffer = static_cast<char*>(std::malloc(value.size() + 1));
-#endif
+			auto* buffer = ScriptInterop::Allocate(value.size() + 1);
 			if (buffer)
 				std::memcpy(buffer, value.c_str(), value.size() + 1);
 			return buffer;
@@ -74,7 +66,7 @@ namespace Rod {
 		SpriteRenderer,
 		Mesh,
 		DirectionalLight,
-		Script
+		Script,
 	};
 
 	std::optional<Scene&> ScriptGlue::s_SceneContext;
@@ -105,19 +97,19 @@ namespace Rod {
 		switch (level)
 		{
 			case s_LogLevelTrace:
-				RD_TRACE("{}", message);
+				Log::Client().trace("{}", message);
 				break;
 			case s_LogLevelInfo:
-				RD_INFO("{}", message);
+				Log::Client().info("{}", message);
 				break;
 			case s_LogLevelWarning:
-				RD_WARN("{}", message);
+				Log::Client().warn("{}", message);
 				break;
 			case s_LogLevelError:
-				RD_ERROR("{}", message);
+				Log::Client().error("{}", message);
 				break;
 			default:
-				RD_CORE_INFO("{}", message);
+				Log::Core().info("{}", message);
 				break;
 		}
 	}
@@ -319,8 +311,10 @@ namespace Rod {
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<CameraComponent>())
+		{
 			entity.GetComponent<CameraComponent>().Camera.SetProjectionType(
 			    static_cast<SceneCamera::ProjectionType>(value));
+		}
 	}
 
 	auto RD_CDECL ScriptGlue::CameraGetPerspectiveVerticalFOV(uint64_t entityID) -> float
@@ -503,7 +497,7 @@ namespace Rod {
 		if (!entity || !entity.HasComponent<SpriteRendererComponent>())
 			return;
 		auto& sprite = entity.GetComponent<SpriteRendererComponent>();
-		if (!path || !path[0])
+		if (!path || *path == '\0')
 		{
 			sprite.Texture.reset();
 			return;
@@ -517,7 +511,7 @@ namespace Rod {
 			}
 			catch (const std::runtime_error& exception)
 			{
-				RD_CORE_ERROR("{}", exception.what());
+				Log::Core().error("{}", exception.what());
 			}
 		}
 	}
@@ -536,7 +530,7 @@ namespace Rod {
 		if (!entity || !entity.HasComponent<MeshComponent>())
 			return;
 		auto& mesh = entity.GetComponent<MeshComponent>();
-		if (!path || !path[0])
+		if (!path || *path == '\0')
 		{
 			mesh.SetMesh(nullptr);
 			return;
@@ -548,7 +542,7 @@ namespace Rod {
 		}
 		catch (const std::runtime_error& exception)
 		{
-			RD_CORE_ERROR("{}", exception.what());
+			Log::Core().error("{}", exception.what());
 		}
 	}
 

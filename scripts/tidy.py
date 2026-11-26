@@ -3,6 +3,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
@@ -12,12 +13,13 @@ ROOT = SCRIPTS.parent
 
 
 if __name__ == "__main__":
+    default_jobs = max(1, (os.cpu_count() or 1) * 2 // 3)
     parser = argparse.ArgumentParser(description="Report clang-tidy diagnostics for the project's compiled sources.")
     parser.add_argument(
         "-p", dest="build_dir", type=Path, default=Path("build/analysis"), help="Build directory (default: build/analysis)."
     )
     parser.add_argument(
-        "-j", "--jobs", type=int, default=os.cpu_count() or 1, help="Parallel clang-tidy processes (default: %(default)s)."
+        "-j", "--jobs", type=int, default=default_jobs, help="Parallel clang-tidy processes (default: %(default)s)."
     )
     if Path.cwd().resolve() not in (ROOT, SCRIPTS):
         parser.error("Run this script from the repository root or its scripts/ directory.")
@@ -26,13 +28,33 @@ if __name__ == "__main__":
         parser.error("-j must be at least 1.")
 
     build_dir = (ROOT / args.build_dir).resolve()
-    database = build_dir / "compile_commands.json"
-    if not database.is_file():
-        parser.error(f"{database} is missing. Configure the windows-clang-analysis or linux-clang-analysis preset first.")
     clang_tidy = shutil.which("clang-tidy")
     if clang_tidy is None:
         parser.error("clang-tidy is missing from PATH. Use the clang-tidy from your build's LLVM toolchain.")
+    cmake = shutil.which("cmake")
+    if cmake is None:
+        parser.error("cmake is missing from PATH.")
 
+    configure = [cmake, "-S", str(ROOT), "-B", str(build_dir)]
+    if not (build_dir / "CMakeCache.txt").is_file():
+        preset = {"win32": "windows-clang-analysis", "linux": "linux-clang-analysis"}.get(sys.platform)
+        if preset is None:
+            parser.error("A fresh analysis directory requires the Windows or Linux analysis preset.")
+        configure.extend([
+            "--preset", preset,
+            "-DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON",
+            "-DCMAKE_CXX_SCAN_FOR_MODULES=OFF",
+        ])
+        for language, environment_variable in (("C", "CC"), ("CXX", "CXX")):
+            if compiler := os.environ.get(environment_variable):
+                configure.append(f"-DCMAKE_{language}_COMPILER={compiler}")
+    configuration = subprocess.run(configure, cwd=ROOT)
+    if configuration.returncode:
+        raise SystemExit(configuration.returncode)
+
+    database = build_dir / "compile_commands.json"
+    if not database.is_file():
+        parser.error(f"CMake did not generate {database}. Use an analysis directory with the Ninja generator.")
     commands = json.loads(database.read_bytes())
     compiled = {(build_dir / command["directory"] / command["file"]).resolve() for command in commands}
     files = subprocess.check_output(

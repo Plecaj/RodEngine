@@ -42,7 +42,8 @@ TEST_CASE_METHOD(ProjectSerializationFixture, "Project manifests round trip all 
 	    .AssetsPath = "Game Assets",
 	    .StartupScenePath = "Scenes/Opening Scene.rod",
 	    .ScriptsProjectPath = "Scripts/My Game.csproj",
-	    .ShadersPath = "Custom Engine/Shaders"};
+	    .ShadersPath = "Custom Engine/Shaders",
+	};
 	SECTION("new manifest")
 	{}
 	SECTION("replace existing manifest")

@@ -13,18 +13,20 @@
 
 namespace Rod {
 
-	static auto BuildArguments(const std::vector<std::string>& arguments) -> std::vector<char*>
-	{
-		std::vector<char*> argv;
-		argv.reserve(arguments.size() + 1);
-		for (const auto& argument : arguments)
+	namespace {
+		auto BuildArguments(const std::vector<std::string>& arguments) -> std::vector<char*>
 		{
-			// POSIX borrows these strings without modifying them, despite the mutable argv type.
-			// NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-			argv.push_back(const_cast<char*>(argument.c_str()));
+			std::vector<char*> argv;
+			argv.reserve(arguments.size() + 1);
+			for (const auto& argument : arguments)
+			{
+				// POSIX borrows strings without modifying them
+				// NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+				argv.push_back(const_cast<char*>(argument.c_str()));
+			}
+			argv.push_back(nullptr);
+			return argv;
 		}
-		argv.push_back(nullptr);
-		return argv;
 	}
 
 	auto Process::Start(const std::vector<std::string>& arguments) -> ProcessResult

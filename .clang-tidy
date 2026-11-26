@@ -13,18 +13,7 @@ Checks: >-
   -cppcoreguidelines-pro-type-vararg,
   google-explicit-constructor,
   google-readability-casting,
-  misc-anonymous-namespace-in-header,
-  misc-const-correctness,
-  misc-definitions-in-headers,
-  misc-include-cleaner,
-  misc-misplaced-const,
-  misc-new-delete-overloads,
-  misc-redundant-expression,
-  misc-static-initialization-cycle,
-  misc-throw-by-value-catch-by-reference,
-  misc-unconventional-assign-operator,
-  misc-unused-alias-decls,
-  misc-unused-using-decls,
+  misc-*,
   modernize-*,
   readability-ambiguous-smartptr-reset-call,
   readability-avoid-const-params-in-decls,
@@ -105,6 +94,8 @@ CheckOptions:
   misc-include-cleaner.IgnoreHeaders: '(^|[/\\])rdpch\.h$'
   misc-include-cleaner.MissingIncludes: false
   misc-include-cleaner.UnusedIncludes: true
+  misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic: true
+  misc-use-internal-linkage.FixMode: None
   modernize-use-trailing-return-type.TransformLambdas: none
   readability-implicit-bool-conversion.AllowPointerConditions: true
   readability-implicit-bool-conversion.AllowIntegerConditions: true

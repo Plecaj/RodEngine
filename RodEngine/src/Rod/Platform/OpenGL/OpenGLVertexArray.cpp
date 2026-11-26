@@ -8,30 +8,32 @@
 
 namespace Rod {
 
-	static auto ShaderDataTypeToOpenGLBaseType(ShaderDataType type) -> uint32_t
-	{
-		switch (type)
+	namespace {
+		auto ShaderDataTypeToOpenGLBaseType(ShaderDataType type) -> uint32_t
 		{
-			case Rod::ShaderDataType::Float:
-			case Rod::ShaderDataType::Float2:
-			case Rod::ShaderDataType::Float3:
-			case Rod::ShaderDataType::Float4:
-			case Rod::ShaderDataType::Mat3:
-			case Rod::ShaderDataType::Mat4:
-				return GL_FLOAT;
-			case Rod::ShaderDataType::Int:
-			case Rod::ShaderDataType::Int2:
-			case Rod::ShaderDataType::Int3:
-			case Rod::ShaderDataType::Int4:
-				return GL_INT;
-			case Rod::ShaderDataType::Bool:
-				return GL_BOOL;
-			case Rod::ShaderDataType::None:
-				break;
-		}
+			switch (type)
+			{
+				case Rod::ShaderDataType::Float:
+				case Rod::ShaderDataType::Float2:
+				case Rod::ShaderDataType::Float3:
+				case Rod::ShaderDataType::Float4:
+				case Rod::ShaderDataType::Mat3:
+				case Rod::ShaderDataType::Mat4:
+					return GL_FLOAT;
+				case Rod::ShaderDataType::Int:
+				case Rod::ShaderDataType::Int2:
+				case Rod::ShaderDataType::Int3:
+				case Rod::ShaderDataType::Int4:
+					return GL_INT;
+				case Rod::ShaderDataType::Bool:
+					return GL_BOOL;
+				case Rod::ShaderDataType::None:
+					break;
+			}
 
-		RD_CORE_ASSERT(false, "Unknown ShaderDataType");
-		return 0;
+			RD_CORE_ASSERT(false, "Unknown ShaderDataType");
+			return 0;
+		}
 	}
 
 	OpenGLVertexArray::OpenGLVertexArray()

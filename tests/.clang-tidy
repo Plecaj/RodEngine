@@ -8,4 +8,5 @@ Checks: >-
   -clang-analyzer-optin.core.EnumCastOutOfRange
 CheckOptions:
   cppcoreguidelines-non-private-member-variables-in-classes.IgnorePublicMemberVariables: true
+  misc-non-private-member-variables-in-classes.IgnorePublicMemberVariables: true
   readability-function-cognitive-complexity.IgnoreMacros: true

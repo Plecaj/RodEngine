@@ -9,70 +9,72 @@
 
 namespace Rod {
 
-	struct HandleDeleter
-	{
-		void operator()(void* handle) const { CloseHandle(handle); }
-	};
-
-	using Handle = std::unique_ptr<void, HandleDeleter>;
-
-	static auto QuoteArgument(const std::string& argument) -> std::wstring
-	{
-		constexpr size_t quoteEscapeMultiplier = 2;
-		const int size = MultiByteToWideChar(
-		    CP_UTF8,
-		    MB_ERR_INVALID_CHARS,
-		    argument.data(),
-		    static_cast<int>(argument.size()),
-		    nullptr,
-		    0);
-		std::wstring value(static_cast<std::wstring::size_type>(size), L'\0');
-		MultiByteToWideChar(
-		    CP_UTF8,
-		    MB_ERR_INVALID_CHARS,
-		    argument.data(),
-		    static_cast<int>(argument.size()),
-		    value.data(),
-		    size);
-
-		std::wstring quoted = L"\"";
-		size_t backslashes = 0;
-		for (const wchar_t character : value)
+	namespace {
+		struct HandleDeleter
 		{
-			if (character == L'\\')
+			void operator()(void* handle) const { CloseHandle(handle); }
+		};
+
+		using Handle = std::unique_ptr<void, HandleDeleter>;
+
+		auto QuoteArgument(const std::string& argument) -> std::wstring
+		{
+			constexpr size_t quoteEscapeMultiplier = 2;
+			const int size = MultiByteToWideChar(
+			    CP_UTF8,
+			    MB_ERR_INVALID_CHARS,
+			    argument.data(),
+			    static_cast<int>(argument.size()),
+			    nullptr,
+			    0);
+			std::wstring value(static_cast<std::wstring::size_type>(size), L'\0');
+			MultiByteToWideChar(
+			    CP_UTF8,
+			    MB_ERR_INVALID_CHARS,
+			    argument.data(),
+			    static_cast<int>(argument.size()),
+			    value.data(),
+			    size);
+
+			std::wstring quoted = L"\"";
+			size_t backslashes = 0;
+			for (const wchar_t character : value)
 			{
-				++backslashes;
-				continue;
+				if (character == L'\\')
+				{
+					++backslashes;
+					continue;
+				}
+				quoted.append(character == L'"' ? backslashes * quoteEscapeMultiplier + 1 : backslashes, L'\\');
+				quoted += character;
+				backslashes = 0;
 			}
-			quoted.append(character == L'"' ? backslashes * quoteEscapeMultiplier + 1 : backslashes, L'\\');
-			quoted += character;
-			backslashes = 0;
+			quoted.append(backslashes * quoteEscapeMultiplier, L'\\');
+			return quoted + L'"';
 		}
-		quoted.append(backslashes * quoteEscapeMultiplier, L'\\');
-		return quoted + L'"';
-	}
 
-	static auto BuildCommand(const std::vector<std::string>& arguments) -> std::wstring
-	{
-		std::wstring command;
-		for (const auto& argument : arguments)
+		auto BuildCommand(const std::vector<std::string>& arguments) -> std::wstring
 		{
-			if (!command.empty())
-				command += L' ';
-			command += QuoteArgument(argument);
+			std::wstring command;
+			for (const auto& argument : arguments)
+			{
+				if (!command.empty())
+					command += L' ';
+				command += QuoteArgument(argument);
+			}
+			return command;
 		}
-		return command;
-	}
 
-	static auto ReadPipe(HANDLE readPipe) -> std::string
-	{
-		constexpr size_t outputBufferSize = 4096;
-		std::array<char, outputBufferSize> buffer{};
-		DWORD count = 0;
-		std::string output;
-		while (ReadFile(readPipe, buffer.data(), static_cast<DWORD>(buffer.size()), &count, nullptr) && count > 0)
-			output.append(buffer.data(), count);
-		return output;
+		auto ReadPipe(HANDLE readPipe) -> std::string
+		{
+			constexpr size_t outputBufferSize = 4096;
+			std::array<char, outputBufferSize> buffer{};
+			DWORD count = 0;
+			std::string output;
+			while (ReadFile(readPipe, buffer.data(), static_cast<DWORD>(buffer.size()), &count, nullptr) && count > 0)
+				output.append(buffer.data(), count);
+			return output;
+		}
 	}
 
 	auto Process::Start(const std::vector<std::string>& arguments) -> ProcessResult

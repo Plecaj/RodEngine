@@ -174,7 +174,7 @@ namespace Rod {
 		style.GrabRounding = g_ControlRounding;
 		style.TabRounding = g_ControlRounding;
 
-		std::span colors(style.Colors);
+		std::span const colors(style.Colors);
 		for (const auto& [slot, color] : g_DarkColors)
 			colors.at(static_cast<size_t>(slot)) = color;
 	}

@@ -13,12 +13,11 @@
 
 namespace Rod {
 
-	static void GLFWErrorCallback(int error, const char* description)
-	{
-		Log::Core().error("GLFW Error ({0}): {1}", error, description);
-	}
-
 	namespace {
+		void GLFWErrorCallback(int error, const char* description)
+		{
+			Log::Core().error("GLFW Error ({0}): {1}", error, description);
+		}
 
 		[[nodiscard]] auto GetMods(int mods) noexcept -> Modifiers
 		{

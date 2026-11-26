@@ -164,8 +164,8 @@ namespace Rod {
 
 	auto EditorViewport::Contains(glm::vec2 pos) const noexcept -> bool
 	{
-		return pos.x >= m_ViewportBounds[0].x && pos.y >= m_ViewportBounds[0].y && pos.x < m_ViewportBounds[1].x &&
-		       pos.y < m_ViewportBounds[1].y;
+		const auto& [min, max] = m_ViewportBounds;
+		return pos.x >= min.x && pos.y >= min.y && pos.x < max.x && pos.y < max.y;
 	}
 
 	auto EditorViewport::Pick(glm::vec2 pos, Scene& scene) const -> Entity
@@ -173,7 +173,7 @@ namespace Rod {
 		if (!Contains(pos))
 			return {};
 
-		const auto offset = pos - m_ViewportBounds[0];
+		const auto offset = pos - m_ViewportBounds.front();
 		const auto& spec = m_Framebuffer->GetSpecification();
 		const int x = static_cast<int>(offset.x);
 		const int y = static_cast<int>(offset.y);

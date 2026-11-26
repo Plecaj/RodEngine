@@ -12,6 +12,7 @@
 #include <glad/glad.h>
 
 #include "ImGuizmo.h"
+#include <span>
 #include <stdexcept>
 
 namespace Rod {
@@ -173,7 +174,8 @@ namespace Rod {
 		style.GrabRounding = g_ControlRounding;
 		style.TabRounding = g_ControlRounding;
 
+		std::span colors(style.Colors);
 		for (const auto& [slot, color] : g_DarkColors)
-			style.Colors[slot] = color;
+			colors.at(static_cast<size_t>(slot)) = color;
 	}
 }

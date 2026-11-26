@@ -13,11 +13,9 @@
 
 namespace Rod {
 
-	static uint32_t g_WindowCount = 0;
-
 	static void GLFWErrorCallback(int error, const char* description)
 	{
-		RD_CORE_ERROR("GLFW Error ({0}): {1}", error, description);
+		Log::Core().error("GLFW Error ({0}): {1}", error, description);
 	}
 
 	namespace {
@@ -31,15 +29,16 @@ namespace Rod {
 			    .Alt = (mask & static_cast<unsigned int>(GLFW_MOD_ALT)) != 0U};
 		}
 
-		void InitGLFW()
-		{
-			if (g_WindowCount > 0)
-				return;
+	}
 
-			glfwSetErrorCallback(GLFWErrorCallback);
-			if (glfwInit() == GLFW_FALSE)
-				throw std::runtime_error("Could not initialize GLFW.");
-		}
+	void GLFWWindow::InitGLFW()
+	{
+		if (s_WindowCount > 0)
+			return;
+
+		glfwSetErrorCallback(GLFWErrorCallback);
+		if (glfwInit() == GLFW_FALSE)
+			throw std::runtime_error("Could not initialize GLFW.");
 	}
 
 	auto Window::Create(const WindowProps& props) -> Scope<Window>
@@ -55,7 +54,7 @@ namespace Rod {
 	void GLFWWindow::NativeWindowDeleter::operator()(GLFWwindow* window) const noexcept
 	{
 		glfwDestroyWindow(window);
-		if (--g_WindowCount == 0)
+		if (--s_WindowCount == 0)
 			glfwTerminate();
 	}
 
@@ -65,7 +64,7 @@ namespace Rod {
 		m_Data.Width = props.Width;
 		m_Data.Height = props.Height;
 
-		RD_CORE_INFO("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
+		Log::Core().info("Creating window {0} ({1}, {2})", props.Title, props.Width, props.Height);
 
 		InitGLFW();
 		CreateNativeWindow(props);
@@ -105,11 +104,11 @@ namespace Rod {
 		    nullptr));
 		if (!m_Window)
 		{
-			if (g_WindowCount == 0)
+			if (s_WindowCount == 0)
 				glfwTerminate();
 			throw std::runtime_error("Could not create an OpenGL 4.6 GLFW window.");
 		}
-		++g_WindowCount;
+		++s_WindowCount;
 
 		if (props.Centered)
 		{
@@ -217,7 +216,7 @@ namespace Rod {
 
 		if (!data)
 		{
-			RD_CORE_WARN("Failed to load taskbar icon '{}'.", iconFilepath);
+			Log::Core().warn("Failed to load taskbar icon '{}'.", iconFilepath);
 			return;
 		}
 

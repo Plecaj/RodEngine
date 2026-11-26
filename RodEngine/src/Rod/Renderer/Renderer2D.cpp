@@ -121,8 +121,9 @@ namespace Rod {
 
 		m_Shader->Bind();
 		m_CameraBuffer->BindBase(0);
-		for (uint32_t slot = 0; slot < m_Textures.size(); ++slot)
-			m_Textures[slot]->Bind(slot);
+		uint32_t slot = 0;
+		for (const auto& texture : m_Textures)
+			texture->Bind(slot++);
 
 		m_VertexArray->GetVertexBuffers().front()->SetData(std::as_bytes(std::span{m_Vertices}));
 		const auto indexCount = static_cast<uint32_t>(m_Vertices.size() / s_VerticesPerQuad) * s_IndicesPerQuad;

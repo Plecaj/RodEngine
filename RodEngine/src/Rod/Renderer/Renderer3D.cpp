@@ -10,6 +10,7 @@
 
 #include <limits>
 #include <numeric>
+#include <ranges>
 
 namespace Rod {
 	namespace {
@@ -47,8 +48,8 @@ namespace Rod {
 	struct Renderer3D::LightsData
 	{
 		uint32_t Count;
-		uint32_t Padding[s_Std140PaddingWordCount];
-		LightUniform Lights[s_MaxLightCount];
+		std::array<uint32_t, s_Std140PaddingWordCount> Padding;
+		std::array<LightUniform, s_MaxLightCount> Lights;
 	};
 
 	struct Renderer3D::MaterialData
@@ -60,13 +61,13 @@ namespace Rod {
 
 	struct Renderer3D::ShadowData
 	{
-		glm::mat4 LightSpaceMatrices[s_MaxLightCount];
+		std::array<glm::mat4, s_MaxLightCount> LightSpaceMatrices;
 	};
 
 	struct Renderer3D::DrawData
 	{
 		int EntityID;
-		int Padding[s_Std140PaddingWordCount];
+		std::array<int, s_Std140PaddingWordCount> Padding;
 	};
 
 	auto Renderer3D::GetFrustumCornersWorldSpace(const glm::mat4& viewProjection) -> Renderer3D::FrustumCorners
@@ -87,6 +88,7 @@ namespace Rod {
 					                               s_ClipCoordinateSpan * static_cast<float>(z) - 1.0f,
 					                               1.0f);
 
+					// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index,cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
 					corners[index++] = glm::vec3(pt) / pt.w;
 				}
 			}
@@ -100,12 +102,12 @@ namespace Rod {
 		glm::vec3 nearCenter(0.0f);
 		glm::vec3 farCenter(0.0f);
 
-		for (size_t i = 0; i < corners.size(); i++)
+		// Corners are near/far pairs
+		const auto cornerPairs = corners | std::views::adjacent<2> | std::views::stride(s_AxisEndpointCount);
+		for (const auto [nearCorner, farCorner] : cornerPairs)
 		{
-			if (i % s_AxisEndpointCount == 0)
-				nearCenter += corners[i];
-			else
-				farCenter += corners[i];
+			nearCenter += nearCorner;
+			farCenter += farCorner;
 		}
 
 		nearCenter *= s_PlaneCenterWeight;
@@ -117,17 +119,15 @@ namespace Rod {
 
 		const glm::vec3 viewDirection = glm::normalize(viewVector);
 
-		// Corners are emitted as near/far pairs because z is the innermost loop.
-		for (size_t i = 0; i < corners.size(); i += s_AxisEndpointCount)
+		for (auto [nearCorner, farCorner] : cornerPairs)
 		{
-			const glm::vec3 nearCorner = corners[i];
-			const glm::vec3 farOffset = corners[i + 1] - nearCorner;
+			const glm::vec3 farOffset = farCorner - nearCorner;
 			const float farDepth = glm::dot(farOffset, viewDirection);
 
 			if (farDepth <= maxDistance || farDepth <= s_DirectionTolerance)
 				continue;
 
-			corners[i + 1] = nearCorner + farOffset * (maxDistance / farDepth);
+			farCorner = nearCorner + farOffset * (maxDistance / farDepth);
 		}
 	}
 
@@ -182,6 +182,12 @@ namespace Rod {
 	      m_MaterialUBO(device.CreateUniformBuffer(sizeof(MaterialData))), m_Shader(shaders.Load("3D.glsl")),
 	      m_ShadowShader(shaders.Load("Shadow.glsl"))
 	{
+		static_assert(sizeof(LightUniform) == sizeof(glm::vec4) * 2);
+		static_assert(offsetof(LightsData, Lights) == sizeof(glm::vec4));
+		static_assert(sizeof(LightsData) == sizeof(glm::vec4) + sizeof(LightUniform) * s_MaxLightCount);
+		static_assert(sizeof(ShadowData) == sizeof(glm::mat4) * s_MaxLightCount);
+		static_assert(sizeof(DrawData) == sizeof(glm::vec4));
+
 		std::array<int, s_MaxLightCount> shadowMapSamplers{};
 		std::iota(shadowMapSamplers.begin(), shadowMapSamplers.end(), 0);
 		m_Shader->SetIntArray("u_ShadowMaps", shadowMapSamplers);
@@ -214,8 +220,9 @@ namespace Rod {
 		m_LightsUBO->BindBase(s_LightsBinding);
 		m_ShadowUBO->BindBase(s_ShadowBinding);
 
-		for (uint32_t i = 0; i < m_LightSpaceMatrices.size(); i++)
-			m_DepthMaps[i]->BindDepthAttachment(i);
+		uint32_t slot = 0;
+		for (const auto& depthMap : m_DepthMaps | std::views::take(m_LightSpaceMatrices.size()))
+			depthMap->BindDepthAttachment(slot++);
 
 		for (const auto& command : m_DrawCommands)
 		{
@@ -265,16 +272,15 @@ namespace Rod {
 		ShadowData shadowData{};
 		m_LightSpaceMatrices.resize(lightCount);
 
-		for (uint32_t i = 0; i < lightCount; i++)
+		for (auto [light, uniform, lightSpace, shadowMatrix] :
+		     std::views::zip(lights, lightData.Lights, m_LightSpaceMatrices, shadowData.LightSpaceMatrices))
 		{
-			LightUniform data{};
-			data.Direction = lights[i].Direction;
-			data.Color = lights[i].Color;
-			data.Intensity = lights[i].Intensity;
-			lightData.Lights[i] = data;
+			uniform.Direction = light.Direction;
+			uniform.Color = light.Color;
+			uniform.Intensity = light.Intensity;
 
-			m_LightSpaceMatrices[i] = CreateDirectionalLightViewProjection(lights[i].Direction, m_ViewProjection);
-			shadowData.LightSpaceMatrices[i] = m_LightSpaceMatrices[i];
+			lightSpace = CreateDirectionalLightViewProjection(light.Direction, m_ViewProjection);
+			shadowMatrix = lightSpace;
 		}
 		lightData.Count = lightCount;
 
@@ -292,10 +298,9 @@ namespace Rod {
 
 		m_ShadowShader->Bind();
 
-		for (size_t i = 0; i < m_LightSpaceMatrices.size(); i++)
+		for (const auto [depthMap, lightSpace] : std::views::zip(m_DepthMaps, m_LightSpaceMatrices))
 		{
-			const auto& fb = m_DepthMaps[i];
-			fb->Bind();
+			depthMap->Bind();
 			m_Device.ClearDepth();
 
 			for (const auto& command : m_DrawCommands)
@@ -304,7 +309,7 @@ namespace Rod {
 				if (!vertexArray)
 					continue;
 
-				const SceneMatrices matrices{.ViewProjection = m_LightSpaceMatrices[i], .Transform = command.Transform};
+				const SceneMatrices matrices{.ViewProjection = lightSpace, .Transform = command.Transform};
 
 				m_SceneUBO->BindBase(s_SceneBinding);
 				m_SceneUBO->SetData(std::as_bytes(std::span{&matrices, 1}));

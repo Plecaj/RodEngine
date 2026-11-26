@@ -11,6 +11,7 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
+#include <ranges>
 #include <stdexcept>
 #include <typeinfo> // IWYU pragma: keep
 
@@ -78,7 +79,7 @@ namespace Rod {
 				}
 				catch (const std::runtime_error& exception)
 				{
-					RD_CORE_ERROR("{}", exception.what());
+					Log::Core().error("{}", exception.what());
 				}
 			}
 			ImGui::EndDragDropTarget();
@@ -228,7 +229,7 @@ namespace Rod {
 			  .InputID = "##Z",
 			  .Normal = {0.1f, 0.25f, 0.8f, 1.0f},
 			  .Hovered = {0.2f, 0.35f, 0.9f, 1.0f}}});
-		auto* boldFont = ImGui::GetIO().Fonts->Fonts[0];
+		auto* boldFont = ImGui::GetIO().Fonts->Fonts.front();
 		ImGui::PushID(label.c_str());
 		ImGui::Columns(columnCount);
 		ImGui::SetColumnWidth(0, settings.ColumnWidth);
@@ -238,12 +239,12 @@ namespace Rod {
 		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0, 0});
 		const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * linePaddingFactor;
 		const ImVec2 buttonSize{lineHeight + buttonWidthOffset, lineHeight};
-		for (size_t axis = 0; axis < axes.size(); ++axis)
+		for (const auto& [axis, presentation] : std::views::enumerate(axes))
 		{
 			if (axis != 0)
 				ImGui::SameLine();
 			DrawAxisControl(
-			    axes[axis],
+			    presentation,
 			    values[static_cast<glm::vec3::length_type>(axis)],
 			    buttonSize,
 			    boldFont,
@@ -385,15 +386,15 @@ namespace Rod {
 	{
 		constexpr auto names = std::to_array<const char*>({"Perspective", "Orthographic"});
 		const auto projectionIndex = static_cast<size_t>(camera.GetProjectionType());
-		const char* current = names[std::min(projectionIndex, names.size() - 1)];
+		const char* current = names.at(std::min(projectionIndex, names.size() - 1));
 		if (ImGui::BeginCombo("Projection", current))
 		{
-			for (size_t index = 0; index < names.size(); ++index)
+			for (const auto& [index, name] : std::views::enumerate(names))
 			{
-				const bool selected = current == names[index];
-				if (ImGui::Selectable(names[index], selected))
+				const bool selected = current == name;
+				if (ImGui::Selectable(name, selected))
 				{
-					current = names[index];
+					current = name;
 					camera.SetProjectionType(static_cast<SceneCamera::ProjectionType>(index));
 				}
 				if (selected)

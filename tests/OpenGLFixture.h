@@ -18,7 +18,7 @@ namespace Rod::Tests {
 	public:
 		OpenGLFixture()
 		{
-			if (!Log::GetCoreLogger())
+			if (!Log::IsInitialized())
 				Log::Init();
 			REQUIRE(glfwInit() == GLFW_TRUE);
 			glfwDefaultWindowHints();

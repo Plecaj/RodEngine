@@ -22,7 +22,7 @@ namespace Rod {
 		}
 		catch (const std::exception& exception)
 		{
-			RD_CORE_WARN("Could not load recent projects: {}", exception.what());
+			Log::Core().warn("Could not load recent projects: {}", exception.what());
 		}
 	}
 
@@ -69,7 +69,7 @@ namespace Rod {
 			}
 			catch (const std::exception& exception)
 			{
-				RD_CORE_WARN("Could not save recent projects: {}", exception.what());
+				Log::Core().warn("Could not save recent projects: {}", exception.what());
 			}
 			m_Host.RequestClose();
 			return std::nullopt;

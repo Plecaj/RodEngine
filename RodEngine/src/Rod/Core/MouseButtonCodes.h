@@ -6,6 +6,8 @@ namespace Rod {
 	using MouseCode = uint8_t;
 
 	namespace Mouse {
+		// GLFW constants implicity converted to MouseCode
+		// NOLINTNEXTLINE(cppcoreguidelines-use-enum-class)
 		enum : MouseCode
 		{
 			// From glfw3.h

@@ -26,7 +26,7 @@
 		{ \
 			if (!(x)) \
 			{ \
-				RD_ERROR("Assertion Failed: {0}", __VA_ARGS__); \
+				::Rod::Log::Client().error("Assertion Failed: {0}", __VA_ARGS__); \
 				RD_DEBUGBREAK(); \
 			} \
 		} while (false);
@@ -35,7 +35,7 @@
 		{ \
 			if (!(x)) \
 			{ \
-				RD_CORE_ERROR("Assertion Failed: {0}", __VA_ARGS__); \
+				::Rod::Log::Core().error("Assertion Failed: {0}", __VA_ARGS__); \
 				RD_DEBUGBREAK(); \
 			} \
 		} while (false);

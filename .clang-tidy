@@ -6,20 +6,11 @@ Checks: >-
   bugprone-*,
   performance-*,
   -performance-enum-size,
-  cppcoreguidelines-init-variables,
-  cppcoreguidelines-interfaces-global-init,
-  cppcoreguidelines-missing-std-forward,
-  cppcoreguidelines-noexcept-destructor,
-  cppcoreguidelines-noexcept-move-operations,
-  cppcoreguidelines-noexcept-swap,
-  cppcoreguidelines-prefer-member-initializer,
-  cppcoreguidelines-pro-type-const-cast,
-  cppcoreguidelines-pro-type-member-init,
-  cppcoreguidelines-pro-type-reinterpret-cast,
-  cppcoreguidelines-rvalue-reference-param-not-moved,
-  cppcoreguidelines-special-member-functions,
-  cppcoreguidelines-slicing,
-  cppcoreguidelines-virtual-class-destructor,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-avoid-const-or-ref-data-members,
+  -cppcoreguidelines-avoid-do-while,
+  -cppcoreguidelines-pro-type-union-access,
+  -cppcoreguidelines-pro-type-vararg,
   google-explicit-constructor,
   google-readability-casting,
   misc-anonymous-namespace-in-header,
@@ -130,6 +121,11 @@ CheckOptions:
   bugprone-narrowing-conversions.WarnOnIntegerToFloatingPointNarrowingConversion: true
   bugprone-narrowing-conversions.WarnOnFloatingPointNarrowingConversion: true
   bugprone-narrowing-conversions.WarnOnEquivalentBitWidth: true
+  cppcoreguidelines-avoid-magic-numbers.IgnoredIntegerValues: '1;2;3;4'
+  cppcoreguidelines-avoid-magic-numbers.IgnoredFloatingPointValues: '0.25;0.5;1.0;2.0;3.0;4.0'
+  cppcoreguidelines-macro-usage.AllowedRegexp: '^(RD_ASSERT|RD_CORE_ASSERT|RD_DEBUGBREAK)$'
+  cppcoreguidelines-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic: true
+  cppcoreguidelines-pro-bounds-avoid-unchecked-container-access.ExcludeClasses: '::std::map;::std::unordered_map;::std::flat_map;YAML::Node;glm::(mat|vec)'
   cppcoreguidelines-rvalue-reference-param-not-moved.AllowImplicitMove: true
   cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor: false
   cppcoreguidelines-special-member-functions.AllowMissingMoveFunctions: false

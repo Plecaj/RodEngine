@@ -5,6 +5,8 @@
 // NOLINTBEGIN(misc-include-cleaner)
 #include <Windows.h>
 
+#include <array>
+
 namespace Rod {
 
 	struct HandleDeleter
@@ -65,11 +67,11 @@ namespace Rod {
 	static auto ReadPipe(HANDLE readPipe) -> std::string
 	{
 		constexpr size_t outputBufferSize = 4096;
-		char buffer[outputBufferSize];
+		std::array<char, outputBufferSize> buffer{};
 		DWORD count = 0;
 		std::string output;
-		while (ReadFile(readPipe, buffer, sizeof(buffer), &count, nullptr) && count > 0)
-			output.append(buffer, count);
+		while (ReadFile(readPipe, buffer.data(), static_cast<DWORD>(buffer.size()), &count, nullptr) && count > 0)
+			output.append(buffer.data(), count);
 		return output;
 	}
 

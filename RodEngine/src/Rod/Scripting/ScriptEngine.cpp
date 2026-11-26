@@ -223,7 +223,7 @@ namespace Rod {
 		}
 		catch (const std::runtime_error& exception)
 		{
-			RD_CORE_ERROR("Script startup failed: {}", exception.what());
+			Log::Core().error("Script startup failed: {}", exception.what());
 			return false;
 		}
 
@@ -261,11 +261,11 @@ namespace Rod {
 		ScriptBuildResult result = ScriptBuilder::BuildProject(s_Data->Paths.ScriptProjectPath);
 		if (!result.Success)
 		{
-			RD_CORE_ERROR("Script build failed:\n{}", result.Output);
+			Log::Core().error("Script build failed:\n{}", result.Output);
 			return false;
 		}
 
-		RD_CORE_TRACE("Script build succeeded:\n{}", result.Output);
+		Log::Core().trace("Script build succeeded:\n{}", result.Output);
 		s_Data->Paths.ScriptAssemblyPath = ScriptBuilder::GetAssemblyPath(s_Data->Paths.ScriptProjectPath);
 		return true;
 	}
@@ -279,7 +279,7 @@ namespace Rod {
 		{
 			if (!std::filesystem::exists(s_Data->Paths.ScriptAssemblyPath))
 			{
-				RD_CORE_ERROR("Assembly missing '{}'", s_Data->Paths.ScriptAssemblyPath.string());
+				Log::Core().error("Assembly missing '{}'", s_Data->Paths.ScriptAssemblyPath.string());
 				return false;
 			}
 			const auto cachedAssembly = startupMode == Mode::Editor
@@ -289,7 +289,7 @@ namespace Rod {
 			    CopyManagedString(s_Data->Functions.LoadAssembly(cachedAssembly.string().c_str()));
 			if (metadataJson.empty())
 			{
-				RD_CORE_ERROR("Assembly load failed '{}'", cachedAssembly.string());
+				Log::Core().error("Assembly load failed '{}'", cachedAssembly.string());
 				return false;
 			}
 			ScriptAssembly assembly(cachedAssembly, metadataJson);
@@ -298,7 +298,7 @@ namespace Rod {
 		}
 		catch (const std::runtime_error& exception)
 		{
-			RD_CORE_ERROR("Assembly reload failed: {}", exception.what());
+			Log::Core().error("Assembly reload failed: {}", exception.what());
 			return false;
 		}
 	}

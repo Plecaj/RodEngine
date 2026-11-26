@@ -32,7 +32,7 @@ namespace Rod {
 	void EditorCamera::UpdateProjection() noexcept
 	{
 		m_AspectRatio = m_ViewportWidth / m_ViewportHeight;
-		m_Projection = glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip);
+		SetProjection(glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip));
 	}
 
 	void EditorCamera::UpdateView() noexcept

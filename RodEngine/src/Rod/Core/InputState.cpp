@@ -22,13 +22,13 @@ namespace Rod {
 			else if (const auto* key = std::get_if<KeyChanged>(&event))
 			{
 				if (key->Key >= Key::Space && key->Key <= Key::Menu && key->Action != KeyAction::Repeat)
-					m_Keys[static_cast<size_t>(key->Key)] = m_Focused && key->Action == KeyAction::Press;
+					m_Keys.set(static_cast<size_t>(key->Key), m_Focused && key->Action == KeyAction::Press);
 			}
 			else if (
 			    const auto* mouse = std::get_if<MouseButtonChanged>(&event);
 			    mouse && mouse->Button >= Mouse::Button0 && mouse->Button <= Mouse::ButtonLast)
 			{
-				m_Buttons[static_cast<size_t>(mouse->Button)] = m_Focused && mouse->Down;
+				m_Buttons.set(static_cast<size_t>(mouse->Button), m_Focused && mouse->Down);
 			}
 		}
 
@@ -38,12 +38,12 @@ namespace Rod {
 
 	auto InputState::IsKeyDown(int key) const noexcept -> bool
 	{
-		return key >= Key::Space && key <= Key::Menu && m_Keys[static_cast<size_t>(key)];
+		return key >= Key::Space && key <= Key::Menu && m_Keys.test(static_cast<size_t>(key));
 	}
 
 	auto InputState::IsMouseDown(int button) const noexcept -> bool
 	{
-		return button >= Mouse::Button0 && button <= Mouse::ButtonLast && m_Buttons[static_cast<size_t>(button)];
+		return button >= Mouse::Button0 && button <= Mouse::ButtonLast && m_Buttons.test(static_cast<size_t>(button));
 	}
 
 }

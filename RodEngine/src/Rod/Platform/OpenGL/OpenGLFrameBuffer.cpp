@@ -8,6 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <array>
+#include <ranges>
 #include <stdexcept>
 
 namespace Rod {
@@ -102,8 +103,8 @@ namespace Rod {
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
-				constexpr float borderColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
-				glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+				constexpr std::array borderColor = {1.0f, 1.0f, 1.0f, 1.0f};
+				glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor.data());
 			}
 
 			glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, TextureTarget(multisampled), id, 0);
@@ -171,26 +172,23 @@ namespace Rod {
 			    m_ColorAttachments.data(),
 			    static_cast<uint32_t>(m_ColorAttachments.size()));
 
-			for (size_t i = 0; i < m_ColorAttachments.size(); i++)
+			const auto attachments = std::views::zip(m_ColorAttachments, m_ColorAttachmentSpecifications);
+			for (const auto [index, attachment] : std::views::enumerate(attachments))
 			{
-				Utils::BindTexture(multisample, m_ColorAttachments[i]);
-				switch (m_ColorAttachmentSpecifications[i].TextureFormat)
+				const auto& [id, spec] = attachment;
+				Utils::BindTexture(multisample, id);
+				switch (spec.TextureFormat)
 				{
 					case FramebufferTextureFormat::RGBA8:
-						Utils::AttachColorTexture(
-						    m_ColorAttachments[i],
-						    m_Specification,
-						    GL_RGBA8,
-						    GL_RGBA,
-						    static_cast<int>(i));
+						Utils::AttachColorTexture(id, m_Specification, GL_RGBA8, GL_RGBA, static_cast<int>(index));
 						break;
 					case FramebufferTextureFormat::RedInteger:
 						Utils::AttachColorTexture(
-						    m_ColorAttachments[i],
+						    id,
 						    m_Specification,
 						    GL_R32I,
 						    GL_RED_INTEGER,
-						    static_cast<int>(i));
+						    static_cast<int>(index));
 						break;
 					case FramebufferTextureFormat::None:
 					case FramebufferTextureFormat::DEPTH24:
@@ -255,7 +253,7 @@ namespace Rod {
 		constexpr uint32_t maxFramebufferSize = 8192;
 		if (width == 0 || height == 0 || width > maxFramebufferSize || height > maxFramebufferSize)
 		{
-			RD_CORE_WARN("Attempted to change framebuffer size to: {0}, {1}", width, height);
+			Log::Core().warn("Attempted to change framebuffer size to: {0}, {1}", width, height);
 			return;
 		}
 

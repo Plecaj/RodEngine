@@ -7,6 +7,7 @@
 #include <GLFW/glfw3.h>
 #include <Windows.h>
 
+#include <array>
 #include <commdlg.h>
 #include <filesystem>
 #include <memory>
@@ -60,8 +61,9 @@ namespace Rod {
 
 	auto FileDialogs::OpenFile(const char* filter, const std::string& initialDirectory) const -> std::string
 	{
-		CHAR szFile[MAX_PATH] = {0};
-		auto ofn = CreateOpenFileName(GetOwnerWindow(m_Owner), szFile, filter, OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST);
+		std::array<char, MAX_PATH> fileBuffer{};
+		auto ofn =
+		    CreateOpenFileName(GetOwnerWindow(m_Owner), fileBuffer, filter, OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST);
 		ofn.lpstrInitialDir = initialDirectory.empty() ? nullptr : initialDirectory.c_str();
 
 		if (GetOpenFileNameA(&ofn))
@@ -125,8 +127,8 @@ namespace Rod {
 
 	auto FileDialogs::SaveFile(const char* filter) const -> std::string
 	{
-		CHAR szFile[MAX_PATH] = {0};
-		auto ofn = CreateOpenFileName(GetOwnerWindow(m_Owner), szFile, filter, OFN_PATHMUSTEXIST);
+		std::array<char, MAX_PATH> fileBuffer{};
+		auto ofn = CreateOpenFileName(GetOwnerWindow(m_Owner), fileBuffer, filter, OFN_PATHMUSTEXIST);
 
 		if (GetSaveFileNameA(&ofn))
 			return ofn.lpstrFile;

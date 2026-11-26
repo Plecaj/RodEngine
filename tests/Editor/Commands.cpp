@@ -38,7 +38,7 @@ TEST_CASE("Scene commands clear stale entity references", "[editor][commands]")
 
 TEST_CASE("Failed open commands preserve the scene and selection", "[editor][commands]")
 {
-	if (!Rod::Log::GetCoreLogger())
+	if (!Rod::Log::IsInitialized())
 		Rod::Log::Init();
 	const Rod::Tests::TemporaryDirectory directory;
 	const Rod::Project project{directory.GetPath() / "test.rodproj", {}};

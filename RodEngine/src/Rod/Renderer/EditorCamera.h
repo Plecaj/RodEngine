@@ -30,7 +30,7 @@ namespace Rod {
 		}
 
 		[[nodiscard]] auto GetViewMatrix() const noexcept -> const glm::mat4& { return m_ViewMatrix; }
-		[[nodiscard]] auto GetViewProjection() const noexcept -> glm::mat4 { return m_Projection * m_ViewMatrix; }
+		[[nodiscard]] auto GetViewProjection() const noexcept -> glm::mat4 { return GetProjection() * m_ViewMatrix; }
 
 		[[nodiscard]] auto GetUpDirection() const noexcept -> glm::vec3;
 		[[nodiscard]] auto GetRightDirection() const noexcept -> glm::vec3;

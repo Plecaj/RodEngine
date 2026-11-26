@@ -53,7 +53,7 @@ namespace Rod {
 		const auto path = project.GetStartupScenePath();
 		if (!std::filesystem::exists(path))
 		{
-			RD_CORE_ERROR("Runtime startup scene was not found: {}", path.string());
+			Log::Core().error("Runtime startup scene was not found: {}", path.string());
 			return false;
 		}
 
@@ -65,7 +65,7 @@ namespace Rod {
 		}
 		catch (const std::exception& error)
 		{
-			RD_CORE_ERROR("{}", error.what());
+			Log::Core().error("{}", error.what());
 			return false;
 		}
 	}

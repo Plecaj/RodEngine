@@ -6,6 +6,7 @@
 
 #include <cstring>
 #include <limits>
+#include <ranges>
 #include <stdexcept>
 #include <tiny_gltf.h>
 #include <vector>
@@ -25,17 +26,31 @@ namespace Rod {
 			return value;
 		}
 
+		template <typename T>
+		[[nodiscard]] auto MeshEntry(const std::vector<T>& entries, int index, const char* error) -> const T&
+		{
+			if (index < 0 || !std::cmp_less(index, entries.size()))
+				throw std::runtime_error(error);
+
+			// Checked line above
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
+			return entries[static_cast<size_t>(index)];
+		}
+
+		struct AccessorView
+		{
+			std::span<const uint8_t> Bytes;
+			size_t Stride = 0;
+		};
+
 		[[nodiscard]] auto
 		AccessorData(const tinygltf::Model& model, const tinygltf::Accessor& accessor, size_t elementSize)
-		    -> std::span<const uint8_t>
+		    -> AccessorView
 		{
-			if (accessor.sparse.isSparse || accessor.bufferView < 0 ||
-			    !std::cmp_less(accessor.bufferView, model.bufferViews.size()))
+			if (accessor.sparse.isSparse)
 				throw std::runtime_error("Unsupported mesh accessor");
-			const auto& view = model.bufferViews[static_cast<size_t>(accessor.bufferView)];
-			if (view.buffer < 0 || !std::cmp_less(view.buffer, model.buffers.size()))
-				throw std::runtime_error("Mesh buffer missing");
-			const auto& buffer = model.buffers[static_cast<size_t>(view.buffer)];
+			const auto& view = MeshEntry(model.bufferViews, accessor.bufferView, "Unsupported mesh accessor");
+			const auto& buffer = MeshEntry(model.buffers, view.buffer, "Mesh buffer missing");
 			if (view.byteOffset > buffer.data.size() || view.byteLength > buffer.data.size() - view.byteOffset ||
 			    accessor.byteOffset > view.byteLength)
 				throw std::runtime_error("Mesh buffer bounds invalid");
@@ -44,40 +59,33 @@ namespace Rod {
 			if (accessor.count == 0 || stride < elementSize || available < elementSize ||
 			    accessor.count - 1 > (available - elementSize) / stride)
 				throw std::runtime_error("Mesh accessor bounds invalid");
-			return std::span{buffer.data}.subspan(view.byteOffset + accessor.byteOffset, available);
+			return {
+			    .Bytes = std::span{buffer.data}.subspan(view.byteOffset + accessor.byteOffset, available),
+			    .Stride = stride};
 		}
 
 		[[nodiscard]] auto ReadVertices(const tinygltf::Model& model, const tinygltf::Primitive& primitive)
 		    -> std::vector<float>
 		{
 			const auto position = primitive.attributes.find("POSITION");
-			if (position == primitive.attributes.end() || position->second < 0 ||
-			    !std::cmp_less(position->second, model.accessors.size()))
+			if (position == primitive.attributes.end())
 				throw std::runtime_error("Mesh POSITION missing");
 
-			const auto& accessor = model.accessors[static_cast<size_t>(position->second)];
+			const auto& accessor = MeshEntry(model.accessors, position->second, "Mesh POSITION missing");
 			if (accessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT || accessor.type != TINYGLTF_TYPE_VEC3)
 				throw std::runtime_error("Unsupported POSITION format");
 			if (accessor.count > std::numeric_limits<uint32_t>::max() / (g_VertexComponentCount * sizeof(float)))
 				throw std::runtime_error("Mesh vertex buffer too large");
 			const auto positions = AccessorData(model, accessor, g_VectorComponentCount * sizeof(float));
-			const size_t packedStride = g_VectorComponentCount * sizeof(float);
-			const auto positionByteStride = model.bufferViews[static_cast<size_t>(accessor.bufferView)].byteStride;
-			const size_t positionStride = positionByteStride ? positionByteStride : packedStride;
-			std::span<const uint8_t> normals;
-			size_t normalStride = 0;
+			AccessorView normals;
 			const auto normal = primitive.attributes.find("NORMAL");
 			if (normal != primitive.attributes.end())
 			{
-				if (normal->second < 0 || !std::cmp_less(normal->second, model.accessors.size()))
-					throw std::runtime_error("Mesh NORMAL accessor invalid");
-				const auto& normalAccessor = model.accessors[static_cast<size_t>(normal->second)];
+				const auto& normalAccessor = MeshEntry(model.accessors, normal->second, "Mesh NORMAL accessor invalid");
 				if (normalAccessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT ||
 				    normalAccessor.type != TINYGLTF_TYPE_VEC3 || normalAccessor.count != accessor.count)
 					throw std::runtime_error("Unsupported NORMAL format");
 				normals = AccessorData(model, normalAccessor, g_VectorComponentCount * sizeof(float));
-				const auto byteStride = model.bufferViews[static_cast<size_t>(normalAccessor.bufferView)].byteStride;
-				normalStride = byteStride ? byteStride : packedStride;
 			}
 
 			std::vector<float> vertices;
@@ -86,11 +94,12 @@ namespace Rod {
 			{
 				for (size_t component = 0; component < g_VectorComponentCount; ++component)
 					vertices.push_back(
-					    ReadScalar<float>(positions, vertex * positionStride + component * sizeof(float)));
+					    ReadScalar<float>(positions.Bytes, vertex * positions.Stride + component * sizeof(float)));
 				for (size_t component = 0; component < g_VectorComponentCount; ++component)
 					vertices.push_back(
-					    !normals.empty() ? ReadScalar<float>(normals, vertex * normalStride + component * sizeof(float))
-						                 : 0.0f);
+					    !normals.Bytes.empty()
+					        ? ReadScalar<float>(normals.Bytes, vertex * normals.Stride + component * sizeof(float))
+							: 0.0f);
 			}
 			return vertices;
 		}
@@ -98,10 +107,7 @@ namespace Rod {
 		[[nodiscard]] auto ReadIndices(const tinygltf::Model& model, const tinygltf::Primitive& primitive)
 		    -> std::vector<uint32_t>
 		{
-			if (primitive.indices < 0 || !std::cmp_less(primitive.indices, model.accessors.size()))
-				throw std::runtime_error("Mesh indices missing");
-
-			const auto& accessor = model.accessors[static_cast<size_t>(primitive.indices)];
+			const auto& accessor = MeshEntry(model.accessors, primitive.indices, "Mesh indices missing");
 			if (accessor.type != TINYGLTF_TYPE_SCALAR ||
 			    (accessor.componentType != TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT &&
 			     accessor.componentType != TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT))
@@ -110,9 +116,7 @@ namespace Rod {
 				throw std::runtime_error("Mesh index buffer too large");
 			const size_t elementSize =
 			    accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT ? sizeof(uint16_t) : sizeof(uint32_t);
-			const auto data = AccessorData(model, accessor, elementSize);
-			const auto& view = model.bufferViews[static_cast<size_t>(accessor.bufferView)];
-			const size_t stride = view.byteStride ? view.byteStride : elementSize;
+			const auto [data, stride] = AccessorData(model, accessor, elementSize);
 
 			std::vector<uint32_t> indices;
 			indices.reserve(accessor.count);
@@ -131,8 +135,9 @@ namespace Rod {
 		[[nodiscard]] auto ToFloatVector(std::span<const double> values) -> Vector
 		{
 			Vector result(0.0f);
-			for (typename Vector::length_type component = 0; component < result.length(); ++component)
-				result[component] = static_cast<float>(values[static_cast<size_t>(component)]);
+			for (const auto [component, value] :
+			     std::views::enumerate(values.first(static_cast<size_t>(result.length()))))
+				result[static_cast<typename Vector::length_type>(component)] = static_cast<float>(value);
 			return result;
 		}
 	}
@@ -151,7 +156,7 @@ namespace Rod {
 		if (model.meshes.empty())
 			throw std::runtime_error("Meshes missing");
 
-		const auto& mesh = model.meshes[0];
+		const auto& mesh = model.meshes.front();
 		if (mesh.primitives.empty())
 			throw std::runtime_error("Mesh primitives missing");
 
@@ -194,7 +199,7 @@ namespace Rod {
 		if (primitive.material == -1)
 			return;
 
-		const auto& gltfMaterial = model.materials[static_cast<size_t>(primitive.material)];
+		const auto& gltfMaterial = model.materials.at(static_cast<size_t>(primitive.material));
 		const auto& pbr = gltfMaterial.pbrMetallicRoughness;
 
 		if (pbr.baseColorFactor.size() == g_ColorComponentCount)

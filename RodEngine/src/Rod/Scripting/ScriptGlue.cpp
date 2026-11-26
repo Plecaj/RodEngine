@@ -42,6 +42,7 @@ namespace Rod {
 #ifdef RD_PLATFORM_WINDOWS
 			auto* buffer = static_cast<char*>(CoTaskMemAlloc(value.size() + 1));
 #else
+			// NOLINTNEXTLINE(cppcoreguidelines-owning-memory, cppcoreguidelines-no-malloc)
 			auto* buffer = static_cast<char*>(std::malloc(value.size() + 1));
 #endif
 			if (buffer)
@@ -105,19 +106,19 @@ namespace Rod {
 		switch (level)
 		{
 			case s_LogLevelTrace:
-				RD_TRACE("{}", message);
+				Log::Client().trace("{}", message);
 				break;
 			case s_LogLevelInfo:
-				RD_INFO("{}", message);
+				Log::Client().info("{}", message);
 				break;
 			case s_LogLevelWarning:
-				RD_WARN("{}", message);
+				Log::Client().warn("{}", message);
 				break;
 			case s_LogLevelError:
-				RD_ERROR("{}", message);
+				Log::Client().error("{}", message);
 				break;
 			default:
-				RD_CORE_INFO("{}", message);
+				Log::Core().info("{}", message);
 				break;
 		}
 	}
@@ -503,7 +504,7 @@ namespace Rod {
 		if (!entity || !entity.HasComponent<SpriteRendererComponent>())
 			return;
 		auto& sprite = entity.GetComponent<SpriteRendererComponent>();
-		if (!path || !path[0])
+		if (!path || *path == '\0')
 		{
 			sprite.Texture.reset();
 			return;
@@ -517,7 +518,7 @@ namespace Rod {
 			}
 			catch (const std::runtime_error& exception)
 			{
-				RD_CORE_ERROR("{}", exception.what());
+				Log::Core().error("{}", exception.what());
 			}
 		}
 	}
@@ -536,7 +537,7 @@ namespace Rod {
 		if (!entity || !entity.HasComponent<MeshComponent>())
 			return;
 		auto& mesh = entity.GetComponent<MeshComponent>();
-		if (!path || !path[0])
+		if (!path || *path == '\0')
 		{
 			mesh.SetMesh(nullptr);
 			return;
@@ -548,7 +549,7 @@ namespace Rod {
 		}
 		catch (const std::runtime_error& exception)
 		{
-			RD_CORE_ERROR("{}", exception.what());
+			Log::Core().error("{}", exception.what());
 		}
 	}
 

@@ -30,6 +30,8 @@ namespace Rod {
 		if (filter && *filter)
 		{
 			const std::string description = filter;
+			// Win32 stores the pattern after null terminator for some kind of reason.
+			// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 			const char* patterns = filter + description.size() + 1;
 			if (*patterns)
 			{
@@ -43,7 +45,7 @@ namespace Rod {
 		if (result.ExitCode != 0)
 		{
 			if (result.ExitCode != 1)
-				RD_CORE_ERROR("File dialog failed. Install zenity: {}", result.Output);
+				Log::Core().error("File dialog failed. Install zenity: {}", result.Output);
 			return {};
 		}
 

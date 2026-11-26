@@ -33,8 +33,8 @@ namespace Rod {
 
 	private:
 		static constexpr size_t s_Std140PaddingWordCount = 3;
-		static constexpr size_t s_FrustumCornerCount = 8;
 		static constexpr int s_AxisEndpointCount = 2;
+		static constexpr size_t s_FrustumCornerCount = s_AxisEndpointCount * s_AxisEndpointCount * s_AxisEndpointCount;
 		static constexpr float s_ClipCoordinateSpan = 2.0f;
 		static constexpr float s_PlaneCenterWeight = 0.25f;
 		static constexpr float s_DirectionTolerance = 0.0001f;

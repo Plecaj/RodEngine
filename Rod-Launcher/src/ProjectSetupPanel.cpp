@@ -54,7 +54,7 @@ namespace Rod {
 		if (ImGui::BeginChild("ProjectSetup", ImVec2{width, height}))
 		{
 			ImGui::TextUnformatted("New Project");
-			ImGui::TextDisabled("Step %zu of %zu - %s", stepIndex + 1, titles.size(), titles[stepIndex]);
+			ImGui::TextDisabled("Step %zu of %zu - %s", stepIndex + 1, titles.size(), titles.at(stepIndex));
 			ImGui::Dummy(ImVec2{0.0f, g_FieldSpacing});
 			try
 			{

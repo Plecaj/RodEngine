@@ -2,6 +2,8 @@
 
 #include "OpenGLContext.h"
 
+#include "Rod/Utils/FunctionPointerCast.h"
+
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
@@ -15,15 +17,16 @@ namespace Rod {
 			throw std::invalid_argument("OpenGL window handle required");
 
 		glfwMakeContextCurrent(m_WindowHandle);
-		// NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
-		const int status = gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress));
+		const int status =
+		    gladLoadGLLoader([](const char* name) { return FunctionPointerCast<void*>(glfwGetProcAddress(name)); });
 		if (!status)
 			throw std::runtime_error("OpenGL loader initialization failed");
 
-		RD_CORE_INFO("OpenGL Info:");
-		RD_CORE_INFO("	Vendor: {0}", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
-		RD_CORE_INFO("	Renderer: {0}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
-		RD_CORE_INFO("	Version: {0}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+		// NOLINTBEGIN(cppcoreguidelines-pro-type-reinterpret-cast)
+		Log::Core().info("OpenGL Info:");
+		Log::Core().info("	Vendor: {0}", reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
+		Log::Core().info("	Renderer: {0}", reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+		Log::Core().info("	Version: {0}", reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 		// NOLINTEND(cppcoreguidelines-pro-type-reinterpret-cast)
 
 		glEnable(GL_DEBUG_OUTPUT);
@@ -31,9 +34,9 @@ namespace Rod {
 		glDebugMessageCallback(
 		    [](GLenum, GLenum, GLuint, GLenum severity, GLsizei, const GLchar* message, const void*) {
 			    if (severity == GL_DEBUG_SEVERITY_HIGH)
-				    RD_CORE_ERROR("GL DEBUG HIGH: {0}", message);
+				    Log::Core().error("GL DEBUG HIGH: {0}", message);
 			    else if (severity == GL_DEBUG_SEVERITY_MEDIUM)
-				    RD_CORE_WARN("GL DEBUG MEDIUM: {0}", message);
+				    Log::Core().warn("GL DEBUG MEDIUM: {0}", message);
 		    },
 		    nullptr);
 	}

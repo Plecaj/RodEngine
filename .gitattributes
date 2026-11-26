@@ -11,3 +11,4 @@ RodEngine/vendor/** linguist-vendored
 /.clang* text eol=lf
 /.editorconfig text eol=lf
 /.gitattributes text eol=lf
+/cmake/lsan.supp text eol=lf

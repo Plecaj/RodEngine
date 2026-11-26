@@ -1,2 +1,5 @@
 # CoreCLR retains allocations until process exit.
 leak:libcoreclr.so
+
+# Needed for CI rendering tests
+leak:^extensionSupportedGLX$

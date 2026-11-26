@@ -1,5 +1,8 @@
 target_sources(Rod-Launcher PRIVATE
-    "${PROJECT_SOURCE_DIR}/RodEngine/src/Rod/Core/EntryPoint.cpp"
+    LauncherApp.cpp
+    LauncherApp.h
+    LauncherLayout.cpp
+    LauncherLayout.h
     ProjectSetupPanel.cpp
     ProjectSetupPanel.h
     RecentProjects.cpp

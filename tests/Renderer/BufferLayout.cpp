@@ -11,16 +11,12 @@ TEST_CASE("Buffer layouts pack vertex attributes", "[renderer][buffer]")
 	    {Rod::ShaderDataType::Float2, "UV"},
 	    {Rod::ShaderDataType::Int, "Entity"}};
 	const auto elements = layout.GetElements();
-	constexpr uint32_t positionSize = 12;
-	constexpr uint32_t uvSize = 8;
-	constexpr uint32_t entitySize = 4;
-	constexpr size_t attributeCount = 3;
 
-	REQUIRE(elements.size() == attributeCount);
+	REQUIRE(elements.size() == 3);
 	REQUIRE(elements[0].Offset == 0);
-	REQUIRE(elements[1].Offset == positionSize);
-	REQUIRE(elements[2].Offset == positionSize + uvSize);
-	REQUIRE(layout.GetStride() == positionSize + uvSize + entitySize);
+	REQUIRE(elements[1].Offset == 12);
+	REQUIRE(elements[2].Offset == 20);
+	REQUIRE(layout.GetStride() == 24);
 }
 
 TEST_CASE("Buffer elements describe shader types", "[renderer][buffer]")

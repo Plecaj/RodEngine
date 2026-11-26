@@ -5,15 +5,21 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <optional>
 
 namespace Rod {
 
 	class Project;
+	class RenderDevice;
 
 	class EditorSceneManager
 	{
 	public:
-		EditorSceneManager(const Project& project, uint32_t viewportWidth, uint32_t viewportHeight);
+		EditorSceneManager(
+		    const Project& project,
+		    const RenderDevice& device,
+		    uint32_t viewportWidth,
+		    uint32_t viewportHeight);
 		~EditorSceneManager();
 		EditorSceneManager(const EditorSceneManager&) = delete;
 		auto operator=(const EditorSceneManager&) -> EditorSceneManager& = delete;
@@ -29,10 +35,13 @@ namespace Rod {
 
 		[[nodiscard]] constexpr auto GetActiveScene() noexcept -> Scene&
 		{
-			return m_State == SceneState::Play ? m_RuntimeScene : m_EditorScene;
+			return m_RuntimeScene ? *m_RuntimeScene : m_EditorScene;
 		}
 		[[nodiscard]] constexpr auto GetEditorScene() noexcept -> Scene& { return m_EditorScene; }
-		[[nodiscard]] constexpr auto GetState() const noexcept -> SceneState { return m_State; }
+		[[nodiscard]] constexpr auto GetState() const noexcept -> SceneState
+		{
+			return m_RuntimeScene ? SceneState::Play : SceneState::Edit;
+		}
 		[[nodiscard]] constexpr auto GetScenePath() const noexcept -> const std::filesystem::path&
 		{
 			return m_ScenePath;
@@ -40,9 +49,9 @@ namespace Rod {
 
 	private:
 		const Project& m_Project;
+		const RenderDevice& m_Device;
 		Scene m_EditorScene;
-		Scene m_RuntimeScene;
-		SceneState m_State = SceneState::Edit;
+		std::optional<Scene> m_RuntimeScene;
 		std::filesystem::path m_ScenePath;
 		uint32_t m_ViewportWidth;
 		uint32_t m_ViewportHeight;

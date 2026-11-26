@@ -6,9 +6,7 @@
 auto main(int argc, char* argv[]) -> int
 try
 {
-	constexpr int firstPayloadArgument = 3;
-	constexpr auto pollInterval = std::chrono::milliseconds(10);
-	if (argc < firstPayloadArgument)
+	if (argc < 3)
 		return 1;
 	const std::filesystem::path output = argv[1];
 	const std::filesystem::path release = argv[2];
@@ -17,12 +15,12 @@ try
 	{
 		if (std::chrono::steady_clock::now() >= deadline)
 			return 1;
-		std::this_thread::sleep_for(pollInterval);
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
 
 	const auto temporary = output.string() + ".tmp";
 	std::ofstream file(temporary, std::ios::binary);
-	for (int index = firstPayloadArgument; index < argc; ++index)
+	for (int index = 3; index < argc; ++index)
 		file << argv[index] << '\0';
 	file.close();
 	if (!file)

@@ -1,10 +1,8 @@
 #pragma once
 
-#include "Rod/Renderer/Camera.h"
-#include "Rod/Renderer/EditorCamera.h"
 #include "Rod/Renderer/FrameBuffer.h"
+#include "Rod/Renderer/Mesh.h"
 #include "Rod/Renderer/Shader.h"
-#include "Rod/Scene/Components.h"
 
 #include <array>
 #include <cstddef>
@@ -14,19 +12,24 @@
 
 namespace Rod {
 
+	class RenderDevice;
+	class ShaderLoader;
+
 	class Renderer3D
 	{
 	public:
-		static void Init();
-		static void Shutdown();
+		Renderer3D(const RenderDevice& device, const ShaderLoader& shaders);
 
-		static void
-		BeginScene(const Camera& camera, const glm::mat4& transform, std::span<const DirectionalLightComponent> lights);
-		static void BeginScene(const EditorCamera& camera, std::span<const DirectionalLightComponent> lights);
-		static void EndScene();
+		struct DirectionalLight
+		{
+			glm::vec3 Direction;
+			glm::vec3 Color;
+			float Intensity;
+		};
 
-		static void
-		Submit(const Ref<Mesh>& mesh, const glm::mat4& transform, const Material& material, int entityID = -1);
+		void Begin(const glm::mat4& viewProjection, std::span<const DirectionalLight> lights);
+		void Submit(const Ref<Mesh>& mesh, const glm::mat4& transform, const Material& material, int entityID = -1);
+		void End();
 
 	private:
 		static constexpr size_t s_Std140PaddingWordCount = 3;
@@ -49,7 +52,7 @@ namespace Rod {
 
 		using FrustumCorners = std::array<glm::vec3, s_FrustumCornerCount>;
 		struct SceneMatrices;
-		struct DirectionalLight;
+		struct LightUniform;
 		struct LightsData;
 		struct MaterialData;
 		struct ShadowData;
@@ -61,9 +64,9 @@ namespace Rod {
 		CreateDirectionalLightViewProjection(const glm::vec3& lightDirection, const glm::mat4& cameraViewProjection)
 		    -> glm::mat4;
 
-		static void SetupScene(std::span<const DirectionalLightComponent> lights);
-		static void DepthPass();
-		static void GeometryPass();
+		void SetupLights(std::span<const DirectionalLight> lights);
+		void DepthPass();
+		void GeometryPass();
 
 	private:
 		struct DrawCommand
@@ -74,18 +77,13 @@ namespace Rod {
 			int EntityID = -1;
 		};
 
-		struct SceneData
-		{
-			glm::mat4 ViewProjection{};
-			Scope<UniformBuffer> SceneUBO, LightsUBO, DrawUBO, ShadowUBO, MaterialUBO;
-			std::vector<glm::vec3> LightsDirections;
-			std::vector<glm::mat4> LightSpaceMatrices;
-			Scope<Shader> Shader, ShadowShader;
-			std::vector<Scope<Framebuffer>> DepthMaps;
-			std::vector<DrawCommand> DrawCommands;
-		};
-
-		static Scope<SceneData> s_SceneData;
+		const RenderDevice& m_Device;
+		glm::mat4 m_ViewProjection{};
+		Scope<UniformBuffer> m_SceneUBO, m_LightsUBO, m_DrawUBO, m_ShadowUBO, m_MaterialUBO;
+		std::vector<glm::mat4> m_LightSpaceMatrices;
+		Scope<Shader> m_Shader, m_ShadowShader;
+		std::vector<Scope<Framebuffer>> m_DepthMaps;
+		std::vector<DrawCommand> m_DrawCommands;
 	};
 
 }

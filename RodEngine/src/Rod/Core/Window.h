@@ -4,7 +4,7 @@
 #include "Rod/Events/Event.h"
 
 #include <cstdint>
-#include <functional>
+#include <span>
 #include <string>
 #include <utility>
 
@@ -20,8 +20,7 @@ namespace Rod {
 		unsigned int Height;
 
 		std::string TaskbarIconFilepath;
-		bool UsesCustomUi;
-		bool NativeTitlebar;
+		bool NativeTitlebar = true;
 		bool Resizable = true;
 		bool Centered = false;
 
@@ -29,19 +28,14 @@ namespace Rod {
 		    std::string title = "Rod Engine",
 		    uint32_t width = s_DefaultWidth,
 		    uint32_t height = s_DefaultHeight,
-		    std::string taskbarIconFilepath = "",
-		    bool usesCustomUi = false) noexcept
-		    : Title(std::move(title)), Width(width), Height(height),
-		      TaskbarIconFilepath(std::move(taskbarIconFilepath)), UsesCustomUi(usesCustomUi),
-		      NativeTitlebar(!usesCustomUi)
+		    std::string taskbarIconFilepath = "") noexcept
+		    : Title(std::move(title)), Width(width), Height(height), TaskbarIconFilepath(std::move(taskbarIconFilepath))
 		{}
 	};
 
 	class Window
 	{
 	public:
-		using EventCallbackFn = std::function<void(Event&)>;
-
 		Window() = default;
 		virtual ~Window() = default;
 		Window(const Window&) = delete;
@@ -49,11 +43,14 @@ namespace Rod {
 		Window(Window&&) = delete;
 		auto operator=(Window&&) -> Window& = delete;
 
-		virtual void OnUpdate() = 0;
+		[[nodiscard]] virtual auto PollEvents(bool wait) -> std::span<const Event> = 0;
+		virtual void Present() = 0;
 
 		[[nodiscard]] virtual auto GetWidth() const noexcept -> unsigned int = 0;
 		[[nodiscard]] virtual auto GetHeight() const noexcept -> unsigned int = 0;
 
+		[[nodiscard]] virtual auto GetFramebufferSize() const noexcept -> glm::uvec2 = 0;
+		[[nodiscard]] virtual auto GetCursor() const noexcept -> glm::vec2 = 0;
 		virtual void Minimize() const = 0;
 		virtual void Maximize() const = 0;
 		[[nodiscard]] virtual auto IsMinimized() const noexcept -> bool = 0;
@@ -61,7 +58,6 @@ namespace Rod {
 		virtual void Restore() const = 0;
 		virtual void BeginWindowDrag() const = 0;
 
-		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
 		virtual void SetVSync(bool enabled) = 0;
 		[[nodiscard]] virtual auto IsVSync() const noexcept -> bool = 0;
 

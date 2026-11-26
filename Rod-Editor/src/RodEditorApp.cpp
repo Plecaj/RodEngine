@@ -1,35 +1,44 @@
 #include "rdpch.h"
 
-#include "EditorLayer.h"
-#include "Rod/Core/Application.h"
+#include "EditorApp.h"
+#include "Rod/Core/AppMain.h"
+#include "Rod/Core/DesktopHost.h"
+#include "Rod/ImGui/ImGuiSession.h"
+#include "Rod/Renderer/RenderDevice.h"
+#include "Rod/Renderer/SceneRenderer.h"
+#include "Rod/Renderer/ShaderLoader.h"
 
 #include <stdexcept>
 
-namespace Rod {
-
-	auto CreateApplication(const std::optional<Project>& project) -> Scope<Application>
-	{
+auto main(int argc, char* argv[]) -> int
+{
+	return Rod::RunMain([&] {
+		const auto project = Rod::ReadProject(argc, argv);
 		if (!project)
 			throw std::invalid_argument("Project must be provided for editor");
 
-		auto app = CreateScope<Application>(
-		    WindowProps{
-		        "Rod Editor",
-		        WindowProps::s_DefaultWidth,
-		        WindowProps::s_DefaultHeight,
-		        "RodAssets/Textures/logo.png",
-		        true},
-		    project);
-		const auto requestClose = [application = app.get()] {
-			application->Close();
-		};
-		const auto editorProject = app->GetProject();
-		const auto imGuiLayer = app->GetImGuiLayer();
-		if (!editorProject || !imGuiLayer)
-			throw std::logic_error("Rod Editor requires a project and an ImGui layer");
-		app->PushLayer(
-		    CreateScope<EditorLayer>(*editorProject, app->GetWindow(), app->GetInput(), *imGuiLayer, requestClose));
-		return app;
-	}
+		Rod::WindowProps props{
+		    "Rod Editor",
+		    Rod::WindowProps::s_DefaultWidth,
+		    Rod::WindowProps::s_DefaultHeight,
+		    "RodAssets/Textures/logo.png"};
+		props.NativeTitlebar = false;
+		Rod::DesktopHost host(props);
+		const Rod::RenderDevice device;
+		device.ConfigureDefaults();
+		const auto shaderDirectory = project->GetShadersPath();
+		const Rod::ShaderLoader shaders(shaderDirectory, shaderDirectory / "Cached");
+		Rod::SceneRenderer renderer(device, shaders);
+		const Rod::ImGuiSession ui(host.GetWindow());
+		Rod::EditorApp editor(*project, host, device, renderer);
 
+		while (const auto frame = host.NextFrame())
+		{
+			Rod::ImGuiSession::Begin();
+			editor.Update(*frame);
+			Rod::ImGuiSession::End(frame->Drawable);
+			if (frame->Drawable)
+				host.Present();
+		}
+	});
 }

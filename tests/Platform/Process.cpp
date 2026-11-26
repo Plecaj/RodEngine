@@ -53,9 +53,8 @@ TEST_CASE("Windows process starter returns before exit and preserves project arg
 	// The child cannot finish until Start has returned and this file is created.
 	std::ofstream(release).close();
 	const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
-	constexpr auto pollInterval = std::chrono::milliseconds(10);
 	while (!std::filesystem::exists(output) && std::chrono::steady_clock::now() < deadline)
-		std::this_thread::sleep_for(pollInterval);
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	REQUIRE(std::filesystem::exists(output));
 	std::ifstream file(output, std::ios::binary);
 	const std::string actual{std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};

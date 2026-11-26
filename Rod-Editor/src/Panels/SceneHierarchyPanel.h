@@ -10,10 +10,15 @@
 
 namespace Rod {
 
+	class RenderDevice;
+
 	class SceneHierarchyPanel
 	{
 	public:
-		SceneHierarchyPanel(std::filesystem::path assetsPath, EditorInteractionState& interaction) noexcept;
+		SceneHierarchyPanel(
+		    std::filesystem::path assetsPath,
+		    EditorInteractionState& interaction,
+		    const RenderDevice& device) noexcept;
 
 		void OnImGuiRender(Scene& scene) const;
 
@@ -73,7 +78,7 @@ namespace Rod {
 		static auto DrawScriptField(const std::string& name, ScriptFieldInstance& field) -> bool;
 
 		void DrawSceneHierarchy(Scene& scene) const;
-		void DrawPropertiesPanel() const;
+		void DrawPropertiesPanel(Scene& scene) const;
 
 		void DrawEntityNode(Scene& scene, Entity entity) const;
 		void HandleHierarchyBlankSpace(Scene& scene) const;
@@ -83,17 +88,18 @@ namespace Rod {
 		static void DrawAddComponentButton(Entity entity);
 
 		static void DrawTransformComponent(Entity entity);
-		static void DrawCameraComponent(Entity entity);
+		static void DrawCameraComponent(Scene& scene, Entity entity);
 		void DrawSpriteRendererComponent(Entity entity) const;
 		void DrawMeshComponent(Entity entity) const;
 		static void DrawDirectionalLightComponent(Entity entity);
 		static void DrawScriptComponent(Entity entity);
 
-		void DrawComponents(Entity entity) const;
+		void DrawComponents(Scene& scene, Entity entity) const;
 
 	private:
 		std::filesystem::path m_AssetsPath;
 		EditorInteractionState& m_Interaction;
+		const RenderDevice& m_Device;
 	};
 
 }

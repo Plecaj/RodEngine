@@ -7,7 +7,6 @@
 #include "Rod/Renderer/Texture.h"
 #include "Rod/Scene/SceneCamera.h"
 #include "Rod/Scripting/ScriptField.h"
-#include "ScriptableEntity.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -97,21 +96,6 @@ namespace Rod {
 		bool FixedAspectRatio = false;
 
 		CameraComponent() = default;
-	};
-
-	struct NativeScriptComponent
-	{
-		Scope<ScriptableEntity> Instance;
-
-		Scope<ScriptableEntity> (*InstantiateScript)() = nullptr;
-
-		template <typename T>
-		void Bind() noexcept
-		{
-			InstantiateScript = []() -> Scope<ScriptableEntity> {
-				return CreateScope<T>();
-			};
-		}
 	};
 
 	struct ScriptComponent

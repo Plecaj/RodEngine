@@ -10,7 +10,6 @@ target_sources(RodEngine PUBLIC
 )
 
 add_subdirectory(Rod/Core)
-add_subdirectory(Rod/Debug)
 add_subdirectory(Rod/Events)
 add_subdirectory(Rod/ImGui)
 add_subdirectory(Rod/Math)

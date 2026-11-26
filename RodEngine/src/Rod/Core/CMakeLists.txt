@@ -1,7 +1,7 @@
 target_sources(RodEngine PRIVATE
-    Application.cpp
-    Layer.cpp
-    LayerStack.cpp
+    AppMain.cpp
+    DesktopHost.cpp
+    InputState.cpp
     Log.cpp
     UUID.cpp
 )
@@ -9,14 +9,12 @@ target_sources(RodEngine PRIVATE
 target_sources(RodEngine PUBLIC
     FILE_SET HEADERS
     FILES
-        Application.h
+        AppMain.h
         BuildMode.h
         Core.h
-        EntryPoint.h
-        Input.h
+        DesktopHost.h
+        InputState.h
         KeyCodes.h
-        Layer.h
-        LayerStack.h
         Log.h
         MouseButtonCodes.h
         Timestep.h

@@ -3,6 +3,7 @@
 #include "SceneHierarchyPanel.h"
 
 #include "Rod/ImGui/ImGuiFlags.h"
+#include "Rod/Renderer/RenderDevice.h"
 #include "Rod/Scene/Components.h"
 #include "Rod/Scripting/ScriptEngine.h"
 
@@ -47,7 +48,22 @@ namespace Rod {
 			return ImGui::IsItemClicked(ImGuiMouseButton_Left);
 		}
 
-		void HandleMeshDrop(MeshComponent& component, const std::filesystem::path& assetsPath)
+		[[nodiscard]] auto DrawRemoveComponentMenu(size_t typeHash, float x, float size) -> bool
+		{
+			ImGui::SameLine(x);
+			const std::string popupID = "ComponentSettings" + std::to_string(typeHash);
+			const std::string buttonID = "##" + popupID;
+			if (DrawMoreOptionsButton(buttonID.c_str(), {size, size}))
+				ImGui::OpenPopup(popupID.c_str());
+			if (!ImGui::BeginPopup(popupID.c_str()))
+				return false;
+			const bool remove = ImGui::MenuItem("Remove Component");
+			ImGui::EndPopup();
+			return remove;
+		}
+
+		void
+		HandleMeshDrop(MeshComponent& component, const std::filesystem::path& assetsPath, const RenderDevice& device)
 		{
 			if (!ImGui::BeginDragDropTarget())
 				return;
@@ -58,7 +74,7 @@ namespace Rod {
 				const std::filesystem::path meshAssetPath = assetsPath / path;
 				try
 				{
-					component.SetMesh(CreateRef<Mesh>(meshAssetPath.string()));
+					component.SetMesh(CreateRef<Mesh>(device, meshAssetPath.string()));
 				}
 				catch (const std::runtime_error& exception)
 				{
@@ -71,22 +87,23 @@ namespace Rod {
 
 	SceneHierarchyPanel::SceneHierarchyPanel(
 	    std::filesystem::path assetsPath,
-	    EditorInteractionState& interaction) noexcept
-	    : m_AssetsPath(std::move(assetsPath)), m_Interaction(interaction)
+	    EditorInteractionState& interaction,
+	    const RenderDevice& device) noexcept
+	    : m_AssetsPath(std::move(assetsPath)), m_Interaction(interaction), m_Device(device)
 	{}
 
 	void SceneHierarchyPanel::OnImGuiRender(Scene& scene) const
 	{
 		DrawSceneHierarchy(scene);
-		DrawPropertiesPanel();
+		DrawPropertiesPanel(scene);
 	}
 
 	void SceneHierarchyPanel::DrawSceneHierarchy(Scene& scene) const
 	{
 		ImGui::Begin("Scene Hierarchy");
-		for (const auto entityID : scene.m_Registry.storage<entt::entity>())
+		for (const auto entityID : scene.View<IDComponent>())
 		{
-			const Entity entity{entityID, scene};
+			const Entity entity = scene.FindEntityByHandle(entityID);
 			DrawEntityNode(scene, entity);
 		}
 
@@ -95,12 +112,12 @@ namespace Rod {
 		ImGui::End();
 	}
 
-	void SceneHierarchyPanel::DrawPropertiesPanel() const
+	void SceneHierarchyPanel::DrawPropertiesPanel(Scene& scene) const
 	{
 		ImGui::Begin("Properties");
 
 		if (m_Interaction.SelectedEntity)
-			DrawComponents(m_Interaction.SelectedEntity);
+			DrawComponents(scene, m_Interaction.SelectedEntity);
 
 		ImGui::End();
 	}
@@ -240,7 +257,8 @@ namespace Rod {
 	template <typename T, typename UIFunction>
 	void SceneHierarchyPanel::DrawComponent(const std::string& name, Entity entity, UIFunction uiFunction)
 	{
-		if (!entity.HasComponent<T>())
+		auto* component = entity.TryGetComponent<T>();
+		if (!component)
 			return;
 		constexpr ImVec2 framePadding{4.0f, 4.0f};
 		constexpr float linePaddingFactor = 2.0f;
@@ -252,7 +270,6 @@ namespace Rod {
 		    ImGuiTreeNodeFlags_SpanAvailWidth,
 		    ImGuiTreeNodeFlags_AllowItemOverlap,
 		    ImGuiTreeNodeFlags_FramePadding);
-		auto& component = entity.GetComponent<T>();
 		const ImVec2 contentRegion = ImGui::GetContentRegionAvail();
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, framePadding);
 		const float lineHeight = GImGui->Font->FontSize + GImGui->Style.FramePadding.y * linePaddingFactor;
@@ -260,35 +277,30 @@ namespace Rod {
 		const auto typeHash = typeid(T).hash_code();
 		const bool open = ImGui::TreeNodeEx(NodeID(typeHash), flags, "%s", name.c_str());
 		ImGui::PopStyleVar();
-		ImGui::SameLine(contentRegion.x - lineHeight * settingsButtonOffset);
-		const std::string popupID = "ComponentSettings" + std::to_string(typeHash);
-		const std::string buttonID = "##ComponentSettings" + std::to_string(typeHash);
-		if (DrawMoreOptionsButton(buttonID.c_str(), {lineHeight, lineHeight}))
-			ImGui::OpenPopup(popupID.c_str());
-		bool removeComponent = false;
-		if (ImGui::BeginPopup(popupID.c_str()))
-		{
-			removeComponent = ImGui::MenuItem("Remove Component");
-			ImGui::EndPopup();
-		}
+		const bool removeComponent =
+		    OptionalComponent<T> &&
+		    DrawRemoveComponentMenu(typeHash, contentRegion.x - lineHeight * settingsButtonOffset, lineHeight);
 		if (open)
 		{
 			ImGui::Dummy({0.0f, verticalSpacing});
-			uiFunction(component);
+			uiFunction(*component);
 			ImGui::Dummy({0.0f, verticalSpacing});
 			ImGui::TreePop();
 		}
-		if (removeComponent)
-			entity.RemoveComponent<T>();
+		if constexpr (OptionalComponent<T>)
+		{
+			if (removeComponent)
+				entity.RemoveComponent<T>();
+		}
 	}
 
-	void SceneHierarchyPanel::DrawComponents(Entity entity) const
+	void SceneHierarchyPanel::DrawComponents(Scene& scene, Entity entity) const
 	{
 		DrawTag(entity);
 		DrawAddComponentButton(entity);
 
 		DrawTransformComponent(entity);
-		DrawCameraComponent(entity);
+		DrawCameraComponent(scene, entity);
 		DrawSpriteRendererComponent(entity);
 		DrawMeshComponent(entity);
 		DrawDirectionalLightComponent(entity);
@@ -419,10 +431,12 @@ namespace Rod {
 		ImGui::Checkbox("Fixed Aspect Ratio", &component.FixedAspectRatio);
 	}
 
-	void SceneHierarchyPanel::DrawCameraComponent(Entity entity)
+	void SceneHierarchyPanel::DrawCameraComponent(Scene& scene, Entity entity)
 	{
-		DrawComponent<CameraComponent>("Camera", entity, [](auto& component) {
-			ImGui::Checkbox("Primary", &component.Primary);
+		DrawComponent<CameraComponent>("Camera", entity, [&scene, entity](auto& component) {
+			bool primary = component.Primary;
+			if (ImGui::Checkbox("Primary", &primary))
+				scene.SetCameraPrimary(entity, primary);
 			DrawProjectionSelector(component.Camera);
 			if (component.Camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
 				DrawPerspectiveControls(component.Camera);
@@ -447,7 +461,7 @@ namespace Rod {
 				{
 					const char* path = static_cast<const char*>(payload->Data);
 					const std::filesystem::path texturePath = m_AssetsPath / path;
-					component.Texture = Texture2D::Create(texturePath.string());
+					component.Texture = m_Device.LoadTexture2D(texturePath.string());
 				}
 				ImGui::EndDragDropTarget();
 			}
@@ -468,7 +482,7 @@ namespace Rod {
 				return;
 			}
 
-			HandleMeshDrop(component, m_AssetsPath);
+			HandleMeshDrop(component, m_AssetsPath, m_Device);
 			if (!component.Mesh)
 				return;
 

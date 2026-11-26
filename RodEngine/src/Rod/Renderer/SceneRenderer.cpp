@@ -2,122 +2,70 @@
 
 #include "SceneRenderer.h"
 
-#include "Rod/Renderer/Renderer.h"
-#include "Rod/Renderer/Renderer2D.h"
-#include "Rod/Renderer/Renderer3D.h"
 #include "Rod/Scene/Components.h"
+#include "Rod/Scene/Entity.h"
 #include "Rod/Scene/Scene.h"
 
+#include <vector>
+
 namespace Rod {
+	namespace {
+		auto CollectLights(const Scene& scene) -> std::vector<Renderer3D::DirectionalLight>
+		{
+			std::vector<Renderer3D::DirectionalLight> lights;
+			scene.View<DirectionalLightComponent>().each([&](const DirectionalLightComponent& light) {
+				lights.push_back({.Direction = light.Direction, .Color = light.Color, .Intensity = light.Intensity});
+			});
+			return lights;
+		}
 
-	struct SceneRenderer::RuntimeCameraData
-	{
-		ObserverPtr<Camera> MainCamera = nullptr;
-		glm::mat4 Transform = glm::mat4(1.0f);
+		void SubmitMeshes(const Scene& scene, Renderer3D& renderer)
+		{
+			scene.View<TransformComponent, MeshComponent>().each(
+			    [&](auto entity, const TransformComponent& transform, const MeshComponent& mesh) {
+				    renderer.Submit(mesh.Mesh, transform.GetTransform(), mesh.Material, static_cast<int>(entity));
+			    });
+		}
 
-		[[nodiscard]] auto IsValid() const -> bool { return MainCamera != nullptr; }
-	};
-
-	auto SceneRenderer::FindRuntimeCamera(Scene& scene) -> SceneRenderer::RuntimeCameraData
-	{
-		auto& registry = scene.m_Registry;
-		RuntimeCameraData cameraData;
-
-		const auto view = registry.view<CameraComponent, TransformComponent>();
-		view.each([&](CameraComponent& camera, TransformComponent& transform) {
-			if (camera.Primary)
-			{
-				cameraData.MainCamera = &camera.Camera;
-				cameraData.Transform = transform.GetTransform();
-			}
-		});
-
-		return cameraData;
+		void SubmitSprites(const Scene& scene, Renderer2D& renderer)
+		{
+			scene.View<TransformComponent, SpriteRendererComponent>().each(
+			    [&](auto entity, const TransformComponent& transform, const SpriteRendererComponent& sprite) {
+				    renderer.SubmitQuad(
+				        transform.GetTransform(),
+				        sprite.Texture,
+				        sprite.Texture ? sprite.TilingFactor : 1.0f,
+				        sprite.Color,
+				        static_cast<int>(entity));
+			    });
+		}
 	}
 
-	auto SceneRenderer::CollectLights(Scene& scene) -> std::vector<DirectionalLightComponent>
+	SceneRenderer::SceneRenderer(const RenderDevice& device, const ShaderLoader& shaders)
+	    : m_Meshes(device, shaders), m_Sprites(device, shaders)
+	{}
+
+	void SceneRenderer::Render(const Scene& scene, const glm::mat4& viewProjection)
 	{
-		auto& registry = scene.m_Registry;
-		std::vector<DirectionalLightComponent> lightSources;
+		const auto lights = CollectLights(scene);
+		m_Meshes.Begin(viewProjection, lights);
+		SubmitMeshes(scene, m_Meshes);
+		m_Meshes.End();
 
-		const auto view = registry.view<DirectionalLightComponent>();
-		view.each([&](DirectionalLightComponent& light) { lightSources.push_back(light); });
-
-		return lightSources;
-	}
-
-	void SceneRenderer::SubmitMeshes(Scene& scene)
-	{
-		auto& registry = scene.m_Registry;
-		const auto view = registry.view<TransformComponent, MeshComponent>();
-		view.each([&](auto entity, TransformComponent& transform, MeshComponent& mesh) {
-			if (!mesh.Mesh)
-				return;
-
-			Renderer3D::Submit(mesh.Mesh, transform.GetTransform(), mesh.Material, static_cast<int>(entity));
-		});
-	}
-
-	void SceneRenderer::SubmitSprites(Scene& scene)
-	{
-		auto& registry = scene.m_Registry;
-		const auto view = registry.view<TransformComponent, SpriteRendererComponent>();
-		view.each([&](auto entity, TransformComponent& transform, SpriteRendererComponent& sprite) {
-			Renderer2D::DrawSprite(transform.GetTransform(), sprite, static_cast<int>(entity));
-		});
-	}
-
-	void SceneRenderer::Init(const std::filesystem::path& shaderDirectory)
-	{
-		RD_PROFILE_FUNCTION();
-
-		Renderer::Init(shaderDirectory);
-		Renderer3D::Init();
-		Renderer2D::Init();
-	}
-
-	void SceneRenderer::Shutdown()
-	{
-		RD_PROFILE_FUNCTION();
-
-		Renderer2D::Shutdown();
-		Renderer3D::Shutdown();
-		Renderer::Shutdown();
-	}
-
-	void SceneRenderer::OnViewportResize(uint32_t width, uint32_t height)
-	{
-		Renderer::OnWindowResize(width, height);
+		m_Sprites.Begin(viewProjection);
+		SubmitSprites(scene, m_Sprites);
+		m_Sprites.End();
 	}
 
 	void SceneRenderer::RenderRuntime(Scene& scene)
 	{
-		const auto cameraData = FindRuntimeCamera(scene);
-		if (!cameraData.IsValid())
+		const auto primary = scene.FindPrimaryCamera();
+		if (!primary)
 			return;
 
-		auto lights = CollectLights(scene);
-
-		Renderer3D::BeginScene(*cameraData.MainCamera, cameraData.Transform, lights);
-		SubmitMeshes(scene);
-		Renderer3D::EndScene();
-
-		Renderer2D::BeginScene(*cameraData.MainCamera, cameraData.Transform);
-		SubmitSprites(scene);
-		Renderer2D::EndScene();
-	}
-
-	void SceneRenderer::RenderEditor(Scene& scene, EditorCamera& camera)
-	{
-		auto lights = CollectLights(scene);
-
-		Renderer3D::BeginScene(camera, lights);
-		SubmitMeshes(scene);
-		Renderer3D::EndScene();
-
-		Renderer2D::BeginScene(camera);
-		SubmitSprites(scene);
-		Renderer2D::EndScene();
+		const auto& camera = primary.GetComponent<CameraComponent>().Camera;
+		const auto transform = primary.GetComponent<TransformComponent>().GetTransform();
+		Render(scene, camera.GetProjection() * glm::inverse(transform));
 	}
 
 }

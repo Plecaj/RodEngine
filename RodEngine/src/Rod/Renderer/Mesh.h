@@ -16,10 +16,12 @@ namespace tinygltf {
 }
 
 namespace Rod {
+	class RenderDevice;
+
 	class Mesh
 	{
 	public:
-		explicit Mesh(const std::string& glbPath);
+		Mesh(const RenderDevice& device, const std::string& glbPath);
 
 		[[nodiscard]] auto GetVAO() const noexcept -> std::optional<const VertexArray&>
 		{
@@ -31,7 +33,7 @@ namespace Rod {
 		[[nodiscard]] auto GetPath() const noexcept -> const std::string& { return m_SourcePath; }
 
 	private:
-		void ProcessPrimitive(std::span<const float> vertices, std::span<const uint32_t> indices);
+		void Upload(const RenderDevice& device, std::span<const float> vertices, std::span<const uint32_t> indices);
 		void ProcessMaterial(const tinygltf::Model& model, const tinygltf::Primitive& primitive);
 
 	private:

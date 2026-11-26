@@ -2,39 +2,41 @@
 
 #include "Renderer3D.h"
 
-#include "Rod/Renderer/RenderCommand.h"
-#include "Rod/Renderer/Renderer.h"
+#include "RenderDevice.h"
+#include "ShaderLoader.h"
+
+#include <glm/ext/matrix_clip_space.hpp>
+#include <glm/ext/matrix_transform.hpp>
 
 #include <limits>
-#include <optional>
+#include <numeric>
 
 namespace Rod {
 	namespace {
-
-		void DrawMesh(const Mesh& mesh)
+		class RestoreRenderTarget
 		{
-			const auto vertexArray = mesh.GetVAO();
-			if (!vertexArray)
-				throw std::bad_optional_access{};
-			const auto indexBuffer = vertexArray->GetIndexBuffer();
-			if (!indexBuffer)
-				throw std::bad_optional_access{};
-			vertexArray->Bind();
-			indexBuffer->Bind();
-			RenderCommand::DrawIndexed(*vertexArray);
-		}
+		public:
+			explicit RestoreRenderTarget(const RenderDevice& device)
+			    : m_Device(device), m_Previous(device.GetRenderTarget())
+			{}
+			~RestoreRenderTarget() { m_Device.SetRenderTarget(m_Previous); }
+			RestoreRenderTarget(const RestoreRenderTarget&) = delete;
+			auto operator=(const RestoreRenderTarget&) -> RestoreRenderTarget& = delete;
+			RestoreRenderTarget(RestoreRenderTarget&&) = delete;
+			auto operator=(RestoreRenderTarget&&) -> RestoreRenderTarget& = delete;
 
+		private:
+			const RenderDevice& m_Device;
+			RenderDevice::RenderTarget m_Previous;
+		};
 	}
-
-	Scope<Renderer3D::SceneData> Renderer3D::s_SceneData;
-
 	struct Renderer3D::SceneMatrices
 	{
 		glm::mat4 ViewProjection;
 		glm::mat4 Transform;
 	};
 
-	struct Renderer3D::DirectionalLight
+	struct Renderer3D::LightUniform
 	{
 		glm::vec3 Direction;
 		uint32_t Padding;
@@ -46,7 +48,7 @@ namespace Rod {
 	{
 		uint32_t Count;
 		uint32_t Padding[s_Std140PaddingWordCount];
-		DirectionalLight Lights[s_MaxLightCount];
+		LightUniform Lights[s_MaxLightCount];
 	};
 
 	struct Renderer3D::MaterialData
@@ -172,177 +174,143 @@ namespace Rod {
 		return lightProj * lightView;
 	}
 
-	void Renderer3D::Init()
+	Renderer3D::Renderer3D(const RenderDevice& device, const ShaderLoader& shaders)
+	    : m_Device(device), m_SceneUBO(device.CreateUniformBuffer(sizeof(SceneMatrices))),
+	      m_LightsUBO(device.CreateUniformBuffer(sizeof(LightsData))),
+	      m_DrawUBO(device.CreateUniformBuffer(sizeof(DrawData))),
+	      m_ShadowUBO(device.CreateUniformBuffer(sizeof(ShadowData))),
+	      m_MaterialUBO(device.CreateUniformBuffer(sizeof(MaterialData))), m_Shader(shaders.Load("3D.glsl")),
+	      m_ShadowShader(shaders.Load("Shadow.glsl"))
 	{
-		RD_PROFILE_FUNCTION();
-
-		s_SceneData = CreateScope<SceneData>();
-		s_SceneData->Shader = Shader::Create((Renderer::GetShaderDirectory() / "3D.glsl").string());
-		s_SceneData->ShadowShader = Shader::Create((Renderer::GetShaderDirectory() / "Shadow.glsl").string());
-
 		std::array<int, s_MaxLightCount> shadowMapSamplers{};
-		for (uint32_t i = 0; i < s_MaxLightCount; i++)
-			shadowMapSamplers[i] = static_cast<int>(i);
-
-		s_SceneData->Shader->Bind();
-		s_SceneData->Shader->SetIntArray("u_ShadowMaps", shadowMapSamplers);
-
-		s_SceneData->SceneUBO = UniformBuffer::Create(sizeof(SceneMatrices));
-		s_SceneData->MaterialUBO = UniformBuffer::Create(sizeof(MaterialData));
-		s_SceneData->LightsUBO = UniformBuffer::Create(sizeof(LightsData));
-		s_SceneData->DrawUBO = UniformBuffer::Create(sizeof(DrawData));
-		s_SceneData->ShadowUBO = UniformBuffer::Create(sizeof(ShadowData));
+		std::iota(shadowMapSamplers.begin(), shadowMapSamplers.end(), 0);
+		m_Shader->SetIntArray("u_ShadowMaps", shadowMapSamplers);
 	}
 
-	void Renderer3D::Shutdown()
+	void Renderer3D::Begin(const glm::mat4& viewProjection, std::span<const DirectionalLight> lights)
 	{
-		RD_PROFILE_FUNCTION();
-
-		s_SceneData.reset();
+		m_ViewProjection = viewProjection;
+		m_DrawCommands.clear();
+		SetupLights(lights);
 	}
 
-	void Renderer3D::BeginScene(
-	    const Camera& camera,
-	    const glm::mat4& transform,
-	    std::span<const DirectionalLightComponent> lights)
-	{
-		RD_PROFILE_FUNCTION();
-
-		s_SceneData->ViewProjection = camera.GetProjection() * glm::inverse(transform);
-		s_SceneData->DrawCommands.clear();
-		SetupScene(lights);
-	}
-
-	void Renderer3D::BeginScene(const EditorCamera& camera, std::span<const DirectionalLightComponent> lights)
-	{
-		RD_PROFILE_FUNCTION();
-
-		s_SceneData->ViewProjection = camera.GetViewProjection();
-		s_SceneData->DrawCommands.clear();
-		SetupScene(lights);
-	}
-
-	void Renderer3D::EndScene()
+	void Renderer3D::End()
 	{
 		DepthPass();
 		GeometryPass();
-		s_SceneData->DrawCommands.clear();
+		m_DrawCommands.clear();
 	}
 
 	void Renderer3D::Submit(const Ref<Mesh>& mesh, const glm::mat4& transform, const Material& material, int entityID)
 	{
-		RD_PROFILE_FUNCTION();
-
-		// Commands retain the shared mesh, which owns its GPU buffers.
-		if (mesh && mesh->GetVAO())
-			s_SceneData->DrawCommands.push_back(
+		if (mesh)
+			m_DrawCommands.push_back(
 			    {.Mesh = mesh, .Transform = transform, .Material = material, .EntityID = entityID});
 	}
 
 	void Renderer3D::GeometryPass()
 	{
-		s_SceneData->Shader->Bind();
+		m_Shader->Bind();
+		m_LightsUBO->BindBase(s_LightsBinding);
+		m_ShadowUBO->BindBase(s_ShadowBinding);
 
-		for (uint32_t i = 0; i < s_SceneData->LightSpaceMatrices.size() && i < s_MaxLightCount; i++)
-			s_SceneData->DepthMaps[i]->BindDepthAttachment(i);
+		for (uint32_t i = 0; i < m_LightSpaceMatrices.size(); i++)
+			m_DepthMaps[i]->BindDepthAttachment(i);
 
-		for (const auto& command : s_SceneData->DrawCommands)
+		for (const auto& command : m_DrawCommands)
 		{
-			const SceneMatrices matrices{.ViewProjection = s_SceneData->ViewProjection, .Transform = command.Transform};
+			const auto vertexArray = command.Mesh->GetVAO();
+			if (!vertexArray)
+				continue;
 
-			s_SceneData->SceneUBO->BindBase(s_SceneBinding);
-			s_SceneData->SceneUBO->SetData(std::as_bytes(std::span{&matrices, 1}));
+			const SceneMatrices matrices{.ViewProjection = m_ViewProjection, .Transform = command.Transform};
+
+			m_SceneUBO->BindBase(s_SceneBinding);
+			m_SceneUBO->SetData(std::as_bytes(std::span{&matrices, 1}));
 
 			const MaterialData materialData{
 			    .Albedo = command.Material.GetAlbedo(),
 			    .Emissive = command.Material.GetEmissive(),
 			    .Padding0 = 0.0f};
-			s_SceneData->MaterialUBO->BindBase(s_MaterialBinding);
-			s_SceneData->MaterialUBO->SetData(std::as_bytes(std::span{&materialData, 1}));
+			m_MaterialUBO->BindBase(s_MaterialBinding);
+			m_MaterialUBO->SetData(std::as_bytes(std::span{&materialData, 1}));
 
 			const DrawData drawData{.EntityID = command.EntityID, .Padding = {}};
-			s_SceneData->DrawUBO->BindBase(s_DrawBinding);
-			s_SceneData->DrawUBO->SetData(std::as_bytes(std::span{&drawData, 1}));
+			m_DrawUBO->BindBase(s_DrawBinding);
+			m_DrawUBO->SetData(std::as_bytes(std::span{&drawData, 1}));
 
-			DrawMesh(*command.Mesh);
+			m_Device.DrawIndexed(*vertexArray);
 		}
 	}
 
-	void Renderer3D::SetupScene(std::span<const DirectionalLightComponent> lights)
+	void Renderer3D::SetupLights(std::span<const DirectionalLight> lights)
 	{
 		const auto lightCount = static_cast<uint32_t>(std::min(lights.size(), s_MaxLightCount));
 
-		if (s_SceneData->DepthMaps.size() < lightCount)
+		if (m_DepthMaps.size() < lightCount)
 		{
-			const auto previousState = RenderCommand::GetState();
+			const RestoreRenderTarget restore(m_Device);
 
-			for (auto i = static_cast<uint32_t>(s_SceneData->DepthMaps.size()); i < lightCount; i++)
+			for (auto i = static_cast<uint32_t>(m_DepthMaps.size()); i < lightCount; i++)
 			{
 				FramebufferSpecification fbspec;
 				fbspec.Attachments = {FramebufferTextureSpecification{FramebufferTextureFormat::DEPTH24}};
 				fbspec.Height = s_ShadowMapSize;
 				fbspec.Width = s_ShadowMapSize;
-				s_SceneData->DepthMaps.push_back(Framebuffer::Create(fbspec));
+				m_DepthMaps.push_back(m_Device.CreateFramebuffer(fbspec));
 			}
-
-			RenderCommand::SetState(previousState);
 		}
 
 		LightsData lightData{};
 		ShadowData shadowData{};
-		s_SceneData->LightsDirections.resize(lightCount);
-		s_SceneData->LightSpaceMatrices.resize(lightCount);
+		m_LightSpaceMatrices.resize(lightCount);
 
 		for (uint32_t i = 0; i < lightCount; i++)
 		{
-			DirectionalLight data{};
+			LightUniform data{};
 			data.Direction = lights[i].Direction;
 			data.Color = lights[i].Color;
 			data.Intensity = lights[i].Intensity;
 			lightData.Lights[i] = data;
 
-			s_SceneData->LightsDirections[i] = lights[i].Direction;
-			s_SceneData->LightSpaceMatrices[i] =
-			    CreateDirectionalLightViewProjection(lights[i].Direction, s_SceneData->ViewProjection);
-			shadowData.LightSpaceMatrices[i] = s_SceneData->LightSpaceMatrices[i];
+			m_LightSpaceMatrices[i] = CreateDirectionalLightViewProjection(lights[i].Direction, m_ViewProjection);
+			shadowData.LightSpaceMatrices[i] = m_LightSpaceMatrices[i];
 		}
 		lightData.Count = lightCount;
 
-		s_SceneData->LightsUBO->BindBase(s_LightsBinding);
-		s_SceneData->LightsUBO->SetData(std::as_bytes(std::span{&lightData, 1}));
+		m_LightsUBO->SetData(std::as_bytes(std::span{&lightData, 1}));
 
-		s_SceneData->ShadowUBO->BindBase(s_ShadowBinding);
-		s_SceneData->ShadowUBO->SetData(std::as_bytes(std::span{&shadowData, 1}));
+		m_ShadowUBO->SetData(std::as_bytes(std::span{&shadowData, 1}));
 	}
 
 	void Renderer3D::DepthPass()
 	{
-		if (s_SceneData->DepthMaps.empty() || s_SceneData->DrawCommands.empty())
+		if (m_LightSpaceMatrices.empty() || m_DrawCommands.empty())
 			return;
 
-		const auto previousState = RenderCommand::GetState();
+		const RestoreRenderTarget restore(m_Device);
 
-		s_SceneData->ShadowShader->Bind();
+		m_ShadowShader->Bind();
 
-		for (size_t i = 0; i < s_SceneData->LightSpaceMatrices.size(); i++)
+		for (size_t i = 0; i < m_LightSpaceMatrices.size(); i++)
 		{
-			const auto& fb = s_SceneData->DepthMaps[i];
+			const auto& fb = m_DepthMaps[i];
 			fb->Bind();
-			RenderCommand::Clear();
+			m_Device.ClearDepth();
 
-			for (const auto& command : s_SceneData->DrawCommands)
+			for (const auto& command : m_DrawCommands)
 			{
-				const SceneMatrices matrices{
-				    .ViewProjection = s_SceneData->LightSpaceMatrices[i],
-				    .Transform = command.Transform};
+				const auto vertexArray = command.Mesh->GetVAO();
+				if (!vertexArray)
+					continue;
 
-				s_SceneData->SceneUBO->BindBase(s_SceneBinding);
-				s_SceneData->SceneUBO->SetData(std::as_bytes(std::span{&matrices, 1}));
+				const SceneMatrices matrices{.ViewProjection = m_LightSpaceMatrices[i], .Transform = command.Transform};
 
-				DrawMesh(*command.Mesh);
+				m_SceneUBO->BindBase(s_SceneBinding);
+				m_SceneUBO->SetData(std::as_bytes(std::span{&matrices, 1}));
+
+				m_Device.DrawIndexed(*vertexArray);
 			}
 		}
-
-		RenderCommand::SetState(previousState);
 	}
 }

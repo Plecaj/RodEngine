@@ -173,9 +173,6 @@ namespace Rod {
 
 		virtual void SetBufferLayout(const BufferLayout& layout) = 0;
 		[[nodiscard]] virtual auto GetLayout() const noexcept -> const BufferLayout& = 0;
-
-		[[nodiscard]] static auto Create(uint32_t size) -> Scope<VertexBuffer>;
-		[[nodiscard]] static auto Create(std::span<const std::byte> vertices) -> Scope<VertexBuffer>;
 	};
 
 	class IndexBuffer
@@ -192,8 +189,6 @@ namespace Rod {
 		virtual void Unbind() const = 0;
 
 		[[nodiscard]] virtual auto GetCount() const noexcept -> uint32_t = 0;
-
-		[[nodiscard]] static auto Create(std::span<const uint32_t> indices) -> Scope<IndexBuffer>;
 	};
 
 	class UniformBuffer
@@ -211,7 +206,5 @@ namespace Rod {
 		virtual void BindBase(uint32_t bindingIndex) const = 0;
 
 		virtual void SetData(std::span<const std::byte> data) = 0;
-
-		[[nodiscard]] static auto Create(uint32_t size) -> Scope<UniformBuffer>;
 	};
 }

@@ -2,13 +2,14 @@
 
 #include "ScriptGlue.h"
 
-#include "Rod/Core/Input.h"
+#include "Rod/Core/InputState.h"
 #include "Rod/Renderer/Mesh.h"
-#include "Rod/Renderer/Texture.h"
+#include "Rod/Renderer/RenderDevice.h"
 #include "Rod/Scene/Components.h"
 #include "Rod/Scene/Entity.h"
 #include "Rod/Scene/Scene.h"
 #include "Rod/Utils/FunctionPointerCast.h"
+#include "ScriptEngine.h"
 
 #include <cstdlib> // IWYU pragma: keep
 #include <cstring>
@@ -77,7 +78,7 @@ namespace Rod {
 	};
 
 	std::optional<Scene&> ScriptGlue::s_SceneContext;
-	std::optional<const Input&> ScriptGlue::s_InputContext;
+	std::optional<const InputState&> ScriptGlue::s_InputContext;
 
 	auto ScriptGlue::ToGLM(ScriptVec3 value) -> glm::vec3
 	{
@@ -123,12 +124,12 @@ namespace Rod {
 
 	auto RD_CDECL ScriptGlue::InputIsKeyPressed(int32_t keycode) -> bool
 	{
-		return s_InputContext && s_InputContext->IsKeyPressed(keycode);
+		return s_InputContext && s_InputContext->IsKeyDown(keycode);
 	}
 
 	auto RD_CDECL ScriptGlue::InputIsMouseButtonPressed(int32_t button) -> bool
 	{
-		return s_InputContext && s_InputContext->IsMouseButtonPressed(button);
+		return s_InputContext && s_InputContext->IsMouseDown(button);
 	}
 
 	auto RD_CDECL ScriptGlue::InputGetMousePosition() -> ScriptGlue::ScriptVec2
@@ -136,8 +137,8 @@ namespace Rod {
 		if (!s_InputContext)
 			return {};
 
-		auto [x, y] = s_InputContext->GetMousePosition();
-		return {.X = x, .Y = y};
+		const auto cursor = s_InputContext->GetCursor();
+		return {.X = cursor.x, .Y = cursor.y};
 	}
 
 	auto RD_CDECL ScriptGlue::EntityCreate(const char* name) -> uint64_t
@@ -287,9 +288,8 @@ namespace Rod {
 
 	void RD_CDECL ScriptGlue::CameraSetPrimary(uint64_t entityID, bool value)
 	{
-		Entity entity = GetEntity(entityID);
-		if (entity && entity.HasComponent<CameraComponent>())
-			entity.GetComponent<CameraComponent>().Primary = value;
+		if (s_SceneContext)
+			s_SceneContext->SetCameraPrimary(s_SceneContext->FindEntityByUUID(UUID{entityID}), value);
 	}
 
 	auto RD_CDECL ScriptGlue::CameraGetFixedAspectRatio(uint64_t entityID) -> bool
@@ -503,7 +503,23 @@ namespace Rod {
 		if (!entity || !entity.HasComponent<SpriteRendererComponent>())
 			return;
 		auto& sprite = entity.GetComponent<SpriteRendererComponent>();
-		sprite.Texture = path && path[0] ? Texture2D::Create(path) : nullptr;
+		if (!path || !path[0])
+		{
+			sprite.Texture.reset();
+			return;
+		}
+
+		if (const auto device = ScriptEngine::GetRenderDevice())
+		{
+			try
+			{
+				sprite.Texture = device->LoadTexture2D(path);
+			}
+			catch (const std::runtime_error& exception)
+			{
+				RD_CORE_ERROR("{}", exception.what());
+			}
+		}
 	}
 
 	auto RD_CDECL ScriptGlue::MeshGetPath(uint64_t entityID) -> void*
@@ -527,7 +543,8 @@ namespace Rod {
 		}
 		try
 		{
-			mesh.SetMesh(CreateRef<Mesh>(path));
+			if (const auto device = ScriptEngine::GetRenderDevice())
+				mesh.SetMesh(CreateRef<Mesh>(*device, path));
 		}
 		catch (const std::runtime_error& exception)
 		{
@@ -660,7 +677,7 @@ namespace Rod {
 		s_SceneContext = scene;
 	}
 
-	void ScriptGlue::SetInputContext(std::optional<const Input&> input) noexcept
+	void ScriptGlue::SetInputContext(std::optional<const InputState&> input) noexcept
 	{
 		s_InputContext = input;
 	}

@@ -1,8 +1,7 @@
 include(vendor/Catch2)
 
 add_executable(RodEngineTests
-    Core/LayerStack.cpp
-    Core/Events.cpp
+    Core/InputState.cpp
     Math/Math.cpp
     Project/Serialization.cpp
     Project/Export.cpp
@@ -20,10 +19,13 @@ add_executable(RodEngineTests
     Renderer/Framebuffer.cpp
     Renderer/OpenGLMesh.cpp
     Renderer/Shader.cpp
-    Renderer/ShaderCacheDatabase.cpp
+    Renderer/ShaderCache.cpp
+    Renderer/Renderer2D.cpp
+    Renderer/SceneRenderer.cpp
     Scripting/ScriptAssembly.cpp
     Scripting/ScriptGlue.cpp
     Scripting/ScriptRuntime.cpp
+    Scene/ComponentSerializers.cpp
     Scene/Scene.cpp
     Scene/SceneCamera.cpp
     Scene/Serialization.cpp

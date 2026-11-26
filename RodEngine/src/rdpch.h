@@ -5,7 +5,6 @@
 
 #include "Rod/Core/Core.h"
 #include "Rod/Core/Log.h"
-#include "Rod/Debug/Instrumentator.h"
 
 #include <glm/glm.hpp>
 

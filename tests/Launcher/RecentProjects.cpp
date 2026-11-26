@@ -42,10 +42,8 @@ TEST_CASE_METHOD(
     "Recent projects retain the newest ten across reloads",
     "[launcher][recent-projects]")
 {
-	constexpr int recordedProjects = 12;
-	constexpr std::size_t dateLength = 10;
 	Rod::RecentProjects history;
-	for (int index = 0; index < recordedProjects; ++index)
+	for (int index = 0; index < 12; ++index)
 		history.Record(MakeProject("Project " + std::to_string(index)));
 	REQUIRE(history.GetEntries().size() == 10);
 	REQUIRE(history.GetEntries().front().Name == "Project 11");
@@ -58,7 +56,7 @@ TEST_CASE_METHOD(
 	REQUIRE(
 	    std::ranges::equal(restored.GetEntries(), history.GetEntries(), [](const auto& loaded, const auto& original) {
 		    return loaded.Name == original.Name && loaded.Path == original.Path &&
-			       loaded.LastOpened == original.LastOpened && loaded.LastOpened.size() == dateLength;
+			       loaded.LastOpened == original.LastOpened && loaded.LastOpened.size() == 10;
 	    }));
 }
 
@@ -110,16 +108,14 @@ TEST_CASE_METHOD(
     "History loading skips invalid and duplicate entries and enforces the limit",
     "[launcher][recent-projects]")
 {
-	constexpr int projectCount = 13;
-	constexpr int duplicateCount = 2;
 	YAML::Emitter out;
 	out << YAML::BeginMap << YAML::Key << "RecentProjects" << YAML::Value << YAML::BeginSeq;
 	out << "invalid entry";
 	out << YAML::BeginMap << YAML::Key << "Name" << YAML::Value << "Missing fields" << YAML::EndMap;
-	for (int index = 0; index < projectCount; ++index)
+	for (int index = 0; index < 13; ++index)
 	{
 		const auto project = MakeProject("Project " + std::to_string(index));
-		for (int duplicate = 0; duplicate < duplicateCount; ++duplicate)
+		for (int duplicate = 0; duplicate < 2; ++duplicate)
 		{
 			out << YAML::BeginMap;
 			out << YAML::Key << "Name" << YAML::Value << project.GetProperties().Name;

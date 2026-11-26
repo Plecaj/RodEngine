@@ -4,13 +4,11 @@
 
 #include "Components.h"
 #include "Entity.h"
-#include "Rod/Core/Timestep.h"
 #include "Rod/Core/UUID.h"
-#include "Rod/Renderer/EditorCamera.h"
-#include "Rod/Renderer/SceneRenderer.h"
-#include "Rod/Scripting/ScriptEngine.h"
 
 #include <algorithm>
+#include <stdexcept>
+#include <unordered_map>
 
 namespace Rod {
 	namespace {
@@ -129,65 +127,32 @@ namespace Rod {
 			           rightEntity,
 			           [](const auto& a, const auto& b) {
 				           return a.ClassName == b.ClassName && SameScriptFields(a.Fields, b.Fields);
-			           }) &&
-			       SameComponent<NativeScriptComponent>(
-			           left,
-			           leftEntity,
-			           right,
-			           rightEntity,
-			           [](const auto& a, const auto& b) { return a.InstantiateScript == b.InstantiateScript; });
+			           });
 		}
-	}
-
-	template <typename... Components>
-	void Scene::CopyComponent(
-	    entt::registry& dst,
-	    const entt::registry& src,
-	    const std::unordered_map<uint64_t, entt::entity>& entityMap)
-	{
-		(
-		    [&]() {
-			    const auto view = src.view<Components>();
-			    for (const auto srcEntity : view)
-			    {
-				    const UUID uuid = src.get<IDComponent>(srcEntity).ID;
-				    const entt::entity dstEntity = entityMap.at(static_cast<uint64_t>(uuid));
-				    auto& srcComponent = src.get<Components>(srcEntity);
-				    dst.emplace_or_replace<Components>(dstEntity, srcComponent);
-			    }
-		    }(),
-		    ...);
+		template <typename... Components>
+		void
+		CopyComponents(const entt::registry& source, entt::entity from, entt::registry& destination, entt::entity to)
+		{
+			const auto copy = [&]<typename Component>() {
+				if (const auto* component = source.try_get<Component>(from))
+					destination.emplace_or_replace<Component>(to, *component);
+			};
+			(copy.template operator()<Components>(), ...);
+		}
 	}
 
 	Scene::Scene(const Scene& other) : m_ViewportWidth(other.m_ViewportWidth), m_ViewportHeight(other.m_ViewportHeight)
 	{
-
-		std::unordered_map<uint64_t, entt::entity> entityMap;
-		const auto idView = other.m_Registry.view<IDComponent>();
-		for (const auto entityID : idView)
+		for (const auto [handle, id, tag] : other.View<IDComponent, TagComponent>().each())
 		{
-			const UUID uuid = other.m_Registry.get<IDComponent>(entityID).ID;
-			const auto& name = other.m_Registry.get<TagComponent>(entityID).Tag;
-			const Entity newEntity = this->CreateEntityWithUUID(uuid, name);
-			entityMap[static_cast<uint64_t>(uuid)] = static_cast<entt::entity>(newEntity);
-		}
-
-		CopyComponent<
-		    TransformComponent,
-		    SpriteRendererComponent,
-		    MeshComponent,
-		    DirectionalLightComponent,
-		    CameraComponent,
-		    ScriptComponent>(this->m_Registry, other.m_Registry, entityMap);
-
-		const auto nativeScriptView = other.m_Registry.view<NativeScriptComponent, IDComponent>();
-		for (const auto entityID : nativeScriptView)
-		{
-			const UUID uuid = other.m_Registry.get<IDComponent>(entityID).ID;
-			const auto dstEntity = entityMap.at(static_cast<uint64_t>(uuid));
-			const auto& srcComponent = other.m_Registry.get<NativeScriptComponent>(entityID);
-			auto& dstComponent = this->m_Registry.emplace_or_replace<NativeScriptComponent>(dstEntity);
-			dstComponent.InstantiateScript = srcComponent.InstantiateScript;
+			const auto entity = InsertEntity(id.ID, tag.Tag);
+			CopyComponents<
+			    TransformComponent,
+			    SpriteRendererComponent,
+			    MeshComponent,
+			    DirectionalLightComponent,
+			    CameraComponent,
+			    ScriptComponent>(other.m_Registry, handle, m_Registry, static_cast<entt::entity>(entity));
 		}
 	}
 
@@ -201,33 +166,15 @@ namespace Rod {
 		return *this;
 	}
 
-	Scene::Scene(Scene&& other) noexcept
-	    : m_Registry(std::move(other.m_Registry)), m_ViewportWidth(other.m_ViewportWidth),
-	      m_ViewportHeight(other.m_ViewportHeight)
-	{
-		RebindNativeScripts();
-	}
-
-	// NOLINTNEXTLINE(bugprone-unsafe-to-allow-exceptions): Native script OnDestroy callbacks may throw.
-	auto Scene::operator=(Scene&& other) noexcept(false) -> Scene&
+	auto Scene::operator=(Scene&& other) noexcept -> Scene&
 	{
 		if (this != &other)
 		{
-			DestroyNativeScripts();
 			m_Registry = std::move(other.m_Registry);
 			m_ViewportWidth = other.m_ViewportWidth;
 			m_ViewportHeight = other.m_ViewportHeight;
-			RebindNativeScripts();
 		}
 		return *this;
-	}
-
-	void Scene::RebindNativeScripts()
-	{
-		std::as_const(m_Registry).view<NativeScriptComponent>().each([this](auto entity, const auto& script) {
-			if (script.Instance)
-				script.Instance->m_Entity = Entity{entity, *this};
-		});
 	}
 
 	auto Scene::CreateEntity(const std::string& name) -> Entity
@@ -237,53 +184,38 @@ namespace Rod {
 
 	auto Scene::CreateEntityWithUUID(UUID uuid, const std::string& name) -> Entity
 	{
-		Entity entity = {m_Registry.create(), *this};
+		if (FindEntityByUUID(uuid))
+			throw std::invalid_argument("Duplicate entity UUID: " + std::to_string(static_cast<uint64_t>(uuid)));
+
+		return InsertEntity(uuid, name.empty() ? std::string_view{"Entity"} : std::string_view{name});
+	}
+
+	auto Scene::InsertEntity(UUID uuid, std::string_view name) -> Entity
+	{
+		const auto handle = m_Registry.create();
 		try
 		{
-			entity.AddComponent<IDComponent>(uuid);
-			entity.AddComponent<TransformComponent>();
-			auto& tag = entity.AddComponent<TagComponent>();
-			tag.Tag = name.empty() ? "Entity" : name;
+			m_Registry.emplace<IDComponent>(handle, uuid);
+			m_Registry.emplace<TagComponent>(handle, std::string(name));
+			m_Registry.emplace<TransformComponent>(handle);
 		}
 		catch (...)
 		{
-			m_Registry.destroy(static_cast<entt::entity>(entity));
+			m_Registry.destroy(handle);
 			throw;
 		}
-		return entity;
+		return {handle, *this};
 	}
 
 	void Scene::DestroyEntity(Entity entity)
 	{
-		if (entity.HasComponent<NativeScriptComponent>())
-			DestroyNativeScript(entity.GetComponent<NativeScriptComponent>());
-
-		m_Registry.destroy(static_cast<entt::entity>(entity));
+		if (entity.m_Scene == this && entity)
+			m_Registry.destroy(entity.m_EntityHandle);
 	}
 
-	void Scene::OnRuntimeStart()
+	auto Scene::FindEntityByHandle(entt::entity handle) -> Entity
 	{
-		ScriptEngine::OnRuntimeStart(*this);
-	}
-
-	void Scene::OnRuntimeStop()
-	{
-		DestroyNativeScripts();
-		ScriptEngine::OnRuntimeStop();
-	}
-
-	void Scene::OnUpdateRuntime(Timestep& ts)
-	{
-		UpdateNativeScripts(ts);
-		ScriptEngine::OnRuntimeUpdate(ts);
-		SceneRenderer::RenderRuntime(*this);
-	}
-
-	void Scene::OnUpdateEditor(Timestep& ts, EditorCamera& camera)
-	{
-		(void)ts;
-
-		SceneRenderer::RenderEditor(*this, camera);
+		return IsValidEntityHandle(handle) ? Entity{handle, *this} : Entity{};
 	}
 
 	auto Scene::operator==(const Scene& other) const -> bool
@@ -316,39 +248,7 @@ namespace Rod {
 		return otherEntities.empty();
 	}
 
-	void Scene::DestroyNativeScripts()
-	{
-		m_Registry.view<NativeScriptComponent>().each([](auto, auto& script) { DestroyNativeScript(script); });
-	}
-
-	void Scene::DestroyNativeScript(NativeScriptComponent& script)
-	{
-		if (!script.Instance)
-			return;
-
-		script.Instance->OnDestroy();
-		script.Instance.reset();
-	}
-
-	void Scene::UpdateNativeScript(entt::entity entity, NativeScriptComponent& script, Timestep& ts)
-	{
-		if (!script.Instance)
-		{
-			RD_CORE_ASSERT(script.InstantiateScript, "Native script is not bound");
-			script.Instance = script.InstantiateScript();
-			script.Instance->m_Entity = Entity{entity, *this};
-			script.Instance->OnCreate();
-		}
-		script.Instance->OnUpdate(ts);
-	}
-
-	void Scene::UpdateNativeScripts(Timestep& ts)
-	{
-		m_Registry.view<NativeScriptComponent>().each(
-		    [this, &ts](auto entity, auto& script) { UpdateNativeScript(entity, script, ts); });
-	}
-
-	void Scene::OnViewportResize(uint32_t width, uint32_t height)
+	void Scene::ResizeViewport(uint32_t width, uint32_t height)
 	{
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
@@ -364,16 +264,33 @@ namespace Rod {
 		}
 	}
 
-	auto Scene::GetPrimaryCameraEntity() -> Entity
+	auto Scene::FindPrimaryCamera() -> Entity
 	{
-		const auto view = m_Registry.view<CameraComponent>();
-		for (const auto entity : view)
+		for (const auto [handle, camera] : View<CameraComponent>().each())
 		{
-			const auto& camera = view.get<CameraComponent>(entity);
 			if (camera.Primary)
-				return Entity{entity, *this};
+				return {handle, *this};
 		}
 		return {};
+	}
+
+	void Scene::SetCameraPrimary(Entity entity, bool primary)
+	{
+		if (entity.m_Scene != this)
+			return;
+		auto* selected = entity.TryGetComponent<CameraComponent>();
+		if (!selected)
+			return;
+
+		if (primary)
+		{
+			for (const auto [handle, camera] : m_Registry.view<CameraComponent>().each())
+				camera.Primary = handle == entity.m_EntityHandle;
+		}
+		else
+		{
+			selected->Primary = false;
+		}
 	}
 
 	auto Scene::FindEntityByUUID(UUID uuid) -> Entity
@@ -400,47 +317,16 @@ namespace Rod {
 		return {};
 	}
 
-	template <typename T>
-	void Scene::OnComponentAdded(Entity, T&)
-	{
-		static_assert(false, "Unsupported component type");
-	}
-
-	template <>
-	void Scene::OnComponentAdded<TransformComponent>(Entity, TransformComponent&)
-	{}
-
-	template <>
-	void Scene::OnComponentAdded<IDComponent>(Entity, IDComponent&)
-	{}
-
-	template <>
-	void Scene::OnComponentAdded<CameraComponent>(Entity, CameraComponent& component)
+	void Scene::InitializeCamera(entt::entity handle, CameraComponent& component) const
 	{
 		component.Camera.SetViewportSize(m_ViewportWidth, m_ViewportHeight);
+		for (const auto [otherHandle, camera] : View<CameraComponent>().each())
+		{
+			if (otherHandle != handle && camera.Primary)
+			{
+				component.Primary = false;
+				break;
+			}
+		}
 	}
-
-	template <>
-	void Scene::OnComponentAdded<SpriteRendererComponent>(Entity, SpriteRendererComponent&)
-	{}
-
-	template <>
-	void Scene::OnComponentAdded<MeshComponent>(Entity, MeshComponent&)
-	{}
-
-	template <>
-	void Scene::OnComponentAdded<DirectionalLightComponent>(Entity, DirectionalLightComponent&)
-	{}
-
-	template <>
-	void Scene::OnComponentAdded<TagComponent>(Entity, TagComponent&)
-	{}
-
-	template <>
-	void Scene::OnComponentAdded<NativeScriptComponent>(Entity, NativeScriptComponent&)
-	{}
-
-	template <>
-	void Scene::OnComponentAdded<ScriptComponent>(Entity, ScriptComponent&)
-	{}
 }

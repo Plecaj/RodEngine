@@ -4,13 +4,18 @@
 
 #include "Rod/Project/Project.h"
 #include "Rod/Scene/SceneSerializer.h"
+#include "Rod/Scripting/ScriptEngine.h"
 
 namespace Rod {
 
-	EditorSceneManager::EditorSceneManager(const Project& project, uint32_t viewportWidth, uint32_t viewportHeight)
-	    : m_Project(project), m_ViewportWidth(viewportWidth), m_ViewportHeight(viewportHeight)
+	EditorSceneManager::EditorSceneManager(
+	    const Project& project,
+	    const RenderDevice& device,
+	    uint32_t viewportWidth,
+	    uint32_t viewportHeight)
+	    : m_Project(project), m_Device(device), m_ViewportWidth(viewportWidth), m_ViewportHeight(viewportHeight)
 	{
-		m_EditorScene.OnViewportResize(m_ViewportWidth, m_ViewportHeight);
+		m_EditorScene.ResizeViewport(m_ViewportWidth, m_ViewportHeight);
 	}
 
 	EditorSceneManager::~EditorSceneManager()
@@ -22,16 +27,16 @@ namespace Rod {
 	{
 		Stop();
 		m_EditorScene = {};
-		m_EditorScene.OnViewportResize(m_ViewportWidth, m_ViewportHeight);
+		m_EditorScene.ResizeViewport(m_ViewportWidth, m_ViewportHeight);
 		m_ScenePath.clear();
 	}
 
 	void EditorSceneManager::OpenScene(const std::filesystem::path& path)
 	{
 		Scene loadedScene;
-		loadedScene.OnViewportResize(m_ViewportWidth, m_ViewportHeight);
+		loadedScene.ResizeViewport(m_ViewportWidth, m_ViewportHeight);
 		const SceneSerializer serializer(loadedScene, m_Project.GetDirectory());
-		serializer.DeserializeText(path.string());
+		serializer.DeserializeText(path.string(), m_Device);
 
 		Stop();
 		m_EditorScene = std::move(loadedScene);
@@ -40,36 +45,36 @@ namespace Rod {
 
 	void EditorSceneManager::SaveScene(const std::filesystem::path& path)
 	{
-		const SceneSerializer serializer(GetActiveScene(), m_Project.GetDirectory());
+		const SceneSerializer serializer(m_EditorScene, m_Project.GetDirectory());
 		serializer.SerializeText(path.string());
 		m_ScenePath = path;
 	}
 
 	void EditorSceneManager::Play()
 	{
-		if (m_State != SceneState::Edit)
+		if (m_RuntimeScene)
 			return;
 
-		m_RuntimeScene = m_EditorScene;
-		m_RuntimeScene.OnViewportResize(m_ViewportWidth, m_ViewportHeight);
-		m_State = SceneState::Play;
-		m_RuntimeScene.OnRuntimeStart();
+		auto& runtimeScene = m_RuntimeScene.emplace(m_EditorScene);
+		ScriptEngine::OnRuntimeStart(runtimeScene);
 	}
 
 	void EditorSceneManager::Stop()
 	{
-		if (m_State != SceneState::Play)
+		if (!m_RuntimeScene)
 			return;
 
-		m_RuntimeScene.OnRuntimeStop();
-		m_State = SceneState::Edit;
+		ScriptEngine::OnRuntimeStop();
+		m_RuntimeScene.reset();
 	}
 
 	void EditorSceneManager::ResizeViewport(uint32_t width, uint32_t height)
 	{
 		m_ViewportWidth = width;
 		m_ViewportHeight = height;
-		GetActiveScene().OnViewportResize(width, height);
+		m_EditorScene.ResizeViewport(width, height);
+		if (m_RuntimeScene)
+			m_RuntimeScene->ResizeViewport(width, height);
 	}
 
 }

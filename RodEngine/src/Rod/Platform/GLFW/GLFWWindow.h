@@ -6,6 +6,9 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
+#include <exception>
+#include <vector>
+
 namespace Rod {
 
 	class GLFWWindow : public Window
@@ -18,11 +21,14 @@ namespace Rod {
 		GLFWWindow(GLFWWindow&&) = delete;
 		auto operator=(GLFWWindow&&) -> GLFWWindow& = delete;
 
-		void OnUpdate() override;
+		[[nodiscard]] auto PollEvents(bool wait) -> std::span<const Event> override;
+		void Present() override;
 
 		[[nodiscard]] auto GetWidth() const noexcept -> unsigned int override { return m_Data.Width; }
 		[[nodiscard]] auto GetHeight() const noexcept -> unsigned int override { return m_Data.Height; }
 
+		[[nodiscard]] auto GetFramebufferSize() const noexcept -> glm::uvec2 override;
+		[[nodiscard]] auto GetCursor() const noexcept -> glm::vec2 override { return m_Cursor; }
 		void Minimize() const override;
 		void Maximize() const override;
 		[[nodiscard]] auto IsMinimized() const noexcept -> bool override;
@@ -30,11 +36,10 @@ namespace Rod {
 		void Restore() const override;
 		void BeginWindowDrag() const override;
 
-		void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
 		void SetVSync(bool enabled) override;
 		[[nodiscard]] auto IsVSync() const noexcept -> bool override;
 
-		[[nodiscard]] auto GetNativeWindow() const noexcept -> void* override { return m_Window.get(); };
+		[[nodiscard]] auto GetNativeWindow() const noexcept -> void* override { return m_Window.get(); }
 
 	private:
 		void Init(const WindowProps& props);
@@ -43,6 +48,7 @@ namespace Rod {
 		void SetWindowCallbacks();
 		void SetKeyboardCallbacks();
 		void SetMouseCallbacks();
+		void Queue(Event event) noexcept;
 		void SetTaskbarIcon(const std::string& iconFilepath) const;
 		void ResetWindowDrag() const;
 		void UpdateWindowDrag() const;
@@ -54,11 +60,13 @@ namespace Rod {
 			std::string Title;
 			unsigned int Width = 0, Height = 0;
 			bool VSync = false;
-
-			EventCallbackFn EventCallback;
 		};
 
 		WindowData m_Data;
+		glm::vec2 m_Cursor{};
+		std::vector<Event> m_Pending;
+		std::vector<Event> m_Events;
+		std::exception_ptr m_EventError;
 		struct NativeWindowDeleter
 		{
 			void operator()(GLFWwindow* window) const noexcept;
@@ -69,7 +77,7 @@ namespace Rod {
 		mutable glm::vec2 m_WindowDragStartMouseScreen = {0.0f, 0.0f};
 		mutable glm::ivec2 m_WindowDragStartPosition = {0, 0};
 
-		[[nodiscard]] static auto GetWindowData(GLFWwindow* window) -> WindowData&;
+		[[nodiscard]] static auto From(GLFWwindow* window) noexcept -> GLFWWindow&;
 	};
 
 }

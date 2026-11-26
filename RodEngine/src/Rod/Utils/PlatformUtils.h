@@ -10,7 +10,6 @@ namespace Rod {
 	class Platform
 	{
 	public:
-		[[nodiscard]] static auto GetTime() -> float;
 		[[nodiscard]] static auto GetExecutablePath() -> std::filesystem::path;
 	};
 

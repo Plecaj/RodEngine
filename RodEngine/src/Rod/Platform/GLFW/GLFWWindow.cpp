@@ -3,9 +3,6 @@
 #include "GLFWWindow.h"
 
 #include "Rod/Core/Window.h"
-#include "Rod/Events/ApplicationEvent.h"
-#include "Rod/Events/KeyEvent.h"
-#include "Rod/Events/MouseEvent.h"
 #include "Rod/Platform/OpenGL/OpenGLContext.h"
 #include "Rod/Platform/StbImage.h"
 
@@ -25,12 +22,20 @@ namespace Rod {
 
 	namespace {
 
+		[[nodiscard]] auto GetMods(int mods) noexcept -> Modifiers
+		{
+			const auto mask = static_cast<unsigned int>(mods);
+			return {
+			    .Control = (mask & static_cast<unsigned int>(GLFW_MOD_CONTROL)) != 0U,
+			    .Shift = (mask & static_cast<unsigned int>(GLFW_MOD_SHIFT)) != 0U,
+			    .Alt = (mask & static_cast<unsigned int>(GLFW_MOD_ALT)) != 0U};
+		}
+
 		void InitGLFW()
 		{
 			if (g_WindowCount > 0)
 				return;
 
-			RD_PROFILE_SCOPE("glfw init");
 			glfwSetErrorCallback(GLFWErrorCallback);
 			if (glfwInit() == GLFW_FALSE)
 				throw std::runtime_error("Could not initialize GLFW.");
@@ -56,8 +61,6 @@ namespace Rod {
 
 	void GLFWWindow::Init(const WindowProps& props)
 	{
-		RD_PROFILE_FUNCTION();
-
 		m_Data.Title = props.Title;
 		m_Data.Width = props.Width;
 		m_Data.Height = props.Height;
@@ -69,7 +72,10 @@ namespace Rod {
 
 		m_Context = CreateScope<OpenGLContext>(m_Window.get());
 
-		glfwSetWindowUserPointer(m_Window.get(), &m_Data);
+		glfwSetWindowUserPointer(m_Window.get(), this);
+		double x{}, y{};
+		glfwGetCursorPos(m_Window.get(), &x, &y);
+		m_Cursor = {static_cast<float>(x), static_cast<float>(y)};
 		GLFWWindow::SetVSync(true);
 		SetGLFWCallbacks();
 		SetTaskbarIcon(props.TaskbarIconFilepath);
@@ -77,8 +83,6 @@ namespace Rod {
 
 	void GLFWWindow::CreateNativeWindow(const WindowProps& props)
 	{
-		RD_PROFILE_SCOPE("glfw create window");
-
 		glfwDefaultWindowHints();
 		constexpr int openGLMajorVersion = 4;
 		constexpr int openGLMinorVersion = 6;
@@ -130,94 +134,75 @@ namespace Rod {
 
 	void GLFWWindow::SetWindowCallbacks()
 	{
-		// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 		glfwSetWindowSizeCallback(m_Window.get(), [](GLFWwindow* window, int width, int height) {
-			WindowData& data = GetWindowData(window);
+			auto& data = From(window).m_Data;
 			data.Width = static_cast<unsigned int>(width);
 			data.Height = static_cast<unsigned int>(height);
-
-			WindowResizeEvent event(data.Width, data.Height);
-			data.EventCallback(event);
 		});
-
-		glfwSetWindowCloseCallback(m_Window.get(), [](GLFWwindow* window) {
-			const WindowData& data = GetWindowData(window);
-
-			WindowCloseEvent event;
-			data.EventCallback(event);
+		glfwSetFramebufferSizeCallback(m_Window.get(), [](GLFWwindow* window, int width, int height) {
+			From(window).Queue(
+			    FramebufferResized{{static_cast<unsigned int>(width), static_cast<unsigned int>(height)}});
+		});
+		glfwSetWindowCloseCallback(m_Window.get(), [](GLFWwindow* window) { From(window).Queue(CloseRequested{}); });
+		glfwSetWindowFocusCallback(m_Window.get(), [](GLFWwindow* window, int focused) {
+			From(window).Queue(FocusChanged{focused == GLFW_TRUE});
 		});
 	}
 
 	void GLFWWindow::SetKeyboardCallbacks()
 	{
-		glfwSetKeyCallback(m_Window.get(), [](GLFWwindow* window, int key, int, int action, int) {
-			const WindowData& data = GetWindowData(window);
-
+		// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+		glfwSetKeyCallback(m_Window.get(), [](GLFWwindow* window, int key, int, int action, int mods) {
+			KeyAction keyAction{};
 			switch (action)
 			{
-				case GLFW_PRESS: {
-					KeyPressedEvent event(key, false);
-					data.EventCallback(event);
+				case GLFW_PRESS:
+					keyAction = KeyAction::Press;
 					break;
-				}
-				case GLFW_RELEASE: {
-					KeyReleasedEvent event(key);
-					data.EventCallback(event);
+				case GLFW_RELEASE:
+					keyAction = KeyAction::Release;
 					break;
-				}
-				case GLFW_REPEAT: {
-					KeyPressedEvent event(key, true);
-					data.EventCallback(event);
+				case GLFW_REPEAT:
+					keyAction = KeyAction::Repeat;
 					break;
-				}
 				default:
-					break;
+					return;
 			}
-		});
-
-		glfwSetCharCallback(m_Window.get(), [](GLFWwindow* window, unsigned int keycode) {
-			const WindowData& data = GetWindowData(window);
-			KeyTypedEvent event(static_cast<int>(keycode));
-			data.EventCallback(event);
+			From(window).Queue(KeyChanged{.Key = key, .Action = keyAction, .Mods = GetMods(mods)});
 		});
 	}
 
 	void GLFWWindow::SetMouseCallbacks()
 	{
 		// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-		glfwSetMouseButtonCallback(m_Window.get(), [](GLFWwindow* window, int button, int action, int) {
-			const WindowData& data = GetWindowData(window);
-
-			switch (action)
-			{
-				case GLFW_PRESS: {
-					MouseButtonPressedEvent event(button);
-					data.EventCallback(event);
-					break;
-				}
-				case GLFW_RELEASE: {
-					MouseButtonReleasedEvent event(button);
-					data.EventCallback(event);
-					break;
-				}
-				default:
-					break;
-			}
+		glfwSetMouseButtonCallback(m_Window.get(), [](GLFWwindow* window, int button, int action, int mods) {
+			auto& self = From(window);
+			self.Queue(
+			    MouseButtonChanged{
+			        .Button = button,
+			        .Down = action == GLFW_PRESS,
+			        .Mods = GetMods(mods),
+			        .Position = self.m_Cursor});
 		});
-
-		glfwSetScrollCallback(m_Window.get(), [](GLFWwindow* window, double xOffset, double yOffset) {
-			const WindowData& data = GetWindowData(window);
-
-			MouseScrolledEvent event(static_cast<float>(xOffset), static_cast<float>(yOffset));
-			data.EventCallback(event);
+		glfwSetScrollCallback(m_Window.get(), [](GLFWwindow* window, double x, double y) {
+			auto& self = From(window);
+			self.Queue(Scrolled{.Offset = {static_cast<float>(x), static_cast<float>(y)}, .Position = self.m_Cursor});
 		});
-
-		glfwSetCursorPosCallback(m_Window.get(), [](GLFWwindow* window, double xPos, double yPos) {
-			const WindowData& data = GetWindowData(window);
-
-			MouseMovedEvent event(static_cast<float>(xPos), static_cast<float>(yPos));
-			data.EventCallback(event);
+		glfwSetCursorPosCallback(m_Window.get(), [](GLFWwindow* window, double x, double y) {
+			From(window).m_Cursor = {static_cast<float>(x), static_cast<float>(y)};
 		});
+	}
+
+	void GLFWWindow::Queue(Event event) noexcept
+	{
+		try
+		{
+			m_Pending.push_back(event);
+		}
+		catch (...)
+		{
+			m_EventError = std::current_exception();
+		}
 	}
 
 	void GLFWWindow::SetTaskbarIcon(const std::string& iconFilepath) const
@@ -243,18 +228,37 @@ namespace Rod {
 		glfwSetWindowIcon(m_Window.get(), 1, &icon);
 	}
 
-	auto GLFWWindow::GetWindowData(GLFWwindow* window) -> GLFWWindow::WindowData&
+	auto GLFWWindow::From(GLFWwindow* window) noexcept -> GLFWWindow&
 	{
-		return *static_cast<WindowData*>(glfwGetWindowUserPointer(window));
+		return *static_cast<GLFWWindow*>(glfwGetWindowUserPointer(window));
 	}
 
-	void GLFWWindow::OnUpdate()
+	auto GLFWWindow::PollEvents(bool wait) -> std::span<const Event>
 	{
-		RD_PROFILE_FUNCTION();
+		constexpr double idleTimeout = 0.05;
+		if (wait && m_Pending.empty() && !m_EventError)
+			glfwWaitEventsTimeout(idleTimeout);
+		else
+			glfwPollEvents();
 
+		if (m_EventError)
+			std::rethrow_exception(m_EventError);
 		UpdateWindowDrag();
-		glfwPollEvents();
+		m_Events.clear();
+		m_Events.swap(m_Pending);
+		return m_Events;
+	}
+
+	void GLFWWindow::Present()
+	{
 		m_Context->SwapBuffers();
+	}
+
+	auto GLFWWindow::GetFramebufferSize() const noexcept -> glm::uvec2
+	{
+		int width{}, height{};
+		glfwGetFramebufferSize(m_Window.get(), &width, &height);
+		return {static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
 	}
 
 	void GLFWWindow::Minimize() const
@@ -343,8 +347,6 @@ namespace Rod {
 
 	void GLFWWindow::SetVSync(bool enabled)
 	{
-		RD_PROFILE_FUNCTION();
-
 		if (enabled)
 			glfwSwapInterval(1);
 		else

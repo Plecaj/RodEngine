@@ -2,6 +2,7 @@
 
 #include "../OpenGLFixture.h"
 #include "../TemporaryDirectory.h"
+#include "Rod/Renderer/RenderDevice.h"
 #include "Rod/Scene/Components.h"
 #include "Rod/Scene/Entity.h"
 #include "Rod/Scene/Scene.h"
@@ -18,20 +19,20 @@ TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Scene assets load after relocation"
 	for (const auto* filename : {"rgba.png", "triangle.glb"})
 		std::filesystem::copy_file(AssetPath(filename), project / "Assets" / filename);
 
+	const Rod::RenderDevice device;
 	Rod::Scene source;
 	auto entity = source.CreateEntity("Player");
 	entity.AddComponent<Rod::SpriteRendererComponent>().Texture =
-	    Rod::Texture2D::Create((project / "Assets/rgba.png").string());
+	    device.LoadTexture2D((project / "Assets/rgba.png").string());
 	auto& mesh = entity.AddComponent<Rod::MeshComponent>();
-	mesh.SetMesh(Rod::CreateRef<Rod::Mesh>((project / "Assets/triangle.glb").string()));
-	constexpr float roughness = 0.75f;
-	mesh.Material.SetRoughness(roughness);
+	mesh.SetMesh(Rod::CreateRef<Rod::Mesh>(device, (project / "Assets/triangle.glb").string()));
+	mesh.Material.SetRoughness(0.75f);
 	Rod::SceneSerializer(source, project).SerializeText((project / "scene.rod").string());
 
 	std::filesystem::rename(project, relocated);
 
 	Rod::Scene loaded;
-	Rod::SceneSerializer(loaded, relocated).DeserializeText((relocated / "scene.rod").string());
+	Rod::SceneSerializer(loaded, relocated).DeserializeText((relocated / "scene.rod").string(), device);
 	auto restored = loaded.FindEntityByName("Player");
 	REQUIRE(restored);
 	const auto& texture = restored.GetComponent<Rod::SpriteRendererComponent>().Texture;
@@ -40,5 +41,5 @@ TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Scene assets load after relocation"
 	const auto& restoredMesh = restored.GetComponent<Rod::MeshComponent>();
 	REQUIRE(restoredMesh.Mesh);
 	REQUIRE(std::filesystem::path(restoredMesh.Mesh->GetPath()) == relocated / "Assets" / "triangle.glb");
-	REQUIRE(restoredMesh.Material.GetRoughness() == roughness);
+	REQUIRE(restoredMesh.Material.GetRoughness() == 0.75f);
 }

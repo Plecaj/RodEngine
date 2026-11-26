@@ -2,6 +2,8 @@
 
 #include "Mesh.h"
 
+#include "RenderDevice.h"
+
 #include <cstring>
 #include <limits>
 #include <stdexcept>
@@ -135,11 +137,9 @@ namespace Rod {
 		}
 	}
 
-	Mesh::Mesh(const std::string& path)
+	Mesh::Mesh(const RenderDevice& device, const std::string& path)
 	try : m_SourcePath(path)
 	{
-		RD_PROFILE_FUNCTION();
-
 		tinygltf::TinyGLTF loader;
 		tinygltf::Model model;
 		std::string err, warn;
@@ -170,22 +170,21 @@ namespace Rod {
 		}
 
 		ProcessMaterial(model, primitive);
-		ProcessPrimitive(vertices, indices);
+		Upload(device, vertices, indices);
 	}
 	catch (const std::runtime_error& exception)
 	{
 		throw std::runtime_error("Mesh load failed '" + path + "': " + exception.what());
 	}
 
-	void Mesh::ProcessPrimitive(std::span<const float> vertices, std::span<const uint32_t> indices)
+	void Mesh::Upload(const RenderDevice& device, std::span<const float> vertices, std::span<const uint32_t> indices)
 	{
-		RD_PROFILE_FUNCTION();
-		m_VAO = VertexArray::Create();
-		auto vertexBuffer = VertexBuffer::Create(std::as_bytes(vertices));
+		m_VAO = device.CreateVertexArray();
+		auto vertexBuffer = device.CreateVertexBuffer(std::as_bytes(vertices));
 		const BufferLayout layout = {{ShaderDataType::Float3, "a_Position"}, {ShaderDataType::Float3, "a_Normal"}};
 		vertexBuffer->SetBufferLayout(layout);
 
-		auto indexBuffer = IndexBuffer::Create(indices);
+		auto indexBuffer = device.CreateIndexBuffer(indices);
 		m_VAO->AddVertexBuffer(std::move(vertexBuffer));
 		m_VAO->SetIndexBuffer(std::move(indexBuffer));
 	}

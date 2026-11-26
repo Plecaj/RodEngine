@@ -2,6 +2,8 @@
 
 #include "ContentBrowserPanel.h"
 
+#include "Rod/Renderer/RenderDevice.h"
+
 #include <imgui.h>
 
 namespace Rod {
@@ -106,11 +108,11 @@ namespace Rod {
 		}
 	}
 
-	ContentBrowserPanel::ContentBrowserPanel(const std::filesystem::path& assetsPath)
+	ContentBrowserPanel::ContentBrowserPanel(const std::filesystem::path& assetsPath, const RenderDevice& device)
 	    : m_AssetsPath(assetsPath), m_CurrentDirectory(assetsPath)
 	{
-		m_DirectoryIcon = Texture2D::Create("RodAssets/Textures/DirectoryIcon.png");
-		m_FileIcon = Texture2D::Create("RodAssets/Textures/FileIcon.png");
+		m_DirectoryIcon = device.LoadTexture2D("RodAssets/Textures/DirectoryIcon.png");
+		m_FileIcon = device.LoadTexture2D("RodAssets/Textures/FileIcon.png");
 	}
 
 	void ContentBrowserPanel::OnImGuiRender()

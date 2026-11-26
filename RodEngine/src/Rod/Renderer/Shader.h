@@ -1,37 +1,15 @@
 #pragma once
 
-#include "RendererAPI.h"
-
 #include <glm/glm.hpp>
 
-#include <cstdint>
 #include <span>
 #include <string>
-#include <unordered_map>
 
 namespace Rod {
 
 	class Shader
 	{
 	public:
-		enum class OptimizationLevel : uint8_t
-		{
-			None,
-			Performance,
-			Size
-		};
-
-		struct ShaderOptions
-		{
-			std::unordered_map<std::string, std::string> Macros;
-			Shader::OptimizationLevel OptimizationLevel = Shader::OptimizationLevel::Performance;
-			bool GenerateDebugInfo = false;
-
-			ShaderOptions();
-		};
-
-		[[nodiscard]] static auto Create(const std::string& filepath, const ShaderOptions& options = ShaderOptions())
-		    -> Scope<Shader>;
 		Shader() = default;
 		virtual ~Shader() = default;
 		Shader(const Shader&) = delete;
@@ -50,24 +28,6 @@ namespace Rod {
 
 		virtual void Bind() const = 0;
 		virtual void Unbind() const = 0;
-	};
-
-	inline Shader::ShaderOptions::ShaderOptions() = default;
-
-	class ShaderLibrary
-	{
-	public:
-		void Add(const std::string& name, const Ref<Shader>& shader);
-		void Add(const Ref<Shader>& shader);
-		auto Load(const std::string& filepath) -> Ref<Shader>;
-		auto Load(const std::string& name, const std::string& filepath) -> Ref<Shader>;
-
-		[[nodiscard]] auto Get(const std::string& name) -> Ref<Shader>;
-
-		[[nodiscard]] auto Exists(const std::string& name) const -> bool;
-
-	private:
-		std::unordered_map<std::string, Ref<Shader>> m_Shaders;
 	};
 
 }

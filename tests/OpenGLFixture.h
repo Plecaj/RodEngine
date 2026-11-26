@@ -22,10 +22,8 @@ namespace Rod::Tests {
 				Log::Init();
 			REQUIRE(glfwInit() == GLFW_TRUE);
 			glfwDefaultWindowHints();
-			constexpr int majorVersion = 4;
-			constexpr int minorVersion = 6;
-			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, majorVersion);
-			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, minorVersion);
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 			glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 			m_Window.reset(glfwCreateWindow(1, 1, "Tests", nullptr, nullptr));

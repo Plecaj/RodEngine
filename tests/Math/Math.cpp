@@ -21,13 +21,12 @@ TEST_CASE("Transform decomposition keeps translation, rotation and scale", "[mat
 	                                glm::eulerAngleXYZ(rotation.x, rotation.y, rotation.z) *
 	                                glm::scale(glm::mat4(1.0f), scale);
 
-	constexpr double tolerance = 0.0001;
 	for (glm::mat4::length_type column = 0; column < transform.length(); ++column)
 	{
 		for (glm::vec4::length_type row = 0; row < transform[column].length(); ++row)
 		{
 			CAPTURE(column, row);
-			REQUIRE_THAT(reconstructed[column][row], Catch::Matchers::WithinAbs(transform[column][row], tolerance));
+			REQUIRE_THAT(reconstructed[column][row], Catch::Matchers::WithinAbs(transform[column][row], 0.0001));
 		}
 	}
 }

@@ -5,6 +5,10 @@
 #include "Rod/Renderer/FrameBuffer.h"
 
 #include <glad/glad.h>
+#include <glm/gtc/type_ptr.hpp>
+
+#include <array>
+#include <stdexcept>
 
 namespace Rod {
 
@@ -119,24 +123,6 @@ namespace Rod {
 			}
 
 			return false;
-		}
-
-		static auto RodTextureFormatToGL(FramebufferTextureFormat format) -> GLenum
-		{
-
-			switch (format)
-			{
-				case FramebufferTextureFormat::RGBA8:
-					return GL_RGBA8;
-				case FramebufferTextureFormat::RedInteger:
-					return GL_RED_INTEGER;
-				case FramebufferTextureFormat::None:
-				case FramebufferTextureFormat::DEPTH24:
-				case FramebufferTextureFormat::DEPTH24STENCIL8:
-					break;
-			}
-			RD_CORE_ASSERT(false, "Could not translate format");
-			return 0;
 		}
 
 	}
@@ -291,20 +277,21 @@ namespace Rod {
 		return pixelData;
 	}
 
+	void OpenGLFramebuffer::ClearColorAttachment(uint32_t attachmentIndex, const glm::vec4& color)
+	{
+		if (m_ColorAttachmentSpecifications.at(attachmentIndex).TextureFormat != FramebufferTextureFormat::RGBA8)
+			throw std::invalid_argument("Floating-point clear requires an RGBA8 color attachment");
+
+		glClearNamedFramebufferfv(m_RendererID, GL_COLOR, static_cast<GLint>(attachmentIndex), glm::value_ptr(color));
+	}
+
 	void OpenGLFramebuffer::ClearColorAttachment(uint32_t attachmentIndex, int value)
 	{
-		RD_CORE_ASSERT(
-		    attachmentIndex < m_ColorAttachments.size(),
-		    "Attachment index cannot be greater than ColorAttachments.size()");
+		if (m_ColorAttachmentSpecifications.at(attachmentIndex).TextureFormat != FramebufferTextureFormat::RedInteger)
+			throw std::invalid_argument("Integer clear requires a RedInteger color attachment");
 
-		const auto& spec = m_ColorAttachmentSpecifications[attachmentIndex];
-
-		glClearTexImage(
-		    m_ColorAttachments[attachmentIndex],
-		    0,
-		    Utils::RodTextureFormatToGL(spec.TextureFormat),
-		    GL_INT,
-		    &value);
+		const std::array<GLint, 4> color{value};
+		glClearNamedFramebufferiv(m_RendererID, GL_COLOR, static_cast<GLint>(attachmentIndex), color.data());
 	}
 
 	void OpenGLFramebuffer::BindDepthAttachment(uint32_t slot) const

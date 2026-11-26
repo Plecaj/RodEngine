@@ -195,11 +195,19 @@ namespace Rod {
 		    .ScriptCacheDirectory = assetsPath / "Scripts" / "Cache"};
 	}
 
-	void ScriptEngine::Init(const Project& project, const Input& input, Mode mode)
+	void ScriptEngine::Init(const Project& project, const InputState& input, const RenderDevice& device, Mode mode)
 	{
 		if (!s_Configuration)
-			s_Configuration.emplace(Configuration{.ProjectData = project, .InputDevice = input, .StartupMode = mode});
+			s_Configuration.emplace(
+			    Configuration{.ProjectData = project, .Input = input, .Device = device, .StartupMode = mode});
 		EnsureInitialized();
+	}
+
+	auto ScriptEngine::GetRenderDevice() noexcept -> std::optional<const RenderDevice&>
+	{
+		if (s_Configuration)
+			return s_Configuration->Device;
+		return std::nullopt;
 	}
 
 	auto ScriptEngine::EnsureInitialized() -> bool
@@ -220,7 +228,7 @@ namespace Rod {
 		}
 
 		// Managed input callbacks have no user-data parameter.
-		ScriptGlue::SetInputContext(s_Configuration->InputDevice);
+		ScriptGlue::SetInputContext(s_Configuration->Input);
 		if (s_Configuration->StartupMode != Mode::Editor || BuildScripts())
 			ReloadAssembly();
 		RefreshSourceWriteTime();
@@ -327,9 +335,9 @@ namespace Rod {
 		s_Data->RuntimeRunning = true;
 		ScriptGlue::SetSceneContext(scene);
 
-		const auto view = scene.m_Registry.view<IDComponent, ScriptComponent>();
+		const auto view = scene.View<IDComponent, ScriptComponent>();
 		for (const auto entityID : view)
-			OnCreateEntity(Entity{entityID, scene});
+			OnCreateEntity(scene.FindEntityByHandle(entityID));
 	}
 
 	void ScriptEngine::OnRuntimeStop()
@@ -339,9 +347,9 @@ namespace Rod {
 
 		if (s_Data->SceneContext)
 		{
-			const auto view = s_Data->SceneContext->m_Registry.view<IDComponent, ScriptComponent>();
+			const auto view = s_Data->SceneContext->View<IDComponent, ScriptComponent>();
 			for (const auto entityID : view)
-				OnDestroyEntity(Entity{entityID, *s_Data->SceneContext});
+				OnDestroyEntity(s_Data->SceneContext->FindEntityByHandle(entityID));
 		}
 
 		s_Data->RuntimeRunning = false;
@@ -354,9 +362,9 @@ namespace Rod {
 		if (!s_Data || !s_Data->RuntimeRunning || !s_Data->SceneContext)
 			return;
 
-		const auto view = s_Data->SceneContext->m_Registry.view<IDComponent, ScriptComponent>();
+		const auto view = s_Data->SceneContext->View<IDComponent, ScriptComponent>();
 		for (const auto entityID : view)
-			OnUpdateEntity(Entity{entityID, *s_Data->SceneContext}, ts);
+			OnUpdateEntity(s_Data->SceneContext->FindEntityByHandle(entityID), ts);
 	}
 
 	void ScriptEngine::OnCreateEntity(Entity entity)

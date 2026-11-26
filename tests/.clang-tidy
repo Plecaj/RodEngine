@@ -1,3 +1,7 @@
 InheritParentConfig: true
+# Catch2 combines ResultDisposition flags without naming each possible value.
+Checks: >-
+  -readability-magic-numbers,
+  -clang-analyzer-optin.core.EnumCastOutOfRange
 CheckOptions:
   readability-function-cognitive-complexity.IgnoreMacros: true

@@ -4,6 +4,7 @@
 #include "Rod/Project/Project.h"
 #include "Rod/Project/ProjectInitializer.h"
 #include "Rod/Project/ProjectSerializer.h"
+#include "Rod/Renderer/RenderDevice.h"
 #include "Rod/Scene/Entity.h"
 #include "Rod/Scene/Scene.h"
 #include "Rod/Scene/SceneSerializer.h"
@@ -119,8 +120,8 @@ TEST_CASE_METHOD(
 	REQUIRE(std::filesystem::is_regular_file(project.GetScriptProjectPath()));
 	Rod::Scene scene;
 	const Rod::SceneSerializer serializer(scene, project.GetDirectory());
-	REQUIRE_NOTHROW(serializer.DeserializeText(project.GetStartupScenePath().string()));
-	const Rod::Entity camera = scene.GetPrimaryCameraEntity();
+	REQUIRE_NOTHROW(serializer.DeserializeText(project.GetStartupScenePath().string(), Rod::RenderDevice{}));
+	const Rod::Entity camera = scene.FindPrimaryCamera();
 	REQUIRE(camera);
 	std::ofstream file(project.GetScriptProjectPath());
 	file << "preserve this content";

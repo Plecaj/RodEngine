@@ -9,12 +9,6 @@
 
 #include <stdexcept>
 
-namespace {
-	constexpr uint64_t g_PlayerID = 1001;
-	constexpr uint64_t g_EnemyID = 1002;
-	constexpr uint64_t g_MissingID = 9999;
-}
-
 TEST_CASE("Scene creates entities with default components", "[scene]")
 {
 	Rod::Scene scene;
@@ -34,21 +28,21 @@ TEST_CASE("Scene creates entities with default components", "[scene]")
 TEST_CASE("Scene finds entities by UUID and name", "[scene]")
 {
 	Rod::Scene scene;
-	auto player = scene.CreateEntityWithUUID(Rod::UUID{g_PlayerID}, "Player");
-	scene.CreateEntityWithUUID(Rod::UUID{g_EnemyID}, "Enemy");
+	auto player = scene.CreateEntityWithUUID(Rod::UUID{1001}, "Player");
+	scene.CreateEntityWithUUID(Rod::UUID{1002}, "Enemy");
 
-	REQUIRE(player.GetUUID() == Rod::UUID{g_PlayerID});
-	REQUIRE(scene.FindEntityByUUID(Rod::UUID{g_PlayerID}) == player);
+	REQUIRE(player.GetUUID() == Rod::UUID{1001});
+	REQUIRE(scene.FindEntityByUUID(Rod::UUID{1001}) == player);
 	REQUIRE(scene.FindEntityByName("Player") == player);
-	REQUIRE(!scene.FindEntityByUUID(Rod::UUID{g_MissingID}));
+	REQUIRE(!scene.FindEntityByUUID(Rod::UUID{9999}));
 	REQUIRE(!scene.FindEntityByName("Missing"));
 }
 
 TEST_CASE("Scene owns entity identity", "[scene]")
 {
 	Rod::Scene scene;
-	const auto player = scene.CreateEntityWithUUID(Rod::UUID{g_PlayerID}, "Player");
-	REQUIRE_THROWS_AS(scene.CreateEntityWithUUID(Rod::UUID{g_PlayerID}), std::invalid_argument);
+	const auto player = scene.CreateEntityWithUUID(Rod::UUID{1001}, "Player");
+	REQUIRE_THROWS_AS(scene.CreateEntityWithUUID(Rod::UUID{1001}), std::invalid_argument);
 
 	Rod::Scene other;
 	const auto foreign = other.CreateEntity("Foreign");
@@ -72,15 +66,9 @@ TEST_CASE("Entity component lookup handles optional and removed components", "[s
 
 TEST_CASE("Scene equality compares component data", "[scene]")
 {
-	constexpr uint32_t viewportWidth = 800;
-	constexpr uint32_t viewportHeight = 400;
-	constexpr float changedTilingFactor = 2.0f;
-	constexpr float changedMetallic = 0.75f;
-	constexpr float changedIntensity = 2.0f;
-
 	Rod::Scene original;
-	original.ResizeViewport(viewportWidth, viewportHeight);
-	auto entity = original.CreateEntityWithUUID(Rod::UUID{g_PlayerID}, "Player");
+	original.ResizeViewport(800, 400);
+	auto entity = original.CreateEntityWithUUID(Rod::UUID{1001}, "Player");
 	entity.AddComponent<Rod::SpriteRendererComponent>();
 	entity.AddComponent<Rod::MeshComponent>();
 	entity.AddComponent<Rod::DirectionalLightComponent>();
@@ -93,7 +81,7 @@ TEST_CASE("Scene equality compares component data", "[scene]")
 	REQUIRE(original == copy);
 	REQUIRE(copy == original);
 
-	auto copiedEntity = copy.FindEntityByUUID(Rod::UUID{g_PlayerID});
+	auto copiedEntity = copy.FindEntityByUUID(Rod::UUID{1001});
 	SECTION("tag")
 	{
 		copiedEntity.GetComponent<Rod::TagComponent>().Tag = "Changed";
@@ -104,15 +92,15 @@ TEST_CASE("Scene equality compares component data", "[scene]")
 	}
 	SECTION("sprite")
 	{
-		copiedEntity.GetComponent<Rod::SpriteRendererComponent>().TilingFactor = changedTilingFactor;
+		copiedEntity.GetComponent<Rod::SpriteRendererComponent>().TilingFactor = 2.0f;
 	}
 	SECTION("mesh material")
 	{
-		copiedEntity.GetComponent<Rod::MeshComponent>().Material.SetMetallic(changedMetallic);
+		copiedEntity.GetComponent<Rod::MeshComponent>().Material.SetMetallic(0.75f);
 	}
 	SECTION("light")
 	{
-		copiedEntity.GetComponent<Rod::DirectionalLightComponent>().Intensity = changedIntensity;
+		copiedEntity.GetComponent<Rod::DirectionalLightComponent>().Intensity = 2.0f;
 	}
 	SECTION("camera")
 	{
@@ -128,7 +116,7 @@ TEST_CASE("Scene equality compares component data", "[scene]")
 	}
 	SECTION("viewport")
 	{
-		copy.ResizeViewport(viewportHeight, viewportHeight);
+		copy.ResizeViewport(400, 400);
 	}
 	REQUIRE_FALSE(original == copy);
 	REQUIRE_FALSE(copy == original);
@@ -137,22 +125,21 @@ TEST_CASE("Scene equality compares component data", "[scene]")
 TEST_CASE("Scene destroys only the requested entity", "[scene]")
 {
 	Rod::Scene scene;
-	const auto player = scene.CreateEntityWithUUID(Rod::UUID{g_PlayerID}, "Player");
-	auto enemy = scene.CreateEntityWithUUID(Rod::UUID{g_EnemyID}, "Enemy");
+	const auto player = scene.CreateEntityWithUUID(Rod::UUID{1001}, "Player");
+	auto enemy = scene.CreateEntityWithUUID(Rod::UUID{1002}, "Enemy");
 
 	scene.DestroyEntity(player);
 
 	REQUIRE(!player);
-	REQUIRE(!scene.FindEntityByUUID(Rod::UUID{g_PlayerID}));
+	REQUIRE(!scene.FindEntityByUUID(Rod::UUID{1001}));
 	REQUIRE(!scene.FindEntityByName("Player"));
-	REQUIRE(scene.FindEntityByUUID(Rod::UUID{g_EnemyID}) == enemy);
+	REQUIRE(scene.FindEntityByUUID(Rod::UUID{1002}) == enemy);
 }
 
 TEST_CASE("Scene selects the primary camera", "[scene]")
 {
 	Rod::Scene scene;
-	constexpr glm::uvec2 viewportSize{1920, 1080};
-	scene.ResizeViewport(viewportSize.x, viewportSize.y);
+	scene.ResizeViewport(1920, 1080);
 	REQUIRE(!scene.FindPrimaryCamera());
 
 	auto minimap = scene.CreateEntity("Minimap");
@@ -184,21 +171,18 @@ namespace {
 		auto operator=(SceneCopyFixture&&) -> SceneCopyFixture& = delete;
 
 		static constexpr glm::vec3 s_Translation{1.0f, 2.0f, 3.0f};
-		static constexpr float s_InitialTiling = 2.0f;
-		static constexpr float s_ModifiedTiling = 5.0f;
-		static constexpr float s_ModifiedX = 10.0f;
 		Rod::Scene Source = CreateSource();
 		Rod::Scene Copy{Source};
-		Rod::Entity Player = Source.FindEntityByUUID(Rod::UUID{g_PlayerID});
-		Rod::Entity CopiedPlayer = Copy.FindEntityByUUID(Rod::UUID{g_PlayerID});
+		Rod::Entity Player = Source.FindEntityByUUID(Rod::UUID{1001});
+		Rod::Entity CopiedPlayer = Copy.FindEntityByUUID(Rod::UUID{1001});
 
 	private:
 		static auto CreateSource() -> Rod::Scene
 		{
 			Rod::Scene scene;
-			auto player = scene.CreateEntityWithUUID(Rod::UUID{g_PlayerID}, "Player");
+			auto player = scene.CreateEntityWithUUID(Rod::UUID{1001}, "Player");
 			player.GetComponent<Rod::TransformComponent>().Translation = s_Translation;
-			player.AddComponent<Rod::SpriteRendererComponent>().TilingFactor = s_InitialTiling;
+			player.AddComponent<Rod::SpriteRendererComponent>().TilingFactor = 2.0f;
 			return scene;
 		}
 	};
@@ -213,41 +197,38 @@ TEST_CASE("Scene copy preserves entity identity and components", "[scene]")
 	REQUIRE(fixture.CopiedPlayer.HasComponent<Rod::SpriteRendererComponent>());
 	REQUIRE(
 	    fixture.CopiedPlayer.GetComponent<Rod::TransformComponent>().Translation == SceneCopyFixture::s_Translation);
-	REQUIRE(
-	    fixture.CopiedPlayer.GetComponent<Rod::SpriteRendererComponent>().TilingFactor ==
-	    SceneCopyFixture::s_InitialTiling);
+	REQUIRE(fixture.CopiedPlayer.GetComponent<Rod::SpriteRendererComponent>().TilingFactor == 2.0f);
 }
 
 TEST_CASE("Scene copies own independent component data", "[scene]")
 {
 	SceneCopyFixture fixture;
-	fixture.CopiedPlayer.GetComponent<Rod::TransformComponent>().Translation.x = SceneCopyFixture::s_ModifiedX;
-	fixture.CopiedPlayer.GetComponent<Rod::SpriteRendererComponent>().TilingFactor = SceneCopyFixture::s_ModifiedTiling;
+	fixture.CopiedPlayer.GetComponent<Rod::TransformComponent>().Translation.x = 10.0f;
+	fixture.CopiedPlayer.GetComponent<Rod::SpriteRendererComponent>().TilingFactor = 5.0f;
 	REQUIRE(fixture.Player.GetComponent<Rod::TransformComponent>().Translation.x == SceneCopyFixture::s_Translation.x);
-	REQUIRE(
-	    fixture.Player.GetComponent<Rod::SpriteRendererComponent>().TilingFactor == SceneCopyFixture::s_InitialTiling);
+	REQUIRE(fixture.Player.GetComponent<Rod::SpriteRendererComponent>().TilingFactor == 2.0f);
 }
 
 TEST_CASE("Destroying a copied entity preserves the original", "[scene]")
 {
 	SceneCopyFixture fixture;
 	fixture.Copy.DestroyEntity(fixture.CopiedPlayer);
-	REQUIRE(fixture.Source.FindEntityByUUID(Rod::UUID{g_PlayerID}) == fixture.Player);
+	REQUIRE(fixture.Source.FindEntityByUUID(Rod::UUID{1001}) == fixture.Player);
 }
 
 TEST_CASE("Scene assignment replaces entities with independent copies", "[scene]")
 {
 	Rod::Scene source;
-	auto player = source.CreateEntityWithUUID(Rod::UUID{g_PlayerID}, "Player");
+	auto player = source.CreateEntityWithUUID(Rod::UUID{1001}, "Player");
 	player.AddComponent<Rod::SpriteRendererComponent>();
 	Rod::Scene destination;
-	destination.CreateEntityWithUUID(Rod::UUID{g_EnemyID}, "Old");
+	destination.CreateEntityWithUUID(Rod::UUID{1002}, "Old");
 
 	destination = source;
 	REQUIRE(!destination.FindEntityByName("Old"));
 	auto copy = destination.FindEntityByUUID(player.GetUUID());
 	REQUIRE(copy);
-	copy.GetComponent<Rod::SpriteRendererComponent>().TilingFactor = SceneCopyFixture::s_InitialTiling;
+	copy.GetComponent<Rod::SpriteRendererComponent>().TilingFactor = 2.0f;
 	REQUIRE(player.GetComponent<Rod::SpriteRendererComponent>().TilingFactor == 1.0f);
 
 	const Rod::Scene& alias = destination;
@@ -260,17 +241,17 @@ TEST_CASE("Scene assignment replaces entities with independent copies", "[scene]
 TEST_CASE("Scene moves transfer entities and replace destination contents", "[scene]")
 {
 	Rod::Scene source;
-	auto entity = source.CreateEntityWithUUID(Rod::UUID{g_PlayerID}, "Player");
+	auto entity = source.CreateEntityWithUUID(Rod::UUID{1001}, "Player");
 	entity.AddComponent<Rod::ScriptComponent>("Game.Player");
 
 	Rod::Scene moved(std::move(source));
-	REQUIRE(moved.FindEntityByUUID(Rod::UUID{g_PlayerID}));
+	REQUIRE(moved.FindEntityByUUID(Rod::UUID{1001}));
 
 	Rod::Scene destination;
 	destination.CreateEntity("Old");
 	destination = std::move(moved);
 	REQUIRE_FALSE(destination.FindEntityByName("Old"));
-	const auto player = destination.FindEntityByUUID(Rod::UUID{g_PlayerID});
+	const auto player = destination.FindEntityByUUID(Rod::UUID{1001});
 	REQUIRE(player);
 	REQUIRE(player.GetName() == "Player");
 	REQUIRE(player.GetComponent<Rod::ScriptComponent>().ClassName == "Game.Player");

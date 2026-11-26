@@ -6,6 +6,5 @@
 
 extern "C" ROD_TEST_EXPORT auto RodTestValue() -> int
 {
-	constexpr int testValue = 42;
-	return testValue;
+	return 42;
 }

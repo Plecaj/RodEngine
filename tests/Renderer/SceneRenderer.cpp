@@ -26,9 +26,8 @@ TEST_CASE_METHOD(
 	const Rod::ShaderLoader loader(ROD_TEST_SHADER_DIRECTORY, directory.GetPath());
 	Rod::SceneRenderer renderer(device, loader);
 
-	constexpr uint32_t targetSize = 16;
 	Rod::Scene scene;
-	scene.ResizeViewport(targetSize, targetSize);
+	scene.ResizeViewport(16, 16);
 	auto camera = scene.CreateEntity("Main Camera");
 	camera.GetComponent<Rod::TransformComponent>().Translation.x = 1.0f;
 	camera.AddComponent<Rod::CameraComponent>().Camera.SetOrthographic(2.0f, -1.0f, 1.0f);
@@ -40,27 +39,24 @@ TEST_CASE_METHOD(
 	scene.CreateEntity("Sun").AddComponent<Rod::DirectionalLightComponent>();
 
 	auto sprite = scene.CreateEntity("Sprite");
-	constexpr float spriteX = 1.5f;
-	sprite.GetComponent<Rod::TransformComponent>().Translation.x = spriteX;
+	sprite.GetComponent<Rod::TransformComponent>().Translation.x = 1.5f;
 	sprite.AddComponent<Rod::SpriteRendererComponent>();
 
 	Rod::FramebufferSpecification spec;
-	spec.Width = targetSize;
-	spec.Height = targetSize;
+	spec.Width = 16;
+	spec.Height = 16;
 	spec.Attachments = {
 	    Rod::FramebufferTextureSpecification{Rod::FramebufferTextureFormat::RGBA8},
 	    Rod::FramebufferTextureSpecification{Rod::FramebufferTextureFormat::RedInteger},
 	    Rod::FramebufferTextureSpecification{Rod::FramebufferTextureFormat::DEPTH24}};
 	const auto target = device.CreateFramebuffer(spec);
 	target->Bind();
-	device.Clear(glm::vec4(0.0f));
+	target->ClearColorAttachment(0, glm::vec4(0.0f));
 	target->ClearColorAttachment(1, -1);
+	device.ClearDepth();
 	renderer.RenderRuntime(scene);
 
-	constexpr int meshPixel = 4;
-	constexpr int spritePixel = 12;
-	constexpr int sampleRow = 8;
-	REQUIRE(target->ReadPixel(1, meshPixel, sampleRow) == static_cast<int>(static_cast<entt::entity>(triangle)));
-	REQUIRE(target->ReadPixel(1, spritePixel, sampleRow) == static_cast<int>(static_cast<entt::entity>(sprite)));
+	REQUIRE(target->ReadPixel(1, 4, 8) == static_cast<int>(static_cast<entt::entity>(triangle)));
+	REQUIRE(target->ReadPixel(1, 12, 8) == static_cast<int>(static_cast<entt::entity>(sprite)));
 	REQUIRE(glGetError() == GL_NO_ERROR);
 }

@@ -68,10 +68,9 @@ TEST_CASE("Native script calls add cameras and update primary flags", "[scriptin
 	const auto getPrimary = context.GetFunction<GetPrimaryFn>("Camera.GetPrimary");
 	const auto setPrimary = context.GetFunction<SetPrimaryFn>("Camera.SetPrimary");
 	const auto id = create("Scripted");
-	constexpr int32_t cameraComponentType = 3;
-	REQUIRE(!hasComponent(id, cameraComponentType));
-	addComponent(id, cameraComponentType);
-	REQUIRE(hasComponent(id, cameraComponentType));
+	REQUIRE(!hasComponent(id, 3));
+	addComponent(id, 3);
+	REQUIRE(hasComponent(id, 3));
 	REQUIRE(getPrimary(id));
 	setPrimary(id, false);
 	REQUIRE(!getPrimary(id));

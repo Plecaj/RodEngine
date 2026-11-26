@@ -38,15 +38,13 @@ TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Engine shaders compile and reload f
 	RequireLinkedShaders(Rod::ShaderLoader(ROD_TEST_SHADER_DIRECTORY, cacheDirectory));
 
 	std::vector<std::pair<std::filesystem::path, std::filesystem::file_time_type>> cachedFiles;
-	constexpr auto cacheAge = std::chrono::hours{24};
-	const auto timestamp = std::filesystem::file_time_type::clock::now() - cacheAge;
+	const auto timestamp = std::filesystem::file_time_type::clock::now() - std::chrono::hours{24};
 	for (const auto& entry : std::filesystem::directory_iterator(cacheDirectory))
 	{
 		std::filesystem::last_write_time(entry.path(), timestamp);
 		cachedFiles.emplace_back(entry.path(), std::filesystem::last_write_time(entry.path()));
 	}
-	constexpr size_t binaryCount = 6;
-	REQUIRE(cachedFiles.size() == binaryCount);
+	REQUIRE(cachedFiles.size() == 6);
 
 	RequireLinkedShaders(Rod::ShaderLoader(ROD_TEST_SHADER_DIRECTORY, cacheDirectory));
 	for (const auto& [path, modified] : cachedFiles)
@@ -68,9 +66,8 @@ TEST_CASE_METHOD(
 	Rod::ShaderCompileOptions options;
 	options.GenerateDebugInfo = true;
 	const auto debug = loader.Load("3D.glsl", options);
-	constexpr auto stageCount = 4;
 	REQUIRE(
 	    std::distance(
 	        std::filesystem::directory_iterator(directory.GetPath()),
-	        std::filesystem::directory_iterator{}) == stageCount);
+	        std::filesystem::directory_iterator{}) == 4);
 }

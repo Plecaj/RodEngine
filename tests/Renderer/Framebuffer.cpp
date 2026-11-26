@@ -10,11 +10,9 @@
 
 TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Framebuffers retain attachments after resize", "[renderer][opengl]")
 {
-	constexpr uint32_t width = 32;
-	constexpr uint32_t height = 16;
 	Rod::FramebufferSpecification spec;
-	spec.Width = width;
-	spec.Height = height;
+	spec.Width = 32;
+	spec.Height = 16;
 	spec.Attachments = {
 	    Rod::FramebufferTextureSpecification{Rod::FramebufferTextureFormat::RGBA8},
 	    Rod::FramebufferTextureSpecification{Rod::FramebufferTextureFormat::RedInteger},
@@ -45,14 +43,17 @@ TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Framebuffers retain attachments aft
 		REQUIRE(std::cmp_equal(attachmentWidth, spec.Width));
 		REQUIRE(std::cmp_equal(attachmentHeight, spec.Height));
 	}
-	constexpr uint32_t entityAttachment = 1;
-	constexpr int entityID = 42;
-	framebuffer->ClearColorAttachment(entityAttachment, -1);
-	REQUIRE(framebuffer->ReadPixel(entityAttachment, 0, 0) == -1);
-	framebuffer->ClearColorAttachment(entityAttachment, entityID);
-	REQUIRE(
-	    framebuffer->ReadPixel(entityAttachment, static_cast<int>(spec.Width - 1), static_cast<int>(spec.Height - 1)) ==
-	    entityID);
+	framebuffer->Unbind();
+	framebuffer->ClearColorAttachment(1, -1);
+	framebuffer->ClearColorAttachment(0, glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+	framebuffer->Bind();
+	REQUIRE(framebuffer->ReadPixel(1, 0, 0) == -1);
+	framebuffer->ClearColorAttachment(1, 42);
+	REQUIRE(framebuffer->ReadPixel(1, static_cast<int>(spec.Width - 1), static_cast<int>(spec.Height - 1)) == 42);
+	std::array<uint8_t, 4> pixel{};
+	glReadBuffer(GL_COLOR_ATTACHMENT0);
+	glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel.data());
+	REQUIRE(pixel == std::array<uint8_t, 4>{255, 0, 0, 255});
 	framebuffer->Unbind();
 	REQUIRE(glGetError() == GL_NO_ERROR);
 }

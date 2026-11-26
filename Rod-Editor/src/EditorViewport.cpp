@@ -98,8 +98,9 @@ namespace Rod {
 	void EditorViewport::OnUpdate(EditorSceneManager& scenes)
 	{
 		m_Framebuffer->Bind();
-		m_Device.Clear(s_ClearColor);
+		m_Framebuffer->ClearColorAttachment(0, s_ClearColor);
 		m_Framebuffer->ClearColorAttachment(1, -1);
+		m_Device.ClearDepth();
 
 		RenderScene(scenes);
 		const auto mouse = ImGui::GetMousePos();

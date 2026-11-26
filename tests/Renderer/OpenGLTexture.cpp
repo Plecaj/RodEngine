@@ -10,9 +10,7 @@
 TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Textures load RGB and RGBA pixels", "[renderer][opengl]")
 {
 	std::string filename;
-	constexpr uint8_t full = 255;
-	constexpr uint8_t half = 128;
-	uint8_t whiteAlpha = full;
+	uint8_t whiteAlpha = 255;
 	SECTION("RGB")
 	{
 		filename = "rgb.png";
@@ -20,16 +18,15 @@ TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Textures load RGB and RGBA pixels",
 	SECTION("RGBA")
 	{
 		filename = "rgba.png";
-		whiteAlpha = half;
+		whiteAlpha = 128;
 	}
 	const auto path = AssetPath(filename).string();
 	const auto texture = Rod::RenderDevice{}.LoadTexture2D(path);
-	constexpr uint32_t side = 2;
-	REQUIRE(texture->GetWidth() == side);
-	REQUIRE(texture->GetHeight() == side);
+	REQUIRE(texture->GetWidth() == 2);
+	REQUIRE(texture->GetHeight() == 2);
 
 	const auto expected =
-	    std::to_array<uint8_t>({0, 0, full, full, full, full, full, whiteAlpha, full, 0, 0, full, 0, full, 0, full});
+	    std::to_array<uint8_t>({0, 0, 255, 255, 255, 255, 255, whiteAlpha, 255, 0, 0, 255, 0, 255, 0, 255});
 	std::array<uint8_t, expected.size()> pixels{};
 	glGetTextureImage(texture->GetRendererID(), 0, GL_RGBA, GL_UNSIGNED_BYTE, sizeof(pixels), pixels.data());
 	REQUIRE(pixels == expected);
@@ -38,10 +35,8 @@ TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Textures load RGB and RGBA pixels",
 
 TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Textures upload pixel data", "[renderer][opengl]")
 {
-	constexpr uint8_t full = 255;
-	const auto expected = std::to_array<uint8_t>({full, 0, 0, full, 0, full, 0, full});
-	constexpr uint32_t width = 2;
-	const auto texture = Rod::RenderDevice{}.CreateTexture2D(width, 1);
+	const auto expected = std::to_array<uint8_t>({255, 0, 0, 255, 0, 255, 0, 255});
+	const auto texture = Rod::RenderDevice{}.CreateTexture2D(2, 1);
 	texture->SetData(std::as_bytes(std::span{expected}));
 
 	std::array<uint8_t, expected.size()> pixels{};

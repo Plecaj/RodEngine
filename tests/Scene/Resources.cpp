@@ -26,8 +26,7 @@ TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Scene assets load after relocation"
 	    device.LoadTexture2D((project / "Assets/rgba.png").string());
 	auto& mesh = entity.AddComponent<Rod::MeshComponent>();
 	mesh.SetMesh(Rod::CreateRef<Rod::Mesh>(device, (project / "Assets/triangle.glb").string()));
-	constexpr float roughness = 0.75f;
-	mesh.Material.SetRoughness(roughness);
+	mesh.Material.SetRoughness(0.75f);
 	Rod::SceneSerializer(source, project).SerializeText((project / "scene.rod").string());
 
 	std::filesystem::rename(project, relocated);
@@ -42,5 +41,5 @@ TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Scene assets load after relocation"
 	const auto& restoredMesh = restored.GetComponent<Rod::MeshComponent>();
 	REQUIRE(restoredMesh.Mesh);
 	REQUIRE(std::filesystem::path(restoredMesh.Mesh->GetPath()) == relocated / "Assets" / "triangle.glb");
-	REQUIRE(restoredMesh.Material.GetRoughness() == roughness);
+	REQUIRE(restoredMesh.Material.GetRoughness() == 0.75f);
 }

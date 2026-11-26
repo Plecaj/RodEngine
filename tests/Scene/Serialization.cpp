@@ -73,8 +73,6 @@ TEST_CASE_METHOD(SerializationFixture, "Empty scenes load", "[scene][serializati
 
 TEST_CASE_METHOD(SerializationFixture, "Scene loading takes the first marked camera", "[scene][serialization]")
 {
-	constexpr uint64_t firstID = 1001;
-	constexpr uint64_t secondID = 1002;
 	const auto camera = YAML::Load(R"(
 Camera:
   ProjectionType: 1
@@ -88,7 +86,7 @@ Primary: true
 FixedAspectRatio: false)");
 	YAML::Node sceneFile;
 	sceneFile["Scene"] = "Two cameras";
-	for (const auto id : {firstID, secondID})
+	for (const auto id : {uint64_t{1001}, uint64_t{1002}})
 	{
 		YAML::Node entity;
 		entity["Entity"] = id;
@@ -99,8 +97,8 @@ FixedAspectRatio: false)");
 
 	Rod::Scene scene;
 	Rod::SceneSerializer(scene).DeserializeText(Filepath(), Rod::RenderDevice{});
-	const auto first = scene.FindEntityByUUID(Rod::UUID{firstID});
-	const auto second = scene.FindEntityByUUID(Rod::UUID{secondID});
+	const auto first = scene.FindEntityByUUID(Rod::UUID{1001});
+	const auto second = scene.FindEntityByUUID(Rod::UUID{1002});
 	REQUIRE(first);
 	REQUIRE(second);
 	REQUIRE(scene.FindPrimaryCamera() == first);

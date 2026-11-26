@@ -22,6 +22,7 @@ namespace Rod {
 		void Resize(uint32_t width, uint32_t height) override;
 		[[nodiscard]] auto ReadPixel(uint32_t attachmentIndex, int x, int y) -> int override;
 
+		void ClearColorAttachment(uint32_t attachmentIndex, const glm::vec4& color) override;
 		void ClearColorAttachment(uint32_t attachmentIndex, int value) override;
 
 		[[nodiscard]] auto GetColorAttachmentRendererID(uint32_t index = 0) const -> uint32_t override

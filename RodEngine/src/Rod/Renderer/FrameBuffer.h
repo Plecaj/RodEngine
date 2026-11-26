@@ -2,6 +2,8 @@
 
 #include "Rod/Core/Core.h"
 
+#include <glm/vec4.hpp>
+
 #include <cstdint>
 #include <initializer_list>
 #include <vector>
@@ -68,6 +70,7 @@ namespace Rod {
 		virtual void Resize(uint32_t width, uint32_t height) = 0;
 		[[nodiscard]] virtual auto ReadPixel(uint32_t attachmentIndex, int x, int y) -> int = 0;
 
+		virtual void ClearColorAttachment(uint32_t attachmentIndex, const glm::vec4& color) = 0;
 		virtual void ClearColorAttachment(uint32_t attachmentIndex, int value) = 0;
 
 		[[nodiscard]] virtual auto GetColorAttachmentRendererID(uint32_t index = 0) const -> uint32_t = 0;

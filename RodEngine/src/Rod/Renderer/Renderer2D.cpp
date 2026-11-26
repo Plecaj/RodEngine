@@ -26,9 +26,10 @@ namespace Rod {
 		    {ShaderDataType::Float, "a_TexIdx"},
 		    {ShaderDataType::Float, "a_TilingFactor"},
 		    {ShaderDataType::Int, "a_EntityID"}};
+		RD_CORE_ASSERT(layout.GetStride() == sizeof(Vertex), "Sprite vertex stride does not match the GPU layout");
 		RD_CORE_ASSERT(
-		    layout.GetStride() == sizeof(Vertex) && layout.GetElements().back().Offset == offsetof(Vertex, EntityID),
-		    "Sprite vertex storage does not match the GPU layout");
+		    layout.GetElements().back().Offset == offsetof(Vertex, EntityID),
+		    "Sprite vertex entity ID offset does not match the GPU layout");
 
 		auto vertexBuffer = device.CreateVertexBuffer(sizeof(Vertex) * vertexCapacity);
 		vertexBuffer->SetBufferLayout(layout);

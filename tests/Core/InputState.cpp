@@ -53,4 +53,3 @@ TEST_CASE("Input retains holds across frames and discards them on focus loss", "
 	REQUIRE(input.GetCursorDelta() == glm::vec2(0.0f));
 	REQUIRE(input.GetCursor() == glm::vec2(2.0f, 1.0f));
 }
-

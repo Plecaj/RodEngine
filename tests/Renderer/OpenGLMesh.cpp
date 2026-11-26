@@ -19,12 +19,10 @@ TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Meshes load vertices, indices and m
 		normalZ = 1.0f;
 		constexpr glm::vec4 albedo{0.25f, 0.5f, 0.75f, 1.0f};
 		constexpr glm::vec3 emissive{0.125f, 0.25f, 0.5f};
-		constexpr float roughness = 0.5f;
-		constexpr float metallic = 0.25f;
 		expectedMaterial.SetAlbedo(albedo);
 		expectedMaterial.SetEmissive(emissive);
-		expectedMaterial.SetRoughness(roughness);
-		expectedMaterial.SetMetallic(metallic);
+		expectedMaterial.SetRoughness(0.5f);
+		expectedMaterial.SetMetallic(0.25f);
 	}
 	SECTION("without normals and material")
 	{

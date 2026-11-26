@@ -3,6 +3,7 @@
 #include "Rod/Utils/PlatformUtils.h"
 #include "Rod/Utils/Process.h"
 
+#include <algorithm>
 #include <filesystem>
 
 namespace Rod {
@@ -36,7 +37,7 @@ namespace Rod {
 			if (*patterns)
 			{
 				std::string pattern = patterns;
-				std::replace(pattern.begin(), pattern.end(), ';', ' ');
+				std::ranges::replace(pattern, ';', ' ');
 				arguments.push_back("--file-filter=" + description + " | " + pattern);
 			}
 		}

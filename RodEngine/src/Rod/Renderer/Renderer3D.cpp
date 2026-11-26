@@ -189,7 +189,7 @@ namespace Rod {
 		static_assert(sizeof(DrawData) == sizeof(glm::vec4));
 
 		std::array<int, s_MaxLightCount> shadowMapSamplers{};
-		std::iota(shadowMapSamplers.begin(), shadowMapSamplers.end(), 0);
+		std::ranges::iota(shadowMapSamplers, 0);
 		m_Shader->SetIntArray("u_ShadowMaps", shadowMapSamplers);
 	}
 

@@ -49,7 +49,7 @@ namespace Rod {
 		auto whiteTexture = device.CreateTexture2D(1, 1);
 		whiteTexture->SetData(std::as_bytes(std::span{white}));
 		std::array<int, s_TextureCapacity> samplers{};
-		std::iota(samplers.begin(), samplers.end(), 0);
+		std::ranges::iota(samplers, 0);
 		m_Shader->SetIntArray("u_Textures", samplers);
 		m_Vertices.reserve(vertexCapacity);
 		m_Textures.reserve(s_TextureCapacity);

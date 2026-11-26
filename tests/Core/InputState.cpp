@@ -15,7 +15,8 @@ TEST_CASE("Input keeps the final state of ordered key events", "[core][input]")
 	    Rod::KeyChanged{.Key = Rod::Key::LeftControl, .Action = Rod::KeyAction::Press, .Mods = {.Control = true}},
 	    Rod::KeyChanged{.Key = Rod::Key::S, .Action = Rod::KeyAction::Press, .Mods = {.Control = true}},
 	    Rod::KeyChanged{.Key = Rod::Key::S, .Action = Rod::KeyAction::Release, .Mods = {.Control = true}},
-	    Rod::KeyChanged{.Key = Rod::Key::LeftControl, .Action = Rod::KeyAction::Release, .Mods = {}}};
+	    Rod::KeyChanged{.Key = Rod::Key::LeftControl, .Action = Rod::KeyAction::Release, .Mods = {}},
+	};
 	input.Update(events, {});
 
 	REQUIRE_FALSE(input.IsKeyDown(Rod::Key::S));
@@ -29,7 +30,8 @@ TEST_CASE("Input retains holds across frames and discards them on focus loss", "
 	Rod::InputState input({1.0f, 2.0f});
 	const std::array<Rod::Event, 2> presses{
 	    Rod::KeyChanged{.Key = Rod::Key::W, .Action = Rod::KeyAction::Press, .Mods = {}},
-	    Rod::MouseButtonChanged{.Button = Rod::Mouse::ButtonLeft, .Down = true, .Mods = {}, .Position = {}}};
+	    Rod::MouseButtonChanged{.Button = Rod::Mouse::ButtonLeft, .Down = true, .Mods = {}, .Position = {}},
+	};
 	input.Update(presses, {3.0f, 4.0f});
 	REQUIRE(input.IsKeyDown(Rod::Key::W));
 	REQUIRE(input.IsMouseDown(Rod::Mouse::ButtonLeft));
@@ -47,7 +49,8 @@ TEST_CASE("Input retains holds across frames and discards them on focus loss", "
 
 	const std::array<Rod::Event, 2> focusRestored{
 	    Rod::FocusChanged{true},
-	    Rod::KeyChanged{.Key = Rod::Key::W, .Action = Rod::KeyAction::Repeat, .Mods = {}}};
+	    Rod::KeyChanged{.Key = Rod::Key::W, .Action = Rod::KeyAction::Repeat, .Mods = {}},
+	};
 	input.Update(focusRestored, {2.0f, 1.0f});
 	REQUIRE_FALSE(input.IsKeyDown(Rod::Key::W));
 	REQUIRE(input.GetCursorDelta() == glm::vec2(0.0f));

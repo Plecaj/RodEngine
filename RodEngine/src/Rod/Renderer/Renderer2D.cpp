@@ -25,7 +25,8 @@ namespace Rod {
 		    {ShaderDataType::Float2, "a_TexCoord"},
 		    {ShaderDataType::Float, "a_TexIdx"},
 		    {ShaderDataType::Float, "a_TilingFactor"},
-		    {ShaderDataType::Int, "a_EntityID"}};
+		    {ShaderDataType::Int, "a_EntityID"},
+		};
 		RD_CORE_ASSERT(layout.GetStride() == sizeof(Vertex), "Sprite vertex stride does not match the GPU layout");
 		RD_CORE_ASSERT(
 		    layout.GetElements().back().Offset == offsetof(Vertex, EntityID),
@@ -76,17 +77,19 @@ namespace Rod {
 
 		const auto slot = static_cast<float>(AssignTextureSlot(texture));
 		constexpr std::array<glm::vec2, s_VerticesPerQuad> uvs{
-		    {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}}};
+		    {{0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}},
+		};
 		for (const auto uv : uvs)
 		{
 			const auto corner = glm::vec4(uv - glm::vec2{0.5f}, 0.0f, 1.0f);
-			m_Vertices.push_back(
-			    {.Position = glm::vec3(transform * corner),
-				 .Tint = tint,
-				 .UV = uv,
-				 .TextureSlot = slot,
-				 .Tiling = tiling,
-				 .EntityID = entityID});
+			m_Vertices.push_back({
+			    .Position = glm::vec3(transform * corner),
+			    .Tint = tint,
+			    .UV = uv,
+			    .TextureSlot = slot,
+			    .Tiling = tiling,
+			    .EntityID = entityID,
+			});
 		}
 
 		++m_Stats.QuadCount;

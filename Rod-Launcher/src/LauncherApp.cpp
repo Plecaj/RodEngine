@@ -30,8 +30,10 @@ namespace Rod {
 	{
 		m_Layout.OnImGuiRender(
 		    m_RecentProjects,
-		    {.OpenProject = [this](const std::filesystem::path& path) { return OpenProject(path); },
-			 .LaunchEditor = [this](const Project& project) { return LaunchEditor(project); }});
+		    {
+		        .OpenProject = [this](const std::filesystem::path& path) { return OpenProject(path); },
+		        .LaunchEditor = [this](const Project& project) { return LaunchEditor(project); },
+		    });
 	}
 
 	auto LauncherApp::OpenProject(std::filesystem::path manifestPath) -> std::optional<std::string>

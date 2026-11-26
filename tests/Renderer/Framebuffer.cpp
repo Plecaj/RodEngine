@@ -16,7 +16,8 @@ TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Framebuffers retain attachments aft
 	spec.Attachments = {
 	    Rod::FramebufferTextureSpecification{Rod::FramebufferTextureFormat::RGBA8},
 	    Rod::FramebufferTextureSpecification{Rod::FramebufferTextureFormat::RedInteger},
-	    Rod::FramebufferTextureSpecification{Rod::FramebufferTextureFormat::DEPTH24STENCIL8}};
+	    Rod::FramebufferTextureSpecification{Rod::FramebufferTextureFormat::DEPTH24STENCIL8},
+	};
 	const auto framebuffer = Rod::RenderDevice{}.CreateFramebuffer(spec);
 
 	SECTION("initial size")
@@ -33,10 +34,11 @@ TEST_CASE_METHOD(Rod::Tests::OpenGLFixture, "Framebuffers retain attachments aft
 	REQUIRE(framebuffer->GetSpecification().Height == spec.Height);
 	GLint attachmentWidth = 0;
 	GLint attachmentHeight = 0;
-	for (const GLuint attachment :
-	     {framebuffer->GetColorAttachmentRendererID(),
-	      framebuffer->GetColorAttachmentRendererID(1),
-	      framebuffer->GetDepthAttachmentRendererID()})
+	for (const GLuint attachment : {
+	         framebuffer->GetColorAttachmentRendererID(),
+	         framebuffer->GetColorAttachmentRendererID(1),
+	         framebuffer->GetDepthAttachmentRendererID(),
+	     })
 	{
 		glGetTextureLevelParameteriv(attachment, 0, GL_TEXTURE_WIDTH, &attachmentWidth);
 		glGetTextureLevelParameteriv(attachment, 0, GL_TEXTURE_HEIGHT, &attachmentHeight);

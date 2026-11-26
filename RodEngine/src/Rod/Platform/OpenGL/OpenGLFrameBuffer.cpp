@@ -132,9 +132,13 @@ namespace Rod {
 		for (auto attachmentSpec : m_Specification.Attachments.Attachments)
 		{
 			if (IsDepthFormat(attachmentSpec.TextureFormat))
+			{
 				m_DepthAttachmentSpecification = attachmentSpec;
+			}
 			else
+			{
 				m_ColorAttachmentSpecifications.emplace_back(attachmentSpec.TextureFormat);
+			}
 		}
 
 		Invalidate();

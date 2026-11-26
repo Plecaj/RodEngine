@@ -61,7 +61,8 @@ namespace Rod {
 				throw std::runtime_error("Mesh accessor bounds invalid");
 			return {
 			    .Bytes = std::span{buffer.data}.subspan(view.byteOffset + accessor.byteOffset, available),
-			    .Stride = stride};
+			    .Stride = stride,
+			};
 		}
 
 		[[nodiscard]] auto ReadVertices(const tinygltf::Model& model, const tinygltf::Primitive& primitive)
@@ -93,13 +94,17 @@ namespace Rod {
 			for (size_t vertex = 0; vertex < accessor.count; ++vertex)
 			{
 				for (size_t component = 0; component < g_VectorComponentCount; ++component)
+				{
 					vertices.push_back(
-					    ReadScalar<float>(positions.Bytes, vertex * positions.Stride + component * sizeof(float)));
+					    ReadScalar<float>(positions.Bytes, (vertex * positions.Stride) + (component * sizeof(float))));
+				}
 				for (size_t component = 0; component < g_VectorComponentCount; ++component)
+				{
 					vertices.push_back(
 					    !normals.Bytes.empty()
-					        ? ReadScalar<float>(normals.Bytes, vertex * normals.Stride + component * sizeof(float))
+					        ? ReadScalar<float>(normals.Bytes, (vertex * normals.Stride) + (component * sizeof(float)))
 							: 0.0f);
+				}
 			}
 			return vertices;
 		}
@@ -124,9 +129,13 @@ namespace Rod {
 			{
 				const size_t offset = index * stride;
 				if (accessor.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT)
+				{
 					indices.push_back(ReadScalar<uint16_t>(data, offset));
+				}
 				else
+				{
 					indices.push_back(ReadScalar<uint32_t>(data, offset));
+				}
 			}
 			return indices;
 		}
@@ -137,7 +146,7 @@ namespace Rod {
 			Vector result(0.0f);
 			for (const auto [component, value] :
 			     std::views::enumerate(values.first(static_cast<size_t>(result.length()))))
-				result[static_cast<typename Vector::length_type>(component)] = static_cast<float>(value);
+				result[static_cast<Vector::length_type>(component)] = static_cast<float>(value);
 			return result;
 		}
 	}

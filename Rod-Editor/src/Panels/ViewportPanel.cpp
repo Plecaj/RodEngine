@@ -57,15 +57,19 @@ namespace Rod {
 	auto ViewportPanel::GetCameraMatrices(const RenderContext& context) -> std::optional<CameraMatrices>
 	{
 		if (context.State == SceneState::Edit)
+		{
 			return CameraMatrices{
 			    .View = context.EditorCamera.GetViewMatrix(),
-			    .Projection = context.EditorCamera.GetProjection()};
+			    .Projection = context.EditorCamera.GetProjection(),
+			};
+		}
 		const auto cameraEntity = context.ActiveScene.FindPrimaryCamera();
 		if (!cameraEntity)
 			return std::nullopt;
 		return CameraMatrices{
 		    .View = glm::inverse(cameraEntity.GetComponent<TransformComponent>().GetTransform()),
-		    .Projection = cameraEntity.GetComponent<CameraComponent>().Camera.GetProjection()};
+		    .Projection = cameraEntity.GetComponent<CameraComponent>().Camera.GetProjection(),
+		};
 	}
 
 	void ViewportPanel::DrawGizmo(const RenderContext& context)

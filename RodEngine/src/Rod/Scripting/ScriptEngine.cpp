@@ -192,14 +192,17 @@ namespace Rod {
 		    .ScriptProjectPath = scriptProject,
 		    .ScriptAssemblyPath = ScriptBuilder::GetAssemblyPath(scriptProject),
 		    .ScriptSourceDirectory = scriptProject.parent_path() / "Source",
-		    .ScriptCacheDirectory = assetsPath / "Scripts" / "Cache"};
+		    .ScriptCacheDirectory = assetsPath / "Scripts" / "Cache",
+		};
 	}
 
 	void ScriptEngine::Init(const Project& project, const InputState& input, const RenderDevice& device, Mode mode)
 	{
 		if (!s_Configuration)
+		{
 			s_Configuration.emplace(
 			    Configuration{.ProjectData = project, .Input = input, .Device = device, .StartupMode = mode});
+		}
 		EnsureInitialized();
 	}
 
@@ -357,14 +360,14 @@ namespace Rod {
 		ScriptGlue::SetSceneContext(std::nullopt);
 	}
 
-	void ScriptEngine::OnRuntimeUpdate(Timestep ts)
+	void ScriptEngine::OnRuntimeUpdate(Timestep timestep)
 	{
 		if (!s_Data || !s_Data->RuntimeRunning || !s_Data->SceneContext)
 			return;
 
 		const auto view = s_Data->SceneContext->View<IDComponent, ScriptComponent>();
 		for (const auto entityID : view)
-			OnUpdateEntity(s_Data->SceneContext->FindEntityByHandle(entityID), ts);
+			OnUpdateEntity(s_Data->SceneContext->FindEntityByHandle(entityID), timestep);
 	}
 
 	void ScriptEngine::OnCreateEntity(Entity entity)
@@ -391,11 +394,11 @@ namespace Rod {
 		s_Data->Functions.DestroyScript(static_cast<uint64_t>(entity.GetUUID()));
 	}
 
-	void ScriptEngine::OnUpdateEntity(Entity entity, Timestep ts)
+	void ScriptEngine::OnUpdateEntity(Entity entity, Timestep timestep)
 	{
 		if (!s_Data)
 			return;
-		s_Data->Functions.UpdateScript(static_cast<uint64_t>(entity.GetUUID()), ts.GetSeconds());
+		s_Data->Functions.UpdateScript(static_cast<uint64_t>(entity.GetUUID()), timestep.GetSeconds());
 	}
 
 	void ScriptEngine::SetRuntimeFieldValue(Entity entity, const std::string& fieldName)
@@ -470,11 +473,13 @@ namespace Rod {
 		for (const auto& [name, field] : script.Fields)
 		{
 			if (!field.Value.empty())
+			{
 				s_Data->Functions.SetFieldValue(
 				    static_cast<uint64_t>(entity.GetUUID()),
 				    name.c_str(),
 				    static_cast<int32_t>(field.Field.Type),
 				    field.Value.c_str());
+			}
 		}
 	}
 }

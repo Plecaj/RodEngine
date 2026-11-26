@@ -75,7 +75,7 @@ namespace Rod {
 		SpriteRenderer,
 		Mesh,
 		DirectionalLight,
-		Script
+		Script,
 	};
 
 	std::optional<Scene&> ScriptGlue::s_SceneContext;
@@ -320,8 +320,10 @@ namespace Rod {
 	{
 		Entity entity = GetEntity(entityID);
 		if (entity && entity.HasComponent<CameraComponent>())
+		{
 			entity.GetComponent<CameraComponent>().Camera.SetProjectionType(
 			    static_cast<SceneCamera::ProjectionType>(value));
+		}
 	}
 
 	auto RD_CDECL ScriptGlue::CameraGetPerspectiveVerticalFOV(uint64_t entityID) -> float

@@ -17,7 +17,7 @@ namespace Rod {
 		[[nodiscard]] constexpr auto PanFactor(float viewportSize) noexcept -> float
 		{
 			const float factor = std::min(viewportSize / g_PanViewportScale, g_MaxPanViewportFactor);
-			return g_PanQuadraticCoefficient * (factor * factor) - g_PanLinearCoefficient * factor +
+			return (g_PanQuadraticCoefficient * (factor * factor)) - (g_PanLinearCoefficient * factor) +
 			       g_PanConstantCoefficient;
 		}
 	}

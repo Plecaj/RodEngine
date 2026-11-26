@@ -38,10 +38,10 @@ namespace Rod {
 				return false;
 			return std::ranges::all_of(left, [&right](const auto& entry) {
 				const auto& [name, field] = entry;
-				const auto it = right.find(name);
-				return it != right.end() && field.Field.Name == it->second.Field.Name &&
-				       field.Field.TypeName == it->second.Field.TypeName && field.Field.Type == it->second.Field.Type &&
-				       field.Value == it->second.Value;
+				const auto otherField = right.find(name);
+				return otherField != right.end() && field.Field.Name == otherField->second.Field.Name &&
+				       field.Field.TypeName == otherField->second.Field.TypeName &&
+				       field.Field.Type == otherField->second.Field.Type && field.Value == otherField->second.Value;
 			});
 		}
 
@@ -74,68 +74,74 @@ namespace Rod {
 			           leftEntity,
 			           right,
 			           rightEntity,
-			           [](const auto& a, const auto& b) { return a.Tag == b.Tag; }) &&
+			           [](const auto& lhs, const auto& rhs) { return lhs.Tag == rhs.Tag; }) &&
 			       SameComponent<TransformComponent>(
 			           left,
 			           leftEntity,
 			           right,
 			           rightEntity,
-			           [](const auto& a, const auto& b) {
-				           return a.Translation == b.Translation && a.Rotation == b.Rotation && a.Scale == b.Scale;
+			           [](const auto& lhs, const auto& rhs) {
+				           return lhs.Translation == rhs.Translation && lhs.Rotation == rhs.Rotation &&
+						          lhs.Scale == rhs.Scale;
 			           }) &&
 			       SameComponent<SpriteRendererComponent>(
 			           left,
 			           leftEntity,
 			           right,
 			           rightEntity,
-			           [](const auto& a, const auto& b) {
-				           return a.Color == b.Color && a.TilingFactor == b.TilingFactor &&
-						          SameAsset(a.Texture, b.Texture);
+			           [](const auto& lhs, const auto& rhs) {
+				           return lhs.Color == rhs.Color && lhs.TilingFactor == rhs.TilingFactor &&
+						          SameAsset(lhs.Texture, rhs.Texture);
 			           }) &&
 			       SameComponent<MeshComponent>(
 			           left,
 			           leftEntity,
 			           right,
 			           rightEntity,
-			           [](const auto& a, const auto& b) {
-				           return SameAsset(a.Mesh, b.Mesh) && a.Material.GetAlbedo() == b.Material.GetAlbedo() &&
-						          a.Material.GetEmissive() == b.Material.GetEmissive() &&
-						          a.Material.GetRoughness() == b.Material.GetRoughness() &&
-						          a.Material.GetMetallic() == b.Material.GetMetallic();
+			           [](const auto& lhs, const auto& rhs) {
+				           return SameAsset(lhs.Mesh, rhs.Mesh) &&
+						          lhs.Material.GetAlbedo() == rhs.Material.GetAlbedo() &&
+						          lhs.Material.GetEmissive() == rhs.Material.GetEmissive() &&
+						          lhs.Material.GetRoughness() == rhs.Material.GetRoughness() &&
+						          lhs.Material.GetMetallic() == rhs.Material.GetMetallic();
 			           }) &&
 			       SameComponent<DirectionalLightComponent>(
 			           left,
 			           leftEntity,
 			           right,
 			           rightEntity,
-			           [](const auto& a, const auto& b) {
-				           return a.Direction == b.Direction && a.Color == b.Color && a.Intensity == b.Intensity;
+			           [](const auto& lhs, const auto& rhs) {
+				           return lhs.Direction == rhs.Direction && lhs.Color == rhs.Color &&
+						          lhs.Intensity == rhs.Intensity;
 			           }) &&
 			       SameComponent<CameraComponent>(
 			           left,
 			           leftEntity,
 			           right,
 			           rightEntity,
-			           [](const auto& a, const auto& b) {
-				           return a.Primary == b.Primary && a.FixedAspectRatio == b.FixedAspectRatio &&
-						          SameCamera(a.Camera, b.Camera);
+			           [](const auto& lhs, const auto& rhs) {
+				           return lhs.Primary == rhs.Primary && lhs.FixedAspectRatio == rhs.FixedAspectRatio &&
+						          SameCamera(lhs.Camera, rhs.Camera);
 			           }) &&
 			       SameComponent<ScriptComponent>(
 			           left,
 			           leftEntity,
 			           right,
 			           rightEntity,
-			           [](const auto& a, const auto& b) {
-				           return a.ClassName == b.ClassName && SameScriptFields(a.Fields, b.Fields);
+			           [](const auto& lhs, const auto& rhs) {
+				           return lhs.ClassName == rhs.ClassName && SameScriptFields(lhs.Fields, rhs.Fields);
 			           });
 		}
 		template <typename... Components>
-		void
-		CopyComponents(const entt::registry& source, entt::entity from, entt::registry& destination, entt::entity to)
+		void CopyComponents(
+		    const entt::registry& source,
+		    entt::entity from,
+		    entt::registry& destination,
+		    entt::entity destinationEntity)
 		{
-			const auto copy = [&]<typename Component>() {
+			const auto copy = [&]<typename Component> {
 				if (const auto* component = source.try_get<Component>(from))
-					destination.emplace_or_replace<Component>(to, *component);
+					destination.emplace_or_replace<Component>(destinationEntity, *component);
 			};
 			(copy.template operator()<Components>(), ...);
 		}
@@ -240,10 +246,11 @@ namespace Rod {
 			if (!m_Registry.all_of<IDComponent>(entity))
 				return false;
 			const auto id = static_cast<uint64_t>(m_Registry.get<IDComponent>(entity).ID);
-			const auto it = otherEntities.find(id);
-			if (it == otherEntities.end() || !SameEntityComponents(m_Registry, entity, other.m_Registry, it->second))
+			const auto otherEntity = otherEntities.find(id);
+			if (otherEntity == otherEntities.end() ||
+			    !SameEntityComponents(m_Registry, entity, other.m_Registry, otherEntity->second))
 				return false;
-			otherEntities.erase(it);
+			otherEntities.erase(otherEntity);
 		}
 		return otherEntities.empty();
 	}

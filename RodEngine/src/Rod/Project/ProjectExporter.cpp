@@ -49,8 +49,10 @@ namespace Rod {
 			{
 				const auto& entry = *iterator;
 				if (entry.is_symlink())
+				{
 					throw std::runtime_error(
 					    "Export requires files instead of symbolic links: " + entry.path().string());
+				}
 				const auto target = destination / entry.path().lexically_relative(source);
 				if (entry.is_directory())
 				{
@@ -62,7 +64,9 @@ namespace Rod {
 					std::filesystem::create_directories(target);
 				}
 				else if (entry.path().extension() != ".csproj" && entry.path().extension() != ".cs")
+				{
 					std::filesystem::copy_file(entry.path(), target);
+				}
 			}
 		}
 
@@ -90,13 +94,14 @@ namespace Rod {
 			const auto root = package.GetDirectory();
 			const auto core = root / "RodAssets/Scripts/Core";
 			const auto shaders = package.GetShadersPath();
-			for (const auto& file :
-			     {core / "Rod.ScriptCore.dll",
-			      core / "Rod.ScriptCore.runtimeconfig.json",
-			      shaders / "Texture.glsl",
-			      shaders / "3D.glsl",
-			      shaders / "Shadow.glsl",
-			      ScriptBuilder::GetAssemblyPath(package.GetScriptProjectPath())})
+			for (const auto& file : {
+			         core / "Rod.ScriptCore.dll",
+			         core / "Rod.ScriptCore.runtimeconfig.json",
+			         shaders / "Texture.glsl",
+			         shaders / "3D.glsl",
+			         shaders / "Shadow.glsl",
+			         ScriptBuilder::GetAssemblyPath(package.GetScriptProjectPath()),
+			     })
 				RequireFile(file);
 #ifdef RD_PLATFORM_WINDOWS
 			RequireFile(root / "nethost.dll");
@@ -175,7 +180,8 @@ namespace Rod {
 			    scriptDirectory / "bin",
 			    scriptDirectory / "obj",
 			    scriptDirectory / "Cache",
-			    root / assets / "Scripts/Cache"};
+			    root / assets / "Scripts/Cache",
+			};
 			CopyTree(root / assets, staging / assets, excluded);
 			CopyTree(core, staging / "RodAssets/Scripts/Core");
 			CopyTree(shaders, staging / "RodAssets/Shaders", std::array{shaders / "Cached"});
@@ -183,12 +189,16 @@ namespace Rod {
 
 			std::filesystem::create_directories(packaged.GetStartupScenePath().parent_path());
 			if (startupScene)
+			{
 				SceneSerializer(*startupScene, root).SerializeText(packaged.GetStartupScenePath().string());
+			}
 			else
+			{
 				std::filesystem::copy_file(
 				    project.GetStartupScenePath(),
 				    packaged.GetStartupScenePath(),
 				    std::filesystem::copy_options::overwrite_existing);
+			}
 			ProjectSerializer::Serialize(packaged);
 			ValidatePackage(packaged);
 			PublishPackage(staging, output);

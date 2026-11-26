@@ -26,14 +26,14 @@ namespace Rod {
 
 }
 
-auto main(int argc, char*[]) -> int
+auto main(int argc, char* /*argv*/[]) -> int
 {
 	return Rod::RunMain([argc] {
 		if (argc != 1)
 			throw std::invalid_argument("Launcher does not accept a project argument");
 
 		Rod::DesktopHost host(Rod::LauncherWindowProps());
-		const Rod::ImGuiSession ui(host.GetWindow());
+		const Rod::ImGuiSession imguiSession(host.GetWindow());
 		const Rod::RenderDevice device;
 		Rod::LauncherApp launcher(host, device);
 		while (const auto frame = host.NextFrame())

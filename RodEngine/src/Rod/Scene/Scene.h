@@ -72,9 +72,13 @@ namespace Rod {
 		[[nodiscard]] auto TryGetComponent(entt::entity handle) noexcept
 		{
 			if constexpr (std::same_as<Component, IDComponent>)
+			{
 				return std::as_const(m_Registry).try_get<Component>(handle);
+			}
 			else
+			{
 				return m_Registry.try_get<Component>(handle);
+			}
 		}
 
 		template <typename Component>

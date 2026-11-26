@@ -217,7 +217,9 @@ namespace Rod {
 				}
 			}
 			else
+			{
 				m_Step = m_Step == Step::Directory ? Step::Details : Step::Files;
+			}
 		}
 		ImGui::EndDisabled();
 		return created;
@@ -247,7 +249,8 @@ namespace Rod {
 		    .AssetsPath = m_AssetDirectory,
 		    .StartupScenePath = m_StartScene,
 		    .ScriptsProjectPath = m_ScriptProject,
-		    .ShadersPath = std::filesystem::canonical(m_ShaderDirectory)};
+		    .ShadersPath = std::filesystem::canonical(m_ShaderDirectory),
+		};
 		Project project{directory / (ProjectName() + ".rodproj"), std::move(properties)};
 		ProjectInitializer::CreateDefaultFiles(project);
 		ProjectSerializer::Serialize(project);

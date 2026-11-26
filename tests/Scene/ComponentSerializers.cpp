@@ -29,9 +29,9 @@ namespace {
 		[[nodiscard]] auto GetWidth() const noexcept -> uint32_t override { return 1; }
 		[[nodiscard]] auto GetHeight() const noexcept -> uint32_t override { return 1; }
 		[[nodiscard]] auto GetRendererID() const noexcept -> uint32_t override { return 0; }
-		void SetData(std::span<const std::byte>) override {}
+		void SetData(std::span<const std::byte> /*data*/) override {}
 		[[nodiscard]] auto GetPath() const -> std::string override { return m_Path; }
-		void Bind(uint32_t) const override {}
+		void Bind(uint32_t /*slot*/) const override {}
 		[[nodiscard]] auto operator==(const Rod::Texture& other) const noexcept -> bool override
 		{
 			return this == &other;

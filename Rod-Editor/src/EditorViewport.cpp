@@ -46,7 +46,9 @@ namespace Rod {
 			return;
 
 		if (button.Mods.Alt && scenes.GetState() == SceneState::Edit)
+		{
 			m_DragStart = button.Position;
+		}
 		else if (button.Button == Mouse::ButtonLeft && !button.Mods.Alt)
 		{
 			m_Framebuffer->Bind();
@@ -66,21 +68,22 @@ namespace Rod {
 	    const std::filesystem::path& assetsPath,
 	    const std::function<void(const std::filesystem::path&)>& openScene)
 	{
-		ViewportPanel::OnImGuiRender(
-		    {.Framebuffer = *m_Framebuffer,
-			 .ActiveScene = scenes.GetActiveScene(),
-			 .SelectedEntity = m_Interaction.SelectedEntity,
-			 .EditorCamera = m_EditorCamera,
-			 .State = scenes.GetState(),
-			 .GizmoType = m_Interaction.GizmoType,
-			 .Size = m_ViewportSize,
-			 .PendingSize = m_PendingViewportSize,
-			 .Bounds = m_ViewportBounds,
-			 .Focused = m_ViewportFocused,
-			 .Hovered = m_Interaction.ViewportHovered,
-			 .AssetsPath = assetsPath,
-			 .OpenScene = openScene,
-			 .WindowInput = m_Input});
+		ViewportPanel::OnImGuiRender({
+		    .Framebuffer = *m_Framebuffer,
+		    .ActiveScene = scenes.GetActiveScene(),
+		    .SelectedEntity = m_Interaction.SelectedEntity,
+		    .EditorCamera = m_EditorCamera,
+		    .State = scenes.GetState(),
+		    .GizmoType = m_Interaction.GizmoType,
+		    .Size = m_ViewportSize,
+		    .PendingSize = m_PendingViewportSize,
+		    .Bounds = m_ViewportBounds,
+		    .Focused = m_ViewportFocused,
+		    .Hovered = m_Interaction.ViewportHovered,
+		    .AssetsPath = assetsPath,
+		    .OpenScene = openScene,
+		    .WindowInput = m_Input,
+		});
 	}
 
 	void EditorViewport::CreateFramebuffer()
@@ -89,7 +92,8 @@ namespace Rod {
 		fbSpec.Attachments = {
 		    FramebufferTextureSpecification{FramebufferTextureFormat::RGBA8},
 		    FramebufferTextureSpecification{FramebufferTextureFormat::RedInteger},
-		    FramebufferTextureSpecification{FramebufferTextureFormat::DEPTH24}};
+		    FramebufferTextureSpecification{FramebufferTextureFormat::DEPTH24},
+		};
 		fbSpec.Width = static_cast<uint32_t>(s_DefaultViewportSize.x);
 		fbSpec.Height = static_cast<uint32_t>(s_DefaultViewportSize.y);
 		m_Framebuffer = m_Device.CreateFramebuffer(fbSpec);
@@ -155,11 +159,17 @@ namespace Rod {
 			return;
 
 		if (pan)
+		{
 			m_EditorCamera.Pan(delta);
+		}
 		else if (orbit)
+		{
 			m_EditorCamera.Orbit(delta);
+		}
 		else if (dolly)
+		{
 			m_EditorCamera.Dolly(delta.y);
+		}
 	}
 
 	auto EditorViewport::Contains(glm::vec2 pos) const noexcept -> bool

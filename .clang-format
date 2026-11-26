@@ -12,6 +12,8 @@ IndentPPDirectives: BeforeHash
 FixNamespaceComments: false
 BreakTemplateDeclarations: Yes
 AccessModifierOffset: -4
+EmptyLineBeforeAccessModifier: LogicalBlock
+EmptyLineAfterAccessModifier: Never
 IndentCaseLabels: true
 PointerAlignment: Left
 ReferenceAlignment: Left
@@ -38,6 +40,9 @@ AllowShortLoopsOnASingleLine: false
 AllowShortBlocksOnASingleLine: Empty
 AllowShortLambdasOnASingleLine: Inline
 InsertBraces: false
+RemoveBracesLLVM: false
+EnumTrailingComma: Insert
+BreakBeforeTernaryOperators: true
 
 BinPackArguments: false
 BinPackParameters: false
@@ -49,7 +54,6 @@ AlignConsecutiveDeclarations: None
 AlignEscapedNewlines: DontAlign
 ReflowComments: false
 
-# Negative priority keeps the PCH ahead of the automatically detected main header.
 IncludeBlocks: Regroup
 SortIncludes: CaseSensitive
 IncludeCategories:

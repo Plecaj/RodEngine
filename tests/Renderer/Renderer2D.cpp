@@ -22,7 +22,8 @@ namespace {
 		spec.Height = 8;
 		spec.Attachments = {
 		    Rod::FramebufferTextureSpecification{Rod::FramebufferTextureFormat::RGBA8},
-		    Rod::FramebufferTextureSpecification{Rod::FramebufferTextureFormat::RedInteger}};
+		    Rod::FramebufferTextureSpecification{Rod::FramebufferTextureFormat::RedInteger},
+		};
 		return device.CreateFramebuffer(spec);
 	}
 

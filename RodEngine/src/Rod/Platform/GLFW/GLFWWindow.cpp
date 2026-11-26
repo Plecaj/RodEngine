@@ -25,7 +25,8 @@ namespace Rod {
 			return {
 			    .Control = (mask & static_cast<unsigned int>(GLFW_MOD_CONTROL)) != 0U,
 			    .Shift = (mask & static_cast<unsigned int>(GLFW_MOD_SHIFT)) != 0U,
-			    .Alt = (mask & static_cast<unsigned int>(GLFW_MOD_ALT)) != 0U};
+			    .Alt = (mask & static_cast<unsigned int>(GLFW_MOD_ALT)) != 0U,
+			};
 		}
 
 	}
@@ -89,11 +90,13 @@ namespace Rod {
 		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		glfwWindowHint(GLFW_RESIZABLE, props.Resizable ? GLFW_TRUE : GLFW_FALSE);
 		if (!props.NativeTitlebar)
+		{
 #ifdef RD_PLATFORM_WINDOWS
 			glfwWindowHint(GLFW_TITLEBAR, GLFW_FALSE);
 #else
 			glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 #endif
+		}
 
 		m_Window.reset(glfwCreateWindow(
 		    static_cast<int>(props.Width),
@@ -118,8 +121,8 @@ namespace Rod {
 			glfwGetMonitorPos(monitor, &monitorX, &monitorY);
 			glfwSetWindowPos(
 			    m_Window.get(),
-			    monitorX + (mode->width - static_cast<int>(props.Width)) / centerDivisor,
-			    monitorY + (mode->height - static_cast<int>(props.Height)) / centerDivisor);
+			    monitorX + ((mode->width - static_cast<int>(props.Width)) / centerDivisor),
+			    monitorY + ((mode->height - static_cast<int>(props.Height)) / centerDivisor));
 		}
 	}
 
@@ -180,7 +183,8 @@ namespace Rod {
 			        .Button = button,
 			        .Down = action == GLFW_PRESS,
 			        .Mods = GetMods(mods),
-			        .Position = self.m_Cursor});
+			        .Position = self.m_Cursor,
+			    });
 		});
 		glfwSetScrollCallback(m_Window.get(), [](GLFWwindow* window, double x, double y) {
 			auto& self = From(window);
@@ -235,9 +239,13 @@ namespace Rod {
 	{
 		constexpr double idleTimeout = 0.05;
 		if (wait && m_Pending.empty() && !m_EventError)
+		{
 			glfwWaitEventsTimeout(idleTimeout);
+		}
 		else
+		{
 			glfwPollEvents();
+		}
 
 		if (m_EventError)
 			std::rethrow_exception(m_EventError);
@@ -346,9 +354,13 @@ namespace Rod {
 	void GLFWWindow::SetVSync(bool enabled)
 	{
 		if (enabled)
+		{
 			glfwSwapInterval(1);
+		}
 		else
+		{
 			glfwSwapInterval(0);
+		}
 
 		m_Data.VSync = enabled;
 	}

@@ -45,7 +45,7 @@ namespace Rod {
 					++backslashes;
 					continue;
 				}
-				quoted.append(character == L'"' ? backslashes * quoteEscapeMultiplier + 1 : backslashes, L'\\');
+				quoted.append(character == L'"' ? (backslashes * quoteEscapeMultiplier) + 1 : backslashes, L'\\');
 				quoted += character;
 				backslashes = 0;
 			}
@@ -112,7 +112,8 @@ namespace Rod {
 		SECURITY_ATTRIBUTES security{
 		    .nLength = sizeof(SECURITY_ATTRIBUTES),
 		    .lpSecurityDescriptor = nullptr,
-		    .bInheritHandle = TRUE};
+		    .bInheritHandle = TRUE,
+		};
 		HANDLE readPipe = nullptr, writePipe = nullptr;
 		if (!CreatePipe(&readPipe, &writePipe, &security, 0))
 			return {.ExitCode = -1, .Output = "Failed to create process output pipe."};

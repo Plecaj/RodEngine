@@ -82,14 +82,14 @@ namespace Rod {
 			{
 				for (int z = 0; z < s_AxisEndpointCount; z++)
 				{
-					const glm::vec4 pt = inv * glm::vec4(
-					                               s_ClipCoordinateSpan * static_cast<float>(x) - 1.0f,
-					                               s_ClipCoordinateSpan * static_cast<float>(y) - 1.0f,
-					                               s_ClipCoordinateSpan * static_cast<float>(z) - 1.0f,
-					                               1.0f);
+					const glm::vec4 point = inv * glm::vec4(
+					                                  (s_ClipCoordinateSpan * static_cast<float>(x)) - 1.0f,
+					                                  (s_ClipCoordinateSpan * static_cast<float>(y)) - 1.0f,
+					                                  (s_ClipCoordinateSpan * static_cast<float>(z)) - 1.0f,
+					                                  1.0f);
 
 					// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-constant-array-index,cppcoreguidelines-pro-bounds-avoid-unchecked-container-access)
-					corners[index++] = glm::vec3(pt) / pt.w;
+					corners[index++] = glm::vec3(point) / point.w;
 				}
 			}
 		}
@@ -139,8 +139,8 @@ namespace Rod {
 		LimitFrustumDepth(corners, s_MaxShadowDistance);
 
 		glm::vec3 center(0.0f);
-		for (const auto& c : corners)
-			center += c;
+		for (const auto& corner : corners)
+			center += corner;
 		center /= static_cast<float>(corners.size());
 
 		const glm::vec3 normalizedLightDirection = glm::dot(lightDirection, lightDirection) > s_DirectionTolerance
@@ -148,12 +148,12 @@ namespace Rod {
 		                                               : glm::vec3(0.0f, -1.0f, 0.0f);
 
 		const glm::vec3 lightPos = center - normalizedLightDirection * s_LightViewDistance;
-		const glm::vec3 up =
+		const glm::vec3 upDirection =
 		    glm::abs(glm::dot(normalizedLightDirection, glm::vec3(0.0f, 1.0f, 0.0f))) > s_LightUpParallelThreshold
 		        ? glm::vec3(0.0f, 0.0f, 1.0f)
 		        : glm::vec3(0.0f, 1.0f, 0.0f);
 
-		const glm::mat4 lightView = glm::lookAt(lightPos, center, up);
+		const glm::mat4 lightView = glm::lookAt(lightPos, center, upDirection);
 		glm::vec3 minBounds(std::numeric_limits<float>::max());
 		glm::vec3 maxBounds(-std::numeric_limits<float>::max());
 
@@ -184,7 +184,7 @@ namespace Rod {
 	{
 		static_assert(sizeof(LightUniform) == sizeof(glm::vec4) * 2);
 		static_assert(offsetof(LightsData, Lights) == sizeof(glm::vec4));
-		static_assert(sizeof(LightsData) == sizeof(glm::vec4) + sizeof(LightUniform) * s_MaxLightCount);
+		static_assert(sizeof(LightsData) == sizeof(glm::vec4) + (sizeof(LightUniform) * s_MaxLightCount));
 		static_assert(sizeof(ShadowData) == sizeof(glm::mat4) * s_MaxLightCount);
 		static_assert(sizeof(DrawData) == sizeof(glm::vec4));
 
@@ -210,8 +210,10 @@ namespace Rod {
 	void Renderer3D::Submit(const Ref<Mesh>& mesh, const glm::mat4& transform, const Material& material, int entityID)
 	{
 		if (mesh)
+		{
 			m_DrawCommands.push_back(
 			    {.Mesh = mesh, .Transform = transform, .Material = material, .EntityID = entityID});
+		}
 	}
 
 	void Renderer3D::GeometryPass()
@@ -238,7 +240,8 @@ namespace Rod {
 			const MaterialData materialData{
 			    .Albedo = command.Material.GetAlbedo(),
 			    .Emissive = command.Material.GetEmissive(),
-			    .Padding0 = 0.0f};
+			    .Padding0 = 0.0f,
+			};
 			m_MaterialUBO->BindBase(s_MaterialBinding);
 			m_MaterialUBO->SetData(std::as_bytes(std::span{&materialData, 1}));
 

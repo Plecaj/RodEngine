@@ -76,7 +76,8 @@ TEST_CASE("Scene equality compares component data", "[scene]")
 	auto& script = entity.AddComponent<Rod::ScriptComponent>("Game.Player");
 	script.Fields["Speed"] = {
 	    .Field = {.Name = "Speed", .TypeName = "System.Single", .Type = Rod::ScriptFieldType::Float},
-	    .Value = "3.0"};
+	    .Value = "3.0",
+	};
 	Rod::Scene copy(original);
 	REQUIRE(original == copy);
 	REQUIRE(copy == original);

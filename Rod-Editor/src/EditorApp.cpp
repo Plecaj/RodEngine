@@ -65,9 +65,9 @@ namespace Rod {
 	{
 		const auto popupFlags = CombineImGuiFlags(ImGuiPopupFlags_AnyPopupId, ImGuiPopupFlags_AnyPopupLevel);
 		const bool popupOpen = ImGui::IsPopupOpen(nullptr, popupFlags);
-		const ImGuiIO& io = ImGui::GetIO();
-		const bool shortcuts = !popupOpen && !io.WantTextInput &&
-		                       (!io.WantCaptureKeyboard || (m_Viewport.HasFocus() && !ImGui::IsAnyItemActive()));
+		const ImGuiIO& imguiIO = ImGui::GetIO();
+		const bool shortcuts = !popupOpen && !imguiIO.WantTextInput &&
+		                       (!imguiIO.WantCaptureKeyboard || (m_Viewport.HasFocus() && !ImGui::IsAnyItemActive()));
 
 		for (const Event& event : frame.Events)
 		{
@@ -79,9 +79,13 @@ namespace Rod {
 			else if (!popupOpen)
 			{
 				if (const auto* click = std::get_if<MouseButtonChanged>(&event))
+				{
 					m_Viewport.HandleButton(*click, m_Scenes);
+				}
 				else if (const auto* scroll = std::get_if<Scrolled>(&event))
+				{
 					m_Viewport.HandleScroll(*scroll, m_Scenes.GetState());
+				}
 			}
 		}
 	}

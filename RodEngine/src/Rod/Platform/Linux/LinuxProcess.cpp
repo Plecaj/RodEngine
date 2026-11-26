@@ -36,7 +36,7 @@ namespace Rod {
 
 		auto argv = BuildArguments(arguments);
 		std::promise<pid_t> child;
-		std::thread([process = child.get_future()]() mutable {
+		std::thread([process = child.get_future()] mutable {
 			const auto pid = process.get();
 			if (pid > 0)
 			{
@@ -76,8 +76,10 @@ namespace Rod {
 
 		error = posix_spawn_file_actions_adddup2(&actions, writeEnd, STDOUT_FILENO);
 		if (error == 0)
+		{
 			error = captureErrors ? posix_spawn_file_actions_adddup2(&actions, writeEnd, STDERR_FILENO)
 			                      : posix_spawn_file_actions_addopen(&actions, STDERR_FILENO, "/dev/null", O_WRONLY, 0);
+		}
 
 		pid_t process = 0;
 		if (error == 0)
@@ -99,9 +101,13 @@ namespace Rod {
 		while ((count = read(readEnd, buffer.data(), buffer.size())) != 0)
 		{
 			if (count > 0)
+			{
 				result.Output.append(buffer.data(), static_cast<size_t>(count));
+			}
 			else if (errno != EINTR)
+			{
 				break;
+			}
 		}
 		close(readEnd);
 

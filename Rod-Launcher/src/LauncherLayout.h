@@ -36,7 +36,7 @@ namespace Rod {
 		enum class ProjectAction : uint8_t
 		{
 			New,
-			Open
+			Open,
 		};
 
 		[[nodiscard]] auto DrawProjectActions() -> bool;

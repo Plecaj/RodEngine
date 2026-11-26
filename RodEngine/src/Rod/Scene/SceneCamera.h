@@ -15,7 +15,7 @@ namespace Rod {
 		enum class ProjectionType : uint8_t
 		{
 			Perspective = 0,
-			Orthographic = 1
+			Orthographic = 1,
 		};
 
 	public:

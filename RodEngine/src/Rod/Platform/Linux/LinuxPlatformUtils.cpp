@@ -57,6 +57,7 @@ namespace Rod {
 		}
 	}
 
+	// NOLINTBEGIN(readability-convert-member-functions-to-static)
 	auto FileDialogs::OpenFile(const char* filter, const std::string& initialDirectory) const -> std::string
 	{
 		return ShowFileDialog(filter, false, initialDirectory);
@@ -71,5 +72,6 @@ namespace Rod {
 	{
 		return ShowFileDialog(filter, true);
 	}
+	// NOLINTEND(readability-convert-member-functions-to-static)
 
 }

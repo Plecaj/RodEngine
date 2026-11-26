@@ -45,13 +45,17 @@ namespace Rod {
 
 		const float size = ImGui::GetWindowHeight() - buttonInset;
 		const Texture2D& icon = sceneState == SceneState::Edit ? *m_PlayButton : *m_StopButton;
-		ImGui::SetCursorPosX(ImGui::GetContentRegionMax().x * 0.5f - (size * 0.5f));
+		ImGui::SetCursorPosX((ImGui::GetContentRegionMax().x * 0.5f) - (size * 0.5f));
 		if (ImGui::ImageButton("play/stop button", icon.GetRendererID(), {size, size}, {0.0f, 1.0f}, {1.0f, 0.0f}))
 		{
 			if (sceneState == SceneState::Edit)
+			{
 				actions.Play();
+			}
 			else if (sceneState == SceneState::Play)
+			{
 				actions.Stop();
+			}
 		}
 
 		ImGui::PopStyleVar(styleVariableCount);

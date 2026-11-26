@@ -34,18 +34,18 @@ namespace Rod {
 			constexpr float width = 13.0f;
 			constexpr float height = 9.0f;
 			drawList.AddLine(
-			    ImVec2(center.x - width * 0.5f, center.y),
-			    ImVec2(center.x + width * 0.5f, center.y),
+			    ImVec2(center.x - (width * 0.5f), center.y),
+			    ImVec2(center.x + (width * 0.5f), center.y),
 			    arrow,
 			    stroke);
 			drawList.AddLine(
-			    ImVec2(center.x - width * 0.5f, center.y),
-			    ImVec2(center.x - width * 0.5f + height * arrowWingScale, center.y - height * 0.5f),
+			    ImVec2(center.x - (width * 0.5f), center.y),
+			    ImVec2(center.x - (width * 0.5f) + (height * arrowWingScale), center.y - (height * 0.5f)),
 			    arrow,
 			    stroke);
 			drawList.AddLine(
-			    ImVec2(center.x - width * 0.5f, center.y),
-			    ImVec2(center.x - width * 0.5f + height * arrowWingScale, center.y + height * 0.5f),
+			    ImVec2(center.x - (width * 0.5f), center.y),
+			    ImVec2(center.x - (width * 0.5f) + (height * arrowWingScale), center.y + (height * 0.5f)),
 			    arrow,
 			    stroke);
 
@@ -64,10 +64,11 @@ namespace Rod {
 
 		void DrawIconButton(const std::string& id, const Texture2D& icon, float size)
 		{
-			constexpr auto buttonColors = std::to_array<std::pair<ImGuiCol, ImVec4>>(
-			    {{ImGuiCol_Button, {0.11f, 0.13f, 0.16f, 1.0f}},
-				 {ImGuiCol_ButtonHovered, {0.18f, 0.21f, 0.25f, 1.0f}},
-				 {ImGuiCol_ButtonActive, {0.14f, 0.16f, 0.20f, 1.0f}}});
+			constexpr auto buttonColors = std::to_array<std::pair<ImGuiCol, ImVec4>>({
+			    {ImGuiCol_Button, {0.11f, 0.13f, 0.16f, 1.0f}},
+			    {ImGuiCol_ButtonHovered, {0.18f, 0.21f, 0.25f, 1.0f}},
+			    {ImGuiCol_ButtonActive, {0.14f, 0.16f, 0.20f, 1.0f}},
+			});
 			constexpr ImVec2 framePadding{8.0f, 8.0f};
 			for (const auto& [slot, color] : buttonColors)
 				ImGui::PushStyleColor(slot, color);

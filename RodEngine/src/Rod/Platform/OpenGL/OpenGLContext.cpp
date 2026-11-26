@@ -34,9 +34,13 @@ namespace Rod {
 		glDebugMessageCallback(
 		    [](GLenum, GLenum, GLuint, GLenum severity, GLsizei, const GLchar* message, const void*) {
 			    if (severity == GL_DEBUG_SEVERITY_HIGH)
+			    {
 				    Log::Core().error("GL DEBUG HIGH: {0}", message);
+			    }
 			    else if (severity == GL_DEBUG_SEVERITY_MEDIUM)
+			    {
 				    Log::Core().warn("GL DEBUG MEDIUM: {0}", message);
+			    }
 		    },
 		    nullptr);
 	}

@@ -62,7 +62,8 @@ namespace Rod {
 			    .AssetsPath = data["AssetsPath"].as<std::string>(),
 			    .StartupScenePath = data["StartupScenePath"].as<std::string>(),
 			    .ScriptsProjectPath = data["ScriptsProjectPath"].as<std::string>(),
-			    .ShadersPath = data["ShadersPath"].as<std::string>()};
+			    .ShadersPath = data["ShadersPath"].as<std::string>(),
+			};
 			project.SetProperties(std::move(properties));
 		}
 		catch (const std::exception& exception)

@@ -26,11 +26,13 @@ namespace {
 		    : Root(m_Directory.GetPath()), Runtime(Root / "Engine/Rod-Runtime"),
 		      Source(
 		          Root / "Source/Project.rodproj",
-		          {.Name = "Test Game",
-				   .AssetsPath = "Content",
-				   .StartupScenePath = "Content/Scenes/Main.rod",
-				   .ScriptsProjectPath = "Content/Scripts/Game.csproj",
-				   .ShadersPath = Root / "Shaders"})
+		          {
+		              .Name = "Test Game",
+		              .AssetsPath = "Content",
+		              .StartupScenePath = "Content/Scenes/Main.rod",
+		              .ScriptsProjectPath = "Content/Scripts/Game.csproj",
+		              .ShadersPath = Root / "Shaders",
+		          })
 		{
 			Rod::WriteTextFile(Runtime, "runtime");
 			Rod::WriteTextFile(Runtime.parent_path() / "nethost.dll", "native dependency");

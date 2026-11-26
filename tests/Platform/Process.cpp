@@ -43,7 +43,8 @@ TEST_CASE("Windows process starter returns before exit and preserves project arg
 	    R"(Game "one")",
 	    R"(Assets with spaces\)",
 	    "",
-	    R"(Scripts\Game.csproj)"};
+	    R"(Scripts\Game.csproj)",
+	};
 	std::vector<std::string> command{ROD_PROCESS_TEST_HELPER_PATH, output.string(), release.string()};
 	command.insert(command.end(), projectArguments.begin(), projectArguments.end());
 	const auto result = Rod::Process::Start(command);
